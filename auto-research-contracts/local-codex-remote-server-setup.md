@@ -1,21 +1,6 @@
----
-artifact_contract: "ce-handoff/v1"
-created_at: "2026-09-02T04:26:03Z"
-title: "本地 Codex 与远程 Auto Research 服务器配置手册"
-summary: "从零配置本地编辑监督端、GitHub 源码通道和服务器常驻 Codex+ARIS 执行端，并规定双方的交接与通信协议。"
-keywords: ["codex", "remote-server", "autoresearch", "aris", "ssh", "git", "tmux"]
-cwd: "E:/projects/GearShift"
-resume_focus: "为新 Auto Research 项目填写配置卡，按 Phase 0 到 Phase 8 配置本地与服务器，并完成端到端验收。"
-repository: "GearShift"
-repo_root_sha: "e02fb45b58a221940d860c9846e9457cf053b076"
-branch: "codex/use-fable-5-reviewer"
-head: "990b7b90597851c3dbe6e616bfc0d58c10ffb352"
-worktree_path: "E:/projects/GearShift"
----
-
 # 本地 Codex 与远程 Auto Research 服务器配置手册
 
-本手册可以独立完成基础设施配置；完整新项目包还包括[《精简版 Auto Research 启动契约》](./autoresearch-bootstrap-contract.md)和[《研究写作与 AutoResearch 记录契约》](./research-writing-recording-contract.md)。三份文档分别负责启动、基础设施、研究写作与记录，互不复制正文。复制到新项目后可以删除本文件顶部仅用于临时 handoff 检索的 `ce-handoff` frontmatter。
+本手册可以独立完成基础设施配置；完整新项目包还包括[《精简版 Auto Research 启动契约》](./autoresearch-bootstrap-contract.md)和[《研究写作与 AutoResearch 记录契约》](./research-writing-recording-contract.md)。三份文档分别负责启动、基础设施、研究写作与记录，互不复制正文。
 
 目标状态：本地电脑可以关机；服务器上的 Codex + ARIS 和长实验继续运行。两端不共享工作目录，不产生两份互相不知道的源码。
 
@@ -653,6 +638,8 @@ git ls-files --stage scripts
 - 写 metadata、stdout/stderr、timestamps、GPU/Python、signal 和 checksum。
 - `TERM` 后有限等待，再 `KILL`；整个 process group 退出后才写终态。
 
+Dispatcher 生成的 checksums、metadata 和 receipts 是后续 gate 的可复用终态证据。完整 run、shard、模型或数据集只在明确的终态硬门禁或出现具体污染证据时，对必要清单核验一次；heartbeat 和 validator 读取 receipt，不重复计算。validator-only 更新复用原 artifact，不重新投递实验。
+
 ### 11.4 `fetch_results.*`
 
 - 只接受安全格式的 run ID。
@@ -750,15 +737,17 @@ git rev-parse HEAD
 updated_at: <UTC>
 writer_lease: <local_OR_server_OR_none>
 source_commit: <FULL_SHA>
-active_gate: <GATE>
+run: <REGISTERED_RUN_OR_VALIDATION>
+observation: <DIRECT_EVIDENCE_OR_NONE>
 research_state: <PLANNED_OR_RUNNING_OR_FAILED_OR_OBSERVED>
+gate_decision: <PASS_OR_BLOCKED_OR_FAILED_OR_OBSERVED>
 gate_disposition: <READY_OR_BLOCKED_OR_UNAVAILABLE>
 active_runs: [<RUN_ID>]
-measurement: <OBSERVED_FACTS_ONLY>
-supported_interpretation: <BOUNDED_INTERPRETATION>
-unresolved_hypotheses: [<ITEMS>]
 blockers: [<ITEMS>]
-next_safe_action: <ONE_ACTION>
+next_step:
+  question: <ONE_POSITIVE_QUESTION_FOR_THE_NEXT_GATE>
+  action: <ONE_AUTHORISED_ACTION>
+evidence: [<RECEIPT_OR_LEDGER_PATHS>]
 ```
 
 `writer_lease` 是协作约定，不是分布式锁。Launcher 仍须检查 Git clean/upstream。切换 writer 时必须 commit + push + ff-only pull。
@@ -792,6 +781,8 @@ Git/reviewer/login 是否健康
 ### 15.2 Supervisor
 
 使用一个周期性 supervisor/heartbeat 检查：Agent 是否存活、实验是否前进、磁盘、登录、reviewer、Git clean/upstream 和停止条件。已有 supervisor 时更新，不创建重复任务。
+
+Heartbeat 只读取最新状态、进程和已有终态 receipt。没有新硬门禁或具体污染证据时，不重新哈希完整 run、shard、模型或数据集；gate `PASS` 后立即进入下一项已授权实验。每次对外回报按“运行—观察—gate 决策—下一步”组织，下一步只提出一个正向 gate 问题；失败细节留在 run/failure ledger。
 
 本地电脑关闭后仍需监督，就让 supervisor 运行在服务器侧；不要依赖本地 Codex Desktop 的 session 保持在线。
 
@@ -829,6 +820,7 @@ Git/reviewer/login 是否健康
 - `tmux:<AGENT>` 与 `tmux:<EXP>` 可独立重启。
 - 从实际需要支持的 Bash/PowerShell 客户端分别投递一个无害实验，并在 SSH 断开后完成。
 - receipt 含 source commit、command/final exit status、metadata、logs 和 checksum。
+- 已有终态 receipt 可直接支撑后续 gate；heartbeat 和 validator 不重复哈希大 artifact，validator-only 改动不重跑实验。
 - fetch 到 `.partial-*` 后校验并原子落盘。
 - stop sentinel、预算、磁盘阈值和唯一 supervisor。
 - `paper/`/Overleaf 边界；未启用 Overleaf 时可 `CONDITIONAL N/A`。
@@ -853,7 +845,7 @@ Codex 是执行器，reasoning_effort=high，profile 与启动参数均省略 se
 
 所有源码只通过 GitHub。切换 writer 前必须 commit+push，接收端只能在 clean tree 上 pull --ff-only。大产物只进入服务器 data root。不要 rsync/scp 源码，不自动 stash/reset/merge，不 force-push。
 
-第一次回复报告：已完成修改、逐项验证证据、仍需用户完成的交互登录、真正的 blocker，以及下一步最小安全动作。只有外部权限、研究方向或安全授权缺失时才停下。
+第一次回复按“运行—观察—gate 决策—下一步”报告；下一步只提出一个正向 gate 问题并给出对应动作。交互登录和当前 blocker 作为 gate 决策事实，失败细节只引用 ledger。只有外部权限、研究方向或安全授权缺失时才停下。
 ```
 
 ## 18. 当前官方依据

@@ -1,16 +1,11 @@
-# Results ledger
+# Current scientific findings
 
-Every number the paper stands on, the experiment that produced it, and the control that makes it
-interpretable. Rewritten 2026-08-29 after an independent Codex review and my own re-checks retired three
-claims and corrected four numbers. Retired claims are kept below, with why, because the temptation to make
-them is what the paper is about.
+This file states the current result set. Detailed measurements, run provenance and failed-run evidence
+are recorded in `docs/10_RESULTS.md`.
 
 ---
 
 ## The thesis
-
-Not "the probing inference chain fails at every link". That was the framing until the review, and two of
-the links were not supported. What the evidence carries is narrower and sharper:
 
 > **What probing measures is largely not what the model uses, and a large part of it is not about the
 > model at all.**
@@ -28,7 +23,7 @@ closer to the one a real image change moves along.
 
 ---
 
-## D0. Utilisation  *(complete for LLaVA-Med; two more untrained floors in flight)*
+## D0. Utilisation
 
 ### The measurement
 
@@ -41,23 +36,9 @@ Three numbers on the same held-out rows and the same labels.
     utilisation = (behaviour - floor) / (trained - floor)
 
 Zero when the answer is no better than an untrained network's readout. One when the answer is as good as
-any linear readout of the model's own activations. The floor is what makes the comparison well-posed: a
-probe fitted on 18,212 labelled radiographs beats a zero-shot prompt for reasons that have nothing to do
-with what the model learned, and the floor carries exactly that advantage in both numerator and
-denominator.
-
-### Two objections, both closed
-
-**"It is just a bad prompt."** Four readouts on identical images: the original yes/no question, a different
-phrasing, the log-probability of "Yes, there is a *c*." against "No, there is no *c*.", and a
-negation-symmetrised score. Across 20 model-by-finding cells the best of the four closes a median of
-**7%** of the gap, moving it from 0.177 to 0.170; the largest gain in any cell is 0.075; in **7 of 20**
-cells the original question is already the best. On Lingshu the best gain is exactly 0.000 on all four
-findings, because there is no gap to close.
-
-**"It is a calibration artefact."** AUROC is invariant to any strictly monotone transform of the score, so
-a constant tendency to answer yes cannot lower it. LLaVA-Med answering yes on 100% of radiographs is a
-statement about its threshold; its AUROC is a statement about its ranking.
+any linear readout of the model's own activations. The floor makes the comparison well-posed: a probe
+fitted on 18,212 labelled radiographs has training-independent advantages over a zero-shot prompt, and
+the floor carries that advantage in both numerator and denominator.
 
 ### Result: four models, nine findings, connector locus fixed in advance
 
@@ -81,8 +62,8 @@ same architecture*.
 other -52%. The entire difference is what training did, and it is invisible to a probe: their probe AUROCs
 at the connector differ by less than 0.01 on six of nine findings.
 
-That contrast is also what rules out an instrument failure. A measure that returned a negative number for
-every model would be suspect. This one returns 99% for one model and negative values for three.
+The 99% result for Lingshu and negative values for the other three models show that the measure
+discriminates among models rather than imposing one common outcome.
 
 Per finding on the two matched-architecture medical models:
 
@@ -95,6 +76,19 @@ Per finding on the two matched-architecture medical models:
 | Cardiomegaly | 0.706 / 0.667 | 0.891 / 0.708 / +1% | 0.741 / 0.650 / -24% |
 
 Figures: `figures/utilisation.png`, `figures/utilisation_by_model.png`.
+
+### Readout robustness and calibration
+
+Four readouts were evaluated on identical images: the original yes/no question, a different phrasing,
+the log-probability of "Yes, there is a *c*." against "No, there is no *c*.", and a
+negation-symmetrised score. Across 20 model-by-finding cells the best of the four closes a median of
+**7%** of the gap, moving it from 0.177 to 0.170; the largest gain in any cell is 0.075; in **7 of 20**
+cells the original question is already the best. On Lingshu the best gain is exactly 0.000 on all four
+findings, because there is no gap to close.
+
+AUROC makes the calibration comparison threshold-independent: it is invariant to any strictly monotone
+transform of the score. LLaVA-Med answering yes on 100% of radiographs describes its threshold, while
+its AUROC describes its ranking.
 
 ---
 
@@ -127,23 +121,20 @@ An untrained Qwen-architecture network shows the same picture: view position at 
 most trained models achieve. Cardiomegaly is the size of a shape, a low-level image statistic, and it does
 not correlate with view position (r = -0.020), so the randomised control task does not absorb it.
 
-**Even selectivity, the strongest control the field has, does not separate what a model learned from what
-its input statistics provide.** Only the untrained-network floor does. A study that reports "the model
-encodes this finding" without one cannot distinguish that from "this finding is a low-level image
-statistic, or correlates with how the image was taken". The survey behind this project found such a
-floor in 5 of 121 applicable studies and a randomised control task in 0 of 135.
+**Selectivity alone does not separate what training added from structure already available in the input
+and architecture.** The untrained-network floor measures that distinction directly. The survey behind
+this project found such a floor in 5 of 121 applicable studies and a randomised control task in 0 of 135.
 
 ---
 
-## D3. Planted ground truth  *(complete, 15 cells, 9 pass the gate)*
+## D3. Planted ground truth
 
 Plant a smooth opacity of known intensity in radiographs the model reads as normal, at the anatomical site
 and at a control site outside the thorax, and compare the activation displacement to each candidate
 direction.
 
 Gate: monotone dose response, rise above 0.02, and more than three times the location control. **9 of 15
-cells pass.** The location control separates by factors of 4.4 to 754. The six failures are LLaVA-Med on
-all three findings, whose answer is pinned above 0.92 with no headroom, plus three non-monotone cells.
+cells pass.** The location control separates by factors of 4.4 to 754.
 
 | candidate direction | mean abs cosine with the displacement the lesion actually causes |
 |---------------------|----------------------------------------------------------------:|
@@ -157,7 +148,7 @@ normal in 71 of 72.
 
 ---
 
-## D2. Read directions are not write directions  *(complete, 50 cells)*
+## D2. Read directions and write directions
 
 `v_probe` is fitted on labels and never sees behaviour. `v_cad` is fitted on behaviour under a
 concept-specificity penalty and never sees a label.
@@ -173,52 +164,33 @@ concept-specificity penalty and never sees a label.
 
 ---
 
-## P2. A second modality  *(complete, 12,012 dermoscopy images, 4,109 patients)*
+## P2. Cross-modality result
 
 | modality | median selectivity | best finding | strongest acquisition nuisance | nuisance outranks every finding |
 |----------|-------------------:|-------------:|-------------------------------:|--------------------------------:|
 | chest radiograph | +0.050 | 0.897 | view position **0.999** | **5 / 5 models** |
 | dermoscopy | +0.308 | 0.973 | anatomic site 0.947 | **1 / 5 models** |
 
-Not a prevalence artefact: in dermoscopy the rarest finding has the highest selectivity (squamous cell
+The prevalence comparison points in the same direction: in dermoscopy the rarest finding has the highest selectivity (squamous cell
 carcinoma, 3.4% prevalence, n=410, +0.453) against Nevus at 63.5% (+0.361), while in radiographs the
 comparably rare oedema (2.8%) reaches +0.268 and Nodule is negative on all five models.
 
-Caveat to state: two dermoscopy extractions (Lingshu, Qwen) completed 8,684 of 12,012 images with
-diagnosis-dependent missingness, and are being re-extracted.
+## Evidence decisions
 
----
-
-## Downgraded to descriptive
-
-| claim | why |
+| Observation | Decision |
 |-------|-----|
-| decodability ranks steerability across loci | median Spearman rho -0.245, negative in 11 of 14 cells, pooled Fisher-z p = 0.050. Raw AUROC against steerability is p = 0.74. Borderline at 12 loci per cell |
-| causal separability rises with depth | strictly non-decreasing in **3 of 10** curves, not ten |
+| median Spearman rho between decodability and steerability is -0.245, negative in 11 of 14 cells; pooled Fisher-z p=0.050, while raw AUROC against steerability has p=0.74 | descriptive association; the current locus count does not support a ranking claim |
+| causal separability is strictly non-decreasing in 3 of 10 curves | descriptive profile rather than a depth trend |
 
-## Retired, with the reason
+## Next gate
 
-| claim | why it was retired |
-|-------|--------------------|
-| "the peak of decodability is never the peak of steerability, 15/15" | with *k* loci and two independent argmaxes this holds by chance with probability (1-1/k)^15, which is 0.27 at k=12 and 0.81 at k=70. It is what the null predicts |
-| "29 selective intervention effects, 14 sign-inverted" | a leave-one-random-out audit puts the null pass rate at 8.21%, or 29.6 expected rows out of 360, against 29 observed |
-| "separability of 1.0 means no concept-specific direction can exist" | the code averaged the magnitude of a **signed** cosine. The per-step sequence at the readout is [-1, +1, -1, -1, +1]; +1 is conflict and -1 is synergy, and averaging magnitudes merged them. Near-one there is also an architectural necessity, since the only computation downstream is a norm and a yes-minus-no readout shared by every question |
+Run: `llava-effusion-vislast-reltoken` under the immutable server protocol.
 
----
+Observation required: the exact consumed `encoder.layers.22` hook, 2,000 patient bootstraps, control seeds
+0–19 and the token-relative intervention grid on 200 held-out images with 20 random directions.
 
-## Design faults found and fixed
+Gate decision: the corrected immutable implementation must obtain its exact hook receipt before the
+full probe and intervention run is dispatched.
 
-| fault | what it would have shown |
-|-------|--------------------------|
-| control task over 2 input types | selectivity -0.19, "probes are anti-informative" |
-| `alpha / sqrt(D)` scaling | "no locus is steerable", from a sweep never exceeding 13% of ‖h‖ |
-| magnitude scaled by the pooled norm, applied per token | cross-locus comparisons confounded with depth (ratio 0.42x to 1.64x) |
-| a structurally severed locus in the steering set | a dead locus scored as "not steerable" |
-| Adam step of norm 3.0 on a unit vector | specificity weights 3.0 and 0.0 gave byte-identical runs |
-| `gradient_checkpointing_enable()` under `.eval()` | a silent no-op; three jobs died reporting checkpointing was on |
-| `h.detach()` inside a checkpointed block | every D2 job died at the second locus |
-| images screened by dataset label, not model baseline | "LLaVA-Med's representation is unsteerable", when it had 0.033 of headroom |
-| D0 joined a 1000-row behavioural score to a 5343-row probe score | a gap inflated by comparing different samples |
-| all activations cached under the effusion prompt | answer-position probes for the other eight findings read the wrong prompt's activations. Visual, connector and vision-tower loci are prompt-independent to 0.000000 and unaffected |
-| the modality analyser read only `site_Trunk` | dermoscopy nuisance dominance reported as 0/5 instead of 1/5 |
-| the probe direction refitted 12x per locus in D3 | three hours of arithmetic already done |
+Next: determine whether Effusion at the consumed LLaVA visual locus passes the registered probe and
+intervention controls. Detailed provenance and all failure records remain in `docs/10_RESULTS.md`.

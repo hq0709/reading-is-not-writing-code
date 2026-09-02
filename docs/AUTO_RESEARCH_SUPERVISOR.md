@@ -51,7 +51,7 @@ Supervisor 不得：
 4. 核对唯一固定环境、Codex profile、Claude reviewer canonical identity、ARIS full SHA、allowlist、tmux socket、磁盘、预算和 stop sentinel。
 5. 核对 server writer 是否已经取得 lease。若服务器是 writer，本地 supervisor 保持只读；要接管修改，先让服务器到安全停止点并完成 commit/push，再在 clean tree 上 `pull --ff-only`。
 6. 创建并验证第 4 节的 heartbeat automation。
-7. 输出一次启动回执：`current gate`、`scientific state`、`gate disposition`、`writer`、`blocker`、`next safe action`、`automation cadence`、`evidence paths`。这些值从权威文件读取，不在本文档中复制维护。
+7. 输出一次启动回执：`run`、`observation`、`gate decision`、`next step`、`writer`、`automation cadence` 和 `evidence paths`。下一步只给一个正向 gate 问题；这些值从权威文件读取，不在本文档中复制维护。
 
 任何 required 项失败时，Supervisor 保持运行但不启动新科学实验；它只推进能够解除 blocker 的安全工作。
 
@@ -63,8 +63,8 @@ Supervisor 必须创建一个绑定到自身 task 的 heartbeat automation。更
 
 1. 读取 `docs/RESEARCH_STATE.md`、当前 writer 和最新已 push commit。
 2. 通过批准的服务器入口检查本项目 tmux、run receipt、日志尾部、GPU/磁盘、预算、stop sentinel 和连续失败计数；只管理 `/home/qingchan/` 下本项目资源。
-3. 将服务器汇报与 immutable receipt、进程状态和 Git SHA 交叉核验。没有新证据时不得制造进展更新。
-4. 若运行完成，验证 exit status、metadata、checksum 和 reviewer gate，再决定 `FAILED` 或 `OBSERVED`；有效负结果必须保留为 `OBSERVED`。
+3. 将服务器汇报与 immutable receipt、进程状态和 Git SHA 交叉核验。直接复用 dispatcher 已生成的 checksums、metadata、asset/run receipts 和终态验证；除明确终态硬门禁或具体污染证据外，不重新哈希完整 run、shard、模型或数据集。
+4. 若运行完成，从 receipt 核对 exit status、metadata、既有 checksum 和 reviewer gate，再决定 `FAILED`、`OBSERVED` 或 `PASS`；validator-only 改动复用原 artifact，不重跑实验或大文件校验。
 5. 仅在出现状态变化、异常、需要用户动作或 gate 完成时通知用户；稳定且无变化的轮次保持简短。
 6. 根据任务长度和风险调整**同一个** automation 的间隔：
    - 预计 30 分钟内完成、刚启动或状态不稳定：约 10 分钟；
@@ -73,7 +73,7 @@ Supervisor 必须创建一个绑定到自身 task 的 heartbeat automation。更
    - 无运行、处于外部 blocker：约 6–12 小时，只检查 blocker 是否解除；
    - 临近完成、出现错误、磁盘/预算接近门槛或连续失败：立即缩短频率并停止新 dispatch。
 
-自动调频的依据必须写入 automation 最近一次回报。实验结束后将频率恢复为适合当前 research gate 的巡检周期；用户要求停止时暂停 automation，不留下重复 heartbeat。
+自动调频的依据必须写入 automation 最近一次回报。每次回报按“运行—观察—gate 决策—下一步”组织，失败细节只留在 ledger，scope 只通过下一 gate 的一个正向问题陈述。gate `PASS` 后立即进入下一项已授权实验；实验结束后将频率恢复为适合当前 research gate 的巡检周期。用户要求停止时暂停 automation，不留下重复 heartbeat。
 
 ## 5. 科学推进方式
 
@@ -83,8 +83,8 @@ Supervisor 必须创建一个绑定到自身 task 的 heartbeat automation。更
 2. 使用最小、最便宜且可判定的 cell 做 implementation/measurement validity；
 3. 在 immutable commit snapshot 上运行注册实验；
 4. 内部核验后请求固定 Claude read-only review；
-5. 将有效结果登记为 `OBSERVED`，再决定扩展、收窄或停止；
-6. 只有前一 gate 的结果改变了决策，才注册下一 gate。
+5. 将有效结果登记为 `OBSERVED` 并作出 gate 决策；
+6. gate `PASS` 后立即进入下一项已授权实验；需要新注册时，只注册由当前观察决定的下一 gate。
 
 以下是候选研究队列，不是已注册实验，也不是观察结果：
 
@@ -111,11 +111,11 @@ Supervisor 必须创建一个绑定到自身 task 的 heartbeat automation。更
 
 ## 7. 故事与写作推进
 
-论文更新遵循 `research-writing-recording-contract.md`，并额外执行三个独立 gate：
+论文更新遵循 `docs/RESEARCH_WRITING_AND_RECORDING.md` 路由的源头合同，并额外执行三个独立 gate：
 
 1. **Story gate**：主流 framing 的盲点、具体矛盾、被忽略的分析单位、统一机制和边界是否形成递进发现链条；读者能否用一句话记住新观点。
 2. **Claim–evidence gate**：逐条区分 measurement、supported interpretation、unresolved hypothesis 和 excluded claim；标题、摘要、Results 使用一致强度。
-3. **Style gate**：删除防御性、rebuttal 式预防解释、作者元话语、编辑历史、重复限定与没有识别依据的绝对词。
+3. **Style gate**：报告结构为“运行—观察—gate 决策—下一步”；删除防御性、rebuttal 式预防解释、作者元话语、编辑历史、重复限定与没有识别依据的绝对词。
 
 写作采用 positive story first：先陈述新结构和科学意义，再说明对照排除了什么。主文一段只完成一个推理动作，优先使用“现象 → 对照 → 推论”；完整审计、失败实现和 provenance 下沉到 ledger/appendix。公式后立即解释操作语义，但不借公式复杂度夸大识别范围。
 
@@ -127,7 +127,7 @@ Supervisor 必须创建一个绑定到自身 task 的 heartbeat automation。更
 
 只有真正改变研究目标、方法身份、外部授权或资源预算的问题才升级给用户。可以由仓库、服务器证据、官方资料或注册实验解决的问题由 Supervisor 自行解决并记录。
 
-交接给另一个 session 时，先达到安全停止点并 push；交接消息只需给出当前 commit、active gate、state/disposition、writer、blocker、next safe action、automation ID/cadence 和 evidence paths。历史过程留在各自 ledger，不复制成新的叙事。
+交接给另一个 session 时，先达到安全停止点并 push；交接消息按“运行—观察—gate 决策—下一步”给出当前 commit、writer、automation ID/cadence 和 evidence paths。下一步只陈述一个正向 gate 问题；历史过程留在各自 ledger。
 
 ## 9. 正确启动的判据
 
@@ -135,7 +135,7 @@ Supervisor 只有同时满足以下条件才算正确运行：
 
 - 已完整读取本节第 1 项全部权威来源；
 - 已读取并核对环境搭建 task 的最新状态；
-- 已报告当前 gate、writer、blocker 和 next safe action，且与 `RESEARCH_STATE.md` 一致；
+- 已按“运行—观察—gate 决策—下一步”报告，且与 `RESEARCH_STATE.md` 一致；
 - 已创建一个可查看的 heartbeat automation，并说明初始 cadence 与调频依据；
 - 未在 blocker 未解除时启动科学实验；
-- 已明确接下来只从第一个未完成 hard gate 继续，而不是重跑旧实验或自由搜索 headline。
+- 已明确接下来从第一个未完成 hard gate 继续，并复用已有终态 receipt。

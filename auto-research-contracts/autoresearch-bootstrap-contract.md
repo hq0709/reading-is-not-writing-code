@@ -1,18 +1,3 @@
----
-artifact_contract: "ce-handoff/v1"
-created_at: "2026-09-02T06:30:23.4126534Z"
-title: "精简版 Auto Research 启动契约"
-summary: "只负责新项目初始化、配置卡、验收和首轮启动；研究写作与记录规范由独立契约维护。"
-keywords: ["autoresearch", "bootstrap", "startup", "codex", "aris"]
-cwd: "E:/projects/GearShift"
-resume_focus: "使用精简启动契约初始化新项目，并同时接入独立研究写作与记录契约。"
-repository: "GearShift"
-repo_root_sha: "e02fb45b58a221940d860c9846e9457cf053b076"
-branch: "codex/use-fable-5-reviewer"
-head: "990b7b90597851c3dbe6e616bfc0d58c10ffb352"
-worktree_path: "E:/projects/GearShift"
----
-
 # 精简版 Auto Research 启动契约
 
 ## 1. 本文档只负责启动
@@ -21,10 +6,10 @@ worktree_path: "E:/projects/GearShift"
 
 必须与以下两份独立文档一起使用：
 
-1. `research-writing-recording-contract.md`：研究 taste、写作风格、证据语言、AutoResearch 记录卫生和持久化规则。
+1. `research-writing-recording-contract.md`：源头权威的研究 taste、写作风格、证据语言、AutoResearch 记录卫生、实验推进和证据复用规则。
 2. `local-codex-remote-server-setup.md`：本地 Codex、GitHub、SSH、远程服务器、环境、Codex/Claude/ARIS、tmux 和结果同步。
 
-复制进项目后推荐命名：
+复制进项目后保留 `auto-research-contracts/` 中的源头合同，并建立以下稳定入口：
 
 ```text
 docs/AUTORESEARCH_STARTUP.md
@@ -32,7 +17,7 @@ docs/RESEARCH_WRITING_AND_RECORDING.md
 docs/REMOTE_RESEARCH_OPERATIONS.md
 ```
 
-不要把后两份全文重新塞回启动契约。启动 prompt 只要求读取它们。
+稳定入口只链接源头合同，不复制正文。启动 prompt 必须先读取它们。
 
 ## 2. 新项目配置卡
 
@@ -117,6 +102,8 @@ scripts/fetch_results.sh
 - 机器、同步、环境和恢复遵循 `docs/REMOTE_RESEARCH_OPERATIONS.md`。
 - 当前问题、协议、门槛和允许优化遵循 `docs/RESEARCH_PLAN.md`。
 - 当前阶段、证据与 blocker 遵循 `docs/RESEARCH_STATE.md`。
+- immutable dispatcher 的 checksums、metadata 和 receipts 是可复用终态证据；无新硬门禁或污染证据时不重复大文件哈希。
+- 所有报告按“运行—观察—gate 决策—下一步”组织，scope 只通过下一 gate 的正向问题陈述一次。
 
 ## 4. 启动前必须注册
 
@@ -179,7 +166,7 @@ Codex executor 使用项目固定模型、`high` reasoning，且不启用 Fast�
 
 从课题材料提炼一个最小可证伪核心问题，在 RESEARCH_PLAN 中注册 claim、反证条件、方法身份、允许与禁止优化、指标、baseline、数据协议、dev/test 隔离、统计方法、成本口径、gate 和失败动作。建立 RESEARCH_STATE 与 EXPERIMENT_REGISTRY，但按独立记录契约保持它们简洁且职责分离。
 
-运行首次验收。验收全绿后，只执行第一项能最大幅度减少关键不确定性的短实验。提交并 push 所有源码和轻量状态；大型 artifact 留在服务器数据目录。最后报告当前 gate、已观察事实、证据位置、决策和下一项动作。
+运行首次验收。验收全绿后，只执行第一项能最大幅度减少关键不确定性的短实验。复用 dispatcher 已有 checksums、metadata 和 receipts；只有明确终态硬门禁或具体污染证据才对必要清单核验一次，不重复哈希完整 run、shard、模型或数据集。提交并 push 所有源码和轻量状态；大型 artifact 留在服务器数据目录。最后按“运行—观察—gate 决策—下一步”报告，下一步只给一个正向 gate 问题。
 ```
 
 ## 8. 验收通过后的无人值守 Prompt
@@ -189,11 +176,11 @@ Codex executor 使用项目固定模型、`high` reasoning，且不启用 Fast�
 
 开始前验证：Git checkout clean 且与 upstream 一致；固定环境、Codex profile、ARIS SHA、Claude reviewer、数据路径、磁盘、预算和 stop sentinel 正常。任一硬门槛失败时停止投递并记录 blocker。
 
-只执行 RESEARCH_PLAN 已注册的方法、指标、数据协议和允许优化。每个实验从 immutable commit 运行，保存 run receipt。按独立记录契约维护状态：当前实验直接写它做了什么和观察到什么；失败、blocker、限制和 provenance 只放在指定账本，不把后续方案命名为“不含 X 版”或“修复 A 失败后的版本”。
+只执行 RESEARCH_PLAN 已注册的方法、指标、数据协议和允许优化。每个实验从 immutable commit 运行，保存 run receipt。已有 checksums、metadata、asset/run receipts 和终态验证直接复用；heartbeat 不重算完整 run、shard、模型或数据集。validator-only 改动复用原 artifact，不重跑实验或大文件校验。按独立记录契约以“运行—观察—gate 决策—下一步”维护状态；失败只进 ledger，scope 只在下一 gate 的正向问题中陈述一次。
 
 每个硬 gate 先做 Codex 内部验证，再通过批准的 Claude read-only transport 进行 cross-model review。没有结构化模型身份、medium effort 和只读证据时，cross-model gate 不通过。
 
-持续选择最小且最能裁决关键不确定性的实验，直到当前 gate 得到有效观察、出现明确 blocker，或触发预算、磁盘、连续失败和 stop sentinel 条件。保持源码和轻量状态及时 commit/push；不把大 artifact 和 secret 放进 Git。
+gate `PASS` 后立即进入下一项已授权实验。持续选择最小且最能裁决关键不确定性的实验，直到当前 gate 得到有效观察、出现明确 blocker，或触发预算、磁盘、连续失败和 stop sentinel 条件。保持源码和轻量状态及时 commit/push；不把大 artifact 和 secret 放进 Git。
 ```
 
 ## 9. 启动完成定义
@@ -207,5 +194,7 @@ Codex executor 使用项目固定模型、`high` reasoning，且不启用 Fast�
 5. Codex executor、Claude reviewer 和 ARIS routing 通过结构化验收。
 6. 第一项短实验可以从 immutable commit 投递并生成 receipt。
 7. 写作和 AutoResearch 记录遵循独立契约，启动 prompt 不再内嵌其全文。
+8. 终态 receipt 可直接复用，heartbeat 和 validator 不重复哈希大 artifact。
+9. gate `PASS` 可立即推进下一项已授权实验，报告结构保持“运行—观察—gate 决策—下一步”。
 
 完成后，后续写作偏好和记录规则只更新 `RESEARCH_WRITING_AND_RECORDING`；基础设施只更新 `REMOTE_RESEARCH_OPERATIONS`；本文件只在启动流程本身变化时更新。

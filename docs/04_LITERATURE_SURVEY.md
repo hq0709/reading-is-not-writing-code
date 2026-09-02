@@ -1,63 +1,55 @@
-# Literature survey, 2026-08-29
+# Literature survey: positive taxonomy
 
-Run to answer two questions before submission: **can this be scooped**, and **what must be cited**.
+Survey date: 2026-08-29. The literature supports a measurement paper about availability, behavioural use
+and causal anchoring rather than a priority claim for the general encoded-but-unused phenomenon.
 
-## The finding that changes the positioning
+## Availability and behavioural use
 
-The claim "a model does not use what it encodes" is **no longer novel on its own**. Three independent
-groups state a version of it, one of them two months ago and on two of our five models:
+| Work | Setting | Evidence relevant to Concept Flow |
+|---|---|---|
+| Ravichander, Belinkov & Hovy, *Probing the Probing Paradigm* (EACL 2021) | synthetic NLP tasks | a task-irrelevant property remains decodable, establishing that probe accuracy and task relevance are different quantities |
+| Kumar et al., *Encoded but Not Routed* (arXiv:2606.01679) | charts versus tables; Qwen2.5-VL-7B/32B and InternVL3-8B | chart evidence is available in intermediate layers but does not reach the prediction position |
+| Goel, Bandyopadhyay & Shenk, *The Knowing-Saying Gap* (arXiv:2608.07528) | text LLM arithmetic | probes decode corrupted context at 0.98 AUROC while model confidence predicts the resulting error at 0.50 |
 
-| paper | date | setting | what they show | what they lack |
-|---|---|---|---|---|
-| Ravichander, Belinkov & Hovy, *Probing the Probing Paradigm* (EACL 2021) | 2021 | synthetic NLP tasks | a property provably irrelevant to the task is still encoded above chance, so probe accuracy does not entail task relevance | synthetic only; no floor, no normalisation, no real model comparison |
-| Kumar et al., *Encoded but Not Routed* (arXiv 2606.01679) | Jun 2026 | scientific charts vs tables, **Qwen2.5-VL-7B/32B, InternVL3-8B** | chart evidence is encoded in intermediate layers but does not reach the prediction position | no untrained baseline; no normalised quantity; localisation, not quantification |
-| Goel, Bandyopadhyay & Shenk, *The Knowing-Saying Gap* (arXiv 2608.07528) | Jul 2026 | text LLMs, synthetic arithmetic | probes detect corrupted context at 0.98 AUROC while the model's confidence predicts the resulting error at 0.50 | no untrained floor; no share-of-what-training-added; not vision, not medical |
+Together these studies establish the broad dissociation across synthetic language, multimodal charts and
+text reasoning. Concept Flow contributes the architecture-matched untrained floor `F`, trained readout
+`T`, behaviour `B`, and the normalised utilisation `(B-F)/(T-F)` in medical VLMs.
 
-**Consequence.** The paper must not be sold on the phenomenon. It must be sold on the **measurement**:
-the architecture-matched untrained floor $F$, the normalisation $(B-F)/(T-F)$, and the benchmarking
-consequence. Nobody else has any of the three. Done: a new paragraph before Contributions says this
-outright, and Related Work cites all three.
+## Controls and baselines
 
-This is a *strengthening*, not a retreat. Three groups finding the same dissociation in text, charts and
-chest radiographs is the argument that a measurement of it is worth having, and it is the answer to the
-"one domain, five models" reviewer.
+| Work | Contribution to the method |
+|---|---|
+| Hewitt, Ethayarajh, Liang & Manning, *Conditional probing* (EMNLP 2021) | formalises the incremental information in `T-F` by conditioning on a baseline representation; the same-architecture untrained network is the image-model baseline used here |
+| Hewitt & Liang, control tasks (EMNLP-IJCNLP 2019) | defines selectivity against a matched random-label task; Concept Flow adapts recurring word types to recurring image metadata types |
+| Heap, Lawson, Farnik & Aitchison (arXiv:2501.17727) | a randomly initialised transformer can score as interpretably as a trained one under sparse-autoencoder evaluation, motivating an explicit untrained floor |
+| Wu, Zhao & Chen, *When Is a Steerable Concept Representation Real?* (arXiv:2608.08159) | shows that norm calibration, readout choice and operating-point selection determine cross-model steering comparisons |
 
-## Citations that were missing and are now in
+## Medical imaging and medical VLM neighbours
 
-1. **Ravichander, Belinkov & Hovy (EACL 2021)** — the direct ancestor of the thesis. Its absence was a
-   real gap a reviewer would have found.
-2. **Hewitt, Ethayarajh, Liang & Manning, *Conditional probing* (EMNLP 2021)** — the formal machinery for
-   $T-F$. They condition on a baseline representation instead of comparing against it, and their baseline
-   is the non-contextual word embedding. Images have no word identity; an untrained network of the same
-   architecture is the substitute this setting admits. Saying so makes the $T-F$ half a principled
-   instance of an existing framework and isolates the novelty in the third term $B$.
-3. **Heap, Lawson, Farnik & Aitchison (arXiv 2501.17727)** — sparse autoencoders score a *randomly
-   initialised* transformer as interpretably as a trained one. The SAE analogue of $F$, and independent
-   evidence that the untrained control is the one that bites.
-4. **Pedersen, Sydendal, Cheplygina & Sourget (arXiv 2608.12086, MICCAI-W 2026)** — layer-wise probes on
-   the **same ChestX-ray14 images** find chest drains and scanner identity as the decodable content. Our
-   acquisition-dominance result, arrived at independently, on the same dataset.
+| Work | Relationship |
+|---|---|
+| Zhu et al., *Lost in the Hype* (arXiv:2604.08333) | traces class information through vision, connector and language layers in 14 medical MLLMs; establishes the depth-curve object that Concept Flow controls |
+| Pedersen et al., *Look What the Probes Dragged In!* (arXiv:2608.12086; MICCAI-W 2026) | probes 17 MedCLIP layers on NIH-CXR14 and PadChest and identifies chest drains, scanner identity and data-quality effects; direct support for acquisition-nuisance measurement |
+| Nooralahzadeh et al., *Universal Boosts, Specific Suppressors* (arXiv:2605.24977) | steers sparse-autoencoder features in medical VLM report generation; nearest medical neighbour for residual-stream intervention mechanics |
+| HalluCXR (arXiv:2605.20469) | documents yes-bias in medical VLMs under a closely matched prompt format, motivating AUROC and paired-readout checks |
 
-## Checked and not a threat
+## VLM probing and steering
 
-- **Mirage Probes** (2606.13870, Jun 2026) — VLMs answer image questions correctly with no image. About
-  language priors inflating benchmarks, not probe-vs-behaviour. Adjacent, not competing.
-- **SAE steering of medical VLMs** (2605.24977, May 2026) — RadVLM/LLaVA-Rad/CheXOne, steers to reduce
-  hallucination. No random-direction control, which is the gap Section 8 measures.
-- **HalluCXR** (2605.20469) — yes-bias in medical VLMs under our exact prompt format. Corroborates the
-  LLaVA-Med extreme case.
-- **Visual Grounding in Zero-Shot VL Control** (2608.06154, Aug 2026) — finds VLMs that are
-  "image-invariant or nearly constant". The control-task analogue of a model answering yes to everything.
+| Work | Relationship |
+|---|---|
+| Theodoridis et al., *Probing Visual Concepts in Lightweight VLMs for Automated Driving* (arXiv:2603.06054; TMLR 2026) | probes every vision, projector and language layer and steers with probe weights; supplies the closest cross-domain protocol ancestor |
+| Rajaram et al., *Line of Sight* (arXiv:2506.04706) | shows linearly available ImageNet features in LLaVA-Next and tests them with targeted edits |
+| TRAPSBench (arXiv:2608.13167) | VLM answerability reaches 0.91 probe AUROC while spontaneous epistemic restraint is weak; single-layer steering changes abstention |
+| CARD (arXiv:2608.20763) | diagnoses represented-but-unused belief information through cross-axis interventions in VLMs |
 
-## Terminology collision, noted
+## Terminology
 
-*Model Utilization Index* (arXiv 2504.07440) uses "utilization" for the fraction of **activated neurons**
-during inference. Unrelated quantity. Our definition is given explicitly at first use, so no change made,
-but do not let a reviewer conflate them.
+*Model Utilization Index* (arXiv:2504.07440) uses “utilization” for the fraction of activated neurons.
+Concept Flow defines utilisation explicitly as `(B-F)/(T-F)` at first use.
 
-## Style base, re-checked
+## Positioning carried into the paper
 
-The ICLR 2026 outstanding papers are *Transformers are Inherently Succinct* and *LLMs Get Lost in
-Multi-Turn Conversation*; CVPR 2026's are 4D reconstruction and 3D generation papers whose figures are
-qualitative result grids, not applicable here. The teaser is already modelled on *LLMs Get Lost*, and the
-line-chart and table styles come from the two artefacts supplied directly. No change warranted.
+The literature establishes that decodability and behavioural expression can diverge. Concept Flow asks
+where that divergence appears along the medical VLM pipeline, how it changes after an untrained floor and
+matched controls, and which internal direction follows a planted clinical finding. `docs/11_RELATED_WORK.md`
+contains the protocol-level evidence and reproducible search record.

@@ -18,11 +18,13 @@ The repository already contains released observations for controlled decodabilit
 
 ## First hard gate
 
-The first hard gate is `corrected-llava-effusion-vislast`. It uses `llava15_7b`, NIH ChestX-ray14 with the existing patient-level train/test split, concept `Effusion`, and the actual final CLIP vision block (`encoder.layers.22`) exposed as `vis.last`. Re-extract that locus after a hook test proves it is on the forward path. Fit the fixed 512-dimensional logistic readout (`C=1`, seed 0) and report AUROC/selectivity with 2,000 patient-level test bootstrap resamples. Repeat the type-to-label control over seeds 0–19 and report `real - mean(control)` plus the control spread.
+The first hard gate is `llava-effusion-vislast-reltoken`. It uses `llava15_7b`, NIH ChestX-ray14 with the existing patient-level train/test split, concept `Effusion`, and the actual final CLIP vision block (`encoder.layers.22`) exposed as `vis.last`. Re-extract that locus after a hook test proves it is on the forward path. Fit the fixed 512-dimensional logistic readout (`C=1`, seed 0) and report AUROC/selectivity with 2,000 patient-level test bootstrap resamples. Repeat the type-to-label control over seeds 0–19 and report `real - mean(control)` plus the control spread.
 
 The decisive intervention uses `src/intervene.py` with `alpha-mode=reltoken`, alphas `-1,-0.5,-0.25,-0.1,0,0.1,0.25,0.5,1`, control alphas `-1,-0.5,-0.25,0.25,0.5,1`, 20 random directions, seed 0, and 200 held-out test images. The primary causal metric is the maximum signed change in mean `P(yes)` at a registered nonzero alpha, compared at the same alpha with the 5th–95th percentile of random directions and the sham/unrelated directions. A selective cell must leave that random interval in the concept-consistent direction and exceed the maximum absolute sham effect; dose monotonicity over `[-0.5,0.5]` is reported, not used to move the threshold. Cost is GPU wall time from the immutable receipt.
 
 The gate is `READY` only when hook, bootstrap/control, intervention, receipt, and read-only Claude review evidence all pass. A hook/measurement defect is `FAILED`. A valid cell that does not meet the selective threshold is `OBSERVED`; it narrows the causal-use claim and does not trigger metric, dose, model, or locus replacement. Final test evidence is used once for this gate; implementation tuning uses only train/validation or synthetic fixtures before that point.
+
+Dispatcher checksums, metadata, asset receipts, trust receipts, and terminal verification are reused across this gate. Hashing is limited to the necessary registered manifest at an explicit terminal gate or after concrete contamination evidence. Validator-only changes reuse the original artifact; gate `PASS` advances immediately to the next authorised experiment.
 
 ## Evaluation and fairness
 
