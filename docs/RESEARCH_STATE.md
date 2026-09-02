@@ -6,7 +6,7 @@ Last bootstrap update: 2026-09-02. This file distinguishes scientific state (`PL
 
 - Scientific state: `PLANNED`
 - Gate disposition: `READY`
-- Accepted implementation: pushed commit `958c33ef90223da29f93dc7c14477ca5651c5102`.
+- Accepted implementation: pushed commit `5c6506f75ee3de0a26a95275af4e3a60596e24e5`.
 - Environment, capability, and safety audits: `/home/qingchan/data/concept-flow/state/aris-audit.env`, `/home/qingchan/data/concept-flow/state/health.env`, and `/home/qingchan/data/concept-flow/state/bootstrap-safety-acceptance.env`.
 - Toolchain provenance is defined by `config/toolchain-provenance.tsv`; its atomic server receipt is `/home/qingchan/data/concept-flow/state/setup-receipt.tsv`.
 - Reviewer evidence: fresh-shell receipt `/home/qingchan/.codex/state/claude-review-concept-flow/review-20260902T074946088752Z.json`; detached-tmux receipt `/home/qingchan/.codex/state/claude-review-concept-flow/review-20260902T075031584500Z.json`.
@@ -22,9 +22,10 @@ Last bootstrap update: 2026-09-02. This file distinguishes scientific state (`PL
 - Supported interpretation: none until a valid immutable run is `OBSERVED`.
 - Unresolved hypothesis: whether peak decodability predicts selective causal use after correcting known measurement faults.
 - Excluded claims: current incomplete D1 runs do not establish either dissociation or alignment.
-- Blocker: the registered LLaVA model and NIH dataset assets are not yet staged below `/home/qingchan/data/concept-flow/`.
+- Prerequisite status: the registered LLaVA model is staged at `/home/qingchan/data/concept-flow/models/huggingface/`; its pinned revision and four registered file hashes pass the current verifier. NIH staging retains a 25 GB resumable partial below `/home/qingchan/data/concept-flow/datasets/.partial-nih-chestxray14/`.
+- Blocker: `config/nih-chestxray14-sha256.tsv` has no independently trusted archive checksums, so NIH staging fails closed before download or publication. The failure evidence is `/home/qingchan/data/concept-flow/logs/stage-nih-20260902T093233Z.log` with its adjacent status file.
 - Release condition: model and dataset checks pass, then the registered hook, patient bootstrap, repeated control, intervention sweep, immutable receipt, and pinned read-only Claude review all complete successfully.
-- Next action: stage and verify the registered model and dataset assets; do not dispatch the scientific gate before those checks pass.
+- Next action: obtain independently trusted SHA-256 values for the 12 official NIH archives and label CSV, commit and push that manifest, then resume the registered NIH staging command; do not dispatch the scientific gate before dataset verification passes.
 
 ## Transition rules
 
