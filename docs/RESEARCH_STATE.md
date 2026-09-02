@@ -13,15 +13,15 @@ Updated: 2026-09-02. Scientific state uses `PLANNED`, `RUNNING`, `FAILED`, and `
 
 ## First hard gate: `llava-effusion-vislast-reltoken`
 
-- Run: the exact hook preflight `20260902T174410Z-e2d891947414-hook` passed. The subsequent full run `20260902T174520Z-e2d891947414-firstgate` stopped during activation extraction because the extractor addressed the model by repository ID in offline mode rather than by the staged snapshot.
-- Observation: exact `encoder.layers.22` capture and downstream effect are established for commit `e2d8919`. No scientific probe or intervention observation was produced by the full run.
-- Scientific state: `FAILED` for the latest full-run attempt; the scientific gate remains unobserved.
-- Gate decision: `BLOCKED` until the corrected immutable implementation passes its focused CPU checks and exact synthetic GPU preflight.
+- Run: the corrected exact hook preflight `20260902T191425Z-ffd523c464c8-hook` passed, and immutable full run `20260902T191522Z-ffd523c464c8-firstgate` is extracting the registered NIH manifest from the staged model snapshot with one A100.
+- Observation: exact `encoder.layers.22` capture fired once; relative-token steering changed the downstream connector by `1.1875` and final logits by `0.1875`, while alpha zero was a bitwise no-op. The full run is producing activation shards from the staged snapshot.
+- Scientific state: `RUNNING`; no probe or intervention observation is yet terminal.
+- Gate decision: `BLOCKED` pending terminal probe, intervention, receipt, internal verification, and pinned read-only review evidence.
 - Gate disposition: `BLOCKED`.
 - Evidence: trust receipt `/home/qingchan/data/concept-flow/state/nih-chestxray14-independent-verification-5342b4219127/receipt.json`; dataset receipt `/home/qingchan/data/concept-flow/datasets/nih-chestxray14/asset-receipt.json`; model receipt `/home/qingchan/data/concept-flow/models/huggingface/asset-receipt.json`; research manifest `/home/qingchan/data/concept-flow/datasets/nih-chestxray14/manifest.csv`.
 - Evidence reuse: the trust chain and asset receipts are terminal inputs. Heartbeats and validators read them without rehashing the full dataset, archives, model, shards, or run unless concrete contamination evidence appears.
 - Release evidence: model and dataset receipts, exact hook preflight, patient bootstrap, repeated control, intervention sweep, immutable run receipt, and pinned read-only review.
-- Next step: does the corrected snapshot-bound implementation reproduce the exact hook PASS with one allocated GPU? If yes, dispatch the full gate immediately and reuse that accepted preflight receipt.
+- Next step: does the registered intervention produce a selective concept-consistent change relative to same-alpha controls? Complete and verify the active full run, then request the pinned read-only review.
 - Writer ownership: server Codex/ARIS while the persistent server session is active; handoff follows the single-writer Git protocol.
 
 ## Transition rules
