@@ -9,29 +9,22 @@ old home directory. Source and sanitized configuration come from GitHub. Public
 models and datasets are downloaded directly on the server. Credentials are
 re-created interactively.
 
-## Timing
+## Single pre-reset checkpoint: T-12 hours
 
 This document is preparation only. Keep the current server and research processes
-running until the reset window is close. Do not perform an early bulk copy, remove
-data, rebuild the environment, or stop ARIS merely because a reset is expected.
+running until approximately twelve hours before the confirmed reset. Because models,
+datasets, caches, and the Conda environment are not copied, one checkpoint is
+enough; there is no multi-day or multi-checkpoint schedule.
 
-Use this schedule once the provider gives a sufficiently precise reset window:
+Prepare the small verified installer `bootstrap-cache` once before the reset window
+and refresh it only when `config/toolchain-provenance.tsv` changes. The checkpoint
+verifies and copies that cache; it does not rediscover installer URLs while the
+server is being retired.
 
-| Time before reset | Action |
-|---|---|
-| 48 hours | Reconfirm the reset window; inventory active runs, Git state, data sizes, and free local space; identify the small evidence that is actually irreplaceable; finish and hash the installer `bootstrap-cache` described below. |
-| 24 hours | Stop new experiment dispatches; allow valuable active runs to finish or reach a registered safe stop; establish the writer handoff. |
-| 12 hours | Commit and push source/state; fetch selected immutable runs and small receipts; generate SHA-256 checksums for the retained local copies. |
-| 2 hours | Verify GitHub contains the intended commit, local retained evidence opens and hashes correctly, and no unique server-only source or result remains. |
-| After reset | Follow the ordered recovery procedure below; download public assets directly on `asimov1`; generate fresh infrastructure receipts before restarting ARIS. |
-
-If the reset time remains uncertain, repeat only the read-only inventory. Do not
-freeze the research workflow until the 24-hour checkpoint.
-
-At the 24-hour checkpoint, freeze new dispatches with a human-owned sentinel.
-This does not terminate an experiment that is already running. The reserved
-`AUTORESEARCH_SUPERVISOR_BLOCK_V1` content belongs only to the supervisor and
-must never be used for this manual freeze:
+At T-12 hours, create the human-owned dispatch freeze first. This does not terminate
+an experiment that is already running. The reserved
+`AUTORESEARCH_SUPERVISOR_BLOCK_V1` content belongs only to the supervisor and must
+never be used for this manual freeze:
 
 ```bash
 stop=/home/qingchan/data/concept-flow/STOP
@@ -44,9 +37,26 @@ test "$(stat -c %a "$stop")" = 600
 grep -Fx 'MANUAL_RESET_FREEZE: no new dispatches before account reset' "$stop"
 ```
 
-If `ln` reports that `STOP` already exists, audit the existing sentinel instead
-of overwriting it. Keep the manual sentinel in place through the reset; the reset
+If `ln` reports that `STOP` already exists, audit the existing sentinel instead of
+overwriting it. Keep the manual sentinel in place through the reset; the reset
 itself removes the old account-owned filesystem.
+
+Then:
+
+1. let an active run continue only when its registered completion bound leaves a
+   six-hour reset margin; otherwise stop it at its registered safe point;
+2. after the active run reaches a terminal receipt, have the server writer commit
+   and push, then return ownership to the local checkout with `pull --ff-only`;
+3. fetch only selected immutable receipts, small results, and other irreplaceable
+   evidence;
+4. copy the verified installer `bootstrap-cache` and its manifest locally;
+5. verify the Git commit and SHA-256 values of the retained files.
+
+Expected operator time is roughly 15–30 minutes, excluding any wait for an active
+experiment to finish and any missing installer download. The rest of the twelve-hour
+window is buffer for an earlier-than-announced reset, a safe experiment stop, or an
+unexpected authentication issue.
+No earlier checkpoint or bulk server copy is required.
 
 ## Fixed recovery card
 
@@ -88,7 +98,8 @@ Do not copy the full home directory. Before reset:
    receipts required for historical audit.
 5. Build a small local `bootstrap-cache` containing the exact verified installer
    files used for the versions in `config/toolchain-provenance.tsv`. Complete this
-   before the 48-hour checkpoint; do not defer installer discovery until recovery.
+   once before the reset window and refresh it only when the tracked provenance
+   changes; do not defer installer discovery until the T-12 checkpoint or recovery.
    Store a local manifest with the columns `component`, `artifact_url`, `filename`,
    `bytes`, and `sha256`, and require each SHA-256 to match the tracked provenance
    manifest. This may include the approximately 101 MiB Miniforge installer; it
@@ -103,9 +114,9 @@ SSH credentials are re-created after reset.
 
 A planning-time read-only estimate on 2026-09-02 found approximately 14 GiB of
 model files and a 25 GiB incomplete NIH staging tree that can be discarded and
-downloaded again. It was not saved as a backup receipt. Re-run `du` at the 48-hour
-checkpoint and let that inventory determine the actual selection; these figures
-are not quotas or evidence of a completed backup.
+downloaded again. It was not saved as a backup receipt. Re-run `du` during the
+pre-reset backup session and let that inventory determine the actual selection;
+these figures are not quotas or evidence of a completed backup.
 
 ## Server downloads after reset
 
@@ -216,7 +227,7 @@ archive with SCP or rsync.
 
 Upload the small, locally retained `bootstrap-cache` to
 `/home/qingchan/.cache/autoresearch-setup/`. If a required installer was not
-retained, stop: the 48-hour preparation checkpoint was not completed. The official
+retained, stop: the pre-reset backup session was not completed. The official
 project/documentation URLs in `config/toolchain-provenance.tsv` are provenance,
 not immutable artifact URLs and must not be rediscovered during recovery. Verify
 each cached artifact's filename, byte count, and SHA-256 against the local cache
