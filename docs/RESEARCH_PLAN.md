@@ -26,6 +26,18 @@ The gate is `READY` only when hook, bootstrap/control, intervention, receipt, an
 
 Dispatcher checksums, metadata, asset receipts, trust receipts, and terminal verification are reused across this gate. Hashing is limited to the necessary registered manifest at an explicit terminal gate or after concrete contamination evidence. Validator-only changes reuse the original artifact; gate `PASS` advances immediately to the next authorised experiment.
 
+## Second hard gate
+
+The next registered cell is `llava-edema-vislast-reltoken`. It holds the model, patient split, consumed visual locus, readout capacity, intervention family, dose scale, evaluation rows, and causal threshold fixed while changing the clinical concept to `Edema`. The prompt is `Is there pulmonary edema in this chest radiograph? Answer yes or no.` This cell is the highest-information same-locus contrast because the released exploratory evidence places Edema at the strongest controlled-decoding separation while the model's answer ranking remains near chance.
+
+The probe uses the accepted `vis.last` activation artifact from immutable run `20260902T191411Z-ffd523c464c8-f99e2f39`: the prompt-independent output of `encoder.layers.22` for all 26,229 manifest rows. It applies the same seed-0 Gaussian projection to 512 dimensions, train-only standardisation, logistic regression with `C=1`, and 2,000 patient-level test bootstrap resamples with seed `20260827`. Type-to-label controls use the same 39 `view_AP × sex_M × age decade` strata and seeds 0–19. The Edema and Effusion selectivity estimates use the same patient bootstrap resamples and report their paired difference interval.
+
+The intervention uses the same 200 held-out test row IDs as the first gate, `alpha-mode=reltoken`, concept alphas `-1,-0.5,-0.25,-0.1,0,0.1,0.25,0.5,1`, control alphas `-1,-0.5,-0.25,0.25,0.5,1`, 20 isotropic random directions, seed 0, and coordinate-permutation sham. The fixed unrelated directions are `Effusion`, `Atelectasis`, `Pneumothorax`, `Cardiomegaly`, `Mass`, and `Nodule`; all directions are fitted through the same capacity-matched projection.
+
+The selective-cell criterion is unchanged: the maximum concept-consistent change in mean `P(yes)` at a registered nonzero alpha must exceed the same-alpha random 95th percentile and the maximum absolute sham effect. Unrelated-direction effects and Spearman monotonicity over `[-0.5,0.5]` are reported. If the paired selectivity interval places Edema above Effusion and Edema is selective, the two registered cells form one descriptive rank-concordant pair; if Edema has higher selectivity and remains nonselective, they form one descriptive rank-discordant pair. The pair does not estimate a population correlation. This is one prospectively registered new cell with one paired ordering contrast; the existing maximum control statistic remains the within-cell familywise test, so no additional multiplicity correction is introduced at this gate.
+
+The immutable payload is `["bash","scripts/server/run_cross_cell_gate.sh"]`, dispatched on one registered GPU from a clean pushed `main`. The runner validates and references the accepted source activation receipt, records that source separately from the current probe and intervention commit, and writes all new outputs under its own immutable run directory.
+
 ## Evaluation and fairness
 
 - Train/test separation is patient-level; validation may select implementation parameters but never report headline evidence.

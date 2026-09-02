@@ -20,8 +20,19 @@ Updated: 2026-09-02. Scientific state uses `PLANNED`, `RUNNING`, `FAILED`, and `
 - Gate disposition: `READY`.
 - Evidence: run receipt `/home/qingchan/data/concept-flow/runs/20260902T191411Z-ffd523c464c8-f99e2f39/`; internal replay `/home/qingchan/data/concept-flow/state/first-gate-internal-validation-20260902T211900Z/intervention-summary.json`; reviewer receipt `/home/qingchan/.codex/state/claude-review-concept-flow/review-20260902T212456605398Z.json`; review record `docs/reviews/llava-effusion-vislast-reltoken.md`.
 - Evidence reuse: the terminal trust, asset, hook, run, internal-validation, and reviewer receipts are inputs to later gates. Validators read them without rehashing the dataset, model, activation shard, or complete run unless a new terminal gate or concrete contamination evidence requires it.
-- Next step: which fully specified cross-cell experiment should next test whether decodability rank predicts selective causal influence? Register its cells, multiplicity handling, and immutable dispatch command before launch.
+- Next step: does the higher-controlled-decoding Edema cell at the same consumed LLaVA visual locus show selective causal influence under the unchanged threshold? Run the registered second hard gate.
 - Writer ownership: server Codex/ARIS while the persistent server session is active; handoff follows the single-writer Git protocol.
+
+## Second hard gate: `llava-edema-vislast-reltoken`
+
+- Run: the fixed Edema protocol reuses the accepted prompt-independent `vis.last` activation artifact and the same 200 held-out intervention rows from `20260902T191411Z-ffd523c464c8-f99e2f39`; new probe and intervention evidence will use the current immutable source commit.
+- Observation: none; the cell is registered and awaiting immutable dispatch.
+- Scientific state: `PLANNED`.
+- Gate decision: the protocol, one paired ordering contrast, control family, and unchanged selective-cell threshold are registered.
+- Gate disposition: `READY`.
+- Evidence: `docs/RESEARCH_PLAN.md#second-hard-gate`; source activation receipt `/home/qingchan/data/concept-flow/runs/20260902T191411Z-ffd523c464c8-f99e2f39/`.
+- Next step: does Edema's stronger controlled decoding at `vis.last` produce selective causal influence? Dispatch `["bash","scripts/server/run_cross_cell_gate.sh"]` from clean pushed `main` on one registered GPU.
+- Writer ownership: local Codex until the registration and runner commit is pushed; the server runner then owns immutable evidence generation.
 
 ## Transition rules
 
