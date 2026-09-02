@@ -7,7 +7,7 @@ Last bootstrap update: 2026-09-02. This file distinguishes scientific state (`PL
 - Scientific state: `PLANNED`
 - Gate disposition: `READY`
 - Accepted implementation: pushed commit `958c33ef90223da29f93dc7c14477ca5651c5102`.
-- Environment and capability audit: `/home/qingchan/data/concept-flow/state/aris-audit.env` and `/home/qingchan/data/concept-flow/state/health.env`.
+- Environment, capability, and safety audits: `/home/qingchan/data/concept-flow/state/aris-audit.env`, `/home/qingchan/data/concept-flow/state/health.env`, and `/home/qingchan/data/concept-flow/state/bootstrap-safety-acceptance.env`.
 - Reviewer evidence: fresh-shell receipt `/home/qingchan/.codex/state/claude-review-concept-flow/review-20260902T074946088752Z.json`; detached-tmux receipt `/home/qingchan/.codex/state/claude-review-concept-flow/review-20260902T075031584500Z.json`.
 - Executor-to-reviewer evidence: `/home/qingchan/data/concept-flow/state/codex-mcp-probe-20260902T075246Z.jsonl`.
 - Immutable GPU/fetch evidence: run `20260902T071539Z-7a4e7552d9e1-75d3510c` under `/home/qingchan/data/concept-flow/runs/`.
