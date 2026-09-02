@@ -17,11 +17,13 @@
 
 实验推进优先于重复证明已有 artifact：
 
+- Supervisor 同时是推进者。只要当前环境、writer handoff、安全边界和注册 gate 已满足，就直接恢复或启动下一项注册实验；不得停在状态巡检、报告整理或重复验证。
 - immutable dispatcher 已生成的 checksums、metadata、run receipt、asset receipt 和 reviewer receipt 直接复用。
 - 完整 run、数据 shard、模型和数据集的哈希只在明确的硬门禁终态验收，或出现具体污染证据时，对裁决所需的最小清单核验一次。
 - 已有终态校验是后续 gate 的输入；heartbeat、validator 和报告任务只读取 receipt，不重新计算大文件。
 - validator-only 改动在原 artifact 上运行，不重跑实验，也不为了重复证明而重算模型、数据集、shard 或完整 run。
 - gate `PASS` 后立即登记决策并进入下一项已授权实验；只有新的硬门禁、具体污染证据或协议要求才能重新验证。
+- 产生有意义的本地源码、契约、状态或论文改动后，达到安全检查点即及时 commit 并 push，让 GitHub 上的主分支承载当前权威状态。
 
 数据可信链以一次可审计、可复用的 receipt 为终点。上游未发布同算法的外部摘要时，使用已注册的独立来源、文件身份和内容验证形成可信链；不得把不存在的外部 SHA-256 设为永久 blocker。
 
@@ -334,7 +336,9 @@ positive next-gate question. Keep failures and provenance in their ledgers.
 - reviewer 同时捕获过度辩护和事实性限定被误删。
 - 论文、实验记录、commit/PR 和 provenance 各自承担清晰、不同的职责。
 - heartbeat 只读取已有终态 receipt，不重复哈希完整 run、shard、模型或数据集。
+- heartbeat 在环境与 gate 满足时恢复或启动下一项注册实验，不以巡检或报告替代推进。
 - validator-only 改动复用原 artifact；gate `PASS` 后下一项已授权实验可立即 dispatch。
+- 有意义的本地改动在安全检查点及时 commit、push，并最终进入主分支。
 - 所有报告都按“运行—观察—gate 决策—下一步”组织，并只陈述一个正向下一 gate 问题。
 
 本契约验收通过后，启动契约只需引用它，无需再次展开写作画像和记录规则。

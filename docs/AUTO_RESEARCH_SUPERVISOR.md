@@ -21,7 +21,7 @@
 
 ## 2. Supervisor 的职责边界
 
-Supervisor 是研究控制面，不是另一个并行 writer。它负责：
+Supervisor 是研究控制面，也是推进者，不是另一个并行 writer。只要环境、writer handoff、安全边界和当前注册 gate 已满足，它必须直接恢复或启动下一项注册实验，不能停在状态巡检、报告整理或重复验证。它负责：
 
 - 核验 bootstrap、Git handoff、服务器健康、预算、stop sentinel、tmux 和 reviewer gate；
 - 从 `RESEARCH_STATE.md` 的第一个未完成硬门槛继续；
@@ -65,8 +65,10 @@ Supervisor 必须创建一个绑定到自身 task 的 heartbeat automation。更
 2. 通过批准的服务器入口检查本项目 tmux、run receipt、日志尾部、GPU/磁盘、预算、stop sentinel 和连续失败计数；只管理 `/home/qingchan/` 下本项目资源。
 3. 将服务器汇报与 immutable receipt、进程状态和 Git SHA 交叉核验。直接复用 dispatcher 已生成的 checksums、metadata、asset/run receipts 和终态验证；除明确终态硬门禁或具体污染证据外，不重新哈希完整 run、shard、模型或数据集。
 4. 若运行完成，从 receipt 核对 exit status、metadata、既有 checksum 和 reviewer gate，再决定 `FAILED`、`OBSERVED` 或 `PASS`；validator-only 改动复用原 artifact，不重跑实验或大文件校验。
-5. 仅在出现状态变化、异常、需要用户动作或 gate 完成时通知用户；稳定且无变化的轮次保持简短。
-6. 根据任务长度和风险调整**同一个** automation 的间隔：
+5. 若没有 active run 且当前 gate 的 dispatch 条件已满足，当轮直接恢复或启动该注册实验；巡检和报告不是终止动作。
+6. 有意义的本地源码、契约、状态或论文改动在安全检查点及时 commit 并 push，最终合入主分支；不得积累长期悬空分支。
+7. 仅在出现状态变化、异常、需要用户动作或 gate 完成时通知用户；稳定且无变化的轮次保持简短。
+8. 根据任务长度和风险调整**同一个** automation 的间隔：
    - 预计 30 分钟内完成、刚启动或状态不稳定：约 10 分钟；
    - 预计 30 分钟至 4 小时：约 20–30 分钟；
    - 预计 4–24 小时且 receipt/进程稳定：约 60–120 分钟；
