@@ -2,7 +2,13 @@ from __future__ import annotations
 
 import importlib.util
 import datetime
+import csv
+import hashlib
+import gzip
+import io
+import json
 import os
+import tarfile
 import tempfile
 import unittest
 from pathlib import Path
@@ -191,6 +197,149 @@ class SingletonLockTests(unittest.TestCase):
 
 
 class NihHashTests(unittest.TestCase):
+    def test_normal_exact_size_download_skips_curl_and_verifies_expected_hash(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            download_dir = Path(temp_dir)
+            payload = b"committed-checksum-payload"
+            path = download_dir / "images_001.tar.gz"
+            path.write_bytes(payload)
+            expected = hashlib.sha256(payload).hexdigest()
+            spec = (path.name, len(payload), "https://official/file")
+            with (
+                mock.patch.object(stage, "assert_managed_path"),
+                mock.patch.object(stage, "assert_runtime_safe"),
+                mock.patch.object(stage.subprocess, "run") as run,
+            ):
+                record = stage.download_one(download_dir, spec, expected, "captured-head")
+            run.assert_not_called()
+            self.assertEqual(expected, record["sha256"])
+
+    def test_normal_exact_size_download_skips_curl_but_rejects_wrong_expected_hash(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            download_dir = Path(temp_dir)
+            payload = b"committed-checksum-payload"
+            path = download_dir / "images_001.tar.gz"
+            path.write_bytes(payload)
+            spec = (path.name, len(payload), "https://official/file")
+            with (
+                mock.patch.object(stage, "assert_managed_path"),
+                mock.patch.object(stage, "assert_runtime_safe"),
+                mock.patch.object(stage.subprocess, "run") as run,
+            ):
+                with self.assertRaisesRegex(SystemExit, "NIH SHA-256 mismatch"):
+                    stage.download_one(download_dir, spec, "0" * 64, "captured-head")
+            run.assert_not_called()
+
+    def test_bootstrap_exact_size_resume_skips_curl_and_still_hashes(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            download_dir = Path(temp_dir)
+            payload = b"already complete"
+            path = download_dir / "images_001.tar.gz"
+            path.write_bytes(payload)
+            spec = (path.name, len(payload), "https://official/file")
+            with (
+                mock.patch.object(stage, "assert_managed_path"),
+                mock.patch.object(stage, "assert_runtime_safe"),
+                mock.patch.object(stage.subprocess, "run") as run,
+            ):
+                record = stage.download_nih_candidate(download_dir, spec, "captured-head")
+            run.assert_not_called()
+            self.assertEqual(hashlib.sha256(payload).hexdigest(), record["sha256"])
+
+    def test_single_pass_archive_validation_accepts_good_and_rejects_gzip_corruption(self) -> None:
+        raw_tar = io.BytesIO()
+        with tarfile.open(fileobj=raw_tar, mode="w") as archive:
+            content = b"png-fixture" * 100
+            member = tarfile.TarInfo("images/example.png")
+            member.size = len(content)
+            archive.addfile(member, io.BytesIO(content))
+        valid = gzip.compress(raw_tar.getvalue())
+        corrupt_crc = valid[:-8] + bytes([valid[-8] ^ 0x01]) + valid[-7:]
+        missing_trailer = valid[:-8]
+        truncated_deflate = valid[:-20] + valid[-8:]
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            good = root / "good.tar.gz"
+            good.write_bytes(valid)
+            with (
+                mock.patch.object(stage, "assert_managed_path"),
+                mock.patch.object(stage, "assert_runtime_safe"),
+            ):
+                self.assertEqual(1, stage.validate_nih_archive_stream(good, "captured-head"))
+
+            for name, payload in (
+                ("corrupt-crc.tar.gz", corrupt_crc),
+                ("missing-trailer.tar.gz", missing_trailer),
+                ("truncated-deflate.tar.gz", truncated_deflate),
+            ):
+                path = root / name
+                path.write_bytes(payload)
+                with (
+                    self.subTest(name=name),
+                    mock.patch.object(stage, "assert_managed_path"),
+                    mock.patch.object(stage, "assert_runtime_safe"),
+                ):
+                    with self.assertRaisesRegex(SystemExit, "invalid gzip stream"):
+                        stage.validate_nih_archive_stream(path, "captured-head")
+
+    def test_archive_validation_passes_one_gzip_stream_to_streaming_tar_reader(self) -> None:
+        raw_tar = io.BytesIO()
+        with tarfile.open(fileobj=raw_tar, mode="w") as archive:
+            content = b"fixture"
+            member = tarfile.TarInfo("images/example.png")
+            member.size = len(content)
+            archive.addfile(member, io.BytesIO(content))
+        with tempfile.TemporaryDirectory() as temp_dir:
+            path = Path(temp_dir) / "archive.tar.gz"
+            path.write_bytes(gzip.compress(raw_tar.getvalue()))
+            real_tar_open = tarfile.open
+            with (
+                mock.patch.object(stage, "assert_managed_path"),
+                mock.patch.object(stage, "assert_runtime_safe"),
+                mock.patch.object(stage.tarfile, "open", wraps=real_tar_open) as tar_open,
+            ):
+                stage.validate_nih_archive_stream(path, "captured-head")
+            self.assertEqual("r|", tar_open.call_args.kwargs["mode"])
+            self.assertIn("fileobj", tar_open.call_args.kwargs)
+
+    def test_interrupted_candidate_bundle_has_no_completion_marker(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            state = root / "state"
+            state.mkdir()
+            records = [{"name": "images_001.tar.gz", "sha256": "a" * 64}]
+            receipt = {"source_commit": "captured-head"}
+            with (
+                mock.patch.object(stage, "AUTHORIZED_HOME", root),
+                mock.patch.object(stage, "DATA_ROOT", root),
+                mock.patch.object(stage, "write_json", side_effect=RuntimeError("interrupted")),
+            ):
+                with self.assertRaisesRegex(RuntimeError, "interrupted"):
+                    stage.write_nih_candidate_bundle(records, receipt, "captured-head")
+            bundle = root / stage.NIH_CANDIDATE_BUNDLE
+            self.assertFalse(bundle.exists())
+            self.assertEqual([], list(state.rglob("receipt.json")))
+
+    def test_runtime_failure_immediately_before_bundle_rename_leaves_no_final_receipt(self) -> None:
+        for reason in ("stop sentinel exists", "source commit changed"):
+            with self.subTest(reason=reason), tempfile.TemporaryDirectory() as temp_dir:
+                root = Path(temp_dir)
+                (root / "state").mkdir()
+                records = [{"name": "images_001.tar.gz", "sha256": "a" * 64}]
+                with (
+                    mock.patch.object(stage, "AUTHORIZED_HOME", root),
+                    mock.patch.object(stage, "DATA_ROOT", root),
+                    mock.patch.object(stage, "assert_runtime_safe", side_effect=SystemExit(reason)),
+                ):
+                    with self.assertRaisesRegex(SystemExit, reason):
+                        stage.write_nih_candidate_bundle(
+                            records, {"source_commit": "captured-head"}, "captured-head"
+                        )
+                bundle = root / stage.NIH_CANDIDATE_BUNDLE
+                self.assertFalse(bundle.exists())
+                self.assertFalse((bundle / "receipt.json").exists())
+
     def test_hash_manifest_requires_every_registered_download(self) -> None:
         manifest = b"name\tsha256\nimages_001.tar.gz\t" + b"a" * 64 + b"\n"
         specs = (
@@ -207,6 +356,86 @@ class NihHashTests(unittest.TestCase):
             path.write_bytes(b"tampered")
             with self.assertRaisesRegex(SystemExit, "NIH SHA-256 mismatch"):
                 stage.verify_nih_hash(path, "0" * 64)
+
+    def test_bootstrap_empty_manifest_writes_data_root_candidates_without_publish(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            home = Path(temp_dir)
+            repo = home / "work/concept-flow"
+            data_root = home / "data/concept-flow"
+            (repo / "config").mkdir(parents=True)
+            (data_root / "datasets").mkdir(parents=True)
+            (data_root / "state").mkdir(parents=True)
+            committed_manifest = repo / stage.NIH_HASH_MANIFEST
+            committed_manifest.write_text("name\tsha256\n", encoding="ascii")
+
+            tar_payload = io.BytesIO()
+            with tarfile.open(fileobj=tar_payload, mode="w:gz") as archive:
+                content = b"png-fixture"
+                member = tarfile.TarInfo("images/00000001_000.png")
+                member.size = len(content)
+                archive.addfile(member, io.BytesIO(content))
+            csv_payload = (
+                "Image Index,Finding Labels,Patient ID\n"
+                "00000001_000.png,Effusion,1\n"
+                "00000002_000.png,No Finding,2\n"
+            ).encode()
+            archives = tuple(
+                (
+                    f"images_{index:03d}.tar.gz",
+                    len(tar_payload.getvalue()),
+                    f"https://official/tar-{index:03d}",
+                )
+                for index in range(1, 13)
+            )
+            labels_spec = (
+                "Data_Entry_2017_v2020.csv",
+                len(csv_payload),
+                "https://official/csv",
+            )
+            specs = (*archives, labels_spec)
+            payloads = {name: tar_payload.getvalue() for name, _, _ in archives}
+            payloads[labels_spec[0]] = csv_payload
+
+            def fake_download(download_dir: Path, spec: tuple[str, int, str], head: str) -> dict:
+                name, expected_size, url = spec
+                path = download_dir / name
+                path.write_bytes(payloads[name])
+                return {
+                    "name": name,
+                    "bytes": expected_size,
+                    "sha256": hashlib.sha256(payloads[name]).hexdigest(),
+                    "source": url,
+                }
+
+            with (
+                mock.patch.object(stage, "AUTHORIZED_HOME", home),
+                mock.patch.object(stage, "REPO", repo),
+                mock.patch.object(stage, "DATA_ROOT", data_root),
+                mock.patch.object(stage, "STOP", data_root / "STOP"),
+                mock.patch.object(stage, "NIH_ARCHIVES", archives),
+                mock.patch.object(stage, "NIH_LABELS", labels_spec),
+                mock.patch.object(stage, "NIH_EXPECTED_LABEL_ROWS", 2),
+                mock.patch.object(stage, "validate_nih_source"),
+                mock.patch.object(stage, "assert_runtime_safe"),
+                mock.patch.object(stage, "download_nih_candidate", side_effect=fake_download),
+            ):
+                stage.stage_nih_bootstrap("captured-head")
+
+            candidate_bundle = data_root / stage.NIH_CANDIDATE_BUNDLE
+            candidate_tsv = candidate_bundle / "checksums.tsv"
+            candidate_json = candidate_bundle / "receipt.json"
+            self.assertTrue(candidate_tsv.is_file())
+            self.assertTrue(candidate_json.is_file())
+            with candidate_tsv.open(newline="", encoding="ascii") as stream:
+                rows = list(csv.DictReader(stream, delimiter="\t"))
+            self.assertEqual([spec[0] for spec in specs], [row["name"] for row in rows])
+            self.assertTrue(all(len(row["sha256"]) == 64 for row in rows))
+            receipt = json.loads(candidate_json.read_text(encoding="utf-8"))
+            self.assertEqual("captured-head", receipt["source_commit"])
+            self.assertEqual(12, receipt["validated_tar_archives"])
+            self.assertEqual(2, receipt["validated_label_rows"])
+            self.assertFalse((data_root / "datasets/nih-chestxray14").exists())
+            self.assertEqual("name\tsha256\n", committed_manifest.read_text(encoding="ascii"))
 
 
 if __name__ == "__main__":

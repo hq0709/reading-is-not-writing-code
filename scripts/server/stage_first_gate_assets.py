@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import gzip
 import hashlib
 import io
 import json
@@ -14,6 +15,7 @@ import shutil
 import subprocess
 import tarfile
 import urllib.request
+import zlib
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from contextlib import contextmanager
 from datetime import UTC, datetime
@@ -28,6 +30,8 @@ MIN_FREE_BYTES_AFTER_STAGE = 500 * 1024**3
 STAGE_RESERVE_BYTES = 120 * 1024**3
 LOCK_NAME = ".stage-first-gate-assets.lock"
 NIH_HASH_MANIFEST = "config/nih-chestxray14-sha256.tsv"
+NIH_EXPECTED_LABEL_ROWS = 112_120
+NIH_CANDIDATE_BUNDLE = "state/nih-chestxray14-sha256-candidate"
 
 MODEL_ID = "llava-hf/llava-1.5-7b-hf"
 MODEL_REVISION = "b234b804b114d9e37bb655e11cbbb5f5e971b7a9"
@@ -217,6 +221,50 @@ def write_json(path: Path, payload: dict) -> None:
     os.replace(temp, path)
 
 
+def write_nih_candidate_tsv(path: Path, records: list[dict]) -> None:
+    assert_managed_path(path.parent)
+    assert_managed_path(path)
+    temp = path.with_name(f".{path.name}.tmp-{os.getpid()}")
+    assert_managed_path(temp)
+    with temp.open("w", newline="", encoding="ascii") as stream:
+        writer = csv.DictWriter(stream, fieldnames=("name", "sha256"), delimiter="\t")
+        writer.writeheader()
+        for record in records:
+            writer.writerow({"name": record["name"], "sha256": record["sha256"]})
+    temp.chmod(0o600)
+    os.replace(temp, path)
+
+
+def write_nih_candidate_bundle(
+    records: list[dict], receipt: dict, head: str
+) -> tuple[Path, Path]:
+    """Publish TSV and JSON together by renaming one complete directory."""
+    bundle = DATA_ROOT / NIH_CANDIDATE_BUNDLE
+    state = bundle.parent
+    temp = state / f".{bundle.name}.tmp-{os.getpid()}"
+    for path in (state, bundle, temp):
+        assert_managed_path(path)
+    if bundle.exists():
+        fail(f"NIH checksum candidate bundle already exists: {bundle}")
+    try:
+        os.mkdir(temp, 0o700)
+    except FileExistsError:
+        fail(f"stale NIH checksum candidate temporary bundle requires audit: {temp}")
+    candidate_tsv = temp / "checksums.tsv"
+    candidate_json = temp / "receipt.json"
+    write_nih_candidate_tsv(candidate_tsv, records)
+    payload = {
+        **receipt,
+        "candidate_tsv": os.fspath(bundle / "checksums.tsv"),
+        "candidate_tsv_sha256": sha256(candidate_tsv),
+    }
+    write_json(candidate_json, payload)
+    assert_tree_has_no_symlinks(temp)
+    assert_runtime_safe(head)
+    os.replace(temp, bundle)
+    return bundle / "checksums.tsv", bundle / "receipt.json"
+
+
 def atomic_publish(
     partial: Path,
     final: Path,
@@ -346,16 +394,20 @@ def download_one(
     assert_managed_path(path)
     if path.exists() and path.stat().st_size > expected_size:
         fail(f"oversized partial download: {path}")
-    assert_runtime_safe(head)
-    print(f"downloading {name} ({expected_size / 1024**3:.2f} GiB)", flush=True)
-    subprocess.run(
-        [
-            "curl", "--fail", "--location", "--retry", "5", "--retry-all-errors",
-            "--continue-at", "-", "--silent", "--show-error", "--output", os.fspath(path), url,
-        ],
-        check=True,
-    )
-    assert_runtime_safe(head)
+    existing_size = path.stat().st_size if path.exists() else 0
+    if existing_size < expected_size:
+        assert_runtime_safe(head)
+        print(f"downloading {name} ({expected_size / 1024**3:.2f} GiB)", flush=True)
+        subprocess.run(
+            [
+                "curl", "--fail", "--location", "--retry", "5", "--retry-all-errors",
+                "--continue-at", "-", "--silent", "--show-error", "--output", os.fspath(path), url,
+            ],
+            check=True,
+        )
+        assert_runtime_safe(head)
+    else:
+        print(f"reusing complete verified-size download {name}", flush=True)
     assert_managed_path(path)
     if path.stat().st_size != expected_size:
         fail(f"size mismatch for {name}: {path.stat().st_size} != {expected_size}")
@@ -365,6 +417,92 @@ def download_one(
     result = {"name": name, "bytes": expected_size, "sha256": actual, "source": url}
     print(f"verified download {name} {result['sha256']}", flush=True)
     return result
+
+
+def download_nih_candidate(
+    download_dir: Path,
+    spec: tuple[str, int, str],
+    head: str,
+) -> dict:
+    """Download/resume one fixed official NIH object and measure its SHA-256."""
+    name, expected_size, url = spec
+    assert_managed_path(download_dir)
+    path = download_dir / name
+    assert_managed_path(path)
+    if path.exists() and path.stat().st_size > expected_size:
+        fail(f"oversized partial download: {path}")
+    existing_size = path.stat().st_size if path.exists() else 0
+    if existing_size < expected_size:
+        assert_runtime_safe(head)
+        print(f"bootstrapping checksum for {name} ({expected_size / 1024**3:.2f} GiB)", flush=True)
+        subprocess.run(
+            [
+                "curl", "--fail", "--location", "--retry", "5", "--retry-all-errors",
+                "--continue-at", "-", "--silent", "--show-error", "--output", os.fspath(path), url,
+            ],
+            check=True,
+        )
+        assert_runtime_safe(head)
+    else:
+        print(f"reusing complete candidate download {name}", flush=True)
+    assert_managed_path(path)
+    if path.stat().st_size != expected_size:
+        fail(f"size mismatch for {name}: {path.stat().st_size} != {expected_size}")
+    digest = sha256(path)
+    assert_runtime_safe(head)
+    return {"name": name, "bytes": expected_size, "sha256": digest, "source": url}
+
+
+def validate_nih_archive_stream(path: Path, head: str) -> int:
+    """Validate gzip and tar safety in one streaming decompression pass."""
+    assert_managed_path(path)
+    assert_runtime_safe(head)
+    regular_members = 0
+    try:
+        with gzip.open(path, "rb") as gzip_stream:
+            try:
+                with tarfile.open(fileobj=gzip_stream, mode="r|") as tar_stream:
+                    for member in tar_stream:
+                        member_path = PurePosixPath(member.name)
+                        if (
+                            member_path.is_absolute()
+                            or ".." in member_path.parts
+                            or not (member.isfile() or member.isdir())
+                        ):
+                            fail(f"unsafe archive member in {path.name}: {member.name}")
+                        if not member.isfile():
+                            continue
+                        extracted = tar_stream.extractfile(member)
+                        if extracted is None:
+                            fail(f"unable to stream archive member in {path.name}: {member.name}")
+                        for _ in iter(lambda: extracted.read(8 * 1024 * 1024), b""):
+                            pass
+                        regular_members += 1
+            except tarfile.TarError as error:
+                fail(f"invalid tar stream for {path.name}: {error}")
+            for _ in iter(lambda: gzip_stream.read(8 * 1024 * 1024), b""):
+                pass
+    except (gzip.BadGzipFile, EOFError, OSError, zlib.error) as error:
+        fail(f"invalid gzip stream for {path.name}: {error}")
+    if regular_members == 0:
+        fail(f"NIH archive contains no regular files: {path.name}")
+    assert_runtime_safe(head)
+    return regular_members
+
+
+def validate_nih_labels(path: Path, head: str) -> int:
+    assert_managed_path(path)
+    assert_runtime_safe(head)
+    with path.open(newline="", encoding="utf-8-sig") as stream:
+        reader = csv.DictReader(stream)
+        required = {"Image Index", "Finding Labels", "Patient ID"}
+        if not reader.fieldnames or not required.issubset(reader.fieldnames):
+            fail(f"NIH labels schema mismatch: {reader.fieldnames}")
+        rows = sum(1 for _ in reader)
+    if rows != NIH_EXPECTED_LABEL_ROWS:
+        fail(f"NIH label row count mismatch: {rows} != {NIH_EXPECTED_LABEL_ROWS}")
+    assert_runtime_safe(head)
+    return rows
 
 
 def safe_extract(archive: Path, destination: Path) -> None:
@@ -404,6 +542,71 @@ def validate_nih_source() -> None:
             fail(f"official NIH Box item missing: {name}")
         if item.get("id") != file_id or item.get("itemSize") != size:
             fail(f"official NIH Box metadata changed for {name}")
+
+
+def stage_nih_bootstrap(head: str) -> None:
+    """Create reviewable checksum candidates without publishing the dataset."""
+    final = DATA_ROOT / "datasets/nih-chestxray14"
+    partial = DATA_ROOT / "datasets/.partial-nih-chestxray14"
+    downloads = partial / "downloads"
+    state = DATA_ROOT / "state"
+    candidate_bundle = DATA_ROOT / NIH_CANDIDATE_BUNDLE
+    for path in (
+        final.parent,
+        final,
+        partial,
+        downloads,
+        state,
+        candidate_bundle,
+    ):
+        assert_managed_path(path)
+    if final.exists():
+        fail(f"dataset target already exists: {final}")
+    partial.mkdir(parents=True, exist_ok=True)
+    downloads.mkdir(exist_ok=True)
+    state.mkdir(exist_ok=True)
+    assert_tree_has_no_symlinks(partial)
+    assert_managed_path(state)
+    assert_runtime_safe(head)
+    validate_nih_source()
+    assert_runtime_safe(head)
+
+    specs = (*NIH_ARCHIVES, NIH_LABELS)
+    records = []
+    with ThreadPoolExecutor(max_workers=4) as pool:
+        futures = [pool.submit(download_nih_candidate, downloads, spec, head) for spec in specs]
+        for future in as_completed(futures):
+            records.append(future.result())
+    by_name = {record["name"]: record for record in records}
+    ordered_records = [by_name[name] for name, _, _ in specs]
+    assert_runtime_safe(head)
+    assert_tree_has_no_symlinks(partial)
+
+    member_counts = {}
+    for name, _, _ in NIH_ARCHIVES:
+        member_counts[name] = validate_nih_archive_stream(downloads / name, head)
+    label_rows = validate_nih_labels(downloads / NIH_LABELS[0], head)
+    assert_runtime_safe(head)
+    assert_tree_has_no_symlinks(partial)
+
+    candidate_tsv, _ = write_nih_candidate_bundle(
+        ordered_records,
+        {
+            "asset": "nih-chestxray14-checksum-candidate",
+            "completed_utc": datetime.now(UTC).isoformat(),
+            "official_archive_page": NIH_PAGE,
+            "official_root_page": NIH_ROOT_PAGE,
+            "source_commit": head,
+            "downloads": ordered_records,
+            "validated_tar_archives": len(member_counts),
+            "validated_tar_regular_members": member_counts,
+            "validated_label_rows": label_rows,
+            "published_dataset": False,
+        },
+        head,
+    )
+    assert_runtime_safe(head)
+    print(f"NIH checksum candidate written to {candidate_tsv}", flush=True)
 
 
 def stage_nih(head: str) -> None:
@@ -501,12 +704,14 @@ def stage_nih(head: str) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("asset", choices=("model", "nih", "all"))
+    parser.add_argument("asset", choices=("model", "nih", "nih-bootstrap", "all"))
     args = parser.parse_args()
     with staging_lock():
         head = assert_safe()
         if args.asset in ("model", "all"):
             stage_model(head)
+        if args.asset == "nih-bootstrap":
+            stage_nih_bootstrap(head)
         if args.asset in ("nih", "all"):
             stage_nih(head)
 
