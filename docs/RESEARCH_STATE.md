@@ -16,16 +16,18 @@ Last bootstrap update: 2026-09-02. This file distinguishes scientific state (`PL
 
 ## First hard gate
 
-- Scientific state: `PLANNED`
+- Scientific state: `RUNNING`
 - Gate disposition: `BLOCKED`
 - Measurement: corrected LLaVA vision hook, corrected registered intervention scale, repeated control draws, and bootstrap intervals on the smallest informative registered cell.
 - Supported interpretation: none until a valid immutable run is `OBSERVED`.
 - Unresolved hypothesis: whether peak decodability predicts selective causal use after correcting known measurement faults.
 - Excluded claims: current incomplete D1 runs do not establish either dissociation or alignment.
 - Prerequisite status: the registered LLaVA model and NIH release are staged and verified under `/home/qingchan/data/concept-flow/`; the registered NIH manifest has 26,229 rows at SHA-256 `837ca37acce72cdf1e7c4a43e559a6d34d99edf2eb5c76a8f5e53295e99c6440`. Independent release verification and its pinned read-only review are recorded under `/home/qingchan/data/concept-flow/state/nih-chestxray14-independent-verification-5342b4219127/` and `/home/qingchan/data/concept-flow/state/nih-checksum-review-20260902T171417Z.txt`.
-- Blocker: immutable synthetic validation runs `20260902T173900Z-358463289f6e-hook` and `20260902T174110Z-f893a3140f76-hook` failed before any NIH image entered the model. The first exposed the fixed Transformers module namespace; the second showed that Transformers 5.x's hidden-state recorder was registered before the intervention hook and therefore retained the unmodified layer-22 tensor. The intervention must precede that recorder and pass a new synthetic forward-path proof before measurement dispatch.
+- Hook evidence: immutable run `20260902T174410Z-e2d891947414-hook` proves that `model.vision_tower.encoder.layers.22` fires once and that its registered relative-token perturbation changes both the downstream connector and final logits; its receipt and artifacts are under `/home/qingchan/data/concept-flow/runs/20260902T174410Z-e2d891947414-hook/`.
+- Active measurement: the sole corrected-gate test run is `20260902T174520Z-e2d891947414-firstgate`, dispatched from immutable commit `e2d89194741475c37c7ace272a93d6092de91773`; its receipt is under `/home/qingchan/data/concept-flow/runs/20260902T174520Z-e2d891947414-firstgate/`.
+- Blocker: gate release awaits completion, internal verification, and pinned read-only Claude review of the active measurement. The two pre-hook failures remain indexed only in `docs/EXPERIMENT_REGISTRY.md`.
 - Release condition: model and dataset checks pass, then the registered hook, patient bootstrap, repeated control, intervention sweep, immutable receipt, and pinned read-only Claude review all complete successfully.
-- Next action: push and unit-test the hook-order correction, then rerun the immutable synthetic hook proof; do not dispatch the one-shot test measurement until it passes.
+- Next action: monitor the active immutable run without launching another test measurement; on completion, verify all receipt/artifact checksums and registered thresholds, then request the pinned read-only Claude gate review.
 
 ## Transition rules
 
