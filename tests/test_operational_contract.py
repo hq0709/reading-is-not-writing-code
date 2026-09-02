@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import importlib.util
 import os
 import re
 import subprocess
@@ -145,6 +146,20 @@ class OperationalContractTests(unittest.TestCase):
         self.assertIn('"prompt"', schema)
         for forbidden in ('"model"', '"tools"', '"effort"', '"permission_mode"'):
             self.assertNotIn(forbidden, schema)
+
+    def test_reviewer_disables_auxiliary_model_routes(self) -> None:
+        adapter_path = ROOT / "scripts/server/claude_review_adapter.py"
+        spec = importlib.util.spec_from_file_location("claude_review_adapter", adapter_path)
+        self.assertIsNotNone(spec)
+        self.assertIsNotNone(spec.loader)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        argv = module.review_argv("review evidence")
+        self.assertEqual("pinned-review", argv[argv.index("--name") + 1])
+        self.assertIn("--no-session-persistence", argv)
+        env = module.review_env()
+        self.assertEqual("1", env["CLAUDE_AGENT_SDK_DISABLE_BUILTIN_AGENTS"])
+        self.assertEqual("1", env["CLAUDE_CODE_DISABLE_BACKGROUND_TASKS"])
 
     def test_aris_installer_derives_and_audits_the_approved_capability_set(self) -> None:
         text = (ROOT / "scripts/server/install_aris.sh").read_text(encoding="utf-8")

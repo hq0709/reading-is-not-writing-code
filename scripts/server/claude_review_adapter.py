@@ -58,18 +58,13 @@ def canonical_models(payload: Any) -> set[str]:
     return found
 
 
-def run_review(prompt: str) -> str:
-    aris = HOME / "aris_repo"
-    if Path.home() != HOME or not all(inside_home(path) for path in (REPO, CLAUDE, aris)):
-        raise RuntimeError("reviewer paths are not installed below the authorized home")
-    if subprocess.check_output(["git", "-C", os.fspath(aris), "rev-parse", "HEAD"], text=True).strip() != ARIS_SHA:
-        raise RuntimeError("review refused: ARIS pin mismatch")
-    before = git_fingerprint()
-    if before["status"]:
-        raise RuntimeError("review refused: checkout is dirty")
-    argv = [
+def review_argv(prompt: str) -> list[str]:
+    return [
         os.fspath(CLAUDE),
         "-p",
+        "--name",
+        "pinned-review",
+        "--no-session-persistence",
         "--model",
         MODEL,
         "--effort",
@@ -85,6 +80,27 @@ def run_review(prompt: str) -> str:
         "json",
         prompt,
     ]
+
+
+def review_env() -> dict[str, str]:
+    return {
+        "CLAUDE_REVIEW_MODEL": MODEL,
+        "CLAUDE_CODE_EFFORT_LEVEL": "medium",
+        "CLAUDE_AGENT_SDK_DISABLE_BUILTIN_AGENTS": "1",
+        "CLAUDE_CODE_DISABLE_BACKGROUND_TASKS": "1",
+    }
+
+
+def run_review(prompt: str) -> str:
+    aris = HOME / "aris_repo"
+    if Path.home() != HOME or not all(inside_home(path) for path in (REPO, CLAUDE, aris)):
+        raise RuntimeError("reviewer paths are not installed below the authorized home")
+    if subprocess.check_output(["git", "-C", os.fspath(aris), "rev-parse", "HEAD"], text=True).strip() != ARIS_SHA:
+        raise RuntimeError("review refused: ARIS pin mismatch")
+    before = git_fingerprint()
+    if before["status"]:
+        raise RuntimeError("review refused: checkout is dirty")
+    argv = review_argv(prompt)
     completed = subprocess.run(
         argv,
         cwd=REPO,
@@ -92,7 +108,7 @@ def run_review(prompt: str) -> str:
         capture_output=True,
         timeout=1800,
         check=False,
-        env={**os.environ, "CLAUDE_REVIEW_MODEL": MODEL, "CLAUDE_CODE_EFFORT_LEVEL": "medium"},
+        env={**os.environ, **review_env()},
     )
     after = git_fingerprint()
     try:
@@ -114,6 +130,7 @@ def run_review(prompt: str) -> str:
         "wrapperSha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
         "arisFullSha": ARIS_SHA,
         "argvWithoutPrompt": argv[:-1],
+        "environmentPins": review_env(),
         "exitCode": completed.returncode,
         "valid": valid,
     }
