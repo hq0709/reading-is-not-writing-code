@@ -25,14 +25,14 @@ Updated: 2026-09-02. Scientific state uses `PLANNED`, `RUNNING`, `FAILED`, and `
 
 ## Second hard gate: `llava-edema-vislast-reltoken`
 
-- Run: immutable run `20260902T221534Z-110b84618d1b-edema` is executing the fixed Edema protocol from pushed commit `110b84618d1bcfe23d5e3687cf0ff9e2a5f789c2` on GPU 0. It reuses the accepted prompt-independent `vis.last` activation artifact and the same 200 held-out intervention rows from `20260902T191411Z-ffd523c464c8-f99e2f39`.
-- Observation: the probe completed with AUROC `0.8009` (95% patient-bootstrap CI `0.7648–0.8329`) and selectivity `0.1360` (95% CI `0.0994–0.1693`). The paired Edema-minus-Effusion selectivity was `0.0221` (95% CI `-0.0175–0.0590`). The causal sweep is running.
-- Scientific state: `RUNNING`.
-- Gate decision: preflight and immutable dispatch passed; the causal threshold and hard-gate review are pending terminal intervention evidence.
+- Run: immutable run `20260902T221534Z-110b84618d1b-edema` completed the fixed Edema protocol from commit `110b84618d1bcfe23d5e3687cf0ff9e2a5f789c2` on one A100 in 1,823 seconds, reusing the accepted prompt-independent `vis.last` activation artifact and the first gate's 200 held-out intervention rows.
+- Observation: Edema AUROC was `0.8009` (95% patient-bootstrap CI `0.7648–0.8329`) and selectivity was `0.1360` (95% CI `0.0994–0.1693`). Its point selectivity exceeded Effusion by `0.0221`, with a paired CI of `-0.0175–0.0590`. The maximum concept-consistent behavioural change was `0.0659` at alpha `-1`, within the same-alpha random interval `-0.1304–0.1470` and below the maximum absolute sham effect `0.0913`; `selective_cell=false`. Spearman rho over `[-0.5,0.5]` was `-0.4286`. This is the registered descriptive rank-discordant pair, with uncertainty spanning the selectivity ordering.
+- Scientific state: `OBSERVED`.
+- Gate decision: `PASS`; terminal checksums passed, deterministic replay was byte-identical, and the pinned read-only Claude review returned `PASS` with no required actions.
 - Gate disposition: `READY`.
-- Evidence: `/home/qingchan/data/concept-flow/runs/20260902T221534Z-110b84618d1b-edema/`; source activation receipt `/home/qingchan/data/concept-flow/runs/20260902T191411Z-ffd523c464c8-f99e2f39/`.
-- Next step: does Edema's stronger controlled decoding at `vis.last` produce selective causal influence? Monitor the immutable causal sweep, validate its terminal receipt, and request the pinned read-only Claude review.
-- Writer ownership: server Codex and the immutable runner during evidence generation.
+- Evidence: run receipt `/home/qingchan/data/concept-flow/runs/20260902T221534Z-110b84618d1b-edema/`; internal replay `/home/qingchan/data/concept-flow/state/edema-gate-internal-validation-20260902T224700Z/intervention-summary.json`; reviewer receipt `/home/qingchan/.codex/state/claude-review-concept-flow/review-20260902T224851552731Z.json`; review record `docs/reviews/llava-edema-vislast-reltoken.md`.
+- Next step: which prospectively registered architecture/concept cell can determine whether the two-cell LLaVA pattern generalises? Register its fixed protocol, multiplicity handling, gate threshold, and immutable dispatch payload before launch.
+- Writer ownership: server Codex owns this terminal checkpoint; no experiment process is active.
 
 ## Transition rules
 
