@@ -2,7 +2,7 @@
 set -euo pipefail
 
 readonly AUTHORIZED_HOME=/home/qingchan
-repo_root=$(git rev-parse --show-toplevel)
+repo_root=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 cd "$repo_root"
 set -a; source config/autoresearch.env; set +a
 fail() { echo "server run refused: $*" >&2; exit 64; }
