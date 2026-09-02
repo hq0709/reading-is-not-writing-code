@@ -1,0 +1,36 @@
+[project]
+name = "concept-flow"
+version = "0.1.0"
+description = "Reproducible experiments for tracing visual concepts through multimodal models"
+readme = "README.md"
+requires-python = ">=3.12,<3.14"
+dependencies = [
+  "torch==2.7.0",
+  "transformers>=4.51",
+  "accelerate>=1.0",
+  "numpy>=1.26",
+  "scipy>=1.11",
+  "scikit-learn>=1.4",
+  "pandas>=2.0",
+  "matplotlib>=3.8",
+  "pillow>=10.0",
+  "tqdm>=4.66",
+]
+
+[dependency-groups]
+dev = [
+  "pytest>=8.3,<9",
+  "ruff>=0.11,<1",
+]
+
+[tool.uv.sources]
+torch = { index = "pytorch-cu126" }
+
+[[tool.uv.index]]
+name = "pytorch-cu126"
+url = "https://download.pytorch.org/whl/cu126"
+explicit = true
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100

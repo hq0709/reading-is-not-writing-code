@@ -1,6 +1,13 @@
 __pycache__/
 *.pyc
 *.bak
+.coverage
+.mypy_cache/
+.uv-cache/
+build/
+dist/
+htmlcov/
+*.egg-info/
 .ipynb_checkpoints/
 .env
 .env.local

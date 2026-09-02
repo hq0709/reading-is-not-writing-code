@@ -5,8 +5,7 @@
 #   nohup setsid bash src/probe_isic_chain.sh > runs/probe_isic.log 2>&1 < /dev/null &
 
 cd "$(dirname "${BASH_SOURCE[0]}")/.." || exit 1
-eval "$(conda shell.bash hook)"
-conda activate base
+source "$PWD/scripts/server/activate_env.sh" || exit 1
 export PYTHONUNBUFFERED=1
 
 ARCHS="${ARCHS:-lingshu7b qwen7b llavamed7b llava15_7b internvl3_8b}"

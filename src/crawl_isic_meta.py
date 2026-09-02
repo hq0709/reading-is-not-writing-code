@@ -7,8 +7,8 @@ is ignored by this endpoint, so filtering has to be done here.
 
 Resumable: the next cursor is written beside the output after every page, so an interruption costs one page.
 """
-from __future__ import os
-import annotations
+from __future__ import annotations
+
 import json, os, sys, time, urllib.request, urllib.error
 
 OUT = "data/isic/images.jsonl"

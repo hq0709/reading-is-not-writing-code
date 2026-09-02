@@ -2,7 +2,7 @@
 # D0 for every model: the AUROC of the model's own answer, against the same labels the probes use.
 # One model per card; inference only, so it co-exists with whatever else is on the box.
 cd "$(dirname "${BASH_SOURCE[0]}")/.." || exit 1
-eval "$(conda shell.bash hook)"; conda activate base
+source "$PWD/scripts/server/activate_env.sh" || exit 1
 export HF_HOME=${HF_HOME:-$HOME/.cache/huggingface} PYTHONUNBUFFERED=1 TOKENIZERS_PARALLELISM=false
 N="${N:-1000}"
 i=0

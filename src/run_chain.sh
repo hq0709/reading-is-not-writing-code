@@ -13,8 +13,7 @@ set -uo pipefail
 GPUS="${1:-4,5,6}"
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
 ROOT="$PWD"
-eval "$(conda shell.bash hook)"
-conda activate base
+source "$PWD/scripts/server/activate_env.sh" || exit 1
 export HF_HOME=${HF_HOME:-$HOME/.cache/huggingface}
 export TOKENIZERS_PARALLELISM=false
 

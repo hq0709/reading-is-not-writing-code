@@ -1,0 +1,6 @@
+# Minimal upstream groups. Resolve and audit their dependencies at the pinned ARIS SHA.
+lit-search
+ideation
+review-loop
+experiments
+paper-core

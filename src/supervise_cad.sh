@@ -8,8 +8,7 @@
 #   nohup setsid bash src/supervise_cad.sh > runs/supervise_cad.log 2>&1 < /dev/null &
 
 cd "$(dirname "${BASH_SOURCE[0]}")/.." || exit 1
-eval "$(conda shell.bash hook)"
-conda activate base
+source "$PWD/scripts/server/activate_env.sh" || exit 1
 export HF_HOME=${HF_HOME:-$HOME/.cache/huggingface} PYTHONUNBUFFERED=1 TOKENIZERS_PARALLELISM=false
 export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 

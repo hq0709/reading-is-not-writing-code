@@ -15,7 +15,7 @@ worktree_path: "E:/projects/GearShift"
 
 # 本地 Codex 与远程 Auto Research 服务器配置手册
 
-本手册可以独立完成基础设施配置；与[《可复用 Auto Research 启动契约与首轮 Prompt》](./autoresearch-bootstrap-contract.md)一起分发时，后者补充“研究应如何进行”。复制到新项目后可以删除本文件顶部仅用于临时 handoff 检索的 `ce-handoff` frontmatter。
+本手册可以独立完成基础设施配置；完整新项目包还包括[《精简版 Auto Research 启动契约》](./autoresearch-bootstrap-contract.md)和[《研究写作与 AutoResearch 记录契约》](./research-writing-recording-contract.md)。三份文档分别负责启动、基础设施、研究写作与记录，互不复制正文。复制到新项目后可以删除本文件顶部仅用于临时 handoff 检索的 `ce-handoff` frontmatter。
 
 目标状态：本地电脑可以关机；服务器上的 Codex + ARIS 和长实验继续运行。两端不共享工作目录，不产生两份互相不知道的源码。
 
@@ -838,10 +838,10 @@ Git/reviewer/login 是否健康
 
 ## 17. 新项目配置 Agent Prompt
 
-把本手册与《Auto Research 启动契约》一起交给新项目的本地 Codex：
+把三份契约一起交给新项目的本地 Codex：
 
 ```text
-请依据附带的《Auto Research 启动契约》和《本地 Codex 与远程 Auto Research 服务器配置手册》，把当前项目配置成本地编辑监督、GitHub 唯一源码同步、远程服务器常驻 Codex+ARIS 和独立长实验的拓扑。
+请依据附带的《精简版 Auto Research 启动契约》《研究写作与 AutoResearch 记录契约》和《本地 Codex 与远程 Auto Research 服务器配置手册》，把当前项目配置成本地编辑监督、GitHub 唯一源码同步、远程服务器常驻 Codex+ARIS 和独立长实验的拓扑。
 
 先读取现有仓库并填写所有项目变量。时效性内容只查官方当前文档：Codex 查 OpenAI 官方文档，Claude Code 查 Anthropic 官方文档，ARIS 查 wanshuiyin 官方仓库，GitHub SSH/deploy key 查 GitHub Docs。固定实际版本和完整 ARIS SHA。
 

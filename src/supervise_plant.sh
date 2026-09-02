@@ -8,8 +8,7 @@
 #   nohup setsid bash src/supervise_plant.sh > runs/supervise_plant.log 2>&1 < /dev/null &
 
 cd "$(dirname "${BASH_SOURCE[0]}")/.." || exit 1
-eval "$(conda shell.bash hook)"
-conda activate base
+source "$PWD/scripts/server/activate_env.sh" || exit 1
 export HF_HOME=${HF_HOME:-$HOME/.cache/huggingface} PYTHONUNBUFFERED=1 TOKENIZERS_PARALLELISM=false
 
 GPUS="${GPUS:-0 1 2 3 4 5 6 7}"

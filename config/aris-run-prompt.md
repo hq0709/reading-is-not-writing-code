@@ -1,0 +1,5 @@
+Read `docs/RESEARCH_WRITING_AND_RECORDING.md`, `docs/REMOTE_RESEARCH_OPERATIONS.md`, `docs/RESEARCH_PLAN.md`, `docs/RESEARCH_STATE.md`, and `docs/EXPERIMENT_REGISTRY.md`, then continue from the first unfinished hard gate. Before work, verify the clean pushed SHA, fixed environment, pinned Codex profile, ARIS SHA, reviewer receipt, data paths, budgets, free disk, and stop sentinel. Fail closed on any mismatch.
+
+Use only the registered method, metrics, data protocol, and allowed optimisations in `docs/RESEARCH_PLAN.md`. Run every experiment from an immutable commit snapshot and preserve complete receipts. Keep scientific state and gate disposition separate. Do not rescue a headline by changing a metric, dose, locus, baseline, or method identity.
+
+At each hard gate, verify internally and then request the configured pinned Claude read-only review. If reviewer identity or read-only evidence fails, mark the gate unavailable; do not substitute Codex self-review. Stop launching new work when a budget, disk threshold, failure threshold, or stop sentinel triggers.

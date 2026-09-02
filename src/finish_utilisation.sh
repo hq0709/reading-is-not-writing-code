@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Wait for the untrained-floor extractions, probe them, then rebuild the utilisation table and figure.
 cd "$(dirname "${BASH_SOURCE[0]}")/.." || exit 1
-eval "$(conda shell.bash hook)"; conda activate base
+source "$PWD/scripts/server/activate_env.sh" || exit 1
 export PYTHONUNBUFFERED=1
 CONC="Effusion,Cardiomegaly,Pneumothorax,Edema,Atelectasis,Consolidation,Infiltration,Mass,Nodule"
 
