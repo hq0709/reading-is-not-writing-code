@@ -131,20 +131,24 @@ def verify_inputs(manifest: Path, dataset_receipt: Path, model_root: Path, out: 
 def hook_implementation_hashes() -> dict[str, str]:
     """Identify only code and registered values that can change the synthetic hook observation."""
     try:
+        from .gpu_env import bind_gpu
         from .intervene import Steerer
-        from .loci import as_hidden, loci_for
+        from .loci import Locus, as_hidden, loci_for
         from .registry import REGISTRY
         from .smoke_extract import synthetic_cxr
     except ImportError:
+        from gpu_env import bind_gpu
         from intervene import Steerer
-        from loci import as_hidden, loci_for
+        from loci import Locus, as_hidden, loci_for
         from registry import REGISTRY
         from smoke_extract import synthetic_cxr
 
     arch = REGISTRY["llava15_7b"]
     sources = {
         "verify_hook": inspect.getsource(verify_hook),
+        "bind_gpu": inspect.getsource(bind_gpu),
         "Steerer": inspect.getsource(Steerer),
+        "Locus": inspect.getsource(Locus),
         "as_hidden": inspect.getsource(as_hidden),
         "loci_for": inspect.getsource(loci_for),
         "synthetic_cxr": inspect.getsource(synthetic_cxr),
@@ -190,7 +194,12 @@ def validate_hook_receipt(hook_path: Path, input_path: Path) -> None:
 
 def verify_hook(model_root: Path, input_path: Path, gpu: int, out: Path) -> None:
     """Prove that the registered block fires and changes its downstream connector on a synthetic image."""
-    os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu)
+    try:
+        from .gpu_env import bind_gpu
+    except ImportError:
+        from gpu_env import bind_gpu
+
+    bind_gpu(gpu)
     import torch
     from transformers import AutoConfig, AutoModelForImageTextToText, AutoProcessor
 
@@ -424,8 +433,9 @@ def run_probe(acts_dir: Path, manifest: Path, out_dir: Path, n_boot: int = 2000)
         probe_seed=np.asarray(0, dtype=np.int64),
     )
     directions_sha256 = sha256(directions_path)
+    bootstrap_path = out_dir / "probe_scores_and_bootstrap.npz"
     np.savez_compressed(
-        out_dir / "probe_scores_and_bootstrap.npz",
+        bootstrap_path,
         test_row_id=np.array([ids[index] for index in np.flatnonzero(test)], dtype=object),
         effusion_label=labels[test],
         real_scores=real_scores,
@@ -451,6 +461,7 @@ def run_probe(acts_dir: Path, manifest: Path, out_dir: Path, n_boot: int = 2000)
             "probe_seed": 0,
             "directions": os.fspath(directions_path),
             "directions_sha256": directions_sha256,
+            "bootstrap_sha256": sha256(bootstrap_path),
             "direction_names": direction_names,
             "type_columns": ["view_AP", "sex_M", "age"],
             "control_seeds": list(range(20)),
@@ -590,7 +601,8 @@ def summarize_intervention_rows(
 
 def summarize_intervention(
     csv_path: Path, meta_path: Path, input_path: Path, hook_path: Path,
-    extract_meta_path: Path, probe_path: Path, directions_path: Path, done_path: Path, out: Path,
+    extract_meta_path: Path, probe_path: Path, bootstrap_path: Path,
+    directions_path: Path, done_path: Path, out: Path,
 ) -> None:
     rows = list(csv.DictReader(csv_path.open(newline="", encoding="utf-8")))
     meta = json.loads(meta_path.read_text(encoding="utf-8"))
@@ -621,11 +633,37 @@ def summarize_intervention(
         "arch": "llava15_7b", "concept": "Effusion", "locus": "vis.last",
         "projection_dim": 512, "projection_seed": 0, "C": 1.0, "probe_seed": 0,
         "control_seeds": list(range(20)), "bootstrap_resamples": 2000,
-        "bootstrap_unit": "patient", "direction_names": ["Effusion", *UNRELATED_CONCEPTS],
+        "bootstrap_seed": 20260827, "bootstrap_unit": "patient",
+        "direction_names": ["Effusion", *UNRELATED_CONCEPTS],
     }
     for key, value in expected_probe.items():
         if probe.get(key) != value:
             raise ValueError(f"probe contract mismatch for {key}")
+    bootstrap_hash = sha256(bootstrap_path)
+    if probe.get("bootstrap_sha256") != bootstrap_hash:
+        raise ValueError("probe bootstrap evidence hash mismatch")
+    with np.load(bootstrap_path, allow_pickle=True) as bootstrap:
+        expected_arrays = {
+            "test_row_id", "effusion_label", "real_scores", "control_scores", "control_labels",
+            "real_bootstrap", "mean_control_bootstrap", "selectivity_bootstrap",
+        }
+        if set(bootstrap.files) != expected_arrays:
+            raise ValueError("probe bootstrap evidence inventory mismatch")
+        n_test = probe.get("n_test")
+        if not isinstance(n_test, int) or n_test <= 0:
+            raise ValueError("probe test count is invalid")
+        if (
+            bootstrap["test_row_id"].shape != (n_test,)
+            or len(set(bootstrap["test_row_id"].tolist())) != n_test
+            or bootstrap["effusion_label"].shape != (n_test,)
+            or bootstrap["real_scores"].shape != (n_test,)
+            or bootstrap["control_scores"].shape != (20, n_test)
+            or bootstrap["control_labels"].shape != (20, n_test)
+            or bootstrap["real_bootstrap"].shape != (2000,)
+            or bootstrap["mean_control_bootstrap"].shape != (2000,)
+            or bootstrap["selectivity_bootstrap"].shape != (2000,)
+        ):
+            raise ValueError("probe bootstrap evidence shape mismatch")
     directions_hash = sha256(directions_path)
     if meta.get("directions_sha256") != directions_hash or probe.get("directions_sha256") != directions_hash:
         raise ValueError("intervention did not use the registered probe direction bundle")
@@ -652,6 +690,7 @@ def summarize_intervention(
         "hook_verification_sha256": sha256(hook_path),
         "extraction_meta_sha256": sha256(extract_meta_path),
         "probe_sha256": sha256(probe_path),
+        "probe_bootstrap_sha256": bootstrap_hash,
         "directions_sha256": directions_hash,
         "intervention_csv_sha256": sha256(csv_path),
         "intervention_meta_sha256": sha256(meta_path),
@@ -688,6 +727,7 @@ def main() -> None:
     summary.add_argument("--hook-verification", type=Path, required=True)
     summary.add_argument("--extract-meta", type=Path, required=True)
     summary.add_argument("--probe", type=Path, required=True)
+    summary.add_argument("--bootstrap", type=Path, required=True)
     summary.add_argument("--directions", type=Path, required=True)
     summary.add_argument("--done", type=Path, required=True)
     summary.add_argument("--out", type=Path, required=True)
@@ -703,7 +743,7 @@ def main() -> None:
     else:
         summarize_intervention(
             args.csv, args.meta, args.input_verification, args.hook_verification,
-            args.extract_meta, args.probe, args.directions, args.done, args.out,
+            args.extract_meta, args.probe, args.bootstrap, args.directions, args.done, args.out,
         )
 
 

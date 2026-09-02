@@ -42,6 +42,11 @@ import os
 import sys
 import time
 
+try:
+    from .gpu_env import bind_gpu
+except ImportError:
+    from gpu_env import bind_gpu
+
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import numpy as np
@@ -136,7 +141,7 @@ def main():
     args = ap.parse_args()
 
     os.environ.setdefault("HF_HOME", os.environ.get("HF_HOME", os.path.expanduser("~/.cache/huggingface")))
-    os.environ["CUDA_VISIBLE_DEVICES"] = str(args.gpu)
+    bind_gpu(args.gpu)
     os.makedirs(args.out, exist_ok=True)
     rng = np.random.default_rng(args.seed)
     dev = "cuda:0"

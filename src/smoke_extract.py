@@ -17,6 +17,10 @@ import numpy as np
 import torch
 from PIL import Image
 
+try:
+    from .gpu_env import bind_gpu
+except ImportError:
+    from gpu_env import bind_gpu
 from loci import ActivationCache, find_image_token_id, qwen_loci
 
 DEFAULT_MODEL = "Qwen/Qwen2.5-VL-7B-Instruct"
@@ -46,7 +50,7 @@ def main():
     args = ap.parse_args()
 
     os.environ.setdefault("HF_HOME", os.environ.get("HF_HOME", os.path.expanduser("~/.cache/huggingface")))
-    os.environ["CUDA_VISIBLE_DEVICES"] = str(args.gpu)
+    bind_gpu(args.gpu)
     dev = "cuda:0"
 
     from transformers import AutoConfig, AutoProcessor, AutoModelForImageTextToText

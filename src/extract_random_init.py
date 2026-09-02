@@ -25,11 +25,16 @@ import sys
 import time
 from multiprocessing import Process
 
+try:
+    from .gpu_env import bind_gpu
+except ImportError:
+    from gpu_env import bind_gpu
+
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 
 def worker(shard_id, gpu, rows, args, out_dir):
-    os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu)
+    bind_gpu(gpu)
     os.environ.setdefault("HF_HOME", os.environ.get("HF_HOME", os.path.expanduser("~/.cache/huggingface")))
     import numpy as np
     import torch

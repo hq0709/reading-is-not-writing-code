@@ -97,6 +97,13 @@ class OperationalContractTests(unittest.TestCase):
         self.assertIn("git pull --ff-only", server)
         self.assertIn("new-window", server)
 
+    def test_gpu_id_contract_rejects_numeric_aliases(self) -> None:
+        regex = r"^(0|[1-9][0-9]*)(,(0|[1-9][0-9]*))*$"
+        self.assertIsNone(re.fullmatch(regex, "3,03"))
+        self.assertIsNotNone(re.fullmatch(regex, "0,3"))
+        for relative in ("scripts/server_run.sh", "scripts/server/dispatch_run.sh"):
+            self.assertIn(regex, (ROOT / relative).read_text(encoding="utf-8"))
+
     def test_project_config_has_explicit_identity_and_safety_limits(self) -> None:
         text = (ROOT / "config/autoresearch.env").read_text(encoding="utf-8")
         expected = {

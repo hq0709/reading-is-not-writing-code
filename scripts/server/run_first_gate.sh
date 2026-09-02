@@ -2,21 +2,29 @@
 set -euo pipefail
 
 readonly AUTHORIZED_HOME=/home/qingchan
-mode=${1:?usage: run_first_gate.sh hook|full GPU [HOOK_RECEIPT]}
-gpu=${2:?usage: run_first_gate.sh hook|full GPU [HOOK_RECEIPT]}
-run_dir=${RUN_DIR:?first gate refused: trusted RUN_DIR is missing}
-case "$(realpath -m -- "$run_dir")/" in
-  "$AUTHORIZED_HOME"/*) ;;
-  *) echo "first gate refused: run directory escapes authorized home" >&2; exit 64 ;;
-esac
+mode=${1:?usage: run_first_gate.sh hook|full [HOOK_RECEIPT]}
 case "$mode" in hook|full) ;; *) echo "first gate refused: mode must be hook or full" >&2; exit 64;; esac
-[[ "$gpu" =~ ^[0-9]+$ ]] || { echo "first gate refused: GPU must be numeric" >&2; exit 64; }
+source_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd -P)
+derived_run_dir=$(realpath -- "$source_dir/..")
+run_dir=$(realpath -- "${RUN_DIR:?first gate refused: trusted RUN_DIR is missing}")
+case "$run_dir" in
+  "$AUTHORIZED_HOME"/data/concept-flow/runs/*) ;;
+  *) echo "first gate refused: run directory is outside registered runs" >&2; exit 64 ;;
+esac
+test "$run_dir" = "$derived_run_dir" || {
+  echo "first gate refused: RUN_DIR does not match archived source" >&2
+  exit 64
+}
 grep -Fx 'GPU_COUNT=1' "$run_dir/metadata.env" >/dev/null || {
   echo "first gate refused: immutable receipt must declare exactly one allocated GPU" >&2
   exit 64
 }
+gpu=$(sed -n 's/^GPU_IDS=//p' "$run_dir/metadata.env")
+[[ "$gpu" =~ ^[0-9]+$ ]] || {
+  echo "first gate refused: immutable receipt must declare one concrete GPU ID" >&2
+  exit 64
+}
 
-source_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)
 manifest="$AUTHORIZED_HOME/data/concept-flow/datasets/nih-chestxray14/manifest.csv"
 dataset_receipt="$AUTHORIZED_HOME/data/concept-flow/datasets/nih-chestxray14/asset-receipt.json"
 model_root="$AUTHORIZED_HOME/data/concept-flow/models/huggingface"
@@ -43,19 +51,38 @@ if test "$mode" = hook; then
   exit 0
 fi
 
-hook_receipt=${3:?full mode requires a prior immutable hook-verification.json}
+hook_receipt=${2:?full mode requires a prior immutable hook-verification.json}
 hook_receipt=$(realpath -- "$hook_receipt")
 case "$hook_receipt" in
   "$AUTHORIZED_HOME"/data/concept-flow/runs/*/artifacts/hook-verification.json) ;;
   *) echo "first gate refused: hook receipt is outside immutable runs" >&2; exit 64;;
 esac
 hook_run=${hook_receipt%/artifacts/hook-verification.json}
+verify_receipt_file() {
+  local relative=$1 lines count
+  lines=$(awk -v path="$relative" '$2 == path {print}' "$hook_run/SHA256SUMS")
+  count=$(grep -c . <<<"$lines" || true)
+  test "$count" -eq 1 || {
+    echo "first gate refused: expected one checksum for $relative" >&2
+    exit 64
+  }
+  printf '%s\n' "$lines" | (cd "$hook_run" && sha256sum -c - >/dev/null)
+}
+for relative in ./metadata.env ./command.sh ./command_exit_status ./exit_status ./artifacts/hook-verification.json; do
+  verify_receipt_file "$relative"
+done
+python - "$hook_run/command.sh" <<'PY'
+import shlex, sys
+lines = open(sys.argv[1], encoding="utf-8").read().splitlines()
+if len(lines) != 3 or lines[:2] != ["#!/usr/bin/env bash", "set -euo pipefail"]:
+    raise SystemExit("first gate refused: hook command envelope mismatch")
+tokens = shlex.split(lines[2])
+if tokens != ["exec", "bash", "scripts/server/run_first_gate.sh", "hook"]:
+    raise SystemExit("first gate refused: hook command mismatch")
+PY
 test "$(cat "$hook_run/command_exit_status")" -eq 0
 test "$(cat "$hook_run/exit_status")" -eq 0
 grep -Fx 'GPU_COUNT=1' "$hook_run/metadata.env" >/dev/null
-hook_line=$(grep -F '  ./artifacts/hook-verification.json' "$hook_run/SHA256SUMS")
-test -n "$hook_line"
-printf '%s\n' "$hook_line" | (cd "$hook_run" && sha256sum -c -)
 hook_run_source=$(sed -n 's/^SOURCE_COMMIT=//p' "$hook_run/metadata.env")
 hook_receipt_source=$(python - "$hook_receipt" <<'PY'
 import json, sys
@@ -89,6 +116,7 @@ python "$source_dir/src/first_gate.py" summarize-intervention \
   --input-verification "$artifacts/input-verification.json" \
   --hook-verification "$artifacts/hook-verification.json" \
   --extract-meta "$acts/meta.json" \
-  --probe "$probe/probe.json" --directions "$probe/directions.npz" \
+  --probe "$probe/probe.json" --bootstrap "$probe/probe_scores_and_bootstrap.npz" \
+  --directions "$probe/directions.npz" \
   --done "$intervention/DONE" \
   --out "$artifacts/intervention-summary.json"

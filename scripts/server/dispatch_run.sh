@@ -14,10 +14,10 @@ for path in "$repo_root" "$DATA_ROOT" "$STOP_SENTINEL"; do inside_home "$path" |
 test ! -e "$STOP_SENTINEL" || fail 'stop sentinel exists'
 test -z "$(git status --porcelain --untracked-files=all)" || fail 'source tree is dirty'
 
-run_id=${1:?usage: dispatch_run.sh RUN_ID FULL_SHA PAYLOAD GPU_COUNT}
-requested_sha=${2:?usage: dispatch_run.sh RUN_ID FULL_SHA PAYLOAD GPU_COUNT}
-payload=${3:?usage: dispatch_run.sh RUN_ID FULL_SHA PAYLOAD GPU_COUNT}
-declared_gpu_count=${4:?usage: dispatch_run.sh RUN_ID FULL_SHA PAYLOAD GPU_COUNT}
+run_id=${1:?usage: dispatch_run.sh RUN_ID FULL_SHA PAYLOAD GPU_IDS}
+requested_sha=${2:?usage: dispatch_run.sh RUN_ID FULL_SHA PAYLOAD GPU_IDS}
+payload=${3:?usage: dispatch_run.sh RUN_ID FULL_SHA PAYLOAD GPU_IDS}
+gpu_ids=${4:?usage: dispatch_run.sh RUN_ID FULL_SHA PAYLOAD GPU_IDS}
 [[ "$run_id" =~ ^[A-Za-z0-9._-]{1,128}$ ]] && [[ "$run_id" != .* ]] || fail 'unsafe run id'
 [[ "$requested_sha" =~ ^[0-9a-f]{40}$ ]] || fail 'commit must be a full SHA'
 [[ "$payload" =~ ^[A-Za-z0-9+/=]+$ ]] || fail 'unsafe command payload'
@@ -25,7 +25,24 @@ test "$(git rev-parse HEAD)" = "$requested_sha" || fail 'checkout SHA differs'
 test "$(git rev-parse '@{upstream}')" = "$requested_sha" || fail 'commit is not pushed upstream'
 mapfile -d '' -t command < <(python3 -c 'import base64,json,sys; [sys.stdout.buffer.write(x.encode()+b"\0") for x in json.loads(base64.b64decode(sys.argv[1]))]' "$payload")
 test "${#command[@]}" -gt 0 || fail 'empty decoded command'
-[[ "$declared_gpu_count" =~ ^[0-9]+$ ]] || fail 'GPU count must be a non-negative integer'
+[[ "$gpu_ids" = none || "$gpu_ids" =~ ^(0|[1-9][0-9]*)(,(0|[1-9][0-9]*))*$ ]] || fail 'GPU IDs must use canonical comma-separated integers'
+
+gpu_inventory=$(nvidia-smi -L) || fail 'cannot inventory GPUs'
+gpu_inventory_count=$(grep -c '^GPU ' <<<"$gpu_inventory" || true)
+gpu_names=$(nvidia-smi --query-gpu=name --format=csv,noheader | paste -sd ';' -) || fail 'cannot identify GPUs'
+gpu_count=0
+cuda_visible_devices=
+if test "$gpu_ids" != none; then
+  IFS=, read -r -a requested_gpu_ids <<<"$gpu_ids"
+  declare -A seen_gpu_ids=()
+  for gpu_id in "${requested_gpu_ids[@]}"; do
+    test "$gpu_id" -lt "$gpu_inventory_count" || fail "GPU ID $gpu_id exceeds inventory"
+    test -z "${seen_gpu_ids[$gpu_id]:-}" || fail "duplicate GPU ID $gpu_id"
+    seen_gpu_ids[$gpu_id]=1
+  done
+  gpu_count=${#requested_gpu_ids[@]}
+  cuda_visible_devices=$gpu_ids
+fi
 
 state_dir="$DATA_ROOT/state"
 runs_dir="$DATA_ROOT/runs"
@@ -46,14 +63,12 @@ test "$failure_count" -lt "$MAX_CONSECUTIVE_FAILURES" || fail 'consecutive failu
 run_dir="$runs_dir/$run_id"
 inside_home "$run_dir" || fail 'run path escapes authorized home'
 test ! -e "$run_dir" || fail 'run already exists'
-mkdir -p "$run_dir"
 start_epoch=$(date +%s)
-gpu_inventory_count=$(nvidia-smi -L | wc -l)
-test "$declared_gpu_count" -le "$gpu_inventory_count" || fail 'declared GPU count exceeds inventory'
 abort_signal=none
 command_status=125
 child_pid=
 export SOURCE_COMMIT="$requested_sha"
+export CUDA_VISIBLE_DEVICES="$cuda_visible_devices"
 
 terminate_group() {
   test -n "${child_pid:-}" || return 0
@@ -82,6 +97,7 @@ finalize() {
   printf '%s\n' "$dispatcher_status" >"$run_dir/exit_status"
   (cd "$run_dir" && find . -type f ! -name SHA256SUMS -print0 | sort -z | xargs -0 sha256sum >SHA256SUMS)
 }
+mkdir -p "$run_dir"
 trap finalize EXIT
 trap 'on_signal INT' INT
 trap 'on_signal TERM' TERM
@@ -95,9 +111,10 @@ trap 'on_signal HUP' HUP
   printf 'START_EPOCH=%q\n' "$start_epoch"
   printf 'SOURCE_PATH=%q\n' "$run_dir/source"
   printf 'PYTHON_VERSION=%q\n' "$PYTHON_VERSION"
-  printf 'GPU_COUNT=%q\n' "$declared_gpu_count"
+  printf 'GPU_IDS=%q\n' "$gpu_ids"
+  printf 'GPU_COUNT=%q\n' "$gpu_count"
   printf 'GPU_INVENTORY_COUNT=%q\n' "$gpu_inventory_count"
-  printf 'GPU_NAMES=%q\n' "$(nvidia-smi --query-gpu=name --format=csv,noheader | paste -sd ';' -)"
+  printf 'GPU_NAMES=%q\n' "$gpu_names"
 } >"$run_dir/metadata.env"
 mkdir -p "$run_dir/source"
 git archive "$requested_sha" | tar -x -C "$run_dir/source"

@@ -325,6 +325,33 @@ ln -s /usr/bin/python3 {shlex_quote(wsl_path(python_path))}
         self.assertIn("REVIEWER_RECEIPT_OK=1", health)
         self.assertTrue(marker.exists(), "receipt validation must use the pinned environment Python")
 
+    def test_first_gate_rejects_run_dir_not_bound_to_its_archived_source(self) -> None:
+        actual_run = self.home / "data/concept-flow/runs/actual"
+        source = actual_run / "source"
+        runner = source / "scripts/server/run_first_gate.sh"
+        runner.parent.mkdir(parents=True)
+        runner.write_text(
+            (ROOT / "scripts/server/run_first_gate.sh")
+            .read_text(encoding="utf-8")
+            .replace("readonly AUTHORIZED_HOME=/home/qingchan", "readonly AUTHORIZED_HOME=${HOME:?}"),
+            encoding="utf-8",
+            newline="\n",
+        )
+        substituted_run = self.home / "data/concept-flow/runs/substituted"
+        substituted_run.mkdir(parents=True)
+        command = (
+            f"HOME={shlex_quote(self.home_wsl)} "
+            f"RUN_DIR={shlex_quote(wsl_path(substituted_run))} "
+            f"bash {shlex_quote(wsl_path(runner))} hook"
+        )
+
+        result = subprocess.run(
+            ["bash", "-lc", command], capture_output=True, text=True, encoding="utf-8", timeout=10
+        )
+
+        self.assertEqual(64, result.returncode, result.stdout + result.stderr)
+        self.assertIn("RUN_DIR does not match archived source", result.stderr)
+
 
 if __name__ == "__main__":
     unittest.main()

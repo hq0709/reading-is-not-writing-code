@@ -20,6 +20,10 @@ import time
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from loci import as_hidden
+try:
+    from .gpu_env import bind_gpu
+except ImportError:
+    from gpu_env import bind_gpu
 from registry import REGISTRY, enabled_archs
 
 
@@ -154,7 +158,7 @@ def main():
 
     os.environ.setdefault("HF_HOME", os.environ.get("HF_HOME", os.path.expanduser("~/.cache/huggingface")))
     gpu = args.gpu if args.gpu >= 0 else free_gpu()
-    os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu)
+    bind_gpu(gpu)
 
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
     from smoke_extract import synthetic_cxr
