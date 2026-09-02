@@ -23,7 +23,8 @@ try {
     $actual = (Get-FileHash -LiteralPath $candidate -Algorithm SHA256).Hash.ToLowerInvariant()
     if ($actual -ne $expected) { throw "Checksum failed: $candidate" }
   }
-  if (-not (Test-Path (Join-Path $partial 'metadata.env'))) { throw 'metadata missing' }
+  if (-not (Test-Path -LiteralPath (Join-Path $partial 'metadata.env') -PathType Leaf)) { throw 'metadata missing' }
+  if (-not (Test-Path -LiteralPath (Join-Path $partial 'exit_status') -PathType Leaf)) { throw 'exit_status missing' }
   Move-Item -LiteralPath $partial -Destination $dest
 } finally {
   if (Test-Path $partial) { Remove-Item -LiteralPath $partial -Recurse -Force }
