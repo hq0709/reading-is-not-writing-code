@@ -81,9 +81,11 @@ class OperationalContractTests(unittest.TestCase):
 
     def test_remote_dispatch_refreshes_git_and_uses_encoded_arguments(self) -> None:
         bash = (ROOT / "scripts/remote_run.sh").read_text(encoding="utf-8")
+        powershell = (ROOT / "scripts/remote_run.ps1").read_text(encoding="utf-8")
         server = (ROOT / "scripts/server_run.sh").read_text(encoding="utf-8")
         self.assertIn("git fetch origin", bash)
         self.assertIn("payload", bash)
+        self.assertIn("Position = 0", powershell)
         self.assertIn("git pull --ff-only", server)
         self.assertIn("new-window", server)
 

@@ -1,4 +1,4 @@
-param([Parameter(ValueFromRemainingArguments = $true)][string[]]$Command)
+param([Parameter(Position = 0, ValueFromRemainingArguments = $true)][string[]]$Command)
 $ErrorActionPreference = 'Stop'
 if (-not $Command -or $Command.Count -eq 0) { throw 'Usage: remote_run.ps1 COMMAND [ARG...]' }
 $root = (git rev-parse --show-toplevel).Trim()
