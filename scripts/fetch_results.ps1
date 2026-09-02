@@ -11,9 +11,18 @@ New-Item -ItemType Directory -Path $partial -Force | Out-Null
 try {
   & scp -P 22003 -r "qingchan@asimov1.cs.uga.edu:/home/qingchan/data/concept-flow/runs/$RunId/." "$partial/"
   if ($LASTEXITCODE -ne 0) { throw 'scp failed' }
-  Push-Location $partial
-  try { & sha256sum -c SHA256SUMS; if ($LASTEXITCODE -ne 0) { throw 'checksum failed' } }
-  finally { Pop-Location }
+  $partialRoot = [IO.Path]::GetFullPath($partial) + [IO.Path]::DirectorySeparatorChar
+  foreach ($line in Get-Content -LiteralPath (Join-Path $partial 'SHA256SUMS')) {
+    if ($line -notmatch '^([0-9a-f]{64})  \./(.+)$') { throw "Invalid checksum line: $line" }
+    $expected = $Matches[1]
+    $candidate = [IO.Path]::GetFullPath((Join-Path $partial $Matches[2]))
+    if (-not $candidate.StartsWith($partialRoot, [StringComparison]::OrdinalIgnoreCase)) {
+      throw "Checksum path escapes partial directory: $line"
+    }
+    if (-not (Test-Path -LiteralPath $candidate -PathType Leaf)) { throw "Missing artifact: $candidate" }
+    $actual = (Get-FileHash -LiteralPath $candidate -Algorithm SHA256).Hash.ToLowerInvariant()
+    if ($actual -ne $expected) { throw "Checksum failed: $candidate" }
+  }
   if (-not (Test-Path (Join-Path $partial 'metadata.env'))) { throw 'metadata missing' }
   Move-Item -LiteralPath $partial -Destination $dest
 } finally {
