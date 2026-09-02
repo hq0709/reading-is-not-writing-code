@@ -3,13 +3,37 @@ from __future__ import annotations
 import unittest
 from pathlib import Path
 
+import numpy as np
+import torch
+
 from src.extract import select_loci
 from src.first_gate import summarize_intervention_rows
+from src.intervene import Steerer
 from src.loci import Locus, loci_for
 from src.registry import REGISTRY
 
 
 class FirstGateContractTests(unittest.TestCase):
+    def test_steerer_precedes_an_existing_hidden_state_recorder(self) -> None:
+        class TinyModel(torch.nn.Module):
+            def __init__(self) -> None:
+                super().__init__()
+                self.layer = torch.nn.Identity()
+
+        model = TinyModel()
+        recorded = []
+        handle = model.layer.register_forward_hook(
+            lambda _module, _inputs, output: recorded.append(output.detach().clone())
+        )
+        steer = Steerer(model, "layer", positions="all", mode="relnorm", global_scale=1.0)
+        steer.vec = np.array([1.0, 0.0], dtype=np.float32)
+        steer.alpha = 1.0
+        with steer:
+            output = model.layer(torch.ones(1, 1, 2))
+        handle.remove()
+        self.assertTrue(torch.equal(torch.tensor([[[2.0, 1.0]]]), output))
+        self.assertTrue(torch.equal(output, recorded[0]))
+
     def test_llava_vislast_resolves_to_loaded_transformers_namespace(self) -> None:
         locus = next(locus for locus in loci_for(REGISTRY["llava15_7b"]) if locus.name == "vis.last")
         self.assertEqual("model.vision_tower.encoder.layers.22", locus.module)

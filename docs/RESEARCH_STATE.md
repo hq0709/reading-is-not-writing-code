@@ -23,9 +23,9 @@ Last bootstrap update: 2026-09-02. This file distinguishes scientific state (`PL
 - Unresolved hypothesis: whether peak decodability predicts selective causal use after correcting known measurement faults.
 - Excluded claims: current incomplete D1 runs do not establish either dissociation or alignment.
 - Prerequisite status: the registered LLaVA model and NIH release are staged and verified under `/home/qingchan/data/concept-flow/`; the registered NIH manifest has 26,229 rows at SHA-256 `837ca37acce72cdf1e7c4a43e559a6d34d99edf2eb5c76a8f5e53295e99c6440`. Independent release verification and its pinned read-only review are recorded under `/home/qingchan/data/concept-flow/state/nih-chestxray14-independent-verification-5342b4219127/` and `/home/qingchan/data/concept-flow/state/nih-checksum-review-20260902T171417Z.txt`.
-- Blocker: immutable synthetic validation run `20260902T173900Z-358463289f6e-hook` failed before data access because the fixed Transformers build exposes the CLIP encoder at `model.vision_tower.encoder.layers`, while the registry retained an older nested namespace. The corrected `encoder.layers.22` path must pass a new synthetic forward-path proof before measurement dispatch.
+- Blocker: immutable synthetic validation runs `20260902T173900Z-358463289f6e-hook` and `20260902T174110Z-f893a3140f76-hook` failed before any NIH image entered the model. The first exposed the fixed Transformers module namespace; the second showed that Transformers 5.x's hidden-state recorder was registered before the intervention hook and therefore retained the unmodified layer-22 tensor. The intervention must precede that recorder and pass a new synthetic forward-path proof before measurement dispatch.
 - Release condition: model and dataset checks pass, then the registered hook, patient bootstrap, repeated control, intervention sweep, immutable receipt, and pinned read-only Claude review all complete successfully.
-- Next action: push the environment-specific module-path correction and rerun the immutable synthetic hook proof; do not dispatch the one-shot test measurement until it passes.
+- Next action: push and unit-test the hook-order correction, then rerun the immutable synthetic hook proof; do not dispatch the one-shot test measurement until it passes.
 
 ## Transition rules
 

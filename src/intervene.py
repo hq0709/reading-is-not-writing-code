@@ -192,7 +192,11 @@ class Steerer:
             else:
                 h = h + self._delta(h)
             return (h,) + out[1:] if tup else h
-        self.handle = self.mod.register_forward_hook(hook)
+        # Transformers 5.x installs a persistent hidden-state recorder on CLIP blocks the first time
+        # output_hidden_states is requested. LLaVA selects vision_feature_layer from that recorder, so
+        # a later ordinary hook changes the next block but not the tensor sent to the connector. Prepend
+        # the intervention so both the recorder and the downstream block observe the steered output.
+        self.handle = self.mod.register_forward_hook(hook, prepend=True)
         return self
 
     def __exit__(self, *exc):
