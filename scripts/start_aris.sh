@@ -57,7 +57,9 @@ tmux -S "$TMUX_SOCKET" has-session -t "$AGENT_TMUX" 2>/dev/null && { echo "agent
 log="$DATA_ROOT/logs/aris-$(date -u +%Y%m%dT%H%M%SZ)-${head:0:12}.log"
 printf -v launch 'exec %q exec --profile %q --dangerously-bypass-approvals-and-sandbox -C %q - < %q >> %q 2>&1' \
   "$HOME/.local/bin/codex" "$CODEX_PROFILE" "$repo_root" "$repo_root/config/aris-run-prompt.md" "$log"
-tmux -S "$TMUX_SOCKET" new-session -d -s "$AGENT_TMUX" -c "$repo_root" "$launch"
+tmux -S "$TMUX_SOCKET" new-session -d -s "$AGENT_TMUX" -c "$repo_root"
+tmux -S "$TMUX_SOCKET" send-keys -t "$AGENT_TMUX" -l "$launch"
+tmux -S "$TMUX_SOCKET" send-keys -t "$AGENT_TMUX" Enter
 if ! tmux -S "$TMUX_SOCKET" list-windows -t "$EXPERIMENT_TMUX" -F '#{window_name}' | grep -Fx supervisor >/dev/null; then
   printf -v supervise 'exec %q' "$repo_root/scripts/server/supervisor.sh"
   tmux -S "$TMUX_SOCKET" new-window -d -t "$EXPERIMENT_TMUX" -n supervisor -c "$repo_root" "$supervise"
