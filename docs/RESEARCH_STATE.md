@@ -5,19 +5,23 @@ Last bootstrap update: 2026-09-02. This file distinguishes scientific state (`PL
 ## Bootstrap gate
 
 - Scientific state: `PLANNED`
-- Gate disposition: `BLOCKED`
-- Goal: complete environment, Git, CLI, reviewer, ARIS, immutable-dispatch and receipt acceptance.
-- Blockers: interactive Codex/Claude authentication and live verification that Claude returns the pinned Fable canonical identity for biomedical review; server-local research datasets/model assets for full experiments. Infrastructure smoke does not require the latter.
-- Evidence: to be filled only with pushed commit SHA and `/home/qingchan/data/concept-flow/...` receipt paths.
+- Gate disposition: `READY`
+- Accepted implementation: pushed commit `958c33ef90223da29f93dc7c14477ca5651c5102`.
+- Environment and capability audit: `/home/qingchan/data/concept-flow/state/aris-audit.env` and `/home/qingchan/data/concept-flow/state/health.env`.
+- Reviewer evidence: fresh-shell receipt `/home/qingchan/.codex/state/claude-review-concept-flow/review-20260902T074946088752Z.json`; detached-tmux receipt `/home/qingchan/.codex/state/claude-review-concept-flow/review-20260902T075031584500Z.json`.
+- Executor-to-reviewer evidence: `/home/qingchan/data/concept-flow/state/codex-mcp-probe-20260902T075246Z.jsonl`.
+- Immutable GPU/fetch evidence: run `20260902T071539Z-7a4e7552d9e1-75d3510c` under `/home/qingchan/data/concept-flow/runs/`.
+- Writer ownership: local writer through this state commit; server Codex becomes writer when the persistent ARIS session starts.
 
 ## First hard gate
 
 - Scientific state: `PLANNED`
-- Gate disposition: `BLOCKED` until bootstrap acceptance and required model/data assets exist.
+- Gate disposition: `READY`
 - Measurement: corrected LLaVA vision hook, corrected registered intervention scale, repeated control draws, and bootstrap intervals on the smallest informative registered cell.
 - Supported interpretation: none until a valid immutable run is `OBSERVED`.
 - Unresolved hypothesis: whether peak decodability predicts selective causal use after correcting known measurement faults.
 - Excluded claims: current incomplete D1 runs do not establish either dissociation or alignment.
+- Next action: stage the registered model and dataset assets below `/home/qingchan/data/concept-flow/`, then dispatch the smallest registered validity cell from a clean pushed commit.
 
 ## Transition rules
 
