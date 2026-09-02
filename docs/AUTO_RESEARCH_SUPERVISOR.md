@@ -139,4 +139,3 @@ Supervisor 只有同时满足以下条件才算正确运行：
 - 已创建一个可查看的 heartbeat automation，并说明初始 cadence 与调频依据；
 - 未在 blocker 未解除时启动科学实验；
 - 已明确接下来只从第一个未完成 hard gate 继续，而不是重跑旧实验或自由搜索 headline。
-
