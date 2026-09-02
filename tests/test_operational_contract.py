@@ -86,6 +86,8 @@ class OperationalContractTests(unittest.TestCase):
         self.assertIn("git fetch origin", bash)
         self.assertIn("payload", bash)
         self.assertIn("Position = 0", powershell)
+        self.assertIn("ValueFromRemainingArguments", powershell)
+        self.assertIn("@($Executable) + @($Arguments)", powershell)
         self.assertIn("git pull --ff-only", server)
         self.assertIn("new-window", server)
 
