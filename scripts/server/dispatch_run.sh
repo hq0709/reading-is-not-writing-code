@@ -14,9 +14,10 @@ for path in "$repo_root" "$DATA_ROOT" "$STOP_SENTINEL"; do inside_home "$path" |
 test ! -e "$STOP_SENTINEL" || fail 'stop sentinel exists'
 test -z "$(git status --porcelain --untracked-files=all)" || fail 'source tree is dirty'
 
-run_id=${1:?usage: dispatch_run.sh RUN_ID FULL_SHA PAYLOAD}
-requested_sha=${2:?usage: dispatch_run.sh RUN_ID FULL_SHA PAYLOAD}
-payload=${3:?usage: dispatch_run.sh RUN_ID FULL_SHA PAYLOAD}
+run_id=${1:?usage: dispatch_run.sh RUN_ID FULL_SHA PAYLOAD GPU_COUNT}
+requested_sha=${2:?usage: dispatch_run.sh RUN_ID FULL_SHA PAYLOAD GPU_COUNT}
+payload=${3:?usage: dispatch_run.sh RUN_ID FULL_SHA PAYLOAD GPU_COUNT}
+declared_gpu_count=${4:?usage: dispatch_run.sh RUN_ID FULL_SHA PAYLOAD GPU_COUNT}
 [[ "$run_id" =~ ^[A-Za-z0-9._-]{1,128}$ ]] && [[ "$run_id" != .* ]] || fail 'unsafe run id'
 [[ "$requested_sha" =~ ^[0-9a-f]{40}$ ]] || fail 'commit must be a full SHA'
 [[ "$payload" =~ ^[A-Za-z0-9+/=]+$ ]] || fail 'unsafe command payload'
@@ -24,6 +25,7 @@ test "$(git rev-parse HEAD)" = "$requested_sha" || fail 'checkout SHA differs'
 test "$(git rev-parse '@{upstream}')" = "$requested_sha" || fail 'commit is not pushed upstream'
 mapfile -d '' -t command < <(python3 -c 'import base64,json,sys; [sys.stdout.buffer.write(x.encode()+b"\0") for x in json.loads(base64.b64decode(sys.argv[1]))]' "$payload")
 test "${#command[@]}" -gt 0 || fail 'empty decoded command'
+[[ "$declared_gpu_count" =~ ^[0-9]+$ ]] || fail 'GPU count must be a non-negative integer'
 
 state_dir="$DATA_ROOT/state"
 runs_dir="$DATA_ROOT/runs"
@@ -46,7 +48,8 @@ inside_home "$run_dir" || fail 'run path escapes authorized home'
 test ! -e "$run_dir" || fail 'run already exists'
 mkdir -p "$run_dir"
 start_epoch=$(date +%s)
-gpu_count=$(nvidia-smi -L | wc -l)
+gpu_inventory_count=$(nvidia-smi -L | wc -l)
+test "$declared_gpu_count" -le "$gpu_inventory_count" || fail 'declared GPU count exceeds inventory'
 abort_signal=none
 command_status=125
 child_pid=
@@ -92,7 +95,8 @@ trap 'on_signal HUP' HUP
   printf 'START_EPOCH=%q\n' "$start_epoch"
   printf 'SOURCE_PATH=%q\n' "$run_dir/source"
   printf 'PYTHON_VERSION=%q\n' "$PYTHON_VERSION"
-  printf 'GPU_COUNT=%q\n' "$gpu_count"
+  printf 'GPU_COUNT=%q\n' "$declared_gpu_count"
+  printf 'GPU_INVENTORY_COUNT=%q\n' "$gpu_inventory_count"
   printf 'GPU_NAMES=%q\n' "$(nvidia-smi --query-gpu=name --format=csv,noheader | paste -sd ';' -)"
 } >"$run_dir/metadata.env"
 mkdir -p "$run_dir/source"

@@ -1,4 +1,5 @@
 param(
+  [Parameter()][ValidateRange(0, 64)][int]$GpuCount = 0,
   [Parameter(Mandatory = $true, Position = 0)][string]$Executable,
   [Parameter(Position = 1, ValueFromRemainingArguments = $true)][string[]]$Arguments
 )
@@ -14,5 +15,5 @@ if ($sha -ne $upstream) { throw 'HEAD is not pushed' }
 $runId = (Get-Date).ToUniversalTime().ToString('yyyyMMddTHHmmssZ') + '-' + $sha.Substring(0,12) + '-' + ([guid]::NewGuid().ToString('N').Substring(0,8))
 $json = ConvertTo-Json -Compress -InputObject $commandArgs
 $payload = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($json))
-& ssh -p 22003 qingchan@asimov1.cs.uga.edu /home/qingchan/work/concept-flow/scripts/server_run.sh $runId $sha $payload
+& ssh -p 22003 qingchan@asimov1.cs.uga.edu /home/qingchan/work/concept-flow/scripts/server_run.sh $runId $sha $payload $GpuCount
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }

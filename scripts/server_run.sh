@@ -11,12 +11,14 @@ test "$HOME" = "$AUTHORIZED_HOME" || fail 'unexpected HOME'
 for path in "$repo_root" "$DATA_ROOT" "$TMUX_SOCKET"; do
   case "$(realpath -m -- "$path")/" in "$AUTHORIZED_HOME"/*) ;; *) fail "$path escapes authorized home";; esac
 done
-run_id=${1:?usage: server_run.sh RUN_ID FULL_SHA PAYLOAD}
-sha=${2:?usage: server_run.sh RUN_ID FULL_SHA PAYLOAD}
-payload=${3:?usage: server_run.sh RUN_ID FULL_SHA PAYLOAD}
+run_id=${1:?usage: server_run.sh RUN_ID FULL_SHA PAYLOAD GPU_COUNT}
+sha=${2:?usage: server_run.sh RUN_ID FULL_SHA PAYLOAD GPU_COUNT}
+payload=${3:?usage: server_run.sh RUN_ID FULL_SHA PAYLOAD GPU_COUNT}
+declared_gpu_count=${4:?usage: server_run.sh RUN_ID FULL_SHA PAYLOAD GPU_COUNT}
 [[ "$run_id" =~ ^[A-Za-z0-9._-]{1,128}$ ]] && [[ "$run_id" != .* ]] || fail 'unsafe run id'
 [[ "$sha" =~ ^[0-9a-f]{40}$ ]] || fail 'unsafe SHA'
 [[ "$payload" =~ ^[A-Za-z0-9+/=]+$ ]] || fail 'unsafe payload'
+[[ "$declared_gpu_count" =~ ^[0-9]+$ ]] || fail 'unsafe GPU count'
 test -z "$(git status --porcelain --untracked-files=all)" || fail 'server tree is dirty'
 git fetch origin
 git pull --ff-only
@@ -27,6 +29,6 @@ if ! tmux -S "$TMUX_SOCKET" has-session -t "$EXPERIMENT_TMUX" 2>/dev/null; then
   tmux -S "$TMUX_SOCKET" new-session -d -s "$EXPERIMENT_TMUX" -n control -c "$SERVER_HOME" 'exec tail -f /dev/null'
 fi
 window="run-${run_id:0:24}"
-printf -v launch 'exec %q %q %q %q' "$repo_root/scripts/server/dispatch_run.sh" "$run_id" "$sha" "$payload"
+printf -v launch 'exec %q %q %q %q %q' "$repo_root/scripts/server/dispatch_run.sh" "$run_id" "$sha" "$payload" "$declared_gpu_count"
 tmux -S "$TMUX_SOCKET" new-window -d -t "$EXPERIMENT_TMUX" -n "$window" -c "$repo_root" "$launch"
 printf '%s\n' "$run_id"

@@ -10,6 +10,7 @@ esac
 
 source_dir="$run_dir/source"
 test -f "$source_dir/pyproject.toml"
+export RUN_DIR="$run_dir"
 cd "$source_dir"
 source scripts/server/activate_env.sh
 exec bash "$run_dir/command.sh"

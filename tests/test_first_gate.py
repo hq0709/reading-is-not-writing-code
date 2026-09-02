@@ -1,14 +1,25 @@
 from __future__ import annotations
 
+import json
 import unittest
 from pathlib import Path
+from tempfile import TemporaryDirectory
 
 import numpy as np
 import torch
 
 from src.extract import select_loci
-from src.first_gate import summarize_intervention_rows
-from src.intervene import Steerer
+from src.first_gate import (
+    EXPECTED_LOCUS,
+    MODEL_ID,
+    MODEL_REVISION,
+    REGISTERED_PROMPT,
+    capacity_direction,
+    hook_implementation_hashes,
+    summarize_intervention_rows,
+    validate_hook_receipt,
+)
+from src.intervene import Steerer, load_registered_directions
 from src.loci import Locus, loci_for
 from src.registry import REGISTRY
 
@@ -52,8 +63,116 @@ class FirstGateContractTests(unittest.TestCase):
             "--n-random 20",
             "--n-eval 200",
             "--eval-split test",
+            '--model-path "$snapshot"',
+            '--directions "$probe/directions.npz"',
+            "--input-verification",
+            "--extract-meta",
+            "--prompt 'Is there a pleural effusion in this chest radiograph? Answer yes or no.'",
         ):
             self.assertIn(token, runner)
+        self.assertIn('run_dir=${RUN_DIR:?', runner)
+        self.assertIn("grep -Fx 'GPU_COUNT=1'", runner)
+        self.assertNotIn("hook|full RUN_DIR GPU", runner)
+
+    def test_capacity_direction_maps_the_registered_probe_back_to_raw_space(self) -> None:
+        projection = np.array([[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]])
+        scale = np.array([2.0, 4.0])
+        coefficient = np.array([4.0, -2.0])
+        expected = projection @ (coefficient / scale)
+        expected /= np.linalg.norm(expected)
+        np.testing.assert_allclose(expected, capacity_direction(projection, scale, coefficient))
+
+    def test_direction_bundle_reconstructs_registered_vectors(self) -> None:
+        rng = np.random.default_rng(0)
+        projection = rng.standard_normal((3, 512)).astype(np.float32)
+        scale = np.linspace(0.5, 2.0, 512)
+        coefficients = rng.standard_normal((6, 512))
+        vectors = np.stack([
+            capacity_direction(projection, scale, coefficient) for coefficient in coefficients
+        ])
+        names = np.asarray(["Effusion", "Atelectasis", "Pneumothorax", "Cardiomegaly", "Mass", "Nodule"])
+        with TemporaryDirectory() as temp:
+            path = Path(temp) / "directions.npz"
+            np.savez_compressed(
+                path, names=names, vectors=vectors, projection=projection, scale=scale,
+                coefficients=coefficients, locus=np.asarray("vis.last"), raw_dim=np.asarray(3),
+                projection_dim=np.asarray(512), projection_seed=np.asarray(0), C=np.asarray(1.0),
+                probe_seed=np.asarray(0),
+            )
+            loaded, digest = load_registered_directions(path, 3, "Effusion")
+        self.assertEqual(set(names), set(loaded))
+        self.assertEqual(64, len(digest))
+
+    def test_direction_bundle_rejects_vectors_unrelated_to_readout(self) -> None:
+        rng = np.random.default_rng(1)
+        projection = rng.standard_normal((3, 512)).astype(np.float32)
+        scale = np.ones(512)
+        coefficients = rng.standard_normal((6, 512))
+        vectors = np.tile(np.array([[1.0, 0.0, 0.0]], dtype=np.float32), (6, 1))
+        names = np.asarray(["Effusion", "Atelectasis", "Pneumothorax", "Cardiomegaly", "Mass", "Nodule"])
+        with TemporaryDirectory() as temp:
+            path = Path(temp) / "directions.npz"
+            np.savez_compressed(
+                path, names=names, vectors=vectors, projection=projection, scale=scale,
+                coefficients=coefficients, locus=np.asarray("vis.last"), raw_dim=np.asarray(3),
+                projection_dim=np.asarray(512), projection_seed=np.asarray(0), C=np.asarray(1.0),
+                probe_seed=np.asarray(0),
+            )
+            with self.assertRaisesRegex(ValueError, "do not match"):
+                load_registered_directions(path, 3, "Effusion")
+
+    def test_gate_reuses_asset_receipts_instead_of_rehashing_model_shards(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        source = (root / "src/first_gate.py").read_text(encoding="utf-8")
+        self.assertNotIn("actual = sha256(path)", source)
+        self.assertIn('"verification_mode": "accepted-asset-receipt"', source)
+        self.assertIn('"alpha_zero_bitwise_noop": True', source)
+
+    def test_hook_identity_tracks_behavior_not_whole_validator_files(self) -> None:
+        identities = hook_implementation_hashes()
+        self.assertIn("verify_hook", identities)
+        self.assertIn("Steerer", identities)
+        self.assertIn("synthetic_cxr", identities)
+        self.assertIn("llava15_7b_registry", identities)
+        self.assertNotIn("first_gate.py", identities)
+        self.assertTrue(all(len(digest) == 64 for digest in identities.values()))
+
+    def test_hook_receipt_rejects_asset_drift(self) -> None:
+        inputs = {
+            "manifest_sha256": "manifest",
+            "dataset_receipt_sha256": "dataset",
+            "model_receipt_sha256": "model",
+        }
+        hook = {
+            "arch": "llava15_7b",
+            "model_id": MODEL_ID,
+            "model_revision": MODEL_REVISION,
+            "locus": "vis.last",
+            "module": EXPECTED_LOCUS,
+            "alpha_zero_bitwise_noop": True,
+            "forward_path_proved": True,
+            "prompt": REGISTERED_PROMPT,
+            "hook_implementation_hashes": hook_implementation_hashes(),
+            **inputs,
+        }
+        with TemporaryDirectory() as temp:
+            input_path = Path(temp) / "input.json"
+            hook_path = Path(temp) / "hook.json"
+            input_path.write_text(json.dumps(inputs), encoding="utf-8")
+            hook_path.write_text(json.dumps(hook), encoding="utf-8")
+            validate_hook_receipt(hook_path, input_path)
+            hook["model_receipt_sha256"] = "different"
+            hook_path.write_text(json.dumps(hook), encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "asset mismatch"):
+                validate_hook_receipt(hook_path, input_path)
+
+    def test_dispatch_receipt_uses_the_declared_gpu_allocation(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        dispatcher = (root / "scripts/server/dispatch_run.sh").read_text(encoding="utf-8")
+        server = (root / "scripts/server_run.sh").read_text(encoding="utf-8")
+        self.assertIn("declared_gpu_count=${4:?", dispatcher)
+        self.assertIn("GPU_INVENTORY_COUNT", dispatcher)
+        self.assertIn('"$declared_gpu_count"', server)
 
     def test_extract_selects_only_the_registered_locus(self) -> None:
         loci = [
@@ -91,7 +210,8 @@ class FirstGateContractTests(unittest.TestCase):
                 add(f"random{index}", alpha, 0.5 + 0.01 * alpha)
         for alpha in control_alphas:
             add("sham", alpha, 0.5 + 0.02 * alpha)
-            add("unrelated_Atelectasis", alpha, 0.5 + 0.03 * alpha)
+            for concept in ("Atelectasis", "Pneumothorax", "Cardiomegaly", "Mass", "Nodule"):
+                add(f"unrelated_{concept}", alpha, 0.5 + 0.03 * alpha)
 
         summary = summarize_intervention_rows(
             rows,
@@ -112,6 +232,25 @@ class FirstGateContractTests(unittest.TestCase):
             {"locus": "vis.last", "direction": "sham", "alpha": "1", "mean_p_yes": "0.5", "n": "200"},
         ]
         with self.assertRaisesRegex(ValueError, "random directions"):
+            summarize_intervention_rows(
+                rows, alphas=[0.0, 1.0], control_alphas=[1.0], n_random=20, n_eval=200
+            )
+
+    def test_intervention_summary_rejects_an_incomplete_unrelated_control_set(self) -> None:
+        rows: list[dict[str, str]] = []
+        for alpha in (0.0, 1.0):
+            rows.append({"locus": "vis.last", "direction": "concept", "alpha": str(alpha),
+                         "mean_p_yes": "0.5", "n": "200"})
+        for index in range(20):
+            rows.append({"locus": "vis.last", "direction": f"random{index}", "alpha": "1.0",
+                         "mean_p_yes": "0.5", "n": "200"})
+        rows.extend([
+            {"locus": "vis.last", "direction": "sham", "alpha": "1.0",
+             "mean_p_yes": "0.5", "n": "200"},
+            {"locus": "vis.last", "direction": "unrelated_Atelectasis", "alpha": "1.0",
+             "mean_p_yes": "0.5", "n": "200"},
+        ])
+        with self.assertRaisesRegex(ValueError, "unrelated directions"):
             summarize_intervention_rows(
                 rows, alphas=[0.0, 1.0], control_alphas=[1.0], n_random=20, n_eval=200
             )

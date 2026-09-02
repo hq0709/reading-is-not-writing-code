@@ -30,6 +30,7 @@ from __future__ import annotations
 import argparse
 import csv
 import glob
+import hashlib
 import json
 import os
 import sys
@@ -48,6 +49,8 @@ from registry import REGISTRY
 
 YES_WORDS = ("yes", "Yes", "YES")
 NO_WORDS = ("no", "No", "NO")
+REGISTERED_UNRELATED = ("Atelectasis", "Pneumothorax", "Cardiomegaly", "Mass", "Nodule")
+REGISTERED_PROMPT = "Is there a pleural effusion in this chest radiograph? Answer yes or no."
 
 
 def load_shards(act_dir):
@@ -67,6 +70,46 @@ def fit_direction(X, y, seed=0):
     clf = LogisticRegression(C=1.0, max_iter=2000, random_state=seed).fit(sc.transform(X), y)
     v = clf.coef_[0] / np.maximum(sc.scale_, 1e-8)
     return v / (np.linalg.norm(v) + 1e-8)
+
+
+def load_registered_directions(path, expected_dim, concept):
+    """Load the capacity-matched probe normals produced by the registered first-gate probe."""
+    with np.load(path, allow_pickle=False) as bundle:
+        required = {
+            "names", "vectors", "projection", "scale", "coefficients", "locus", "raw_dim",
+            "projection_dim", "projection_seed", "C", "probe_seed",
+        }
+        if set(bundle.files) != required:
+            raise ValueError(f"direction bundle fields mismatch: {sorted(bundle.files)}")
+        names = [str(value) for value in bundle["names"]]
+        vectors = np.asarray(bundle["vectors"], dtype=np.float32)
+        projection = np.asarray(bundle["projection"], dtype=np.float64)
+        scale = np.asarray(bundle["scale"], dtype=np.float64)
+        coefficients = np.asarray(bundle["coefficients"], dtype=np.float64)
+        expected_names = [concept, *REGISTERED_UNRELATED]
+        if names != expected_names or str(bundle["locus"]) != "vis.last":
+            raise ValueError("direction bundle identity mismatch")
+        if int(bundle["raw_dim"]) != expected_dim or vectors.shape != (len(names), expected_dim):
+            raise ValueError("direction bundle activation dimension mismatch")
+        if projection.shape != (expected_dim, 512) or scale.shape != (512,):
+            raise ValueError("direction bundle projection or scale shape mismatch")
+        if coefficients.shape != (len(names), 512):
+            raise ValueError("direction bundle coefficient shape mismatch")
+        if int(bundle["projection_dim"]) != 512 or int(bundle["projection_seed"]) != 0:
+            raise ValueError("direction bundle projection contract mismatch")
+        if float(bundle["C"]) != 1.0 or int(bundle["probe_seed"]) != 0:
+            raise ValueError("direction bundle readout contract mismatch")
+    reconstructed = projection @ (coefficients / np.maximum(scale, 1e-8)).T
+    reconstructed /= np.linalg.norm(reconstructed, axis=0, keepdims=True)
+    reconstructed = reconstructed.T.astype(np.float32)
+    if not np.allclose(vectors, reconstructed, rtol=1e-5, atol=1e-6):
+        raise ValueError("direction vectors do not match the registered readout artifacts")
+    norms = np.linalg.norm(vectors, axis=1)
+    if not np.all(np.isfinite(vectors)) or not np.allclose(norms, 1.0, rtol=1e-5, atol=1e-6):
+        raise ValueError("direction bundle vectors are not finite unit normals")
+    with open(path, "rb") as stream:
+        digest = hashlib.file_digest(stream, "sha256").hexdigest()
+    return dict(zip(names, vectors)), digest
 
 
 def yes_margin_batch(logits, tok):
@@ -285,6 +328,12 @@ def main():
                     help="evaluation split; the registered decisive run uses test, smoke runs use validation")
     ap.add_argument("--batch-size", type=int, default=16)
     ap.add_argument("--gpu", type=int, default=6)
+    ap.add_argument("--model-path", default="",
+                    help="verified local model snapshot; required by immutable registered runners")
+    ap.add_argument("--directions", default="",
+                    help="capacity-matched direction bundle emitted by the registered probe")
+    ap.add_argument("--prompt", default="",
+                    help="fixed behavior prompt; the registered runner supplies the preregistered text")
     ap.add_argument("--out", required=True)
     ap.add_argument("--seed", type=int, default=0)
     args = ap.parse_args()
@@ -318,19 +367,27 @@ def main():
 
     from transformers import AutoConfig, AutoModelForImageTextToText, AutoProcessor
     arch = REGISTRY[args.arch]
-    cfg = AutoConfig.from_pretrained(arch.hf_id)
-    proc = AutoProcessor.from_pretrained(arch.hf_id, **arch.processor_kwargs)
-    model = AutoModelForImageTextToText.from_pretrained(arch.hf_id, dtype=torch.bfloat16, device_map=dev).eval()
+    model_source = args.model_path or arch.hf_id
+    local_only = bool(args.model_path)
+    cfg = AutoConfig.from_pretrained(model_source, local_files_only=local_only)
+    proc = AutoProcessor.from_pretrained(
+        model_source, local_files_only=local_only, **arch.processor_kwargs
+    )
+    model = AutoModelForImageTextToText.from_pretrained(
+        model_source, dtype=torch.bfloat16, device_map=dev, local_files_only=local_only
+    ).eval()
     tok = getattr(proc, "tokenizer", proc)
     img_tok = arch.image_token_id or find_image_token_id(proc, cfg)
     loci_all = {lo.name: lo for lo in loci_for(arch)}
 
-    prompt = f"Is there a {args.concept.lower()} in this chest radiograph? Answer yes or no."
+    prompt = args.prompt or (
+        REGISTERED_PROMPT if args.concept == "Effusion"
+        else f"Is there {args.concept.lower()} in this chest radiograph? Answer yes or no."
+    )
     msgs = [{"role": "user", "content": [{"type": "image"}, {"type": "text", "text": prompt}]}]
     text = proc.apply_chat_template(msgs, tokenize=False, add_generation_prompt=True)
 
-    other_concepts = [c for c in ("Atelectasis", "Pneumothorax", "Cardiomegaly", "Mass", "Nodule")
-                      if c != args.concept]
+    other_concepts = [c for c in REGISTERED_UNRELATED if c != args.concept]
     alphas = [float(a) for a in args.alphas.split(",")]
     ctrl_alphas = sorted({float(a) for a in args.control_alphas.split(",") if a.strip()} & set(alphas))
     if not ctrl_alphas:
@@ -344,15 +401,29 @@ def main():
         lo = loci_all[locus_name]
         X = acts[locus_name].astype(np.float32)
         pooled_norm = float(np.median(np.linalg.norm(X, axis=1)))
-        v_c = fit_direction(X[tr], y[tr], args.seed)
+        bundle_sha256 = ""
+        if args.directions:
+            if locus_name != "vis.last":
+                raise ValueError("registered direction bundle is only valid for vis.last")
+            registered, bundle_sha256 = load_registered_directions(
+                args.directions, X.shape[1], args.concept
+            )
+            v_c = registered[args.concept]
+        else:
+            registered = None
+            v_c = fit_direction(X[tr], y[tr], args.seed)
 
         directions = {"concept": v_c}
         for j in range(args.n_random):
             r = rng.standard_normal(X.shape[1]).astype(np.float32)
             directions[f"random{j}"] = r / np.linalg.norm(r)
         for oc in other_concepts:
-            yo = np.array([int(m[oc]) for m in meta])
-            if yo[tr].sum() > 50:
+            if registered is not None:
+                directions[f"unrelated_{oc}"] = registered[oc]
+            else:
+                yo = np.array([int(m[oc]) for m in meta])
+                if yo[tr].sum() <= 50:
+                    continue
                 directions[f"unrelated_{oc}"] = fit_direction(X[tr], yo[tr], args.seed)
         perm = v_c[rng.permutation(len(v_c))]
         directions["sham"] = perm / np.linalg.norm(perm)
@@ -450,12 +521,21 @@ def main():
                "control_alphas": ctrl_alphas,
                "n_random": args.n_random, "n_eval": len(te_idx), "seed": args.seed,
                "eval_split": eval_name, "eval_row_ids": eval_row_ids,
+               "model_source": os.path.realpath(model_source) if local_only else model_source,
+               "model_local_only": local_only,
+               "directions_path": os.path.realpath(args.directions) if args.directions else "",
+               "directions_sha256": bundle_sha256,
+               "prompt": prompt,
+               "source_commit": os.environ.get("SOURCE_COMMIT", "unknown"),
                "statistic": "concept effect must exceed the 95th percentile of random-direction effects"},
               open(os.path.join(args.out, "meta.json"), "w"), indent=1)
     # A completion marker. The CSV is written after every locus so that a crash keeps partial results,
     # which means its existence says nothing about whether the job finished. Only this file does, and the
     # supervisor keys off it.
     done_loci = sorted({r["locus"] for r in rows})
+    requested_loci = sorted({name.strip() for name in args.loci.split(",") if name.strip()})
+    if done_loci != requested_loci:
+        raise RuntimeError(f"intervention incomplete: requested {requested_loci}, completed {done_loci}")
     with open(os.path.join(args.out, "DONE"), "w") as fh:
         fh.write(json.dumps({"loci": done_loci, "rows": len(rows),
                              "finished": time.strftime("%Y-%m-%dT%H:%M:%S")}, indent=1))

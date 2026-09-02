@@ -68,9 +68,15 @@ def worker(shard_id, gpu, rows, args, out_dir):
     arch = REGISTRY[args.arch]
     dev = "cuda:0"
     t0 = time.time()
-    cfg = AutoConfig.from_pretrained(arch.hf_id)
-    proc = AutoProcessor.from_pretrained(arch.hf_id, **arch.processor_kwargs)
-    model = AutoModelForImageTextToText.from_pretrained(arch.hf_id, dtype=torch.bfloat16, device_map=dev)
+    model_source = args.model_path or arch.hf_id
+    local_only = bool(args.model_path)
+    cfg = AutoConfig.from_pretrained(model_source, local_files_only=local_only)
+    proc = AutoProcessor.from_pretrained(
+        model_source, local_files_only=local_only, **arch.processor_kwargs
+    )
+    model = AutoModelForImageTextToText.from_pretrained(
+        model_source, dtype=torch.bfloat16, device_map=dev, local_files_only=local_only
+    )
     model.eval()
     load_s = time.time() - t0
 
@@ -134,6 +140,8 @@ def main():
     ap.add_argument("--batch-size", type=int, default=8)
     ap.add_argument("--loci", default="",
                     help="optional comma-separated registered locus names; empty captures every locus")
+    ap.add_argument("--model-path", default="",
+                    help="verified local model snapshot; required by immutable registered runners")
     ap.add_argument("--limit", type=int, default=0, help="cap rows, for a quick pass")
     ap.add_argument("--prompt", default="Is there a pleural effusion in this chest radiograph? Answer yes or no.")
     args = ap.parse_args()
@@ -158,7 +166,10 @@ def main():
         except OSError:
             sha = "unknown"
     selected = select_loci(loci_for(REGISTRY[args.arch]), args.loci)
-    json.dump({"arch": args.arch, "model": REGISTRY[args.arch].hf_id, "prompt": args.prompt, "n_rows": len(rows), "gpus": gpus,
+    model_source = os.path.realpath(args.model_path) if args.model_path else REGISTRY[args.arch].hf_id
+    json.dump({"arch": args.arch, "model": REGISTRY[args.arch].hf_id,
+               "model_source": model_source, "model_local_only": bool(args.model_path),
+               "prompt": args.prompt, "n_rows": len(rows), "gpus": gpus,
                "batch_size": args.batch_size, "git_sha": sha,
                "loci": [locus.name for locus in selected],
                "pooling": "mean over selected positions, fixed in src/loci.py",
