@@ -1,0 +1,33 @@
+{
+  "audit_skill": "experiment-audit",
+  "verdict": "WARN",
+  "reason_code": "VALID_SINGLE_CELL_TRACKER_STALE_PINNED_REVIEW_PENDING",
+  "summary": "The registered single cell is protocol-valid and numerically reproducible; tracked records required terminal synchronization.",
+  "trace_path": ".aris/traces/experiment-audit/2026-09-02_run01/",
+  "agent_id": "/root/first_gate_integrity_audit",
+  "verdict_id": "/root/first_gate_integrity_audit",
+  "executor_model": "codex-gpt-5.6-sol",
+  "executor_family": "openai",
+  "reviewer_model": "gpt-5.6-sol",
+  "reviewer_family": "openai",
+  "reviewer_reasoning": "ultra",
+  "review_independence": "same-family",
+  "acceptance_status": "provisional",
+  "generated_at": "2026-09-02T21:32:10Z",
+  "date": "2026-09-02",
+  "auditor": "gpt-5.6-sol-ultra",
+  "overall_verdict": "warn",
+  "integrity_status": "warn",
+  "checks": {
+    "gt_provenance": {"status": "pass", "details": "Registered NIH dataset weak labels; no model-generated target."},
+    "score_normalization": {"status": "pass", "details": "Raw AUROC and binary yes/no probability; train-only feature standardization."},
+    "result_existence": {"status": "warn", "details": "All 228 receipt entries and values pass; tracked records were stale at audit time."},
+    "dead_code": {"status": "warn", "details": "Gate-bearing metrics are live; legacy scalar yes_prob is unused."},
+    "scope": {"status": "warn", "details": "One llava15_7b / NIH / Effusion / vis.last cell."},
+    "eval_type": "real_gt probe; real-image causal-response intervention; simulation_only hook preflight"
+  },
+  "claims": [
+    {"id": "first-gate-cell", "impact": "supported with single-cell scope"},
+    {"id": "cross-architecture-primary-claim", "impact": "not yet adjudicated"}
+  ]
+}

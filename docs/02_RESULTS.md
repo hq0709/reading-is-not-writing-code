@@ -182,15 +182,19 @@ comparably rare oedema (2.8%) reaches +0.268 and Nodule is negative on all five 
 | median Spearman rho between decodability and steerability is -0.245, negative in 11 of 14 cells; pooled Fisher-z p=0.050, while raw AUROC against steerability has p=0.74 | descriptive association; the current locus count does not support a ranking claim |
 | causal separability is strictly non-decreasing in 3 of 10 curves | descriptive profile rather than a depth trend |
 
-## Next gate
+## First hard-gate result
 
-Run: `llava-effusion-vislast-reltoken` under the immutable server protocol.
+Run: `llava-effusion-vislast-reltoken` completed under the immutable server protocol from run
+`20260902T191411Z-ffd523c464c8-f99e2f39`.
 
-Observation required: the exact consumed `encoder.layers.22` hook, 2,000 patient bootstraps, control seeds
-0–19 and the token-relative intervention grid on 200 held-out images with 20 random directions.
+Observation: the consumed `encoder.layers.22` representation reaches AUROC 0.7788 and selectivity 0.1139
+(95% patient-bootstrap CI 0.0875–0.1404) against the 20-seed type-to-label controls. The largest
+concept-consistent change in mean `P(yes)` is 0.1470 at alpha -1, above the same-alpha random 95th
+percentile 0.1202 and below the maximum absolute sham effect 0.1546. The response is monotone over
+`[-0.5,0.5]` with Spearman rho 1.0.
 
-Gate decision: the corrected immutable implementation must obtain its exact hook receipt before the
-full probe and intervention run is dispatched.
+Gate decision: `PASS`; the scientific state is `OBSERVED` and the cell is not selective under the
+registered conjunction. The deterministic replay and pinned read-only Claude review passed.
 
-Next: determine whether Effusion at the consumed LLaVA visual locus passes the registered probe and
-intervention controls. Detailed provenance and all failure records remain in `docs/10_RESULTS.md`.
+Next: determine which fully specified cross-cell experiment should test whether decodability rank predicts
+selective causal influence, then register its multiplicity handling and immutable dispatch command.

@@ -271,17 +271,21 @@ Failures are recorded once here and referenced by evidence id.
 | `D3-REFIT-01` | probe direction was refitted 12 times per locus | fit once and reuse the immutable direction artifact |
 | `D3-GATE-01` | six of 15 planted-anchor cells miss the gate: three LLaVA-Med cells have baseline answer probability above 0.92 and three are non-monotone | anchored interpretation uses the nine passing cells |
 
-## 8. Active gate
+## 8. First hard-gate result
 
-Run: `llava-effusion-vislast-reltoken` on immutable server artifacts.
+Run: `llava-effusion-vislast-reltoken` completed in immutable run
+`20260902T191411Z-ffd523c464c8-f99e2f39` from commit `ffd523c464c84417a93c5a6d0a34e5b74e55e76e`.
 
-Observation required: exact layer-22 forward-path capture, a 512-dimensional `C=1`, seed-0 Effusion
-probe, 2,000 patient bootstraps, control seeds 0–19, and the registered token-relative intervention on 200
-held-out images with 20 random directions.
+Observation: exact layer-22 capture fired once, alpha zero was a bitwise no-op, and the hook changed the
+downstream connector and final logits. The 512-dimensional `C=1`, seed-0 Effusion probe reaches AUROC
+0.7788 (95% patient-bootstrap CI 0.7538–0.8031). The control-seed mean is 0.6649 and selectivity is
+0.1139 (95% CI 0.0875–0.1404). Across the registered 200-image intervention grid, the largest
+concept-consistent change is 0.1470 at alpha -1; it exceeds random p95 0.1202 but not maximum absolute
+sham 0.1546. The response is monotone over `[-0.5,0.5]` with Spearman rho 1.0.
 
-Gate decision: the earlier hook preflight passed, while the first full run stopped before scientific
-measurement on an offline model-resolution error. The corrected implementation requires a fresh exact
-hook receipt because its hook implementation hash changed.
+Gate decision: `PASS`; scientific state `OBSERVED`, gate disposition `READY`, and
+`selective_cell=false`. The terminal receipt, deterministic replay, provisional same-family integrity
+audit, and pinned read-only Claude review support this decision.
 
-Next: reproduce the exact hook PASS on the corrected immutable commit, then dispatch the full probe and
-intervention gate immediately. A passing intervention gate authorises the full primary-model locus profile.
+Next: determine which fully specified cross-cell experiment should test whether decodability rank predicts
+selective causal influence, then register its multiplicity handling and immutable dispatch command.

@@ -10,7 +10,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class SetupProvenanceContractTests(unittest.TestCase):
-    def test_bootstrap_ready_does_not_release_the_first_scientific_gate(self) -> None:
+    def test_bootstrap_and_first_scientific_gate_statuses_are_separate(self) -> None:
         state = (ROOT / "docs/RESEARCH_STATE.md").read_text(encoding="utf-8")
         bootstrap = state.split("## Bootstrap gate", 1)[1].split(
             "## First hard gate", 1
@@ -20,7 +20,9 @@ class SetupProvenanceContractTests(unittest.TestCase):
         )[0]
 
         self.assertIn("Gate disposition: `READY`", bootstrap)
-        self.assertIn("Gate disposition: `BLOCKED`", first_gate)
+        self.assertIn("Scientific state: `OBSERVED`", first_gate)
+        self.assertIn("Gate decision: `PASS`", first_gate)
+        self.assertIn("Gate disposition: `READY`", first_gate)
         for condition in (
             "model",
             "dataset",
