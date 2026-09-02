@@ -112,20 +112,22 @@ def write_json(path: Path, payload: dict) -> None:
 
 
 def stage_model(head: str) -> None:
-    from huggingface_hub import HfApi, snapshot_download
-    from transformers import AutoConfig, AutoProcessor
-
     final = DATA_ROOT / "models/huggingface"
     partial = DATA_ROOT / f"models/.partial-huggingface-{MODEL_REVISION}"
     if final.exists():
         fail(f"model target already exists: {final}")
     partial.mkdir(parents=True, exist_ok=True)
     os.environ["HF_HOME"] = os.fspath(partial)
+    from huggingface_hub import HfApi, snapshot_download
+    from transformers import AutoConfig, AutoProcessor
+
     info = HfApi().model_info(MODEL_ID, revision=MODEL_REVISION, files_metadata=True)
     if info.sha != MODEL_REVISION or info.private or info.gated:
         fail("model identity, access, or revision mismatch")
     print(f"staging {MODEL_ID}@{MODEL_REVISION}", flush=True)
-    snapshot = Path(snapshot_download(MODEL_ID, revision=MODEL_REVISION)).resolve()
+    snapshot = Path(
+        snapshot_download(MODEL_ID, revision=MODEL_REVISION, cache_dir=partial / "hub")
+    ).resolve()
     if snapshot.name != MODEL_REVISION or not snapshot.is_relative_to(partial.resolve()):
         fail(f"unexpected model snapshot path: {snapshot}")
     observed = {}
