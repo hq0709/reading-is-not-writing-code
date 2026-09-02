@@ -50,6 +50,7 @@ gpu_count=$(nvidia-smi -L | wc -l)
 abort_signal=none
 command_status=125
 child_pid=
+export SOURCE_COMMIT="$requested_sha"
 
 terminate_group() {
   test -n "${child_pid:-}" || return 0

@@ -277,6 +277,8 @@ def main():
                          "reads")
     ap.add_argument("--n-random", type=int, default=16)
     ap.add_argument("--n-eval", type=int, default=200, help="held-out images per locus")
+    ap.add_argument("--eval-split", default="test", choices=["validation", "test"],
+                    help="evaluation split; the registered decisive run uses test, smoke runs use validation")
     ap.add_argument("--batch-size", type=int, default=16)
     ap.add_argument("--gpu", type=int, default=6)
     ap.add_argument("--out", required=True)
@@ -301,10 +303,14 @@ def main():
     # Directions are fitted on train. Evaluation images come from test, so the images that shaped the
     # direction never appear in the measurement.
     tr = split == "train"
-    te_idx = np.where(split == "test")[0]
+    eval_name = "val" if args.eval_split == "validation" else "test"
+    te_idx = np.where(split == eval_name)[0]
     rng.shuffle(te_idx)
     te_idx = te_idx[:args.n_eval]
-    print(f"{tr.sum()} train rows for directions | {len(te_idx)} held-out eval images")
+    if len(te_idx) != args.n_eval:
+        raise SystemExit(f"requested {args.n_eval} {eval_name} images, found {len(te_idx)}")
+    eval_row_ids = [ids[i] for i in te_idx]
+    print(f"{tr.sum()} train rows for directions | {len(te_idx)} held-out {eval_name} images")
 
     from transformers import AutoConfig, AutoModelForImageTextToText, AutoProcessor
     arch = REGISTRY[args.arch]
@@ -439,6 +445,7 @@ def main():
                                   "cross-locus magnitudes incomparable.",
                "control_alphas": ctrl_alphas,
                "n_random": args.n_random, "n_eval": len(te_idx), "seed": args.seed,
+               "eval_split": eval_name, "eval_row_ids": eval_row_ids,
                "statistic": "concept effect must exceed the 95th percentile of random-direction effects"},
               open(os.path.join(args.out, "meta.json"), "w"), indent=1)
     # A completion marker. The CSV is written after every locus so that a crash keeps partial results,

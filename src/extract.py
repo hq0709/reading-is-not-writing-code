@@ -41,6 +41,19 @@ def read_manifest(path):
     return rows
 
 
+def select_loci(loci, requested):
+    """Select named loci without changing their registered order."""
+    names = [name.strip() for name in requested.split(",") if name.strip()]
+    if not names:
+        return loci
+    known = {locus.name for locus in loci}
+    missing = sorted(set(names) - known)
+    if missing:
+        raise ValueError(f"unknown loci: {missing}; known: {sorted(known)}")
+    wanted = set(names)
+    return [locus for locus in loci if locus.name in wanted]
+
+
 def worker(shard_id, gpu, rows, args, out_dir):
     os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu)
     os.environ.setdefault("HF_HOME", os.environ.get("HF_HOME", os.path.expanduser("~/.cache/huggingface")))
@@ -61,7 +74,7 @@ def worker(shard_id, gpu, rows, args, out_dir):
     model.eval()
     load_s = time.time() - t0
 
-    loci = loci_for(arch)
+    loci = select_loci(loci_for(arch), args.loci)
     img_tok = arch.image_token_id or find_image_token_id(proc, cfg)
 
     msgs = [{"role": "user", "content": [{"type": "image"}, {"type": "text", "text": args.prompt}]}]
@@ -119,10 +132,13 @@ def main():
     ap.add_argument("--gpus", default="4,5,6", help="comma separated, one replica each")
     ap.add_argument("--out", required=True)
     ap.add_argument("--batch-size", type=int, default=8)
+    ap.add_argument("--loci", default="",
+                    help="optional comma-separated registered locus names; empty captures every locus")
     ap.add_argument("--limit", type=int, default=0, help="cap rows, for a quick pass")
     ap.add_argument("--prompt", default="Is there a pleural effusion in this chest radiograph? Answer yes or no.")
     args = ap.parse_args()
 
+    from loci import loci_for
     from registry import REGISTRY
     if args.arch not in REGISTRY:
         raise SystemExit(f"unknown arch {args.arch!r}. known: {sorted(REGISTRY)}")
@@ -132,12 +148,19 @@ def main():
     gpus = [int(g) for g in args.gpus.split(",") if g.strip()]
     os.makedirs(args.out, exist_ok=True)
 
-    try:
-        sha = subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True, text=True).stdout.strip()
-    except Exception:
-        sha = "unknown"
+    sha = os.environ.get("SOURCE_COMMIT", "")
+    if not sha:
+        try:
+            result = subprocess.run(
+                ["git", "rev-parse", "HEAD"], capture_output=True, text=True, check=False
+            )
+            sha = result.stdout.strip() if result.returncode == 0 else "unknown"
+        except OSError:
+            sha = "unknown"
+    selected = select_loci(loci_for(REGISTRY[args.arch]), args.loci)
     json.dump({"arch": args.arch, "model": REGISTRY[args.arch].hf_id, "prompt": args.prompt, "n_rows": len(rows), "gpus": gpus,
                "batch_size": args.batch_size, "git_sha": sha,
+               "loci": [locus.name for locus in selected],
                "pooling": "mean over selected positions, fixed in src/loci.py",
                "started": time.strftime("%Y-%m-%dT%H:%M:%S")},
               open(os.path.join(args.out, "meta.json"), "w"), indent=1)
@@ -153,6 +176,9 @@ def main():
         p.start()
     for p in procs:
         p.join()
+    failed_workers = [(k, p.exitcode) for k, p in enumerate(procs) if p.exitcode != 0]
+    if failed_workers:
+        raise SystemExit(f"activation workers failed: {failed_workers}")
     print(f"all shards done in {time.time() - t0:.0f}s -> {args.out}")
 
 
