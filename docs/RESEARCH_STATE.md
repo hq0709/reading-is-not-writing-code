@@ -8,6 +8,7 @@ Last bootstrap update: 2026-09-02. This file distinguishes scientific state (`PL
 - Gate disposition: `READY`
 - Accepted implementation: pushed commit `958c33ef90223da29f93dc7c14477ca5651c5102`.
 - Environment, capability, and safety audits: `/home/qingchan/data/concept-flow/state/aris-audit.env`, `/home/qingchan/data/concept-flow/state/health.env`, and `/home/qingchan/data/concept-flow/state/bootstrap-safety-acceptance.env`.
+- Toolchain provenance is defined by `config/toolchain-provenance.tsv`; its atomic server receipt is `/home/qingchan/data/concept-flow/state/setup-receipt.tsv`.
 - Reviewer evidence: fresh-shell receipt `/home/qingchan/.codex/state/claude-review-concept-flow/review-20260902T074946088752Z.json`; detached-tmux receipt `/home/qingchan/.codex/state/claude-review-concept-flow/review-20260902T075031584500Z.json`.
 - Executor-to-reviewer evidence: `/home/qingchan/data/concept-flow/state/codex-mcp-probe-20260902T075246Z.jsonl`.
 - Immutable GPU/fetch evidence: run `20260902T071539Z-7a4e7552d9e1-75d3510c` under `/home/qingchan/data/concept-flow/runs/`.
@@ -16,12 +17,14 @@ Last bootstrap update: 2026-09-02. This file distinguishes scientific state (`PL
 ## First hard gate
 
 - Scientific state: `PLANNED`
-- Gate disposition: `READY`
+- Gate disposition: `BLOCKED`
 - Measurement: corrected LLaVA vision hook, corrected registered intervention scale, repeated control draws, and bootstrap intervals on the smallest informative registered cell.
 - Supported interpretation: none until a valid immutable run is `OBSERVED`.
 - Unresolved hypothesis: whether peak decodability predicts selective causal use after correcting known measurement faults.
 - Excluded claims: current incomplete D1 runs do not establish either dissociation or alignment.
-- Next action: stage the registered model and dataset assets below `/home/qingchan/data/concept-flow/`, then dispatch the smallest registered validity cell from a clean pushed commit.
+- Blocker: the registered LLaVA model and NIH dataset assets are not yet staged below `/home/qingchan/data/concept-flow/`.
+- Release condition: model and dataset checks pass, then the registered hook, patient bootstrap, repeated control, intervention sweep, immutable receipt, and pinned read-only Claude review all complete successfully.
+- Next action: stage and verify the registered model and dataset assets; do not dispatch the scientific gate before those checks pass.
 
 ## Transition rules
 
