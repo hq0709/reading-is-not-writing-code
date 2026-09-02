@@ -1,6 +1,23 @@
-# Minimal upstream groups. Resolve and audit their dependencies at the pinned ARIS SHA.
-lit-search
-ideation
-review-loop
-experiments
-paper-core
+# Exact project allowlist. No ARIS group is installed wholesale.
+arxiv
+semantic-scholar
+research-lit
+novelty-check
+research-refine
+research-review
+experiment-plan
+run-experiment
+monitor-experiment
+analyze-results
+experiment-audit
+result-to-claim
+ablation-planner
+paper-plan
+paper-write
+paper-compile
+paper-figure
+citation-audit
+paper-claim-audit
+integrity-forensics
+overleaf-sync
+render-html

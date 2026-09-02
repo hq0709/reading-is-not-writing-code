@@ -34,6 +34,7 @@ class OperationalContractTests(unittest.TestCase):
             "scripts/server/run_command.sh",
             "scripts/server/supervisor.sh",
             "scripts/server/install_profile.sh",
+            "scripts/server/install_aris.sh",
         ]
         missing = [path for path in required if not (ROOT / path).is_file()]
         self.assertEqual([], missing)
@@ -135,6 +136,24 @@ class OperationalContractTests(unittest.TestCase):
         self.assertIn('"prompt"', schema)
         for forbidden in ('"model"', '"tools"', '"effort"', '"permission_mode"'):
             self.assertNotIn(forbidden, schema)
+
+    def test_aris_installer_derives_and_audits_the_approved_capability_set(self) -> None:
+        text = (ROOT / "scripts/server/install_aris.sh").read_text(encoding="utf-8")
+        for required in (
+            "config/aris-skills.txt",
+            "config/aris-forbidden-skills.txt",
+            "ARIS_APPROVED_GROUPS",
+            "--with-claude-review-overlay",
+            "--dry-run",
+            "--skills",
+            "--exclude",
+            "installed-skills-codex.txt",
+            "aris-audit.env",
+            "realpath",
+            "sha256sum",
+            "installed dependency closure exceeds exact allowlist",
+        ):
+            self.assertIn(required, text)
 
 
 if __name__ == "__main__":

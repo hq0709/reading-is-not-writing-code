@@ -5,6 +5,7 @@ repo_root=$(git rev-parse --show-toplevel)
 cd "$repo_root"
 set -a; source config/autoresearch.env; set +a
 test "$(id -u)" -ne 0 && test "$HOME" = "$AUTHORIZED_HOME"
+chmod 700 "$repo_root/scripts/server/claude_review_adapter.py"
 profile="$HOME/.codex/$CODEX_PROFILE.config.toml"
 mkdir -p "$HOME/.codex"
 umask 077

@@ -25,6 +25,27 @@ source scripts/server/activate_env.sh
 python scripts/server/claude_review_adapter.py --probe >/dev/null || fail 'Claude reviewer probe failed'
 audit="$DATA_ROOT/state/aris-audit.env"
 test -f "$audit" && grep -Fx "ARIS_FULL_SHA=$ARIS_FULL_SHA" "$audit" >/dev/null || fail 'ARIS audit receipt missing'
+audit_expect() { grep -Fx "$1=$2" "$audit" >/dev/null || fail "ARIS audit drift: $1"; }
+audit_expect SKILL_LIST_SHA256 "$(sha256sum config/aris-skills.txt | cut -d ' ' -f1)"
+audit_expect FORBIDDEN_LIST_SHA256 "$(sha256sum config/aris-forbidden-skills.txt | cut -d ' ' -f1)"
+audit_expect REVIEWER_ROUTING_SHA256 "$(sha256sum config/reviewer-routing.tsv | cut -d ' ' -f1)"
+audit_expect REVIEWER_WRAPPER_SHA256 "$(sha256sum scripts/server/claude_review_adapter.py | cut -d ' ' -f1)"
+plugin_listing=$("$HOME/.local/bin/codex" plugin list)
+test "$plugin_listing" = 'No marketplace plugins found.' || fail 'project launch refuses discovered plugins'
+"$CONDA_ROOT/envs/$CONDA_ENV/bin/python" - "$CODEX_PROFILE" <<'PY'
+import json
+import subprocess
+import sys
+
+profile = sys.argv[1]
+servers = json.loads(subprocess.check_output(
+    ["/home/qingchan/.local/bin/codex", "--profile", profile, "mcp", "list", "--json"],
+    text=True,
+))
+assert len(servers) == 1, servers
+assert servers[0]["name"] == "claude-review-concept-flow", servers
+assert servers[0]["enabled"] is True, servers
+PY
 mkdir -p "$(dirname "$TMUX_SOCKET")" "$DATA_ROOT/logs"
 if ! tmux -S "$TMUX_SOCKET" has-session -t "$EXPERIMENT_TMUX" 2>/dev/null; then
   tmux -S "$TMUX_SOCKET" new-session -d -s "$EXPERIMENT_TMUX" -n control -c "$SERVER_HOME" 'exec tail -f /dev/null'
