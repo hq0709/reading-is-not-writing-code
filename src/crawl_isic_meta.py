@@ -9,7 +9,12 @@ Resumable: the next cursor is written beside the output after every page, so an 
 """
 from __future__ import annotations
 
-import json, os, sys, time, urllib.request, urllib.error
+import json
+import os
+import time
+import urllib.error
+import urllib.request
+from pathlib import Path
 
 OUT = "data/isic/images.jsonl"
 CUR = "data/isic/cursor.txt"
@@ -26,7 +31,7 @@ def get(url, tries=6):
             req = urllib.request.Request(url, headers={"User-Agent": UA})
             with urllib.request.urlopen(req, timeout=60) as r:
                 return json.loads(r.read())
-        except Exception as e:
+        except (OSError, ValueError) as e:
             wait = min(2 ** k, 60)
             print(f"  retry {k+1}/{tries} in {wait}s: {type(e).__name__} {str(e)[:80]}", flush=True)
             time.sleep(wait)
@@ -34,11 +39,15 @@ def get(url, tries=6):
 
 
 def main():
-    nxt = open(CUR).read().strip() if os.path.exists(CUR) else BASE
+    nxt = Path(CUR).read_text().strip() if os.path.exists(CUR) else BASE
     if nxt == "DONE":
         print("already complete"); return
     mode = "a" if os.path.exists(OUT) else "w"
-    n = sum(1 for _ in open(OUT)) if mode == "a" else 0
+    if mode == "a":
+        with Path(OUT).open() as existing:
+            n = sum(1 for _ in existing)
+    else:
+        n = 0
     keys, t0, total = {}, time.time(), 0
     with open(OUT, mode) as fh:
         while nxt:
@@ -55,7 +64,7 @@ def main():
                 n += 1
             fh.flush()
             nxt = j.get("next")
-            open(CUR, "w").write(nxt or "DONE")
+            Path(CUR).write_text(nxt or "DONE")
             if (n // 100) % 20 == 0:
                 rate = n / max(time.time() - t0, 1e-9)
                 eta = (total - n) / max(rate, 1e-9) / 60 if total else float("nan")

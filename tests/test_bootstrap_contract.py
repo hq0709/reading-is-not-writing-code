@@ -4,7 +4,6 @@ import ast
 import pathlib
 import unittest
 
-
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 RESEARCH_SCRIPTS = (
     "extract_isic_chain.sh",

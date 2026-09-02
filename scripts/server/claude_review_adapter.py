@@ -12,8 +12,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-
 HOME = Path("/home/qingchan")
+UTC = timezone.utc  # noqa: UP017 - local verification still supports Python 3.10.
 CLAUDE = HOME / ".local/bin/claude"
 REPO = HOME / "work/concept-flow"
 STATE = HOME / ".codex/state/claude-review-concept-flow"
@@ -103,7 +103,7 @@ def run_review(prompt: str) -> str:
     valid = completed.returncode == 0 and models == {MODEL} and before == after
     STATE.mkdir(mode=0o700, parents=True, exist_ok=True)
     receipt = {
-        "utc": datetime.now(timezone.utc).isoformat(),
+        "utc": datetime.now(UTC).isoformat(),
         "modelExpected": MODEL,
         "modelsObserved": sorted(models),
         "effort": "medium",
@@ -117,7 +117,7 @@ def run_review(prompt: str) -> str:
         "exitCode": completed.returncode,
         "valid": valid,
     }
-    receipt_path = STATE / f"review-{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S%fZ')}.json"
+    receipt_path = STATE / f"review-{datetime.now(UTC).strftime('%Y%m%dT%H%M%S%fZ')}.json"
     receipt_path.write_text(json.dumps(receipt, indent=2) + "\n", encoding="utf-8")
     receipt_path.chmod(0o600)
     if not valid:
@@ -167,7 +167,7 @@ def serve() -> None:
                 respond(request_id, {"content": [{"type": "text", "text": text}]})
             else:
                 respond(request_id, error=f"unsupported method: {method}")
-        except Exception as error:  # MCP must return a structured failure.
+        except Exception as error:  # noqa: BLE001 - MCP must structure every failure.
             respond(request_id, error=str(error))
 
 
