@@ -62,7 +62,7 @@ done < "$manifest"
 test "$installed" -gt 0 || fail 'empty installed dependency closure'
 grep -F $'skills-codex-claude-review/' "$manifest" >/dev/null || fail 'Claude reviewer overlay missing'
 installed_csv=$(awk -F '\t' '$1 == "skill" || $1 == "support" { print $2 }' "$manifest" | sort -u | paste -sd, -)
-approved_csv=$(printf '%s\n' "$skills_csv" | tr ',' '\n' | sort -u | paste -sd, -)
+approved_csv=$(printf '%s\n' "$skills_csv,shared-references" | tr ',' '\n' | sort -u | paste -sd, -)
 test "$installed_csv" = "$approved_csv" || fail 'installed dependency closure exceeds exact allowlist'
 while IFS= read -r name; do
   test ! -e "$repo_root/.agents/skills/$name" || fail "forbidden skill installed: $name"
