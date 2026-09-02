@@ -25,14 +25,14 @@ Updated: 2026-09-02. Scientific state uses `PLANNED`, `RUNNING`, `FAILED`, and `
 
 ## Second hard gate: `llava-edema-vislast-reltoken`
 
-- Run: the fixed Edema protocol reuses the accepted prompt-independent `vis.last` activation artifact and the same 200 held-out intervention rows from `20260902T191411Z-ffd523c464c8-f99e2f39`; new probe and intervention evidence will use the current immutable source commit.
-- Observation: none; the cell is registered and awaiting immutable dispatch.
-- Scientific state: `PLANNED`.
-- Gate decision: the protocol, one paired ordering contrast, control family, and unchanged selective-cell threshold are registered.
+- Run: immutable run `20260902T221534Z-110b84618d1b-edema` is executing the fixed Edema protocol from pushed commit `110b84618d1bcfe23d5e3687cf0ff9e2a5f789c2` on GPU 0. It reuses the accepted prompt-independent `vis.last` activation artifact and the same 200 held-out intervention rows from `20260902T191411Z-ffd523c464c8-f99e2f39`.
+- Observation: the probe completed with AUROC `0.8009` (95% patient-bootstrap CI `0.7648–0.8329`) and selectivity `0.1360` (95% CI `0.0994–0.1693`). The paired Edema-minus-Effusion selectivity was `0.0221` (95% CI `-0.0175–0.0590`). The causal sweep is running.
+- Scientific state: `RUNNING`.
+- Gate decision: preflight and immutable dispatch passed; the causal threshold and hard-gate review are pending terminal intervention evidence.
 - Gate disposition: `READY`.
-- Evidence: `docs/RESEARCH_PLAN.md#second-hard-gate`; source activation receipt `/home/qingchan/data/concept-flow/runs/20260902T191411Z-ffd523c464c8-f99e2f39/`.
-- Next step: does Edema's stronger controlled decoding at `vis.last` produce selective causal influence? Dispatch `["bash","scripts/server/run_cross_cell_gate.sh"]` from clean pushed `main` on one registered GPU.
-- Writer ownership: local Codex until the registration and runner commit is pushed; the server runner then owns immutable evidence generation.
+- Evidence: `/home/qingchan/data/concept-flow/runs/20260902T221534Z-110b84618d1b-edema/`; source activation receipt `/home/qingchan/data/concept-flow/runs/20260902T191411Z-ffd523c464c8-f99e2f39/`.
+- Next step: does Edema's stronger controlled decoding at `vis.last` produce selective causal influence? Monitor the immutable causal sweep, validate its terminal receipt, and request the pinned read-only Claude review.
+- Writer ownership: server Codex and the immutable runner during evidence generation.
 
 ## Transition rules
 
