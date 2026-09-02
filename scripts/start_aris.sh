@@ -8,7 +8,9 @@ fail() { echo "ARIS launch refused: $*" >&2; exit 64; }
 test "$(id -u)" -ne 0 || fail 'root is forbidden'
 test "$HOME" = "$AUTHORIZED_HOME" || fail 'unexpected HOME'
 for path in "$repo_root" "$DATA_ROOT" "$ARIS_REPO" "$TMUX_SOCKET"; do case "$(realpath -m -- "$path")/" in "$AUTHORIZED_HOME"/*) ;; *) fail "$path escapes authorized home";; esac; done
-test ! -e "$STOP_SENTINEL" || fail 'stop sentinel exists'
+if test -e "$STOP_SENTINEL" && ! grep -Fx 'AUTORESEARCH_SUPERVISOR_BLOCK_V1' "$STOP_SENTINEL" >/dev/null 2>&1; then
+  fail 'stop sentinel exists'
+fi
 test -z "$(git status --porcelain --untracked-files=all)" || fail 'dirty source tree'
 git fetch origin
 head=$(git rev-parse HEAD)
@@ -46,17 +48,18 @@ assert len(servers) == 1, servers
 assert servers[0]["name"] == "claude-review-concept-flow", servers
 assert servers[0]["enabled"] is True, servers
 PY
+scripts/server/supervisor.sh --gate-only || fail 'runtime health gate failed'
 mkdir -p "$(dirname "$TMUX_SOCKET")" "$DATA_ROOT/logs"
 if ! tmux -S "$TMUX_SOCKET" has-session -t "$EXPERIMENT_TMUX" 2>/dev/null; then
   tmux -S "$TMUX_SOCKET" new-session -d -s "$EXPERIMENT_TMUX" -n control -c "$SERVER_HOME" 'exec tail -f /dev/null'
-fi
-if ! tmux -S "$TMUX_SOCKET" list-windows -t "$EXPERIMENT_TMUX" -F '#{window_name}' | grep -Fx supervisor >/dev/null; then
-  printf -v supervise 'exec %q' "$repo_root/scripts/server/supervisor.sh"
-  tmux -S "$TMUX_SOCKET" new-window -d -t "$EXPERIMENT_TMUX" -n supervisor -c "$repo_root" "$supervise"
 fi
 tmux -S "$TMUX_SOCKET" has-session -t "$AGENT_TMUX" 2>/dev/null && { echo "agent tmux already running: $AGENT_TMUX"; exit 0; }
 log="$DATA_ROOT/logs/aris-$(date -u +%Y%m%dT%H%M%SZ)-${head:0:12}.log"
 printf -v launch 'exec %q exec --profile %q --dangerously-bypass-approvals-and-sandbox -C %q - < %q >> %q 2>&1' \
   "$HOME/.local/bin/codex" "$CODEX_PROFILE" "$repo_root" "$repo_root/config/aris-run-prompt.md" "$log"
 tmux -S "$TMUX_SOCKET" new-session -d -s "$AGENT_TMUX" -c "$repo_root" "$launch"
+if ! tmux -S "$TMUX_SOCKET" list-windows -t "$EXPERIMENT_TMUX" -F '#{window_name}' | grep -Fx supervisor >/dev/null; then
+  printf -v supervise 'exec %q' "$repo_root/scripts/server/supervisor.sh"
+  tmux -S "$TMUX_SOCKET" new-window -d -t "$EXPERIMENT_TMUX" -n supervisor -c "$repo_root" "$supervise"
+fi
 printf 'started tmux %s; log %s\n' "$AGENT_TMUX" "$log"
