@@ -55,9 +55,11 @@ if ! tmux -S "$TMUX_SOCKET" has-session -t "$EXPERIMENT_TMUX" 2>/dev/null; then
 fi
 tmux -S "$TMUX_SOCKET" has-session -t "$AGENT_TMUX" 2>/dev/null && { echo "agent tmux already running: $AGENT_TMUX"; exit 0; }
 log="$DATA_ROOT/logs/aris-$(date -u +%Y%m%dT%H%M%SZ)-${head:0:12}.log"
-printf -v launch 'exec %q exec --profile %q --dangerously-bypass-approvals-and-sandbox -C %q - < %q >> %q 2>&1' \
-  "$HOME/.local/bin/codex" "$CODEX_PROFILE" "$repo_root" "$repo_root/config/aris-run-prompt.md" "$log"
+printf -v launch 'exec %q exec --profile %q --dangerously-bypass-approvals-and-sandbox -C %q - < %q' \
+  "$HOME/.local/bin/codex" "$CODEX_PROFILE" "$repo_root" "$repo_root/config/aris-run-prompt.md"
 tmux -S "$TMUX_SOCKET" new-session -d -s "$AGENT_TMUX" -c "$repo_root"
+printf -v log_pipe 'cat >> %q' "$log"
+tmux -S "$TMUX_SOCKET" pipe-pane -o -t "$AGENT_TMUX" "$log_pipe"
 tmux -S "$TMUX_SOCKET" send-keys -t "$AGENT_TMUX" -l "$launch"
 tmux -S "$TMUX_SOCKET" send-keys -t "$AGENT_TMUX" Enter
 if ! tmux -S "$TMUX_SOCKET" list-windows -t "$EXPERIMENT_TMUX" -F '#{window_name}' | grep -Fx supervisor >/dev/null; then
