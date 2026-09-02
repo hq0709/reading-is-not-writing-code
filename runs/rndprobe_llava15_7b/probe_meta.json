@@ -1,0 +1,31 @@
+{
+ "acts": "runs/rndact_llavamed7b",
+ "manifest": "data/manifest.csv",
+ "C": 1.0,
+ "type_cols": [
+  "view_AP",
+  "sex_M",
+  "age"
+ ],
+ "nuisance": [
+  "view_AP",
+  "sex_M"
+ ],
+ "n_types": 39,
+ "proj_dim": 512,
+ "seed": 0,
+ "concepts": [
+  "Effusion",
+  "Cardiomegaly",
+  "Pneumothorax",
+  "Edema",
+  "Atelectasis",
+  "Consolidation",
+  "Infiltration",
+  "Mass",
+  "Nodule"
+ ],
+ "n_train": 18212,
+ "n_test": 5343,
+ "elapsed_s": 4995.2
+}

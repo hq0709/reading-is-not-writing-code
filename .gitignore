@@ -1,0 +1,28 @@
+__pycache__/
+*.pyc
+*.bak
+.ipynb_checkpoints/
+.env
+.env.local
+/.agents/skills/
+/.aris/
+/.venv/
+results/remote/
+paper-overleaf/
+artifacts/raw_runs/
+*.ckpt
+*.bin
+*.safetensors
+.pytest_cache/
+.ruff_cache/
+# activations, weights and images are not redistributed; see the README
+runs/act_*/
+runs/int_*/
+!runs/behav_*/per_image.npz
+# the per-locus probe sweeps ARE shipped -- they are small and the depth figure needs them
+!runs/probe_*/probe_results.csv
+!runs/rndprobe_*/probe_results.csv
+*.npy
+*.pt
+models/
+scratch/

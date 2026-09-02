@@ -1,0 +1,10 @@
+arch,domain,concept,n,prevalence,behavioural_auroc,mean_p_yes,sd_p_yes,median_p_yes,frac_pinned,mean_margin,sd_margin,yes_rate,elapsed_s
+internvl3_8b,general,Effusion,1000,0.126,0.7873,0.3262,0.3453,0.133,0.396,-1.2787,2.3746,0.303,660.4
+internvl3_8b,general,Cardiomegaly,1000,0.037,0.6259,0.9023,0.1291,0.9627,0.555,3.1417,1.6236,0.976,733.0
+internvl3_8b,general,Pneumothorax,1000,0.085,0.6977,0.052,0.0692,0.026,0.71,-3.3896,0.9871,0.003,742.2
+internvl3_8b,general,Atelectasis,1000,0.096,0.6587,0.968,0.0312,0.977,0.771,3.9437,1.1601,1.0,719.9
+internvl3_8b,general,Consolidation,1000,0.05,0.7432,0.2472,0.3291,0.0373,0.554,-2.7652,3.0658,0.241,721.8
+internvl3_8b,general,Edema,1000,0.038,0.8115,0.3252,0.3625,0.1067,0.463,-1.3675,2.6849,0.304,731.8
+internvl3_8b,general,Infiltration,1000,0.168,0.7167,0.731,0.2427,0.7982,0.274,1.6954,1.897,0.746,732.4
+internvl3_8b,general,Mass,1000,0.073,0.6803,0.3976,0.255,0.3486,0.013,-0.5254,1.3222,0.328,684.4
+internvl3_8b,general,Nodule,1000,0.076,0.5409,0.3302,0.1783,0.2942,0.012,-0.8269,0.936,0.162,663.2

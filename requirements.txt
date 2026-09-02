@@ -1,0 +1,11 @@
+# Pinned to the versions the released tables were produced with.
+torch==2.7.0
+transformers>=4.51
+accelerate>=1.0
+numpy>=1.26
+scipy>=1.11
+scikit-learn>=1.4
+pandas>=2.0
+matplotlib>=3.8
+Pillow>=10.0
+tqdm>=4.66
