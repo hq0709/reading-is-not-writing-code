@@ -28,6 +28,10 @@ fi
 # uv installs into the same dedicated Conda prefix; it must never create a
 # repository-local environment or mutate Conda's base environment.
 export UV_PROJECT_ENVIRONMENT="$ENV_PREFIX"
+case ":$PATH:" in
+  *":$EXPECTED_HOME/.local/bin:"*) ;;
+  *) export PATH="$EXPECTED_HOME/.local/bin:$PATH" ;;
+esac
 source "$CONDA_SH" || return 1
 conda activate "$ENV_PREFIX" || return 1
 

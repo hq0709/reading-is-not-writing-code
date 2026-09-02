@@ -58,6 +58,7 @@ class BootstrapContractTests(unittest.TestCase):
         self.assertIn('EXPECTED_HOME="/home/qingchan"', activation)
         self.assertIn('ENV_PREFIX="$EXPECTED_HOME/miniforge3/envs/conceptflow"', activation)
         self.assertIn('export UV_PROJECT_ENVIRONMENT="$ENV_PREFIX"', activation)
+        self.assertIn('export PATH="$EXPECTED_HOME/.local/bin:$PATH"', activation)
         self.assertIn('source "$CONDA_SH" || return 1', activation)
         self.assertIn('conda activate "$ENV_PREFIX" || return 1', activation)
         self.assertIn("(3, 12) <= sys.version_info[:2] < (3, 14)", activation)
