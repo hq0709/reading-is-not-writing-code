@@ -1,6 +1,7 @@
 # Remote research operations
 
 The generic infrastructure contract is [`../auto-research-contracts/local-codex-remote-server-setup.md`](../auto-research-contracts/local-codex-remote-server-setup.md). The values below are the Concept Flow binding.
+The reset-specific inventory, download list, fixed paths, and ordered rebuild procedure are in [`SERVER_RESET_RECOVERY.md`](SERVER_RESET_RECOVERY.md).
 
 ## Fixed topology and environment
 
