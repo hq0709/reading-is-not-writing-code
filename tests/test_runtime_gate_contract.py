@@ -14,6 +14,8 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def wsl_path(path: Path) -> str:
+    if os.name != "nt":
+        return os.fspath(path.resolve())
     return subprocess.check_output(
         ["bash", "-lc", f"wslpath -a {shlex_quote(os.fspath(path))}"], text=True
     ).strip()

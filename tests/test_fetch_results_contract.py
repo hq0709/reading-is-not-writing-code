@@ -13,9 +13,13 @@ SCRIPT = ROOT / "scripts/fetch_results.ps1"
 
 
 class FetchResultsContractTests(unittest.TestCase):
+    @unittest.skipUnless(
+        os.name == "nt" and shutil.which("pwsh"),
+        "Windows PowerShell is required for the Windows fetch contract test",
+    )
     def test_missing_exit_status_fails_closed_before_atomic_move(self) -> None:
         pwsh = shutil.which("pwsh")
-        self.assertIsNotNone(pwsh, "pwsh is required for the Windows fetch contract test")
+        assert pwsh is not None
 
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_root = Path(temp_dir)
