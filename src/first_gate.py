@@ -36,7 +36,7 @@ MODEL_HASHES = {
 }
 MANIFEST_SHA256 = "837ca37acce72cdf1e7c4a43e559a6d34d99edf2eb5c76a8f5e53295e99c6440"
 EXPECTED_ROWS = 26_229
-EXPECTED_LOCUS = "model.vision_tower.vision_model.encoder.layers.22"
+EXPECTED_LOCUS = "model.vision_tower.encoder.layers.22"
 ALPHAS = [-1.0, -0.5, -0.25, -0.1, 0.0, 0.1, 0.25, 0.5, 1.0]
 CONTROL_ALPHAS = [-1.0, -0.5, -0.25, 0.25, 0.5, 1.0]
 

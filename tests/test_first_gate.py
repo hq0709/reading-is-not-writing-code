@@ -5,10 +5,15 @@ from pathlib import Path
 
 from src.extract import select_loci
 from src.first_gate import summarize_intervention_rows
-from src.loci import Locus
+from src.loci import Locus, loci_for
+from src.registry import REGISTRY
 
 
 class FirstGateContractTests(unittest.TestCase):
+    def test_llava_vislast_resolves_to_loaded_transformers_namespace(self) -> None:
+        locus = next(locus for locus in loci_for(REGISTRY["llava15_7b"]) if locus.name == "vis.last")
+        self.assertEqual("model.vision_tower.encoder.layers.22", locus.module)
+
     def test_immutable_runner_pins_the_registered_protocol(self) -> None:
         root = Path(__file__).resolve().parents[1]
         runner = (root / "scripts/server/run_first_gate.sh").read_text(encoding="utf-8")

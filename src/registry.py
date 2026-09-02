@@ -78,8 +78,8 @@ REGISTRY: dict[str, Arch] = {
         pair="llava15_7b", vision_feature_layer=-2),
     "llava15_7b": Arch(
         key="llava15_7b", hf_id="llava-hf/llava-1.5-7b-hf", family="llava", domain="general",
-        params_b=7.06, vision_root="model.vision_tower.vision_model",
-        vision_block_fmt="model.vision_tower.vision_model.encoder.layers.{i}", n_vision_blocks=24,
+        params_b=7.06, vision_root="model.vision_tower",
+        vision_block_fmt="model.vision_tower.encoder.layers.{i}", n_vision_blocks=24,
         connector="model.multi_modal_projector",
         llm_layer_fmt="model.language_model.layers.{i}", n_llm_layers=32,
         image_token="<image>", image_token_id=32000, visual_tokens=576,
