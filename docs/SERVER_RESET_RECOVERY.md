@@ -120,7 +120,7 @@ these figures are not quotas or evidence of a completed backup.
 
 ## Server downloads after reset
 
-Only the following public research assets are required for the current first gate.
+Only the following public research assets are required for the registered hard gates.
 The staging script owns source URLs, exact sizes, revisions, integrity checks,
 partial-download behavior, and atomic publication; this table is an operator index,
 not a second manifest.
@@ -128,6 +128,7 @@ not a second manifest.
 | Asset | Server download | Final path | Staging path | Verification and receipt |
 |---|---:|---|---|---|
 | `llava-hf/llava-1.5-7b-hf` at revision `b234b804b114d9e37bb655e11cbbb5f5e971b7a9` | about 14 GiB | `/home/qingchan/data/concept-flow/models/huggingface` | `/home/qingchan/data/concept-flow/models/.partial-huggingface-b234b804b114d9e37bb655e11cbbb5f5e971b7a9` | revision, four registered file hashes, local config/processor load, and `asset-receipt.json` |
+| `Qwen/Qwen2.5-VL-7B-Instruct` at revision `cc594898137f460bfe9f0759e9844b3ce807cfb5` | about 15.5 GiB | `/home/qingchan/data/concept-flow/models/qwen7b-huggingface` | `/home/qingchan/data/concept-flow/models/.partial-qwen7b-cc594898137f460bfe9f0759e9844b3ce807cfb5` | official revision and five published LFS weight-shard hashes, local config/processor load, and `asset-receipt.json` |
 | NIH ChestX-ray14: `images_001.tar.gz` through `images_012.tar.gz` plus `Data_Entry_2017_v2020.csv` | 45,088,866,280 bytes (41.99 GiB compressed) | `/home/qingchan/data/concept-flow/datasets/nih-chestxray14` | `/home/qingchan/data/concept-flow/datasets/.partial-nih-chestxray14` | official Box metadata, exact bytes, gzip/tar safety, 112,120 label rows, committed SHA-256 manifest, registered manifest, and `asset-receipt.json` |
 
 The NIH trust bootstrap is deliberately two-stage:
@@ -159,6 +160,7 @@ Stage the model independently with:
 cd /home/qingchan/work/concept-flow
 source scripts/server/activate_env.sh
 python scripts/server/stage_first_gate_assets.py model
+python scripts/server/stage_qwen7b_asset.py
 ```
 
 The downloads are resumable in their `.partial-*` directories. Never transfer

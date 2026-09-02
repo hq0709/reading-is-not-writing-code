@@ -31,8 +31,19 @@ Updated: 2026-09-02. Scientific state uses `PLANNED`, `RUNNING`, `FAILED`, and `
 - Gate decision: `PASS`; terminal checksums passed, deterministic replay was byte-identical, and the pinned read-only Claude review returned `PASS` with no required actions.
 - Gate disposition: `READY`.
 - Evidence: run receipt `/home/qingchan/data/concept-flow/runs/20260902T221534Z-110b84618d1b-edema/`; internal replay `/home/qingchan/data/concept-flow/state/edema-gate-internal-validation-20260902T224700Z/intervention-summary.json`; reviewer receipt `/home/qingchan/.codex/state/claude-review-concept-flow/review-20260902T224851552731Z.json`; review record `docs/reviews/llava-edema-vislast-reltoken.md`.
-- Next step: which prospectively registered architecture/concept cell can determine whether the two-cell LLaVA pattern generalises? Register its fixed protocol, multiplicity handling, gate threshold, and immutable dispatch payload before launch.
-- Writer ownership: server Codex owns this terminal checkpoint; no experiment process is active.
+- Next step: does the Effusion probe-normal mismatch generalise from LLaVA to Qwen at the consumed final visual block? Run the registered third hard gate.
+- Writer ownership: local Codex owns registration and runner implementation; no experiment process is active.
+
+## Third hard gate: `qwen7b-effusion-vislast-reltoken`
+
+- Run: the fixed Qwen2.5-VL-7B Effusion protocol will stage revision `cc594898137f460bfe9f0759e9844b3ce807cfb5`, prove the `model.visual.blocks.31` hook reaches the merger and logits, extract the registered NIH `vis.last` activations, and execute the capacity-matched probe and unchanged relative-token intervention on the first gate's 200 evaluation rows.
+- Observation: none; the cross-architecture cell is registered and awaiting runner verification and immutable dispatch.
+- Scientific state: `PLANNED`.
+- Gate decision: the availability criterion, paired LLaVA contrast, intervention controls, multiplicity handling, and unchanged selective-cell threshold are registered.
+- Gate disposition: `READY`.
+- Evidence: `docs/RESEARCH_PLAN.md#third-hard-gate`; accepted NIH and LLaVA Effusion receipts; pinned Qwen revision `cc594898137f460bfe9f0759e9844b3ce807cfb5`.
+- Next step: does Qwen's consumed final visual block provide decodable Effusion opportunity and selectively influence its answer? Verify the runner, commit and push `main`, dispatch the immutable model stage, then run the registered hook and full payloads on one registered GPU.
+- Writer ownership: local Codex until the verified registration and runner checkpoint is pushed.
 
 ## Transition rules
 
