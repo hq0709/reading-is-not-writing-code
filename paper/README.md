@@ -15,8 +15,8 @@ make check
 ```
 
 The first Tectonic build populates its user cache from the network. Later builds reuse the cached
-format, packages, and fonts. Bare `make` builds `main.pdf`; `make check` reports the page count and
-layout-warning counts for that PDF.
+format, packages, and fonts. Bare `make` builds `main.pdf`; `make check` reports its page,
+overfull-box, and undefined-reference counts.
 
 `make assets` reads the four accepted immutable run summaries under
 `/home/qingchan/data/concept-flow`, validates the adjudicated headline values, writes the compact
