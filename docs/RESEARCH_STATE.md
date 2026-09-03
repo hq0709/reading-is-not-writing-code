@@ -36,12 +36,14 @@ Updated: 2026-09-03. Scientific state uses `PLANNED`, `RUNNING`, `FAILED`, and `
 
 ## Paper-compilation gate
 
-- Run: inspect the fixed environment for the registered manuscript build prerequisites.
-- Observation: the reviewed source and reproducible figure/table generators are ready, but the fixed environment contains no `tectonic`, `latexmk`, `pdflatex`, or `bibtex`; therefore no current PDF, page-count, font-embedding, or final table-width observation exists.
-- Gate decision: `BLOCKED`; the source gate passed, but the paper-compilation gate cannot be evaluated without changing the pinned toolchain.
-- Gate disposition: `BLOCKED`.
-- Next step: can the evidence-locked source compile within the nine-page ICLR main-body budget with readable tables and fully embedded fonts? Add an audited user-local TeX compiler to the pinned environment, then compile and validate the unchanged reviewed source.
-- Writer ownership: server Codex/ARIS; no experiment or manuscript-build process is active.
+- Run: immutable paper build `20260903T123856Z-00f0adc-paper-compile` compiled the evidence-locked source with the pinned Tectonic 0.17.0 toolchain after a fresh agent followed the documented invocation verbatim.
+- Observation: the PDF has 10 total pages, with the main body ending on page 8 against the nine-page limit, references beginning on page 8, and the appendix beginning on page 9. All 28 fonts are embedded; static validation covers 18 adjudicated values and 15 citations; no unresolved PDF marker or overfull box remains; visual inspection confirms readable tables and figures.
+- Scientific state: accepted experimental evidence remains `OBSERVED`.
+- Gate decision: `PASS`; deterministic compilation checks and the configured pinned read-only Claude review passed with no required actions.
+- Gate disposition: `READY`.
+- Evidence: `/home/qingchan/data/concept-flow/runs/20260903T123856Z-00f0adc-paper-compile/`; reviewer receipt `/home/qingchan/.codex/state/claude-review-concept-flow/review-20260903T124039710820Z.json`; `docs/reviews/evidence-locked-paper-compilation.md`; `paper/main.pdf`.
+- Next step: can the accepted PDF and source form a reproducible anonymous submission bundle? Validate a source archive that reproduces the accepted PDF and contains the required paper assets.
+- Writer ownership: server Codex/ARIS; no manuscript-build process is active.
 
 ## Transition rules
 
