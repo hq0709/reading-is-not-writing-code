@@ -36,14 +36,14 @@ Updated: 2026-09-02. Scientific state uses `PLANNED`, `RUNNING`, `FAILED`, and `
 
 ## Third hard gate: `qwen7b-effusion-vislast-reltoken`
 
-- Run: the fixed Qwen2.5-VL-7B Effusion protocol will stage revision `cc594898137f460bfe9f0759e9844b3ce807cfb5`, prove the `model.visual.blocks.31` hook reaches the merger and logits, extract the registered NIH `vis.last` activations, and execute the capacity-matched probe and unchanged relative-token intervention on the first gate's 200 evaluation rows.
-- Observation: none; the cross-architecture cell is registered and awaiting runner verification and immutable dispatch.
-- Scientific state: `PLANNED`.
-- Gate decision: the availability criterion, paired LLaVA contrast, intervention controls, multiplicity handling, and unchanged selective-cell threshold are registered.
+- Run: immutable asset stage `20260903T000153Z-caaae3ef346d-qwen-stage` and hook preflight `20260903T000239Z-caaae3ef346d-qwen-hook` completed from commit `caaae3ef346d3ac01c76c53ba99b3b7237066639`; full run `20260903T000321Z-caaae3ef346d-qwen-full` is extracting the registered NIH `vis.last` activations and will execute the fixed probe and relative-token intervention on GPU 0.
+- Observation: the atomically published Qwen asset records revision `cc594898137f460bfe9f0759e9844b3ce807cfb5` and all five registered weight-shard hashes. The exact `model.visual.blocks.31` capture fired once with shape `576 × 1280`; alpha zero was a bitwise no-op, and alpha `+0.1` changed the downstream merger by `3.625` and final logits by `0.625`.
+- Scientific state: `RUNNING`.
+- Gate decision: asset and synthetic hook preflight `PASS`; the full hard gate is `RUNNING`.
 - Gate disposition: `READY`.
-- Evidence: `docs/RESEARCH_PLAN.md#third-hard-gate`; accepted NIH and LLaVA Effusion receipts; pinned Qwen revision `cc594898137f460bfe9f0759e9844b3ce807cfb5`.
-- Next step: does Qwen's consumed final visual block provide decodable Effusion opportunity and selectively influence its answer? Verify the runner, commit and push `main`, dispatch the immutable model stage, then run the registered hook and full payloads on one registered GPU.
-- Writer ownership: local Codex until the verified registration and runner checkpoint is pushed.
+- Evidence: `/home/qingchan/data/concept-flow/models/qwen7b-huggingface/asset-receipt.json`; `/home/qingchan/data/concept-flow/runs/20260903T000153Z-caaae3ef346d-qwen-stage/`; `/home/qingchan/data/concept-flow/runs/20260903T000239Z-caaae3ef346d-qwen-hook/`; `/home/qingchan/data/concept-flow/runs/20260903T000321Z-caaae3ef346d-qwen-full/`.
+- Next step: does Qwen's consumed final visual block provide decodable Effusion opportunity and selectively influence its answer? Complete the immutable full run, replay the decision-bearing validation, and request the pinned read-only Claude review.
+- Writer ownership: server Codex/ARIS while the persistent full run is active.
 
 ## Transition rules
 
