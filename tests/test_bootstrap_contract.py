@@ -44,9 +44,11 @@ class BootstrapContractTests(unittest.TestCase):
 
         self.assertIn('requires-python = ">=3.12,<3.14"', project)
         self.assertIn('"torch==2.7.0"', project)
+        self.assertIn('"torchvision==0.22.0"', project)
         self.assertIn('"pytest>=8.3,<9"', project)
         self.assertIn('"ruff>=0.11,<1"', project)
         self.assertIn('torch = { index = "pytorch-cu126" }', project)
+        self.assertIn('torchvision = { index = "pytorch-cu126" }', project)
         self.assertIn('url = "https://download.pytorch.org/whl/cu126"', project)
         self.assertIn("explicit = true", project)
 

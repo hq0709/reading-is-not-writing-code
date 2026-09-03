@@ -96,6 +96,7 @@ dependencies = [
     { name = "scikit-learn" },
     { name = "scipy" },
     { name = "torch" },
+    { name = "torchvision" },
     { name = "tqdm" },
     { name = "transformers" },
 ]
@@ -116,6 +117,7 @@ requires-dist = [
     { name = "scikit-learn", specifier = ">=1.4" },
     { name = "scipy", specifier = ">=1.11" },
     { name = "torch", specifier = "==2.7.0", index = "https://download.pytorch.org/whl/cu126" },
+    { name = "torchvision", specifier = "==0.22.0", index = "https://download.pytorch.org/whl/cu126" },
     { name = "tqdm", specifier = ">=4.66" },
     { name = "transformers", specifier = ">=4.51" },
 ]
@@ -1116,6 +1118,24 @@ wheels = [
     { url = "https://download-r2.pytorch.org/whl/cu126/torch-2.7.0%2Bcu126-cp313-cp313-win_amd64.whl", hash = "sha256:1f98f55295bba3834bfaabb0e4f06fc076ec7d76a825ce0f96ec57ba86bba584", upload-time = "2025-04-22T18:17:58Z" },
     { url = "https://download-r2.pytorch.org/whl/cu126/torch-2.7.0%2Bcu126-cp313-cp313t-manylinux_2_28_x86_64.whl", hash = "sha256:6a0c8235501280d8215225700cb7b7e05c90b8f01efddc0fbdb72edb34230146", upload-time = "2025-04-22T18:18:00Z" },
     { url = "https://download-r2.pytorch.org/whl/cu126/torch-2.7.0%2Bcu126-cp313-cp313t-win_amd64.whl", hash = "sha256:c364aac3c4e18289d6779b00d5972d05d6908a79a0c8c1ea51305823da09928d", upload-time = "2025-04-22T18:18:16Z" },
+]
+
+[[package]]
+name = "torchvision"
+version = "0.22.0+cu126"
+source = { registry = "https://download.pytorch.org/whl/cu126" }
+dependencies = [
+    { name = "numpy" },
+    { name = "pillow" },
+    { name = "torch" },
+]
+wheels = [
+    { url = "https://download-r2.pytorch.org/whl/cu126/torchvision-0.22.0%2Bcu126-cp312-cp312-manylinux_2_28_x86_64.whl", hash = "sha256:d155ffb659357747ef6697aca41dffd6fc8831d73f7b1b91d142ce2cd6e490c9", upload-time = "2025-04-22T18:30:19Z" },
+    { url = "https://download-r2.pytorch.org/whl/cu126/torchvision-0.22.0%2Bcu126-cp312-cp312-win_amd64.whl", hash = "sha256:62ecdbdd53a467f17923a8237d0396a930a4c65c2377f9afc56872d74d99522f", upload-time = "2025-04-22T18:30:19Z" },
+    { url = "https://download-r2.pytorch.org/whl/cu126/torchvision-0.22.0%2Bcu126-cp313-cp313-manylinux_2_28_x86_64.whl", hash = "sha256:c05a19944f9cf4aedbea5323d08738982e975986079377c8f07bc4765b558889", upload-time = "2025-04-22T18:30:19Z" },
+    { url = "https://download-r2.pytorch.org/whl/cu126/torchvision-0.22.0%2Bcu126-cp313-cp313-win_amd64.whl", hash = "sha256:4976d5b9893e9973934a765da27b0f1f6a00ac533c28fea8db1636de90036998", upload-time = "2025-04-22T18:30:19Z" },
+    { url = "https://download-r2.pytorch.org/whl/cu126/torchvision-0.22.0%2Bcu126-cp313-cp313t-manylinux_2_28_x86_64.whl", hash = "sha256:c2554420daf759d4bb0a8c0ced1de6fc69ce37a02c0da9d67f0c74bd0bf30310", upload-time = "2025-04-22T18:30:19Z" },
+    { url = "https://download-r2.pytorch.org/whl/cu126/torchvision-0.22.0%2Bcu126-cp313-cp313t-win_amd64.whl", hash = "sha256:95af25cd5390fe7480371e63686a05cdb6f5ff4d005218b09b2faaa833f60030", upload-time = "2025-04-22T18:30:19Z" },
 ]
 
 [[package]]
