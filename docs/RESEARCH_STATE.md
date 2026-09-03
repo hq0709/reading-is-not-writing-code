@@ -45,6 +45,17 @@ Updated: 2026-09-02. Scientific state uses `PLANNED`, `RUNNING`, `FAILED`, and `
 - Next step: what claim is supported by the completed three-cell sequence, including its architecture and direction-specificity boundaries? Evaluate the result-to-claim boundary before registering another experiment.
 - Writer ownership: server Codex/ARIS; no experiment process is active.
 
+## Result-to-claim gate
+
+- Run: deterministic evidence pre-check plus the configured pinned Claude read-only review evaluated the accepted three-cell sequence against the primary claim.
+- Observation: all 12 cited values exist in their primary artifacts. All three final-block cells have positive controlled selectivity. Both LLaVA cells remain non-selective against the registered conjunction; Qwen Effusion is registered-selective against random/sham, while its fixed Nodule-direction effect (`0.2863`) exceeds its Effusion-direction effect (`0.2343`).
+- Scientific state: `OBSERVED`; the supported interpretation is a final-locus dissociation between robust linear decodability and direction-specific causal influence in the registered NIH cells.
+- Gate decision: `PASS`; the pinned cross-family review returned `claim_supported=partial`, confidence `high`, integrity status `pass`, and routing action `supplement`.
+- Gate disposition: `READY` for prospective supplement registration; no further experiment is currently registered for dispatch.
+- Evidence: `CLAIMS_FROM_RESULTS.md`; `findings.md`; `.aris/evidence_precheck.json`; reviewer receipt `/home/qingchan/.codex/state/claude-review-concept-flow/review-20260903T013453088626Z.json`; trace `.aris/traces/result-to-claim/2026-09-02_run01/`.
+- Next step: can a prospectively registered direction-specificity supplement distinguish the Effusion probe normal from fixed unrelated clinical directions at Qwen `vis.last`? Register independent evaluation rows, uncertainty, multiplicity handling, budget, and immutable dispatch before launch.
+- Writer ownership: server Codex/ARIS; no experiment process is active.
+
 ## Transition rules
 
 `PLANNED -> RUNNING` requires a clean pushed commit and dispatch receipt. `RUNNING -> FAILED` records implementation, measurement, or infrastructure invalidity in the run/failure ledger. `RUNNING -> OBSERVED` requires valid positive or negative scientific evidence. A passed gate advances immediately to the next authorised experiment; validator-only changes reuse the original artifact.

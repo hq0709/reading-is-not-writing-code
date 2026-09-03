@@ -4,9 +4,9 @@
 
 Do medical vision-language models use the clinical information that can be decoded from their internal representations?
 
-Primary falsifiable claim: under a capacity-controlled, patient-split evaluation, behavioural utilisation is substantially lower than linear decodability across architectures, and the locus of peak decodability does not reliably predict the locus of selective causal influence.
+Primary falsifiable claim: under a capacity-controlled, patient-split evaluation, robust linear decodability at a consumed visual locus does not by itself establish direction-specific causal influence under probe-normal interventions.
 
-Falsification: the claim is rejected if completed, valid intervention sweeps with corrected locus hooks and preregistered activation-scale doses show that decodability rank reliably predicts selective behavioural effects across the registered model/concept cells, with uncertainty excluding the null relationship. A true negative is retained as `OBSERVED`; metrics, doses, loci, or control identities are not changed after seeing results to rescue the headline.
+Falsification: the claim is rejected if prospectively registered cells with positive controlled-decoding intervals also show concept-direction effects that exceed the same-alpha random and sham controls and the uncertainty bounds of every fixed unrelated clinical direction, replicated across the registered architecture/concept contrasts. A true negative is retained as `OBSERVED`; metrics, doses, loci, control identities, or direction-specificity rules are not changed after seeing results to rescue the headline.
 
 ## Method identity and forbidden rescues
 
@@ -51,6 +51,12 @@ The intervention reuses the first gate's exact 200 Effusion test row IDs, uses `
 This is one prospectively registered new cell and one paired probe contrast. The maximum-over-dose quantity remains the single within-cell statistic, and no population correlation or architecture-family hypothesis is estimated from three cells, so no additional cross-cell multiplicity correction is introduced. An eligible selective result establishes a LLaVA/Qwen architecture boundary; an eligible non-selective result replicates the probe-normal mismatch across two general architectures. A valid probe that does not pass the availability criterion remains an `OBSERVED` cell but does not enter the decode-to-use comparison.
 
 The model stage uses immutable payload `["python","scripts/server/stage_qwen7b_asset.py"]` with no GPU. After its asset receipt is accepted, the synthetic preflight uses `["bash","scripts/server/run_qwen_effusion_vislast_gate.sh","hook"]` on one registered GPU. The full-run payload is `["bash","scripts/server/run_qwen_effusion_vislast_gate.sh","full","<immutable-hook-run>/artifacts/hook-verification.json"]`, with the placeholder resolved to the accepted hook receipt before dispatch. Terminal internal replay and the pinned Claude read-only review precede `PASS`.
+
+## Result-to-claim boundary
+
+The accepted three-cell sequence supports the primary claim at the consumed final visual locus on NIH ChestX-ray14. LLaVA Effusion and Edema do not exceed the registered sham control. Qwen Effusion exceeds its registered random/sham controls, while the fixed Nodule direction produces a larger answer change, establishing a direction-specificity boundary for that cell. The sequence contains one shared concept across two architectures and one additional LLaVA concept; it does not identify a population architecture effect or compare peak loci across depth.
+
+The next experiment requires prospective registration before dispatch. Its positive question is whether an Effusion probe-normal intervention at Qwen `vis.last` exceeds uncertainty-calibrated fixed unrelated clinical directions on independent evaluation rows. Registration must fix the rows, bootstrap unit and seed, direction-specificity statistic, multiplicity handling, intervention grid, budget, and immutable command. Existing final-test outputs are evidence inputs and are not reclassified under the new threshold.
 
 ## Evaluation and fairness
 
