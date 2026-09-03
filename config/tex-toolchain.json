@@ -1,0 +1,18 @@
+{
+  "archive": {
+    "sha256": "8533d07f9ccbd7a65824b9e0459041bca34af1eb33daba48f59215593753a3b7",
+    "url": "https://github.com/tectonic-typesetting/tectonic/releases/download/tectonic%400.17.0/tectonic-0.17.0-x86_64-unknown-linux-musl.tar.gz"
+  },
+  "build_command": [
+    "tectonic",
+    "-X",
+    "compile",
+    "main.tex",
+    "--keep-logs"
+  ],
+  "cache_root": "/home/qingchan/.cache/Tectonic",
+  "component": "tectonic",
+  "install_path": "/home/qingchan/.local/bin/tectonic",
+  "release_tag": "tectonic@0.17.0",
+  "version": "0.17.0"
+}

@@ -76,6 +76,7 @@ manifest_sha256=$(sha256sum "$provenance" | awk '{print $1}')
       uvx) installed_version=$("$binary" --version) ;;
       codex) installed_version=$("$binary" --version) ;;
       claude) installed_version=$("$binary" --version) ;;
+      tectonic) installed_version=$("$binary" -V) ;;
       *) fail "unknown component: $component" ;;
     esac
     installed_version=$(printf '%s' "$installed_version" | tr '\t\r\n' '   ')

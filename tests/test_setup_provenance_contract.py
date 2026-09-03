@@ -67,6 +67,11 @@ class SetupProvenanceContractTests(unittest.TestCase):
                 "3a68d3406cf674e17bed1733a4dcf37805e2e47d87417700007d7e1aa766a944",
                 "704f1334ac65d3e89e1c6c1d7663293ad786a6166afdb71b5075337df630f976",
             ),
+            "tectonic": (
+                "0.17.0",
+                "8533d07f9ccbd7a65824b9e0459041bca34af1eb33daba48f59215593753a3b7",
+                "a98aa59ad5c1df39a6c9e56cbfc5088f2b11d6c179c0130b97998e4bd46a46da",
+            ),
         }
         self.assertEqual(set(expected), set(rows))
         for component, (version, installer_hash, binary_hash) in expected.items():
