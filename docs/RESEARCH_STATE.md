@@ -1,6 +1,6 @@
 # Research state
 
-Updated: 2026-09-02. Scientific state uses `PLANNED`, `RUNNING`, `FAILED`, and `OBSERVED`; gate disposition uses `READY`, `BLOCKED`, and `UNAVAILABLE`.
+Updated: 2026-09-03. Scientific state uses `PLANNED`, `RUNNING`, `FAILED`, and `OBSERVED`; gate disposition uses `READY`, `BLOCKED`, and `UNAVAILABLE`.
 
 ## Bootstrap gate
 
@@ -58,14 +58,14 @@ Updated: 2026-09-02. Scientific state uses `PLANNED`, `RUNNING`, `FAILED`, and `
 
 ## Direction-specificity supplement: `qwen7b-effusion-vislast-direction-specificity`
 
-- Run: prospectively registered implementation for a 400-patient independent confirmation at the discovery-locked alpha `+0.25`, reusing the accepted Qwen activation and direction artifacts.
-- Observation: no new scientific outcome has been consumed. The registered row-selection hash is `76be1da9659973d44a0898fa69c579afc4649f329ee227b19d1216efaa1c8bda`; the primary statistic places the maximum of the five fixed clinical controls inside each of 5,000 patient-bootstrap replicates.
-- Scientific state: `PLANNED`.
-- Gate decision: registration `PASS`; internal verification passed at clean pushed commit `ff3c1e021912bfa00801c29c920611c99ede0f58`, and the pinned read-only Claude review returned `PASS` with no required actions.
-- Gate disposition: `BLOCKED` on GPU availability; both A100s exceed the registered `<500 MiB` used-memory launch threshold, and no experiment process is active.
-- Evidence: `docs/RESEARCH_PLAN.md#direction-specificity-supplement`; `/home/qingchan/data/concept-flow/state/direction-specificity-registration-validation-20260903T022000Z/receipt.json`; reviewer receipt `/home/qingchan/.codex/state/claude-review-concept-flow/review-20260903T021501392963Z.json`; `docs/reviews/qwen7b-effusion-vislast-direction-specificity-registration.md`.
-- Next step: can the registered independent-row Qwen supplement show that the Effusion probe normal exceeds the fixed unrelated clinical directions with familywise bootstrap uncertainty? Dispatch the immutable payload when one A100 satisfies the free-memory threshold.
-- Writer ownership: server Codex/ARIS.
+- Run: immutable run `20260903T103508Z-456c81bad460-7a3edc4b` completed the registered 400-patient Qwen direction-specificity protocol from commit `456c81bad460c986d632b1365c0017364b8f6c84` on one A100 in 361 seconds, reusing the accepted activation and direction artifacts.
+- Observation: the Effusion direction changed mean `P(yes)` by `0.1945`, above random-direction p95 `0.0878` and absolute sham `0.0157`. The fixed Nodule direction changed it by `0.2519`; the familywise Effusion-minus-maximum-unrelated margin was `-0.0573` (two-sided 95% patient-bootstrap CI `[-0.0694, -0.0450]`, one-sided 95% lower bound `-0.0678`). The 400 unique patients, 28 configurations, 11,200 per-image outcomes, and 5,000 bootstrap draws were complete; `direction_specific=false`.
+- Scientific state: `OBSERVED`; the random/sham selectivity replicated on independent rows, while the registered clinical-direction criterion was not met.
+- Gate decision: `PASS`; 13 decision-bearing dispatcher checksums passed, source binding, row selection, bootstrap draws, and summary replayed byte-identically, and the pinned read-only Claude review returned `PASS` with no required actions.
+- Gate disposition: `READY`.
+- Evidence: run receipt `/home/qingchan/data/concept-flow/runs/20260903T103508Z-456c81bad460-7a3edc4b/`; internal replay `/home/qingchan/data/concept-flow/state/direction-specificity-internal-validation-20260903T104309Z/receipt.json`; reviewer receipt `/home/qingchan/.codex/state/claude-review-concept-flow/review-20260903T104435241861Z.json`; `docs/reviews/qwen7b-effusion-vislast-direction-specificity.md`.
+- Next step: what paper-ready claim does the accepted independent-row supplement support for direction-specific causal influence at Qwen `vis.last`? Evaluate the updated result-to-claim boundary before registering another experiment.
+- Writer ownership: server Codex/ARIS; no experiment process is active.
 
 ## Transition rules
 
