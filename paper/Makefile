@@ -1,7 +1,18 @@
-# Tectonic needs no local TeX tree; latexmk works too if you have one.
 ENGINE ?= tectonic
+PYTHON ?= python
 
-main.pdf: main.tex refs.bib tables.tex $(wildcard figures/*.png)
+ASSET_SCRIPTS := scripts/build_paper_data.py scripts/gen_fig1.py scripts/gen_fig2.py scripts/gen_fig3.py scripts/gen_tables.py
+ASSETS := data/accepted_results.json figures/fig1_evidence_ladder.pdf figures/fig2_dose_responses.pdf figures/fig3_direction_specificity.pdf tables/table_decoding.tex tables/table_gates.tex
+SECTIONS := $(wildcard sections/*.tex)
+
+assets: $(ASSET_SCRIPTS)
+	$(PYTHON) scripts/build_paper_data.py
+	$(PYTHON) scripts/gen_fig1.py
+	$(PYTHON) scripts/gen_fig2.py
+	$(PYTHON) scripts/gen_fig3.py
+	$(PYTHON) scripts/gen_tables.py
+
+main.pdf: main.tex math_commands.tex refs.bib $(SECTIONS) $(ASSETS)
 	$(ENGINE) -X compile main.tex --keep-logs
 
 check: main.pdf
@@ -12,4 +23,4 @@ check: main.pdf
 clean:
 	rm -f main.aux main.log main.blg main.bbl main.out
 
-.PHONY: check clean
+.PHONY: assets check clean

@@ -1,0 +1,20 @@
+\section{Discussion and Limitations}
+\label{sec:discussion}
+
+\paragraph{A hierarchy of evidence.}
+The experiments support treating linear availability, generic intervention sensitivity, and clinical direction specificity as different evidentiary levels. A positive probe interval answers whether a restricted readout reliably recovers a label under the patient split and control task. A random/sham pass answers whether the target normal produces an effect beyond matched non-semantic vectors. Only the clinical-direction comparison asks whether the response is preferentially associated with the named finding. Collapsing these questions turns the Qwen result into a success after the original cohort; keeping them separate reveals the stronger Nodule response on independent patients.
+
+\paragraph{Implication for causal interpretation.}
+Matched clinical directions are a load-bearing control when a probe normal carries a semantic name. Random vectors test the ambient geometry, and a coordinate permutation tests one construction artifact, but neither represents a plausible competing clinical direction learned with the same readout and data. For the Qwen cell, random/sham controls would license an Effusion-specific story that the clinical control family rejects. The practical rule is therefore to compare semantic directions at the same locus, dose, rows, and endpoint, with multiplicity handled over that fixed family.
+
+\paragraph{Scope of the evidence.}
+The registered evidence covers NIH ChestX-ray14, two 7B architectures, the consumed final visual block, Effusion in both models, Edema in LLaVA, fixed yes/no prompts, a linear readout, and relative-token probe-normal interventions. It establishes a three-cell dissociation at that locus. The paired decoding intervals span zero, so they leave architecture and concept ordering unresolved. Intermediate loci, nonlinear directions, and other medical image modalities define separate tests rather than extensions of the present estimate.
+
+\paragraph{Data and endpoint limitations.}
+ChestX-ray14 labels are mined from reports, with 179 positive Edema test images versus 700 positive Effusion images. The patient split prevents identity leakage but does not remove label noise or acquisition correlations. Mean pooling also does not localize a finding spatially. The behavioural endpoint is the probability assigned to a yes answer under fixed prompts, so the evidence concerns this answer pathway rather than diagnostic accuracy or report quality.
+
+\paragraph{Specificity design.}
+The independent supplement tests one discovery-locked Qwen dose against five prospectively fixed clinical normals. Recomputing their maximum inside each bootstrap draw controls the familywise endpoint for that set. A broader clinical vocabulary could contain still stronger or more closely related directions, while alternative doses would constitute new endpoints. The present result is decisive for the registered criterion because its complete interval lies below zero.
+
+\paragraph{Reproducibility and ethics.}
+Appendix~\ref{app:protocol} records prompts, row-selection hashes, seeds, doses, model revisions, run identifiers, and GPU wall time. Immutable snapshots and terminal receipts bind each result to its environment and inputs. This work evaluates interpretability evidence, not clinical diagnostic performance. Its safety implication is methodological: a decodable feature should be treated as clinically operative only after intervention controls establish direction specificity.

@@ -1,0 +1,544 @@
+{
+  "schema": "concept-flow-paper-evidence-v1",
+  "cells": [
+    {
+      "key": "llava_effusion",
+      "run_id": "20260902T191411Z-ffd523c464c8-f99e2f39",
+      "model": "LLaVA-1.5-7B",
+      "concept": "Effusion",
+      "locus": "vis.last",
+      "module": "model.vision_tower.encoder.layers.22",
+      "n_train": 18212,
+      "n_test": 5343,
+      "n_test_patients": 1659,
+      "auroc": 0.7788163441124888,
+      "auroc_ci95": [
+        0.7537593969935978,
+        0.803081179537482
+      ],
+      "control_mean": 0.6648838502302586,
+      "control_spread": {
+        "max": 0.8315549757945846,
+        "min": 0.5626201410940865,
+        "p05": 0.5749796035747652,
+        "p95": 0.7449793495020542,
+        "sd": 0.06261447851851581
+      },
+      "selectivity": 0.11393249388223015,
+      "selectivity_ci95": [
+        0.08754204794557874,
+        0.14039523338826207
+      ],
+      "paired_difference": null,
+      "paired_difference_ci95": null,
+      "baseline_mean_p_yes": 0.49523951679468153,
+      "dose": [
+        {
+          "alpha": -1.0,
+          "mean_p_yes": 0.34825439617037773,
+          "raw_change": -0.1469851206243038
+        },
+        {
+          "alpha": -0.5,
+          "mean_p_yes": 0.45019946292042734,
+          "raw_change": -0.04504005387425419
+        },
+        {
+          "alpha": -0.25,
+          "mean_p_yes": 0.48117384761571885,
+          "raw_change": -0.014065669178962681
+        },
+        {
+          "alpha": -0.1,
+          "mean_p_yes": 0.4854513505101204,
+          "raw_change": -0.00978816628456114
+        },
+        {
+          "alpha": 0.0,
+          "mean_p_yes": 0.49523951679468153,
+          "raw_change": 0.0
+        },
+        {
+          "alpha": 0.1,
+          "mean_p_yes": 0.5128919067978859,
+          "raw_change": 0.017652390003204343
+        },
+        {
+          "alpha": 0.25,
+          "mean_p_yes": 0.5375209221243858,
+          "raw_change": 0.042281405329704314
+        },
+        {
+          "alpha": 0.5,
+          "mean_p_yes": 0.55920097053051,
+          "raw_change": 0.06396145373582846
+        },
+        {
+          "alpha": 1.0,
+          "mean_p_yes": 0.5600271670520306,
+          "raw_change": 0.06478765025734906
+        }
+      ],
+      "controls": {
+        "-1.0": {
+          "random_p05": -0.1566438322663307,
+          "random_p95": 0.12022438084706669,
+          "sham_effect": -0.15463428646326066
+        },
+        "-0.5": {
+          "random_p05": -0.15290307267010209,
+          "random_p95": 0.06825135875493288,
+          "sham_effect": -0.10488365784287451
+        },
+        "-0.25": {
+          "random_p05": -0.09936212383210666,
+          "random_p95": 0.04422257240861653,
+          "sham_effect": -0.05440576314926154
+        },
+        "0.25": {
+          "random_p05": -0.07143622430413958,
+          "random_p95": 0.07007631252706056,
+          "sham_effect": -0.018847170770168287
+        },
+        "0.5": {
+          "random_p05": -0.13753027125820513,
+          "random_p95": 0.11635260727256541,
+          "sham_effect": -0.02492118701338769
+        },
+        "1.0": {
+          "random_p05": -0.21515039083361623,
+          "random_p95": 0.20327969162166123,
+          "sham_effect": -0.04832400023937222
+        }
+      },
+      "primary": {
+        "alpha": -1.0,
+        "concept_consistent_change": 0.1469851206243038,
+        "exceeds_max_absolute_sham": false,
+        "mean_p_yes": 0.34825439617037773,
+        "outside_random_in_consistent_direction": true,
+        "random_effects": [
+          -0.15421564698219298,
+          -0.13750306755304337,
+          -0.12495832532644274,
+          -0.006400880515575469,
+          0.17545585371553896,
+          0.007836282700300179,
+          -0.09250967681407934,
+          -0.022265109419822682,
+          -0.039306939095258675,
+          -0.13904446363449102,
+          0.07053428068757056,
+          0.0483988772332668,
+          -0.110694036334753,
+          -0.009551681578159388,
+          0.11731746122241021,
+          0.10453451529145241,
+          -0.022694525867700543,
+          0.11244062438607216,
+          -0.05069836288690571,
+          -0.20277935266494757
+        ],
+        "random_p05": -0.1566438322663307,
+        "random_p95": 0.12022438084706669,
+        "raw_change": -0.1469851206243038,
+        "selective": false,
+        "sham_effect": -0.15463428646326066,
+        "unrelated_effects": {
+          "unrelated_Atelectasis": 0.12993040189146993,
+          "unrelated_Cardiomegaly": -0.1461335143446923,
+          "unrelated_Mass": 0.1018329721689224,
+          "unrelated_Nodule": 0.051519133895635616,
+          "unrelated_Pneumothorax": 0.0183971384167671
+        }
+      },
+      "maximum_absolute_sham_effect": 0.15463428646326066,
+      "selective_cell": false,
+      "spearman_rho": 1.0,
+      "sources": {
+        "probe": "/home/qingchan/data/concept-flow/runs/20260902T191411Z-ffd523c464c8-f99e2f39/artifacts/probe/probe.json",
+        "intervention_summary": "/home/qingchan/data/concept-flow/runs/20260902T191411Z-ffd523c464c8-f99e2f39/artifacts/intervention-summary.json",
+        "intervention_csv": "/home/qingchan/data/concept-flow/runs/20260902T191411Z-ffd523c464c8-f99e2f39/artifacts/intervention/intervention.csv"
+      }
+    },
+    {
+      "key": "llava_edema",
+      "run_id": "20260902T221534Z-110b84618d1b-edema",
+      "model": "LLaVA-1.5-7B",
+      "concept": "Edema",
+      "locus": "vis.last",
+      "module": "model.vision_tower.encoder.layers.22",
+      "n_train": 18212,
+      "n_test": 5343,
+      "n_test_patients": 1659,
+      "auroc": 0.8009024661494056,
+      "auroc_ci95": [
+        0.7648211929185149,
+        0.8329276519760651
+      ],
+      "control_mean": 0.6648838502302586,
+      "control_spread": {
+        "max": 0.8315549757945846,
+        "min": 0.5626201410940865,
+        "p05": 0.5749796035747652,
+        "p95": 0.7449793495020542,
+        "sd": 0.06261447851851581
+      },
+      "selectivity": 0.136018615919147,
+      "selectivity_ci95": [
+        0.09935901397117824,
+        0.1693054728441684
+      ],
+      "paired_difference": 0.022086122036916844,
+      "paired_difference_ci95": [
+        -0.017479364808838334,
+        0.05901509222566426
+      ],
+      "baseline_mean_p_yes": 0.3760456712543964,
+      "dose": [
+        {
+          "alpha": -1.0,
+          "mean_p_yes": 0.31011296033859254,
+          "raw_change": -0.06593271091580388
+        },
+        {
+          "alpha": -0.5,
+          "mean_p_yes": 0.3453446643054485,
+          "raw_change": -0.030701006948947895
+        },
+        {
+          "alpha": -0.25,
+          "mean_p_yes": 0.37836939305067063,
+          "raw_change": 0.002323721796274214
+        },
+        {
+          "alpha": -0.1,
+          "mean_p_yes": 0.38165406495332715,
+          "raw_change": 0.005608393698930736
+        },
+        {
+          "alpha": 0.0,
+          "mean_p_yes": 0.3760456712543964,
+          "raw_change": 0.0
+        },
+        {
+          "alpha": 0.1,
+          "mean_p_yes": 0.37289600908756254,
+          "raw_change": -0.0031496621668338776
+        },
+        {
+          "alpha": 0.25,
+          "mean_p_yes": 0.36035410948097707,
+          "raw_change": -0.01569156177341935
+        },
+        {
+          "alpha": 0.5,
+          "mean_p_yes": 0.3172565843909979,
+          "raw_change": -0.05878908686339851
+        },
+        {
+          "alpha": 1.0,
+          "mean_p_yes": 0.26403093069791794,
+          "raw_change": -0.11201474055647848
+        }
+      ],
+      "controls": {
+        "-1.0": {
+          "random_p05": -0.13038692638278004,
+          "random_p95": 0.14702408102527262,
+          "sham_effect": 0.07524938493967054
+        },
+        "-0.5": {
+          "random_p05": -0.15477766914665705,
+          "random_p95": 0.08393693342432379,
+          "sham_effect": 0.05955780871212479
+        },
+        "-0.25": {
+          "random_p05": -0.111599302880466,
+          "random_p95": 0.033854771763086294,
+          "sham_effect": 0.027498438954353333
+        },
+        "0.25": {
+          "random_p05": -0.08796194971352811,
+          "random_p95": 0.05166057527065281,
+          "sham_effect": 0.04843548484146598
+        },
+        "0.5": {
+          "random_p05": -0.13978454523719847,
+          "random_p95": 0.08395608919113881,
+          "sham_effect": 0.07833290413022043
+        },
+        "1.0": {
+          "random_p05": -0.20243923019617796,
+          "random_p95": 0.20206925990432503,
+          "sham_effect": 0.09133242860436441
+        }
+      },
+      "primary": {
+        "alpha": -1.0,
+        "concept_consistent_change": 0.06593271091580388,
+        "exceeds_max_absolute_sham": false,
+        "mean_p_yes": 0.31011296033859254,
+        "outside_random_in_consistent_direction": false,
+        "random_effects": [
+          -0.06688978582620625,
+          -0.15511939391493795,
+          0.03348660998046399,
+          -0.0375135473906994,
+          0.14424476660788058,
+          0.09607661731541156,
+          -0.0884880840778351,
+          0.11279525265097617,
+          0.007301154583692515,
+          -0.12908521756529806,
+          0.12418030269443986,
+          0.030978209674358326,
+          -0.03240291014313701,
+          0.02824240356683727,
+          0.13272486083209512,
+          0.12354314066469668,
+          0.07655926562845705,
+          0.19983105495572087,
+          -0.041076667904853814,
+          -0.10746039792895318
+        ],
+        "random_p05": -0.13038692638278004,
+        "random_p95": 0.14702408102527262,
+        "raw_change": -0.06593271091580388,
+        "selective": false,
+        "sham_effect": 0.07524938493967054,
+        "unrelated_effects": {
+          "unrelated_Atelectasis": 0.12986084692180155,
+          "unrelated_Cardiomegaly": -0.060331767797470126,
+          "unrelated_Effusion": 0.14674324870109556,
+          "unrelated_Mass": 0.076084518507123,
+          "unrelated_Nodule": 0.0630659649521112,
+          "unrelated_Pneumothorax": 0.05811174236237998
+        }
+      },
+      "maximum_absolute_sham_effect": 0.09133242860436441,
+      "selective_cell": false,
+      "spearman_rho": -0.42857142857142866,
+      "sources": {
+        "probe": "/home/qingchan/data/concept-flow/runs/20260902T221534Z-110b84618d1b-edema/artifacts/probe/probe.json",
+        "intervention_summary": "/home/qingchan/data/concept-flow/runs/20260902T221534Z-110b84618d1b-edema/artifacts/intervention-summary.json",
+        "intervention_csv": "/home/qingchan/data/concept-flow/runs/20260902T221534Z-110b84618d1b-edema/artifacts/intervention/intervention.csv"
+      }
+    },
+    {
+      "key": "qwen_effusion",
+      "run_id": "20260903T000321Z-caaae3ef346d-qwen-full",
+      "model": "Qwen2.5-VL-7B",
+      "concept": "Effusion",
+      "locus": "vis.last",
+      "module": "model.visual.blocks.31",
+      "n_train": 18212,
+      "n_test": 5343,
+      "n_test_patients": 1659,
+      "auroc": 0.7742131011353497,
+      "auroc_ci95": [
+        0.7488153720964997,
+        0.79929749997042
+      ],
+      "control_mean": 0.6576339607365205,
+      "control_spread": {
+        "max": 0.8225735226166019,
+        "min": 0.5536577199108217,
+        "p05": 0.5737861976547559,
+        "p95": 0.7476248866830143,
+        "sd": 0.06256913251529526
+      },
+      "selectivity": 0.11657914039882922,
+      "selectivity_ci95": [
+        0.08974446529282622,
+        0.14283241566000443
+      ],
+      "paired_difference": 0.0026466465165990716,
+      "paired_difference_ci95": [
+        -0.015509162117536269,
+        0.021500020623000344
+      ],
+      "baseline_mean_p_yes": 0.04958203876158222,
+      "dose": [
+        {
+          "alpha": -1.0,
+          "mean_p_yes": 0.002067677269806154,
+          "raw_change": -0.04751436149177607
+        },
+        {
+          "alpha": -0.5,
+          "mean_p_yes": 0.018149336432106793,
+          "raw_change": -0.031432702329475426
+        },
+        {
+          "alpha": -0.25,
+          "mean_p_yes": 0.029040090672206132,
+          "raw_change": -0.02054194808937609
+        },
+        {
+          "alpha": -0.1,
+          "mean_p_yes": 0.03833158907713369,
+          "raw_change": -0.011250449684448535
+        },
+        {
+          "alpha": 0.0,
+          "mean_p_yes": 0.04958203876158222,
+          "raw_change": 0.0
+        },
+        {
+          "alpha": 0.1,
+          "mean_p_yes": 0.13572048316244037,
+          "raw_change": 0.08613844440085815
+        },
+        {
+          "alpha": 0.25,
+          "mean_p_yes": 0.28388363003730777,
+          "raw_change": 0.23430159127572553
+        },
+        {
+          "alpha": 0.5,
+          "mean_p_yes": 0.28293306693434717,
+          "raw_change": 0.23335102817276493
+        },
+        {
+          "alpha": 1.0,
+          "mean_p_yes": 0.004300016323104501,
+          "raw_change": -0.045282022438477725
+        }
+      ],
+      "controls": {
+        "-1.0": {
+          "random_p05": -0.03012530190171674,
+          "random_p95": 0.04927626616210182,
+          "sham_effect": 0.03719858728116378
+        },
+        "-0.5": {
+          "random_p05": -0.2528147694827057,
+          "random_p95": 0.046535938529821574,
+          "sham_effect": -0.009268178420607003
+        },
+        "-0.25": {
+          "random_p05": -0.14654625409701838,
+          "random_p95": 0.018298154341056944,
+          "sham_effect": 0.018900031149387358
+        },
+        "0.25": {
+          "random_p05": -0.029937884339247826,
+          "random_p95": 0.09631123471958565,
+          "sham_effect": 0.08516594238812104
+        },
+        "0.5": {
+          "random_p05": -0.040884610792767485,
+          "random_p95": 0.23634184724325313,
+          "sham_effect": -0.03298434109659865
+        },
+        "1.0": {
+          "random_p05": -0.04945691463655567,
+          "random_p95": -0.01448943031625815,
+          "sham_effect": -0.04705395322467666
+        }
+      },
+      "primary": {
+        "alpha": 0.25,
+        "concept_consistent_change": 0.23430159127572553,
+        "exceeds_max_absolute_sham": true,
+        "mean_p_yes": 0.28388363003730777,
+        "outside_random_in_consistent_direction": true,
+        "random_effects": [
+          -0.025794190375600008,
+          0.05500711782136933,
+          -0.029852181836031375,
+          -0.021694614524021744,
+          0.045033792934846134,
+          0.06516543410951271,
+          0.07551738688955083,
+          0.005241254281718288,
+          0.02546680731931701,
+          0.09524913059780375,
+          -0.004592261060606687,
+          -0.0007748273224569835,
+          0.06424738632747903,
+          0.05982093561673538,
+          0.11649121303344147,
+          0.021358560963999476,
+          -0.03156623190036043,
+          0.056583929781336334,
+          0.04553945613326506,
+          0.018613192399498074
+        ],
+        "random_p05": -0.029937884339247826,
+        "random_p95": 0.09631123471958565,
+        "raw_change": 0.23430159127572553,
+        "selective": true,
+        "sham_effect": 0.08516594238812104,
+        "unrelated_effects": {
+          "unrelated_Atelectasis": 0.08783849833765998,
+          "unrelated_Cardiomegaly": 0.011889807332772763,
+          "unrelated_Mass": 0.08734615452820436,
+          "unrelated_Nodule": 0.286263411717955,
+          "unrelated_Pneumothorax": 0.024422772612888374
+        }
+      },
+      "maximum_absolute_sham_effect": 0.08516594238812104,
+      "selective_cell": true,
+      "spearman_rho": 0.9642857142857145,
+      "sources": {
+        "probe": "/home/qingchan/data/concept-flow/runs/20260903T000321Z-caaae3ef346d-qwen-full/artifacts/probe/probe.json",
+        "intervention_summary": "/home/qingchan/data/concept-flow/runs/20260903T000321Z-caaae3ef346d-qwen-full/artifacts/intervention-summary.json",
+        "intervention_csv": "/home/qingchan/data/concept-flow/runs/20260903T000321Z-caaae3ef346d-qwen-full/artifacts/intervention/intervention.csv"
+      }
+    }
+  ],
+  "specificity": {
+    "run_id": "20260903T103508Z-456c81bad460-7a3edc4b",
+    "alpha": 0.25,
+    "n_eval": 400,
+    "n_eval_patients": 400,
+    "bootstrap_resamples": 5000,
+    "direction_effects": {
+      "concept": 0.1945347837949521,
+      "random0": 0.08708840232196963,
+      "random1": 0.02075994542654371,
+      "random10": 0.05001286797079956,
+      "random11": 0.04388094972673571,
+      "random12": 0.021932032877521122,
+      "random13": -0.018600294733478222,
+      "random14": -0.013464205893978943,
+      "random15": 0.030623817833547947,
+      "random16": 0.06213488455716288,
+      "random17": 0.06967972920130705,
+      "random18": 0.00854696465044981,
+      "random19": 0.029285905476135667,
+      "random2": -0.00011937599541852251,
+      "random3": -0.015142446601821576,
+      "random4": 0.05184463694546139,
+      "random5": 0.053575899133866185,
+      "random6": 0.051888775321131106,
+      "random7": 0.10064797979634023,
+      "random8": 0.02077600573276868,
+      "random9": -0.019740608630818314,
+      "sham": -0.0156513355919742,
+      "unrelated_Atelectasis": 0.07733762862713775,
+      "unrelated_Cardiomegaly": 0.016729989797750023,
+      "unrelated_Mass": 0.07653512045595562,
+      "unrelated_Nodule": 0.2518629158087424,
+      "unrelated_Pneumothorax": 0.02407675751572242
+    },
+    "random_effect_p95": 0.08776638119568816,
+    "absolute_sham_effect": 0.0156513355919742,
+    "primary": {
+      "ci95": [
+        -0.0693829501046566,
+        -0.04500512929691468
+      ],
+      "margin": -0.057328132013790334,
+      "maximum_unrelated_direction": "unrelated_Nodule",
+      "maximum_unrelated_effect": 0.2518629158087424,
+      "multiplicity": "the maximum over all five fixed unrelated directions is recomputed inside every patient-bootstrap replicate",
+      "one_sided_lower_95": -0.06779789115232414,
+      "statistic": "Effusion effect minus maximum fixed unrelated-direction effect"
+    },
+    "direction_specific": false,
+    "source": "/home/qingchan/data/concept-flow/runs/20260903T103508Z-456c81bad460-7a3edc4b/artifacts/direction-specificity-summary.json"
+  }
+}

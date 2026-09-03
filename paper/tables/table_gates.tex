@@ -1,0 +1,17 @@
+\begin{table*}[t]
+\centering
+\scriptsize
+\setlength{\tabcolsep}{3.2pt}
+\caption{Registered intervention outcomes. Original cohorts select the maximum concept-consistent effect over the six controlled nonzero doses; their clinical-direction endpoint was not prospectively familywise. The independent cohort locks $\alpha=+0.25$ and recomputes the maximum over five fixed clinical directions inside each of 5,000 patient-bootstrap replicates. ``Stopped at'' names the first evidentiary rung not cleared.}
+\label{tab:gates}
+\begin{tabular}{lllrrccccl}
+\toprule
+Model & Concept & Cohort & $N$ & $\alpha$ & Concept effect & Random control & $|$sham$|$ & Clinical margin [95\% CI] & Stopped at \\
+\midrule
+LLaVA-1.5-7B & Effusion & Original & 200 & -1.00 & 0.1470 & [-0.1566, 0.1202] & 0.1546 & --- & Random/sham \\
+LLaVA-1.5-7B & Edema & Original & 200 & -1.00 & 0.0659 & [-0.1304, 0.1470] & 0.0913 & --- & Random/sham \\
+Qwen2.5-VL-7B & Effusion & Original & 200 & +0.25 & 0.2343 & [-0.0299, 0.0963] & 0.0852 & --- & Clinical directions \\
+Qwen2.5-VL-7B & Effusion & Independent & 400 & +0.25 & 0.1945 & p95=0.0878 & 0.0157 & -0.0573 [-0.0694, -0.0450] & Clinical directions \\
+\bottomrule
+\end{tabular}
+\end{table*}

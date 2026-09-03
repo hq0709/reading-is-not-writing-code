@@ -1,0 +1,16 @@
+\begin{table*}[t]
+\centering
+\small
+\setlength{\tabcolsep}{4.5pt}
+\caption{Controlled decodability at the exact final visual block. Intervals are 95\% patient-cluster bootstrap intervals over 2,000 draws. The control column gives the mean AUROC over 20 recurring-type random-label maps and their 5th--95th percentile spread.}
+\label{tab:decoding}
+\begin{tabular}{lllccc}
+\toprule
+Model & Concept & Consumed module & AUROC [95\% CI] & Control mean (5--95\%) & Selectivity [95\% CI] \\
+\midrule
+LLaVA-1.5-7B & Effusion & model.vision\_tower.encoder.layers.22 & 0.7788 [0.7538, 0.8031] & 0.6649 (0.5750--0.7450) & 0.1139 [0.0875, 0.1404] \\
+LLaVA-1.5-7B & Edema & model.vision\_tower.encoder.layers.22 & 0.8009 [0.7648, 0.8329] & 0.6649 (0.5750--0.7450) & 0.1360 [0.0994, 0.1693] \\
+Qwen2.5-VL-7B & Effusion & model.visual.blocks.31 & 0.7742 [0.7488, 0.7993] & 0.6576 (0.5738--0.7476) & 0.1166 [0.0897, 0.1428] \\
+\bottomrule
+\end{tabular}
+\end{table*}

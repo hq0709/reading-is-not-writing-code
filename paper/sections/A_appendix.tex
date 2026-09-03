@@ -1,0 +1,53 @@
+\section{Registered Protocol and Provenance}
+\label{app:protocol}
+
+\paragraph{Prompts.}
+The Effusion prompt is ``Is there a pleural effusion in this chest radiograph? Answer yes or no.'' The Edema prompt is ``Is there pulmonary edema in this chest radiograph? Answer yes or no.'' The model revisions are LLaVA-1.5-7B at the accepted project snapshot and \texttt{Qwen/Qwen2.5-VL-7B-Instruct} at revision \texttt{cc594898137f460bfe9f0759e9844b3ce807cfb5}, with Qwen processor resolution fixed at $336^2$ pixels.
+
+\paragraph{Rows and seeds.}
+The deterministic NIH split hashes patient identity. Probe projection and fitting use seed 0. Type-to-label controls use seeds 0--19. Probe intervals use 2,000 patient-cluster draws with seed 20260827. The independent Qwen cohort excludes every patient in the original intervention set, chooses one row per remaining patient with SHA-256 of \texttt{qwen-direction-specificity-row-v1\textbackslash0<row\_id>}, ranks patients with SHA-256 of \texttt{qwen-direction-specificity-patient-v1\textbackslash0<patient\_id>}, and takes the first 400. The canonical row-list SHA-256 is \texttt{76be1da9659973d44a0898fa69c579afc4649f329ee227b19d1216efaa1c8bda}. Supplement bootstraps use seed 20260903.
+
+\paragraph{Immutable runs.}
+The accepted full runs are \texttt{20260902T191411Z-ffd523c464c8-f99e2f39} (LLaVA Effusion), \texttt{20260902T221534Z-110b84618d1b-edema} (LLaVA Edema), \texttt{20260903T000321Z-caaae3ef346d-qwen-full} (Qwen Effusion), and \texttt{20260903T103508Z-456c81bad460-7a3edc4b} (Qwen direction specificity). Their recorded GPU wall times are 7,022, 1,823, 2,077, and 361 seconds, respectively, for 11,283 seconds total on one A100 per run. The latter three reuse accepted upstream activations or direction artifacts where registered.
+
+\section{Complete Registered Settings}
+
+\begin{table}[h]
+\centering
+\small
+\caption{Fixed settings shared by the registered cells.}
+\begin{tabular}{ll}
+\toprule
+Component & Registered value \\
+\midrule
+Readout & 512-dimensional Gaussian projection; logistic regression, $C=1$ \\
+Probe seed & 0 \\
+Control labels & 20 recurring-type maps, seeds 0--19 \\
+Probe uncertainty & 2,000 patient-cluster bootstrap draws \\
+Concept doses & $-1,-0.5,-0.25,-0.1,0,0.1,0.25,0.5,1$ \\
+Controlled doses & $-1,-0.5,-0.25,0.25,0.5,1$ \\
+Generic controls & 20 isotropic random directions; coordinate-permutation sham \\
+Clinical controls & Atelectasis, Pneumothorax, Cardiomegaly, Mass, Nodule \\
+Supplement & $\alpha=+0.25$; 400 patients; 5,000 patient bootstraps \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Hook witnesses.}
+For LLaVA, the accepted hook captures \texttt{encoder.layers.22} once, preserves a bitwise no-op at $\alpha=0$, and changes the downstream connector by 1.1875 and final logits by 0.1875 under a nonzero relative-token intervention. For Qwen, the accepted hook verifies 32 visual blocks, captures \texttt{model.visual.blocks.31}, preserves the $\alpha=0$ no-op, and changes both \texttt{model.visual.merger} and final logits under $\alpha=+0.1$.
+
+\section{Paired Decoding Contrasts}
+
+\begin{table}[h]
+\centering
+\small
+\caption{Paired controlled-decoding contrasts. Both intervals span zero.}
+\begin{tabular}{lcc}
+\toprule
+Contrast & Estimate & 95\% patient-bootstrap CI \\
+\midrule
+LLaVA Edema $-$ LLaVA Effusion & 0.0221 & $[-0.0175,0.0590]$ \\
+Qwen Effusion $-$ LLaVA Effusion & 0.0026 & $[-0.0155,0.0215]$ \\
+\bottomrule
+\end{tabular}
+\end{table}
