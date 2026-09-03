@@ -42,8 +42,17 @@ Updated: 2026-09-03. Scientific state uses `PLANNED`, `RUNNING`, `FAILED`, and `
 - Gate decision: `PASS`; deterministic compilation checks and the configured pinned read-only Claude review passed with no required actions.
 - Gate disposition: `READY`.
 - Evidence: `/home/qingchan/data/concept-flow/runs/20260903T123856Z-00f0adc-paper-compile/`; reviewer receipt `/home/qingchan/.codex/state/claude-review-concept-flow/review-20260903T124039710820Z.json`; `docs/reviews/evidence-locked-paper-compilation.md`; `paper/main.pdf`.
-- Next step: can the accepted PDF and source form a reproducible anonymous submission bundle? Validate a source archive that reproduces the accepted PDF and contains the required paper assets.
-- Writer ownership: server Codex/ARIS; no manuscript-build process is active.
+
+## Submission-bundle gate
+
+- Run: immutable bundle run `20260903T125459Z-51b652c-submission-bundle` packaged the accepted paper source and assets, then rebuilt it with the pinned Tectonic toolchain.
+- Observation: the 23-member archive has SHA-256 `302025a07282f46d74b28746fe86a90aaab945cb34476baf360f8bdfe6792517`; its manifest covers all 21 source assets, all members are regular files under one safe archive root, and the clean-room PDF is byte-identical to the accepted PDF at SHA-256 `e88c7f9a42baa4f04c7ccdbfdf9653501e4f96a81bd1c1ee238163671e5106e2`. Anonymous authorship and the identity-marker scan pass.
+- Scientific state: accepted experimental evidence remains `OBSERVED`.
+- Gate decision: `PASS`; the deterministic internal check and configured pinned read-only Claude review passed with no required actions.
+- Gate disposition: `READY` for submission handoff.
+- Evidence: `/home/qingchan/data/concept-flow/runs/20260903T125459Z-51b652c-submission-bundle/`; `/home/qingchan/data/concept-flow/state/submission-bundle-internal-validation-20260903T125553Z/receipt.json`; reviewer receipt `/home/qingchan/.codex/state/claude-review-concept-flow/review-20260903T125705202059Z.json`; `docs/reviews/anonymous-submission-bundle.md`.
+- Next step: can the accepted bundle and PDF be delivered through the selected submission workflow without changing their verified identities? After the user selects and authorizes that workflow, transfer the accepted artifacts and verify their SHA-256 values.
+- Writer ownership: server Codex/ARIS; no manuscript-build process is active and no successor experiment is registered.
 
 ## Transition rules
 
