@@ -74,6 +74,15 @@ Updated: 2026-09-03. Scientific state uses `PLANNED`, `RUNNING`, `FAILED`, and `
 - Gate decision: `PASS`; scientific state `OBSERVED`, `claim_supported=yes`, confidence `high`, integrity `pass`, routing action `confirm`, and disposition `READY` for paper planning. Evidence is in `CLAIMS_FROM_RESULTS.md`, `findings.md`, `.aris/evidence_precheck.json`, reviewer receipt `/home/qingchan/.codex/state/claude-review-concept-flow/review-20260903T110714659808Z.json`, and trace `.aris/traces/result-to-claim/2026-09-03_run01/`.
 - Next step: can the accepted four-gate evidence be organized into a paper plan whose claims, tables, and limitations preserve the registered scope? Run the paper-planning gate before drafting.
 
+## Paper-planning gate
+
+- Run: the accepted four-gate evidence was organized into a six-section, 9-page ICLR empirical/diagnostic outline and checked against all 18 adjudicated values.
+- Observation: the outline uses one evidence ladder: all three cells have positive controlled decodability; LLaVA Effusion and Edema stop at the random/sham rung; Qwen Effusion clears random/sham on 400 independent patients and stops at the fixed clinical-direction rung with familywise margin `-0.0573` (95% CI `[-0.0694, -0.0450]`).
+- Gate decision: `PASS`; the pinned read-only Claude review returned `GATE_DISPOSITION: READY` and `REQUIRED_ACTIONS: NONE`.
+- Evidence: `PAPER_PLAN.md`; `.aris/evidence_precheck.json`; reviewer receipt `/home/qingchan/.codex/state/claude-review-concept-flow/review-20260903T112856162325Z.json`; `docs/reviews/paper-plan.md`.
+- Next step: can the accepted evidence-locked outline be drafted into a manuscript whose prose, figures, and tables remain traceable to the four accepted gates? Draft section by section from `PAPER_PLAN.md`.
+- Writer ownership: server Codex/ARIS; no experiment process is active.
+
 ## Transition rules
 
 `PLANNED -> RUNNING` requires a clean pushed commit and dispatch receipt. `RUNNING -> FAILED` records implementation, measurement, or infrastructure invalidity in the run/failure ledger. `RUNNING -> OBSERVED` requires valid positive or negative scientific evidence. A passed gate advances immediately to the next authorised experiment; validator-only changes reuse the original artifact.

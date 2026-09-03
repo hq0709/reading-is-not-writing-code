@@ -1,0 +1,9 @@
+# Paper-planning hard-gate review
+
+Run: the paper-planning gate organized the four accepted experiment gates into an ICLR empirical/diagnostic outline. Internal validation matched all 18 adjudicated values to `.aris/evidence_precheck.json`, checked the six-section 9-page allocation, and checked the cell-specific control rungs. The configured `claude-review-concept-flow` transport then reviewed the complete outline at pinned model `claude-fable-5-1`, medium effort, and read-only permissions. Its first review identified three editorial inconsistencies; the corrected outline passed a second internal check and a fresh pinned review.
+
+Observation: the final outline presents one evidence ladder: controlled decodability is positive in all three cells; LLaVA Effusion and Edema stop at the random/sham rung; Qwen Effusion clears random/sham on independent rows and stops at the fixed clinical-direction rung. The familywise interval is consistently labeled as Effusion minus the maximum unrelated direction, and the supplement consistently records 27 intervention directions plus the unsteered baseline as 28 configurations. The final reviewer scored logical flow, claim–evidence alignment, and figures/tables at 9/10, and page feasibility and positioning/citations at 8/10.
+
+Gate decision: `PASS`; `GATE_DISPOSITION: READY` and `REQUIRED_ACTIONS: NONE`. The accepted review receipt is `/home/qingchan/.codex/state/claude-review-concept-flow/review-20260903T112856162325Z.json`. The preceding editorial review receipt is `/home/qingchan/.codex/state/claude-review-concept-flow/review-20260903T112638107787Z.json`.
+
+Next step: can the accepted evidence-locked outline be drafted into a manuscript whose prose, figures, and tables remain traceable to the four accepted gates? Draft section by section from `PAPER_PLAN.md`.
