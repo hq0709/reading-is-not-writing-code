@@ -82,6 +82,7 @@ class SubmissionBundleGateTests(unittest.TestCase):
             "00f0adc32a4ac36dba3d0f21feca485f1c8ef972",
             "e88c7f9a42baa4f04c7ccdbfdf9653501e4f96a81bd1c1ee238163671e5106e2",
             "SOURCE_DATE_EPOCH=1788439147",
+            'env SOURCE_DATE_EPOCH="$SOURCE_DATE_EPOCH" FORCE_SOURCE_DATE=1',
             "byteIdenticalToAcceptedPdf",
         ):
             self.assertIn(value, runner)

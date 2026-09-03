@@ -73,7 +73,7 @@ mkdir -p "$artifacts/reproduction"
 tar -xzf "$artifacts/bundle/submission-source.tar.gz" -C "$artifacts/reproduction"
 reproduction="$artifacts/reproduction/submission-source"
 (cd "$reproduction" && \
-  SOURCE_DATE_EPOCH="$SOURCE_DATE_EPOCH" FORCE_SOURCE_DATE=1 \
+  env SOURCE_DATE_EPOCH="$SOURCE_DATE_EPOCH" FORCE_SOURCE_DATE=1 \
   "$tectonic" -X compile main.tex --keep-logs \
     >"$artifacts/reproduction-stdout.log" 2>"$artifacts/reproduction-stderr.log")
 test -s "$reproduction/main.pdf" || fail 'source archive did not produce a PDF'
