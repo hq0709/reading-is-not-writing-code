@@ -24,7 +24,7 @@ Figure~\ref{fig:dose} shows the complete target dose curves and matched controls
 
 LLaVA Edema attains 0.0659 at $\alpha=-1$. It lies inside the same-dose random interval $[-0.1304,0.1470]$ and below the maximum absolute sham effect of 0.0913. Its descriptive dose monotonicity is $\rho=-0.4286$. Stronger controlled decoding for Edema therefore does not produce a stronger generic intervention result under the fixed rule.
 
-Qwen Effusion clears the original random/sham rung. Its maximum concept-consistent change is 0.2343 at $\alpha=+0.25$, above random p95 0.0963 and the maximum absolute sham effect 0.0852. The response is nearly monotone over the registered central range ($\rho=0.9643$). This original rule establishes selectivity against generic perturbation controls; the same-dose Nodule effect of 0.2863 shows why clinical-direction specificity requires a separate prospective endpoint.
+Qwen Effusion clears the original random/sham rung. Its maximum concept-consistent change is 0.2343 at $\alpha=+0.25$, above random p95 0.0963 and the maximum absolute sham effect 0.0852. The response is nearly monotone over the registered central range ($\rho=0.9643$). This original rule establishes selectivity against generic perturbation controls. The same-dose Nodule effect of 0.2863 is descriptive at this stage and motivates the separate prospective specificity endpoint.
 
 \input{tables/table_gates}
 
@@ -34,7 +34,7 @@ Qwen Effusion clears the original random/sham rung. Its maximum concept-consiste
 \begin{figure*}[t]
     \centering
     \includegraphics[width=0.82\textwidth]{figures/fig3_direction_specificity.pdf}
-    \caption{\textbf{Qwen Effusion replicates above generic controls but not fixed clinical directions.} \textbf{(a)} Changes in mean $P(yes)$ at $\alpha=+0.25$ on 400 patients absent from the original cohort. The random group contains 20 directions; its dashed segment marks p95. Diamonds show the five fixed unrelated clinical normals. \textbf{(b)} The Effusion-minus-maximum-unrelated statistic with its two-sided 95\% patient-bootstrap interval. Nodule realizes the point-estimate maximum.}
+    \caption{\textbf{Qwen Effusion replicates above generic controls but not fixed clinical directions.} \textbf{(a)} Changes in mean $P(yes)$ at $\alpha=+0.25$ on 400 patients absent from the original cohort. The random group contains 20 directions; its dashed segment marks p95. Diamonds show the five fixed unrelated clinical normals. \textbf{(b)} The Effusion-minus-maximum-unrelated statistic with its two-sided 95\% patient-bootstrap interval; the registered one-sided 95\% lower bound is $-0.0678$. Nodule realizes the point-estimate maximum.}
     \label{fig:specificity}
 \end{figure*}
 

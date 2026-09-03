@@ -44,17 +44,18 @@ Model & Concept & Consumed module & AUROC [95\% CI] & Control mean (5--95\%) & S
     gate_rows = []
     for item in data["cells"]:
         p = item["primary"]
-        random_range = f"[{p['random_p05']:.4f}, {p['random_p95']:.4f}]"
+        random_bound = f"{p['random_p95']:.4f}"
         rung = "Clinical directions" if item["selective_cell"] else "Random/sham"
         gate_rows.append(
-            f"{item['model']} & {item['concept']} & Original & 200 & "
-            f"{p['alpha']:+.2f} & {p['concept_consistent_change']:.4f} & {random_range} & "
-            f"{item['maximum_absolute_sham_effect']:.4f} & --- & {rung} \\\\"
+            f"{item['model']} & {item['concept']} & Original images & 200 & "
+            f"{p['alpha']:+.2f} & {p['concept_consistent_change']:.4f} & {random_bound} & "
+            f"{item['maximum_absolute_sham_effect']:.4f} & --- & "
+            f"{'Clinical directions (next gate)' if item['selective_cell'] else rung} \\\\"
         )
     spec = data["specificity"]
     gate_rows.append(
-        f"Qwen2.5-VL-7B & Effusion & Independent & {spec['n_eval']} & {spec['alpha']:+.2f} & "
-        f"{spec['direction_effects']['concept']:.4f} & p95={spec['random_effect_p95']:.4f} & "
+        f"Qwen2.5-VL-7B & Effusion & Independent patients & {spec['n_eval']} & {spec['alpha']:+.2f} & "
+        f"{spec['direction_effects']['concept']:.4f} & {spec['random_effect_p95']:.4f} & "
         f"{spec['absolute_sham_effect']:.4f} & {spec['primary']['margin']:.4f} "
         f"[{spec['primary']['ci95'][0]:.4f}, {spec['primary']['ci95'][1]:.4f}] & Clinical directions \\\\"
     )
@@ -66,7 +67,7 @@ Model & Concept & Consumed module & AUROC [95\% CI] & Control mean (5--95\%) & S
 \label{tab:gates}
 \begin{tabular}{lllrrccccl}
 \toprule
-Model & Concept & Cohort & $N$ & $\alpha$ & Concept effect & Random control & $|$sham$|$ & Clinical margin [95\% CI] & Stopped at \\
+Model & Concept & Cohort unit & $N$ & $\alpha$ & Concept effect & Random p95 & $|$sham$|$ & Clinical margin [95\% CI] & Stopped at \\
 \midrule
 """ + "\n".join(gate_rows) + r"""
 \bottomrule

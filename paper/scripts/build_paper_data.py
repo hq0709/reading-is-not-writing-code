@@ -18,10 +18,53 @@ RUNS = {
     "qwen_specificity": "20260903T103508Z-456c81bad460-7a3edc4b",
 }
 EXPECTED = {
-    "llava_effusion": {"auroc": 0.7788163441124888, "selectivity": 0.11393249388223015},
-    "llava_edema": {"auroc": 0.8009024661494056, "selectivity": 0.136018615919147},
-    "qwen_effusion": {"auroc": 0.7742131011353497, "selectivity": 0.11657914039882922},
-    "specificity_margin": -0.057328132013790334,
+    "llava_effusion": {
+        "auroc": 0.7788163441124888,
+        "auroc_ci95": [0.7537593969935978, 0.803081179537482],
+        "control_mean": 0.6648838502302586,
+        "selectivity": 0.11393249388223015,
+        "selectivity_ci95": [0.08754204794557874, 0.14039523338826207],
+        "primary_effect": 0.1469851206243038,
+        "random_p95": 0.12022438084706669,
+        "maximum_sham": 0.15463428646326066,
+        "spearman": 1.0,
+    },
+    "llava_edema": {
+        "auroc": 0.8009024661494056,
+        "auroc_ci95": [0.7648211929185149, 0.8329276519760651],
+        "control_mean": 0.6648838502302586,
+        "selectivity": 0.136018615919147,
+        "selectivity_ci95": [0.09935901397117824, 0.1693054728441684],
+        "primary_effect": 0.06593271091580388,
+        "random_p95": 0.14702408102527262,
+        "maximum_sham": 0.09133242860436441,
+        "spearman": -0.42857142857142866,
+        "paired": 0.022086122036916844,
+        "paired_ci95": [-0.017479364808838334, 0.05901509222566426],
+    },
+    "qwen_effusion": {
+        "auroc": 0.7742131011353497,
+        "auroc_ci95": [0.7488153720964997, 0.79929749997042],
+        "control_mean": 0.6576339607365205,
+        "selectivity": 0.11657914039882922,
+        "selectivity_ci95": [0.08974446529282622, 0.14283241566000443],
+        "primary_effect": 0.23430159127572553,
+        "random_p95": 0.09631123471958565,
+        "maximum_sham": 0.08516594238812104,
+        "spearman": 0.9642857142857145,
+        "paired": 0.0026466465165990716,
+        "paired_ci95": [-0.015509162117536269, 0.021500020623000344],
+        "nodule": 0.286263411717955,
+    },
+    "specificity": {
+        "effect": 0.1945347837949521,
+        "random_p95": 0.08776638119568816,
+        "sham": 0.0156513355919742,
+        "nodule": 0.2518629158087424,
+        "margin": -0.057328132013790334,
+        "ci95": [-0.0693829501046566, -0.04500512929691468],
+        "one_sided": -0.06779789115232414,
+    },
 }
 
 
@@ -49,6 +92,40 @@ def cell(key: str, model: str, concept: str) -> dict:
         probe["real_minus_mean_control"],
         EXPECTED[key]["selectivity"],
     )
+    for index, value in enumerate(probe["real_auroc_ci95"]):
+        exact(f"{key}.auroc_ci95[{index}]", value, EXPECTED[key]["auroc_ci95"][index])
+    exact(f"{key}.control_mean", probe["control_auroc_mean"], EXPECTED[key]["control_mean"])
+    for index, value in enumerate(probe["selectivity_ci95"]):
+        exact(
+            f"{key}.selectivity_ci95[{index}]",
+            value,
+            EXPECTED[key]["selectivity_ci95"][index],
+        )
+    exact(
+        f"{key}.primary_effect",
+        summary["primary"]["concept_consistent_change"],
+        EXPECTED[key]["primary_effect"],
+    )
+    exact(f"{key}.random_p95", summary["primary"]["random_p95"], EXPECTED[key]["random_p95"])
+    exact(
+        f"{key}.maximum_sham",
+        summary["maximum_absolute_sham_effect"],
+        EXPECTED[key]["maximum_sham"],
+    )
+    exact(f"{key}.spearman", summary["monotonicity"]["spearman_rho"], EXPECTED[key]["spearman"])
+    if "paired" in EXPECTED[key]:
+        paired_key = (
+            "edema_minus_effusion_selectivity" if key == "llava_edema" else "qwen_minus_llava_selectivity"
+        )
+        exact(f"{key}.paired", probe[paired_key], EXPECTED[key]["paired"])
+        for index, value in enumerate(probe[f"{paired_key}_ci95"]):
+            exact(f"{key}.paired_ci95[{index}]", value, EXPECTED[key]["paired_ci95"][index])
+    if key == "qwen_effusion":
+        exact(
+            "qwen_effusion.nodule",
+            summary["primary"]["unrelated_effects"]["unrelated_Nodule"],
+            EXPECTED[key]["nodule"],
+        )
 
     dose = []
     with csv_path.open(newline="", encoding="utf-8") as stream:
@@ -126,7 +203,23 @@ def main() -> None:
         / "direction-specificity-summary.json"
     )
     supplement = load_json(supplement_path)
-    exact("specificity.margin", supplement["primary"]["margin"], EXPECTED["specificity_margin"])
+    specificity_expected = EXPECTED["specificity"]
+    exact("specificity.effect", supplement["direction_effects"]["concept"], specificity_expected["effect"])
+    exact("specificity.random_p95", supplement["random_effect_p95"], specificity_expected["random_p95"])
+    exact("specificity.sham", supplement["absolute_sham_effect"], specificity_expected["sham"])
+    exact(
+        "specificity.nodule",
+        supplement["direction_effects"]["unrelated_Nodule"],
+        specificity_expected["nodule"],
+    )
+    exact("specificity.margin", supplement["primary"]["margin"], specificity_expected["margin"])
+    for index, value in enumerate(supplement["primary"]["ci95"]):
+        exact(f"specificity.ci95[{index}]", value, specificity_expected["ci95"][index])
+    exact(
+        "specificity.one_sided",
+        supplement["primary"]["one_sided_lower_95"],
+        specificity_expected["one_sided"],
+    )
     output = {
         "schema": "concept-flow-paper-evidence-v1",
         "cells": cells,
