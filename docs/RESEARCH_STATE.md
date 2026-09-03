@@ -36,14 +36,14 @@ Updated: 2026-09-02. Scientific state uses `PLANNED`, `RUNNING`, `FAILED`, and `
 
 ## Third hard gate: `qwen7b-effusion-vislast-reltoken`
 
-- Run: immutable asset stage `20260903T000153Z-caaae3ef346d-qwen-stage` and hook preflight `20260903T000239Z-caaae3ef346d-qwen-hook` completed from commit `caaae3ef346d3ac01c76c53ba99b3b7237066639`; full run `20260903T000321Z-caaae3ef346d-qwen-full` is extracting the registered NIH `vis.last` activations and will execute the fixed probe and relative-token intervention on GPU 0.
-- Observation: the atomically published Qwen asset records revision `cc594898137f460bfe9f0759e9844b3ce807cfb5` and all five registered weight-shard hashes. The exact `model.visual.blocks.31` capture fired once with shape `576 × 1280`; alpha zero was a bitwise no-op, and alpha `+0.1` changed the downstream merger by `3.625` and final logits by `0.625`.
-- Scientific state: `RUNNING`.
-- Gate decision: asset and synthetic hook preflight `PASS`; the full hard gate is `RUNNING`.
+- Run: immutable asset stage `20260903T000153Z-caaae3ef346d-qwen-stage`, hook preflight `20260903T000239Z-caaae3ef346d-qwen-hook`, and full run `20260903T000321Z-caaae3ef346d-qwen-full` completed the fixed Qwen Effusion protocol from commit `caaae3ef346d3ac01c76c53ba99b3b7237066639` on one A100 in 2,077 seconds.
+- Observation: exact block-31 capture and 26,229-row extraction passed with no failed rows. Effusion AUROC was `0.7742` (95% patient-bootstrap CI `0.7488–0.7993`) and selectivity was `0.1166` (95% CI `0.0897–0.1428`); Qwen-minus-LLaVA selectivity was `0.0026` (paired 95% CI `-0.0155–0.0215`). The maximum concept-consistent behavioural change was `0.2343` at alpha `+0.25`, above the same-alpha random 95th percentile `0.0963` and maximum absolute sham effect `0.0852`; `selective_cell=true`. Spearman rho over `[-0.5,0.5]` was `0.9643`. The reported Nodule-direction effect at alpha `+0.25` was `0.2863`.
+- Scientific state: `OBSERVED`; this registered cell contains linearly decodable Effusion information and meets the registered selective causal threshold.
+- Gate decision: `PASS`; terminal checksums passed, deterministic replay was byte-identical, and the pinned read-only Claude review returned `PASS` with no required actions.
 - Gate disposition: `READY`.
-- Evidence: `/home/qingchan/data/concept-flow/models/qwen7b-huggingface/asset-receipt.json`; `/home/qingchan/data/concept-flow/runs/20260903T000153Z-caaae3ef346d-qwen-stage/`; `/home/qingchan/data/concept-flow/runs/20260903T000239Z-caaae3ef346d-qwen-hook/`; `/home/qingchan/data/concept-flow/runs/20260903T000321Z-caaae3ef346d-qwen-full/`.
-- Next step: does Qwen's consumed final visual block provide decodable Effusion opportunity and selectively influence its answer? Complete the immutable full run, replay the decision-bearing validation, and request the pinned read-only Claude review.
-- Writer ownership: server Codex/ARIS while the persistent full run is active.
+- Evidence: full-run receipt `/home/qingchan/data/concept-flow/runs/20260903T000321Z-caaae3ef346d-qwen-full/`; internal replay `/home/qingchan/data/concept-flow/state/qwen-gate-internal-validation-20260903T003856Z/intervention-summary.json`; reviewer receipt `/home/qingchan/.codex/state/claude-review-concept-flow/review-20260903T004040206620Z.json`; review record `docs/reviews/qwen7b-effusion-vislast-reltoken.md`.
+- Next step: what claim is supported by the completed three-cell sequence, including its architecture and direction-specificity boundaries? Evaluate the result-to-claim boundary before registering another experiment.
+- Writer ownership: server Codex/ARIS; no experiment process is active.
 
 ## Transition rules
 
