@@ -77,7 +77,8 @@ def main() -> None:
 
     if "Anonymous Authors" not in MAIN:
         fail("anonymous author block is missing")
-    if re.search(r"wy-coliney|qingchan|University|@", all_tex, re.IGNORECASE):
+    identity_pattern = r"wy-coliney|qingchan|University|[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}"
+    if re.search(identity_pattern, all_tex, re.IGNORECASE):
         fail("potential identifying text in manuscript")
 
     print(f"sections={len(SECTION_FILES)}")

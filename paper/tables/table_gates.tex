@@ -4,14 +4,28 @@
 \setlength{\tabcolsep}{3.2pt}
 \caption{Registered intervention outcomes. Original cohorts select the maximum concept-consistent effect over the six controlled nonzero doses; their clinical-direction endpoint was not prospectively familywise. The independent cohort locks $\alpha=+0.25$ and recomputes the maximum over five fixed clinical directions inside each of 5,000 patient-bootstrap replicates. ``Stopped at'' names the first evidentiary rung not cleared.}
 \label{tab:gates}
-\begin{tabular}{lllrrccccl}
+\textit{Generic-control outcomes}\\[2pt]
+\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lllrrccc@{}}
 \toprule
-Model & Concept & Cohort unit & $N$ & $\alpha$ & Concept effect & Random p95 & $|$sham$|$ & Clinical margin [95\% CI] & Stopped at \\
+Model & Concept & Cohort & $N$ & $\alpha$ & Target $\Delta$ & Random p95 & $|$sham$|$ \\
 \midrule
-LLaVA-1.5-7B & Effusion & Original images & 200 & -1.00 & 0.1470 & 0.1202 & 0.1546 & --- & Random/sham \\
-LLaVA-1.5-7B & Edema & Original images & 200 & -1.00 & 0.0659 & 0.1470 & 0.0913 & --- & Random/sham \\
-Qwen2.5-VL-7B & Effusion & Original images & 200 & +0.25 & 0.2343 & 0.0963 & 0.0852 & --- & Clinical directions (next gate) \\
-Qwen2.5-VL-7B & Effusion & Independent patients & 400 & +0.25 & 0.1945 & 0.0878 & 0.0157 & -0.0573 [-0.0694, -0.0450] & Clinical directions \\
+LLaVA-1.5-7B & Effusion & Original & 200 & -1.00 & 0.1470 & 0.1202 & 0.1546 \\
+LLaVA-1.5-7B & Edema & Original & 200 & -1.00 & 0.0659 & 0.1470 & 0.0913 \\
+Qwen2.5-VL-7B & Effusion & Original & 200 & +0.25 & 0.2343 & 0.0963 & 0.0852 \\
+Qwen2.5-VL-7B & Effusion & Independent & 400 & +0.25 & 0.1945 & 0.0878 & 0.0157 \\
 \bottomrule
-\end{tabular}
+\end{tabular*}
+\medskip
+
+\textit{Clinical-direction outcomes}\\[2pt]
+\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lllcl@{}}
+\toprule
+Model & Concept & Cohort & Clinical margin [95\% CI] & Stopped at \\
+\midrule
+LLaVA-1.5-7B & Effusion & Original & --- & Random/sham \\
+LLaVA-1.5-7B & Edema & Original & --- & Random/sham \\
+Qwen2.5-VL-7B & Effusion & Original & --- & Clinical directions \\
+Qwen2.5-VL-7B & Effusion & Independent & -0.0573 [-0.0694, -0.0450] & Clinical directions \\
+\bottomrule
+\end{tabular*}
 \end{table*}

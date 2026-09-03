@@ -1,5 +1,6 @@
 ENGINE ?= tectonic
 PYTHON ?= python
+.DEFAULT_GOAL := main.pdf
 
 ASSET_SCRIPTS := scripts/build_paper_data.py scripts/gen_fig1.py scripts/gen_fig2.py scripts/gen_fig3.py scripts/gen_tables.py
 ASSETS := data/accepted_results.json figures/fig1_evidence_ladder.pdf figures/fig2_dose_responses.pdf figures/fig3_direction_specificity.pdf tables/table_decoding.tex tables/table_gates.tex

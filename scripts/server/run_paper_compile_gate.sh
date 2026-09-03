@@ -9,7 +9,7 @@ readonly MAIN_BODY_LIMIT=9
 fail() { printf 'paper compilation gate refused: %s\n' "$*" >&2; exit 64; }
 inside_home() { case "$(realpath -m -- "$1")/" in "$AUTHORIZED_HOME"/*) return 0;; *) return 1;; esac; }
 
-repo_root=$(git rev-parse --show-toplevel)
+repo_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
 cd "$repo_root"
 set -a; source config/autoresearch.env; set +a
 
@@ -38,8 +38,9 @@ test -f "$paper_dir/refs.bib" || fail 'paper/refs.bib is missing'
 
 "$tectonic" -X show user-cache-dir >"$artifacts/tectonic-cache-dir.txt"
 inside_home "$(<"$artifacts/tectonic-cache-dir.txt")" || fail 'tectonic cache escapes authorized home'
+python "$paper_dir/scripts/verify_draft.py" >"$artifacts/static-validation.txt"
 
-make -C "$paper_dir" ENGINE="$tectonic" main.pdf
+make -B -C "$paper_dir" ENGINE="$tectonic" main.pdf
 test -s "$paper_dir/main.pdf" || fail 'compiler did not produce main.pdf'
 test "$(stat -c %s "$paper_dir/main.pdf")" -gt 102400 || fail 'PDF is unexpectedly small'
 
@@ -83,15 +84,17 @@ if text_pages and not text_pages[-1].strip():
     text_pages.pop()
 
 def heading_page(pattern: str) -> int:
-    regex = re.compile(pattern, re.MULTILINE)
+    regex = re.compile(pattern, re.MULTILINE | re.IGNORECASE)
     matches = [index + 1 for index, page in enumerate(text_pages) if regex.search(page)]
     if len(matches) != 1:
         raise SystemExit(f"expected one heading matching {pattern!r}; found pages {matches}")
     return matches[0]
 
-conclusion_page = heading_page(r"^\s*6\s+Conclusion\s*$")
-references_page = heading_page(r"^\s*References\s*$")
-appendix_page = heading_page(r"^\s*A\s+Registered protocol and provenance\s*$")
+conclusion_page = heading_page(r"^\s*(?:\d+\s+)?6\s+Conclusion\s*$")
+references_page = heading_page(r"^\s*(?:\d+\s+)?References\s*$")
+appendix_page = heading_page(
+    r"^\s*(?:\d+\s+)?A\s+Registered Protocol and Provenance\s*$"
+)
 if not conclusion_page <= references_page <= appendix_page:
     raise SystemExit("section ordering is invalid")
 
@@ -101,15 +104,17 @@ main_body_last_page = references_page if references_page <= main_body_limit else
 within_page_limit = references_page <= main_body_limit + 1
 
 font_lines = (artifacts / "pdffonts.txt").read_text(encoding="utf-8").splitlines()[2:]
-font_rows = [line.split() for line in font_lines if line.strip()]
+font_rows = [line.rsplit(maxsplit=6) for line in font_lines if line.strip()]
 if not font_rows:
     raise SystemExit("PDF font inventory is empty")
-unembedded = [row[0] for row in font_rows if len(row) < 4 or row[3].lower() != "yes"]
+unembedded = [row[0] for row in font_rows if len(row) != 7 or row[2].lower() != "yes"]
 
 log = (artifacts / "main.log").read_text(encoding="utf-8", errors="replace")
-undefined_references = len(re.findall(r"Reference .* undefined", log, re.IGNORECASE))
-undefined_citations = len(re.findall(r"Citation .* undefined", log, re.IGNORECASE))
-undefined_summary = len(re.findall(r"undefined references", log, re.IGNORECASE))
+pdf_text = (artifacts / "main.txt").read_text(encoding="utf-8")
+unresolved_pdf_markers = re.findall(r"\?\?|[\[(]\s*\?\s*[\])]", pdf_text)
+first_pass_undefined_warnings = len(
+    re.findall(r"(?:Reference|Citation) .* undefined", log, re.IGNORECASE)
+)
 overfull = [float(value) for value in re.findall(r"Overfull \\hbox \(([0-9.]+)pt too wide\)", log)]
 max_overfull_pt = max(overfull, default=0.0)
 
@@ -134,9 +139,8 @@ receipt = {
         "fontCount": len(font_rows),
         "allFontsEmbedded": not unembedded,
         "unembeddedFonts": unembedded,
-        "undefinedReferences": undefined_references,
-        "undefinedCitations": undefined_citations,
-        "undefinedSummaryWarnings": undefined_summary,
+        "finalUnresolvedPdfMarkers": len(unresolved_pdf_markers),
+        "firstPassUndefinedWarnings": first_pass_undefined_warnings,
         "overfullBoxCount": len(overfull),
         "maxOverfullPt": max_overfull_pt,
         "noSevereOverfullBoxes": max_overfull_pt <= 20.0,
@@ -146,9 +150,7 @@ receipt["gatePass"] = all(
     [
         within_page_limit,
         not unembedded,
-        undefined_references == 0,
-        undefined_citations == 0,
-        undefined_summary == 0,
+        not unresolved_pdf_markers,
         max_overfull_pt <= 20.0,
     ]
 )
