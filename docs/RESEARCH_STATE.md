@@ -67,6 +67,13 @@ Updated: 2026-09-03. Scientific state uses `PLANNED`, `RUNNING`, `FAILED`, and `
 - Next step: what paper-ready claim does the accepted independent-row supplement support for direction-specific causal influence at Qwen `vis.last`? Evaluate the updated result-to-claim boundary before registering another experiment.
 - Writer ownership: server Codex/ARIS; no experiment process is active.
 
+## Updated result-to-claim gate
+
+- Run: deterministic evidence pre-check, a fresh internal judgment, and the configured pinned Claude read-only review evaluated the accepted three-cell sequence plus the independent-row Qwen direction-specificity supplement.
+- Observation: all 18 cited values exist in their primary artifacts. Qwen Effusion replicated above random and sham on 400 independent patients, while Nodule remained larger; the familywise margin was `-0.0573` (95% CI `[-0.0694, -0.0450]`, one-sided lower bound `-0.0678`).
+- Gate decision: `PASS`; scientific state `OBSERVED`, `claim_supported=yes`, confidence `high`, integrity `pass`, routing action `confirm`, and disposition `READY` for paper planning. Evidence is in `CLAIMS_FROM_RESULTS.md`, `findings.md`, `.aris/evidence_precheck.json`, reviewer receipt `/home/qingchan/.codex/state/claude-review-concept-flow/review-20260903T110714659808Z.json`, and trace `.aris/traces/result-to-claim/2026-09-03_run01/`.
+- Next step: can the accepted four-gate evidence be organized into a paper plan whose claims, tables, and limitations preserve the registered scope? Run the paper-planning gate before drafting.
+
 ## Transition rules
 
 `PLANNED -> RUNNING` requires a clean pushed commit and dispatch receipt. `RUNNING -> FAILED` records implementation, measurement, or infrastructure invalidity in the run/failure ledger. `RUNNING -> OBSERVED` requires valid positive or negative scientific evidence. A passed gate advances immediately to the next authorised experiment; validator-only changes reuse the original artifact.
