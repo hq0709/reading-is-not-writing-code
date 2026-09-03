@@ -1,0 +1,9 @@
+# Evidence-locked manuscript hard-gate review
+
+Run: the manuscript-drafting gate converted the accepted paper plan into modular LaTeX at pushed source commit `d3f7663674331e04e6c97474885995edfc205abe`. Reproducible scripts generated a compact evidence snapshot, three vector figures, and two tables from the four accepted run receipts. Internal checks ran the repository suite and the evidence-locked draft validator. The configured `claude-review-concept-flow` transport reviewed the complete packet at pinned model `claude-fable-5-1`, medium effort, and read-only permissions; a focused second review checked closure of every required action.
+
+Observation: the repository suite passed 83 tests with one platform skip. Static validation found 8 included sections, 2 generated tables, 15 cited bibliography entries, 18 matched labels/references, a 196-word abstract, all 18 adjudicated values, no stale section files, and no draft markers. The final source distinguishes the two primary-artifact values that both round to `0.1470`, reports the direction-specificity margin directly, identifies the LLaVA revision, and assigns the remaining Table 1 width check to the compilation gate.
+
+Gate decision: `PASS`; `GATE_DISPOSITION: READY` and `REQUIRED_ACTIONS: NONE`. The complete-packet receipt is `/home/qingchan/.codex/state/claude-review-concept-flow/review-20260903T120710736411Z.json`, the action-closure receipt is `/home/qingchan/.codex/state/claude-review-concept-flow/review-20260903T120851250065Z.json`, and the internal validation receipt is `/home/qingchan/data/concept-flow/state/manuscript-draft-validation-20260903T120926Z/receipt.json`.
+
+Next step: can the evidence-locked source compile within the nine-page ICLR main-body budget with readable tables and fully embedded fonts? Add an audited user-local TeX compiler to the pinned environment, then compile and validate the unchanged reviewed source.

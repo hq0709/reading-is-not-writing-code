@@ -28,13 +28,20 @@ Updated: 2026-09-03. Scientific state uses `PLANNED`, `RUNNING`, `FAILED`, and `
 ## Manuscript-drafting gate
 
 - Run: draft the evidence-locked manuscript and generate Figures 1--3 and Tables 1--2 from the four accepted receipts.
-- Observation: the manuscript, compact evidence snapshot, vector figures, and generated tables are present; static validation finds 18/18 adjudicated values, 15/15 cited bibliography entries, matched labels/references, anonymous authorship, and no stale section files or draft markers.
-- Scientific state: accepted experimental evidence remains `OBSERVED`; manuscript validation is `RUNNING`.
-- Gate decision: `RUNNING`; internal repository validation is pending a clean-suite rerun, followed by the configured pinned read-only Claude review.
-- Gate disposition: `READY` for the reviewer handoff after the draft reaches a clean pushed checkpoint.
-- Next step: can the evidence-locked manuscript state every accepted claim clearly without exceeding its registered scope? Commit and push the internally validated draft, then request the pinned read-only review.
-- Writer ownership: server Codex/ARIS; no experiment process is active.
-- Evidence: `paper/`; `/home/qingchan/data/concept-flow/paper-backups/20260903T114532Z-pre-direction-specific-draft`.
+- Observation: the manuscript, compact evidence snapshot, three vector figures, and two generated tables pass static validation with 18/18 adjudicated values, 15/15 cited bibliography entries, matched labels/references, anonymous authorship, and no stale section files or draft markers. The repository suite passes 83 tests with one platform skip. The pinned read-only Claude action-closure review reports `REQUIRED_ACTIONS: NONE`.
+- Scientific state: accepted experimental evidence remains `OBSERVED`.
+- Gate decision: `PASS` at pushed source commit `d3f7663674331e04e6c97474885995edfc205abe`.
+- Gate disposition: `READY`.
+- Evidence: `paper/`; `/home/qingchan/data/concept-flow/state/manuscript-draft-validation-20260903T120926Z/receipt.json`; reviewer receipts `/home/qingchan/.codex/state/claude-review-concept-flow/review-20260903T120710736411Z.json` and `/home/qingchan/.codex/state/claude-review-concept-flow/review-20260903T120851250065Z.json`; `docs/reviews/evidence-locked-manuscript-draft.md`.
+
+## Paper-compilation gate
+
+- Run: inspect the fixed environment for the registered manuscript build prerequisites.
+- Observation: the reviewed source and reproducible figure/table generators are ready, but the fixed environment contains no `tectonic`, `latexmk`, `pdflatex`, or `bibtex`; therefore no current PDF, page-count, font-embedding, or final table-width observation exists.
+- Gate decision: `BLOCKED`; the source gate passed, but the paper-compilation gate cannot be evaluated without changing the pinned toolchain.
+- Gate disposition: `BLOCKED`.
+- Next step: can the evidence-locked source compile within the nine-page ICLR main-body budget with readable tables and fully embedded fonts? Add an audited user-local TeX compiler to the pinned environment, then compile and validate the unchanged reviewed source.
+- Writer ownership: server Codex/ARIS; no experiment or manuscript-build process is active.
 
 ## Transition rules
 
