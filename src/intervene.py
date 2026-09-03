@@ -337,6 +337,10 @@ def main():
     ap.add_argument("--n-eval", type=int, default=200, help="held-out images per locus")
     ap.add_argument("--eval-split", default="test", choices=["validation", "test"],
                     help="evaluation split; the registered decisive run uses test, smoke runs use validation")
+    ap.add_argument("--eval-row-ids-file", default="",
+                    help="JSON receipt whose row_ids fix the exact evaluation order")
+    ap.add_argument("--per-image-out", default="",
+                    help="optional atomic CSV of per-image probabilities and margins")
     ap.add_argument("--batch-size", type=int, default=16)
     ap.add_argument("--gpu", type=int, default=6)
     ap.add_argument("--model-path", default="",
@@ -356,7 +360,8 @@ def main():
     dev = "cuda:0"
 
     ids, acts = load_shards(args.acts)
-    man = {r["row_id"]: r for r in csv.DictReader(open(args.manifest))}
+    with open(args.manifest, newline="") as stream:
+        man = {row["row_id"]: row for row in csv.DictReader(stream)}
     keep = [i for i, r in enumerate(ids) if r in man]
     ids = [ids[i] for i in keep]
     acts = {k: v[keep] for k, v in acts.items()}
@@ -368,9 +373,28 @@ def main():
     # direction never appear in the measurement.
     tr = split == "train"
     eval_name = "val" if args.eval_split == "validation" else "test"
-    te_idx = np.where(split == eval_name)[0]
-    rng.shuffle(te_idx)
-    te_idx = te_idx[:args.n_eval]
+    eligible_idx = np.where(split == eval_name)[0]
+    if args.eval_row_ids_file:
+        with open(args.eval_row_ids_file, encoding="utf-8") as stream:
+            registered_eval = json.load(stream)
+        wanted = registered_eval.get("row_ids")
+        if (
+            not isinstance(wanted, list)
+            or len(wanted) != args.n_eval
+            or len(set(wanted)) != args.n_eval
+            or not all(isinstance(row_id, str) for row_id in wanted)
+        ):
+            raise SystemExit("registered evaluation row receipt is invalid")
+        position = {row_id: index for index, row_id in enumerate(ids)}
+        if any(row_id not in position for row_id in wanted):
+            raise SystemExit("registered evaluation row is absent from activations")
+        te_idx = np.asarray([position[row_id] for row_id in wanted], dtype=np.int64)
+        if any(split[index] != eval_name for index in te_idx):
+            raise SystemExit("registered evaluation row is outside the requested split")
+    else:
+        te_idx = eligible_idx.copy()
+        rng.shuffle(te_idx)
+        te_idx = te_idx[:args.n_eval]
     if len(te_idx) != args.n_eval:
         raise SystemExit(f"requested {args.n_eval} {eval_name} images, found {len(te_idx)}")
     eval_row_ids = [ids[i] for i in te_idx]
@@ -404,6 +428,7 @@ def main():
     if not ctrl_alphas:
         raise SystemExit("control alphas must be a subset of --alphas, otherwise nothing is comparable")
     rows = []
+    per_image_rows = []
 
     for locus_name in [s.strip() for s in args.loci.split(",") if s.strip()]:
         if locus_name not in acts or locus_name not in loci_all:
@@ -504,6 +529,21 @@ def main():
                                  "mean_margin": float(np.mean(margins)),
                                  "sd_margin": float(np.std(margins)),
                                  "n": len(probs)})
+                    if args.per_image_out:
+                        per_image_rows.extend(
+                            {
+                                "row_id": ids[index],
+                                "patient_id": meta[index]["patient_id"],
+                                "locus": locus_name,
+                                "direction": name,
+                                "alpha": alpha,
+                                "p_yes": probability,
+                                "margin": margin,
+                            }
+                            for index, probability, margin in zip(
+                                te_idx, probs, margins, strict=True
+                            )
+                        )
                     if name == "concept" or alpha == max(alphas):
                         print(f"    {name:22s} a={alpha:+5.1f}  P(yes)={np.mean(probs):.4f}")
         print(f"  locus done in {time.time() - t0:.0f}s")
@@ -523,7 +563,25 @@ def main():
             os.fsync(fh.fileno())
         os.replace(tmp_path, csv_path)
 
-    json.dump({"arch": args.arch, "concept": args.concept, "alphas": alphas,
+        if args.per_image_out:
+            per_image_path = os.path.realpath(args.per_image_out)
+            os.makedirs(os.path.dirname(per_image_path), exist_ok=True)
+            per_image_tmp = per_image_path + ".tmp"
+            with open(per_image_tmp, "w", newline="") as fh:
+                fieldnames = [
+                    "row_id", "patient_id", "locus", "direction", "alpha", "p_yes", "margin"
+                ]
+                writer = csv.DictWriter(fh, fieldnames=fieldnames)
+                writer.writeheader()
+                writer.writerows(per_image_rows)
+                fh.flush()
+                os.fsync(fh.fileno())
+            os.replace(per_image_tmp, per_image_path)
+
+    eval_row_ids_sha256 = hashlib.sha256(
+        json.dumps(eval_row_ids, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
+    meta_payload = {"arch": args.arch, "concept": args.concept, "alphas": alphas,
                "alpha_mode": args.alpha_mode,
                "scale_reference": "alpha is a fraction of the per-token activation norm at the steered "
                                   "module. Earlier runs scaled by the norm of the POOLED activation, which "
@@ -532,14 +590,19 @@ def main():
                "control_alphas": ctrl_alphas,
                "n_random": args.n_random, "n_eval": len(te_idx), "seed": args.seed,
                "eval_split": eval_name, "eval_row_ids": eval_row_ids,
+               "eval_row_ids_file": os.path.realpath(args.eval_row_ids_file)
+                                    if args.eval_row_ids_file else "",
+               "eval_row_ids_sha256": eval_row_ids_sha256,
+               "per_image_out": os.path.realpath(args.per_image_out) if args.per_image_out else "",
                "model_source": os.path.realpath(model_source) if local_only else model_source,
                "model_local_only": local_only,
                "directions_path": os.path.realpath(args.directions) if args.directions else "",
                "directions_sha256": bundle_sha256,
                "prompt": prompt,
                "source_commit": os.environ.get("SOURCE_COMMIT", "unknown"),
-               "statistic": "concept effect must exceed the 95th percentile of random-direction effects"},
-              open(os.path.join(args.out, "meta.json"), "w"), indent=1)
+               "statistic": "concept effect must exceed the 95th percentile of random-direction effects"}
+    with open(os.path.join(args.out, "meta.json"), "w") as stream:
+        json.dump(meta_payload, stream, indent=1)
     # A completion marker. The CSV is written after every locus so that a crash keeps partial results,
     # which means its existence says nothing about whether the job finished. Only this file does, and the
     # supervisor keys off it.

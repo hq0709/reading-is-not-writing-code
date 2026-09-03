@@ -53,8 +53,19 @@ Updated: 2026-09-02. Scientific state uses `PLANNED`, `RUNNING`, `FAILED`, and `
 - Gate decision: `PASS`; the pinned cross-family review returned `claim_supported=partial`, confidence `high`, integrity status `pass`, and routing action `supplement`.
 - Gate disposition: `READY` for prospective supplement registration; no further experiment is currently registered for dispatch.
 - Evidence: `CLAIMS_FROM_RESULTS.md`; `findings.md`; `.aris/evidence_precheck.json`; reviewer receipt `/home/qingchan/.codex/state/claude-review-concept-flow/review-20260903T013453088626Z.json`; trace `.aris/traces/result-to-claim/2026-09-02_run01/`.
-- Next step: can a prospectively registered direction-specificity supplement distinguish the Effusion probe normal from fixed unrelated clinical directions at Qwen `vis.last`? Register independent evaluation rows, uncertainty, multiplicity handling, budget, and immutable dispatch before launch.
+- Next step: can the registered independent-row Qwen supplement show that the Effusion probe normal exceeds the fixed unrelated clinical directions with familywise bootstrap uncertainty? Complete registration review, then dispatch when one A100 is free.
 - Writer ownership: server Codex/ARIS; no experiment process is active.
+
+## Direction-specificity supplement: `qwen7b-effusion-vislast-direction-specificity`
+
+- Run: prospectively registered implementation for a 400-patient independent confirmation at the discovery-locked alpha `+0.25`, reusing the accepted Qwen activation and direction artifacts.
+- Observation: no new scientific outcome has been consumed. The registered row-selection hash is `76be1da9659973d44a0898fa69c579afc4649f329ee227b19d1216efaa1c8bda`; the primary statistic places the maximum of the five fixed clinical controls inside each of 5,000 patient-bootstrap replicates.
+- Scientific state: `PLANNED`.
+- Gate decision: internal implementation verification is pending completion and pinned read-only registration review.
+- Gate disposition: `UNAVAILABLE` until the prospective registration review passes; no experiment process is active.
+- Evidence: `docs/RESEARCH_PLAN.md#direction-specificity-supplement`; `src/qwen_direction_specificity_gate.py`; `scripts/server/run_qwen_direction_specificity_gate.sh`.
+- Next step: can the registered independent-row Qwen supplement show that the Effusion probe normal exceeds the fixed unrelated clinical directions with familywise bootstrap uncertainty? Verify, review, and dispatch the immutable payload when a GPU is free.
+- Writer ownership: server Codex/ARIS.
 
 ## Transition rules
 
