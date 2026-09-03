@@ -22,7 +22,7 @@ The paired decoding contrasts do not resolve a concept or architecture ordering.
 
 Figure~\ref{fig:dose} shows the complete target dose curves and matched controls. LLaVA Effusion attains a maximum concept-consistent change of 0.1470 at $\alpha=-1$. This value exceeds the same-dose random p95 of 0.1202 but remains below the maximum absolute sham effect of 0.1546. The response is monotone over $[-0.5,0.5]$ (Spearman $\rho=1.0$), yet monotonicity does not replace the failed sham criterion.
 
-LLaVA Edema attains 0.0659 at $\alpha=-1$. It lies inside the same-dose random interval $[-0.1304,0.1470]$ and below the maximum absolute sham effect of 0.0913. Its descriptive dose monotonicity is $\rho=-0.4286$. Stronger controlled decoding for Edema therefore does not produce a stronger generic intervention result under the fixed rule.
+LLaVA Edema attains 0.0659 at $\alpha=-1$. It lies inside the same-dose random interval $[-0.1304,0.1470]$ and below the maximum absolute sham effect of 0.0913. Its descriptive dose monotonicity is $\rho=-0.4286$. Edema's point estimate for controlled decoding is higher but statistically indistinguishable from Effusion's, and it does not clear the generic intervention rule.
 
 Qwen Effusion clears the original random/sham rung. Its maximum concept-consistent change is 0.2343 at $\alpha=+0.25$, above random p95 0.0963 and the maximum absolute sham effect 0.0852. The response is nearly monotone over the registered central range ($\rho=0.9643$). This original rule establishes selectivity against generic perturbation controls. The same-dose Nodule effect of 0.2863 is descriptive at this stage and motivates the separate prospective specificity endpoint.
 
@@ -40,7 +40,7 @@ Qwen Effusion clears the original random/sham rung. Its maximum concept-consiste
 
 The independent cohort reproduces Qwen's generic response (Figure~\ref{fig:specificity}). Effusion changes mean $P(yes)$ by 0.1945, above random p95 0.0878 and absolute sham 0.0157. This result uses 400 distinct patients, all absent from the original intervention cohort, and retains the discovery-locked dose.
 
-The clinical comparison reverses the interpretation of that generic pass. Nodule changes mean $P(yes)$ by 0.2519, exceeding the Effusion effect by 0.0573. When the maximum over all five fixed clinical directions is recomputed in each bootstrap replicate, the familywise margin is $-0.0573$ with a two-sided 95\% CI of $[-0.0694,-0.0450]$ and a one-sided 95\% lower bound of $-0.0678$. The direction-specific conjunction therefore fails despite replicated random/sham selectivity.
+The clinical comparison reverses the interpretation of that generic pass. Nodule changes mean $P(yes)$ by 0.2519 and realizes the maximum unrelated-direction effect. The reported Effusion-minus-maximum-unrelated margin is $-0.0573$. When the maximum over all five fixed clinical directions is recomputed in each bootstrap replicate, its two-sided 95\% CI is $[-0.0694,-0.0450]$ and its one-sided 95\% lower bound is $-0.0678$. The direction-specific conjunction therefore fails despite replicated random/sham selectivity.
 
 \subsection{The three-rung finding chain}
 

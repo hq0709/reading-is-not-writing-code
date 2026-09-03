@@ -2,7 +2,7 @@
 \label{app:protocol}
 
 \paragraph{Prompts.}
-The Effusion prompt is ``Is there a pleural effusion in this chest radiograph? Answer yes or no.'' The Edema prompt is ``Is there pulmonary edema in this chest radiograph? Answer yes or no.'' The model revisions are LLaVA-1.5-7B at the accepted project snapshot and \texttt{Qwen/Qwen2.5-VL-7B-Instruct} at revision \texttt{cc594898137f460bfe9f0759e9844b3ce807cfb5}, with Qwen processor resolution fixed at $336^2$ pixels.
+The Effusion prompt is ``Is there a pleural effusion in this chest radiograph? Answer yes or no.'' The Edema prompt is ``Is there pulmonary edema in this chest radiograph? Answer yes or no.'' LLaVA uses \texttt{llava-hf/llava-1.5-7b-hf} at revision \texttt{b234b804b114d9e37bb655e11cbbb5f5e971b7a9}. Qwen uses \texttt{Qwen/Qwen2.5-VL-7B-Instruct} at revision \texttt{cc594898137f460bfe9f0759e9844b3ce807cfb5}, with processor resolution fixed at $336^2$ pixels.
 
 \paragraph{Rows and seeds.}
 The deterministic NIH split hashes patient identity. Probe projection and fitting use seed 0. Type-to-label controls use seeds 0--19. Probe intervals use 2,000 patient-cluster draws with seed 20260827. The independent Qwen cohort excludes every patient in the original intervention set, chooses one row per remaining patient with SHA-256 of \texttt{qwen-direction-specificity-row-v1\textbackslash0<row\_id>}, ranks patients with SHA-256 of \texttt{qwen-direction-specificity-patient-v1\textbackslash0<patient\_id>}, and takes the first 400. The canonical row-list SHA-256 is \texttt{76be1da9659973d44a0898fa69c579afc4649f329ee227b19d1216efaa1c8bda}. Supplement bootstraps use seed 20260903.
@@ -34,7 +34,7 @@ Supplement & $\alpha=+0.25$; 400 patients; 5,000 patient bootstraps \\
 \end{table}
 
 \paragraph{Hook witnesses.}
-For LLaVA, the accepted hook captures \texttt{encoder.layers.22} once, preserves a bitwise no-op at $\alpha=0$, and changes the downstream connector by 1.1875 and final logits by 0.1875 under a nonzero relative-token intervention. For Qwen, the accepted hook verifies 32 visual blocks, captures \texttt{model.visual.blocks.31}, preserves the $\alpha=0$ no-op, and changes both \texttt{model.visual.merger} and final logits under $\alpha=+0.1$.
+For LLaVA, the accepted hook captures \texttt{encoder.layers.22} once, preserves a bitwise no-op at $\alpha=0$, and yields maximum absolute changes of 1.1875 at the downstream connector and 0.1875 in the final logits under a nonzero relative-token intervention. For Qwen, the accepted hook verifies 32 visual blocks, captures \texttt{model.visual.blocks.31}, preserves the $\alpha=0$ no-op, and changes both \texttt{model.visual.merger} and final logits under $\alpha=+0.1$.
 
 \section{Paired Decoding Contrasts}
 
