@@ -13,6 +13,7 @@ from src.qwen_consolidation_input_closure import (
     EVAL_PAIRS,
     N_RANDOM,
     REGISTERED_PAIRS_SHA256,
+    _direction_names,
     derive_registered_pairs,
     summarize_input_closure,
 )
@@ -170,6 +171,29 @@ class QwenConsolidationInputClosureTests(unittest.TestCase):
             alpha=np.full(EVAL_PAIRS, 0.1),
         )
         self.assertFalse(summary["input_closure"])
+
+    def test_bootstrap_payload_uses_registered_direction_order(self) -> None:
+        displacement, positive, negative, steered = self._closure_inputs()
+        _, arrays = summarize_input_closure(
+            displacement,
+            positive,
+            negative,
+            dict(reversed(list(steered.items()))),
+            availability_eligible=True,
+            alpha=np.full(EVAL_PAIRS, 0.1),
+        )
+
+        directions = list(_direction_names())
+        self.assertEqual(
+            [
+                "patient_draw_indices",
+                "input_displacement_bootstrap",
+                "clinical_familywise_margin_bootstrap",
+                *(f"closure_gain_{name}" for name in directions),
+                *(f"closure_gain_bootstrap_{name}" for name in directions),
+            ],
+            list(arrays),
+        )
 
     def test_incomplete_or_nonfinite_grid_is_rejected(self) -> None:
         displacement, positive, negative, steered = self._closure_inputs()

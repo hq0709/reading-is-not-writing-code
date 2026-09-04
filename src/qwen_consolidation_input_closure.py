@@ -439,9 +439,12 @@ def summarize_input_closure(
         raise ValueError("input-closure alpha exceeds the registered safety cap")
 
     baseline_gap = np.abs(arrays["positive_probability"] - arrays["negative_probability"])
+    # Preserve the preregistered direction order in the bootstrap archive.  Iterating
+    # over ``expected`` would retain the same values but make the NPZ member order
+    # depend on Python's per-process hash seed, preventing byte-stable replay.
     gains = {
         name: baseline_gap - np.abs(arrays["positive_probability"] - arrays[name])
-        for name in expected
+        for name in _direction_names()
     }
     means = {name: float(values.mean()) for name, values in gains.items()}
     rng = np.random.default_rng(BOOTSTRAP_SEED)
