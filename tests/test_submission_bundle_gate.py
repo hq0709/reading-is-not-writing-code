@@ -71,7 +71,10 @@ class SubmissionBundleGateTests(unittest.TestCase):
     def test_missing_or_symlinked_source_is_rejected(self) -> None:
         target = self.source / "sections/0_abstract.tex"
         target.unlink()
-        target.symlink_to(self.source / "main.tex")
+        try:
+            target.symlink_to(self.source / "main.tex")
+        except OSError as error:
+            self.skipTest(f"symlinks unavailable: {error}")
         with self.assertRaisesRegex(SystemExit, "required regular source file"):
             self.build("rejected")
 
