@@ -66,13 +66,13 @@ Updated: 2026-09-04. Scientific state uses `PLANNED`, `RUNNING`, `FAILED`, and `
 - Evidence: `/home/qingchan/data/concept-flow/runs/20260904T170512Z-e477a63-sixgate-paper-compile/`; reviewer receipt `/home/qingchan/.codex/state/claude-review-concept-flow/review-20260904T170638706411Z.json`; `docs/reviews/six-gate-paper-compilation.md`.
 ## Submission-bundle gate
 
-- Run: immutable bundle run `20260903T125459Z-51b652c-submission-bundle` packaged the accepted paper source and assets, then rebuilt it with the pinned Tectonic toolchain.
-- Observation: the 23-member archive has SHA-256 `302025a07282f46d74b28746fe86a90aaab945cb34476baf360f8bdfe6792517`; its manifest covers all 21 source assets, all members are regular files under one safe archive root, and the clean-room PDF is byte-identical to the accepted PDF at SHA-256 `e88c7f9a42baa4f04c7ccdbfdf9653501e4f96a81bd1c1ee238163671e5106e2`. Anonymous authorship and the identity-marker scan pass.
+- Run: immutable no-GPU bundle run `20260904T171115Z-3625aeb-sixgate-submission-bundle` packaged the accepted six-gate source and PDF, then rebuilt it with pinned Tectonic 0.17.0.
+- Observation: the 24-member archive has SHA-256 `11ae2a9e4cc41cde85bd2c1e65a0b03d92f4e73cf4f46eee0357d1521aa252e0`; all 22 source assets pass the manifest, every member is regular and safely rooted, and clean-room reproduction is byte-identical to the accepted PDF at SHA-256 `91ab6dd2ecbb745a238e616a7fffd5827fb80c648d21887a040a1630a9c23102`. Anonymous authorship and the identity-marker scan pass.
 - Scientific state: accepted experimental evidence remains `OBSERVED`.
 - Gate decision: `PASS`; the deterministic internal check and configured pinned read-only Claude review passed with no required actions.
 - Gate disposition: `READY` for submission handoff.
-- Evidence: `/home/qingchan/data/concept-flow/runs/20260903T125459Z-51b652c-submission-bundle/`; `/home/qingchan/data/concept-flow/state/submission-bundle-internal-validation-20260903T125553Z/receipt.json`; reviewer receipt `/home/qingchan/.codex/state/claude-review-concept-flow/review-20260903T125705202059Z.json`; `docs/reviews/anonymous-submission-bundle.md`.
-- The accepted bundle remains the reproducible baseline while the causal-ownership gate raises the paper's scientific ceiling. The Overleaf-facing source remains in the separate `concept-flow-paper` repository.
+- Next step: can the accepted bundle and PDF be delivered through a user-selected submission workflow without changing their verified identities? Await workflow selection and transfer authorization, then verify the delivered hashes.
+- Evidence: `/home/qingchan/data/concept-flow/runs/20260904T171115Z-3625aeb-sixgate-submission-bundle/`; reviewer receipt `/home/qingchan/.codex/state/claude-review-concept-flow/review-20260904T171201801981Z.json`; `docs/reviews/six-gate-anonymous-submission-bundle.md`. The Overleaf-facing source remains in the separate `concept-flow-paper` repository.
 
 ## Transition rules
 

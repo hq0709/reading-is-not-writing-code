@@ -8,7 +8,7 @@ This project applies the bootstrap contract in `../auto-research-contracts/autor
 - Problem: measure how much clinical information a medical VLM uses, rather than treating linear decodability as use.
 - Source material: `README.md`, `docs/00_PAPER_PLAN.md`, `docs/02_RESULTS.md`, `docs/10_RESULTS.md`, and `docs/11_RELATED_WORK.md`.
 - Core question and protocol: `docs/RESEARCH_PLAN.md`.
-- Current gate: `six-gate-anonymous-submission-bundle`; the accepted immutable PDF is ready for byte-identical anonymous bundle validation, with no further scientific experiment authorized.
+- Current gate: `submission-handoff`; the accepted six-gate bundle is ready for a user-selected transfer workflow, with no further experiment authorized.
 - Evidence root: `/home/qingchan/data/concept-flow/runs`.
 - Runtime: local `E:/projects/concept-flow-project`; server `/home/qingchan/work/concept-flow`; data `/home/qingchan/data/concept-flow`.
 - Environment: `source scripts/server/activate_env.sh`; Python 3.13; lock `uv.lock`.
