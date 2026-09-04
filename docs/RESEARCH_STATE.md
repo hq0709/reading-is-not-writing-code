@@ -1,6 +1,6 @@
 # Research state
 
-Updated: 2026-09-03. Scientific state uses `PLANNED`, `RUNNING`, `FAILED`, and `OBSERVED`; gate disposition uses `READY`, `BLOCKED`, and `UNAVAILABLE`.
+Updated: 2026-09-04. Scientific state uses `PLANNED`, `RUNNING`, `FAILED`, and `OBSERVED`; gate disposition uses `READY`, `BLOCKED`, and `UNAVAILABLE`.
 
 ## Bootstrap gate
 
@@ -20,13 +20,14 @@ Updated: 2026-09-03. Scientific state uses `PLANNED`, `RUNNING`, `FAILED`, and `
 
 ## ICLR 6+ causal-ownership gate
 
-- Run: `qwen7b-vislast-causal-ownership` is registered at the accepted Qwen final visual block. It crosses six fixed clinical probe directions with six matching questions on a third, label-blind cohort of 400 patients absent from both earlier Qwen interventions.
-- Observation: no matrix outcome exists yet. The cohort rule, prompts, direction family, dose, 119-direction random control, simultaneous ownership and shared-alias statistics, bootstrap, decision branches, and four-hour cap are fixed in `docs/RESEARCH_PLAN.md`.
-- Scientific state: `PLANNED`.
-- Gate decision: implementation tests pass locally; GPU dispatch is `BLOCKED` while both visible A100s exceed the project's 500 MiB launch threshold.
-- Gate disposition: `BLOCKED` until one registered GPU is below 500 MiB immediately before immutable dispatch.
-- Next step: does the six-by-six matrix reveal diagonal clinical ownership or a shared causal alias? Dispatch the immutable gate on the first eligible GPU, then follow its registered mechanism or Consolidation fallback branch.
-- Writer ownership: local Codex owns the registration and source update; the immutable server runner owns artifacts after dispatch. No manuscript-build process is active.
+- Run: immutable run `20260904T125710Z-a3bd883540eb-causal-ownership` crosses the six fixed clinical probe directions with six matching questions on the registered third, label-blind cohort of 400 patients.
+- Observation: the clean pushed source, fixed environment, pinned toolchain and reviewer receipt, accepted data references, budgets, disk, stop sentinel, and GPU launch threshold passed. The runner reproduced the registered cohort and source-reference receipts and is evaluating the matrix on GPU 0.
+- Scientific state: `RUNNING`; no matrix outcome exists yet.
+- Gate decision: `RUNNING`; terminal internal replay and the configured pinned read-only Claude review remain pending.
+- Gate disposition: pending terminal evidence.
+- Next step: does the six-by-six matrix reveal diagonal clinical ownership or a shared causal alias? Validate the completed receipt and matrix, request the pinned review, then dispatch the registered mechanism or Consolidation fallback branch on `PASS`.
+- Writer ownership: immutable run `20260904T125710Z-a3bd883540eb-causal-ownership` owns experimental artifacts; Codex owns state recording and terminal gate advancement. No manuscript-build process is active.
+- Evidence: `/home/qingchan/data/concept-flow/runs/20260904T125710Z-a3bd883540eb-causal-ownership/`; `/home/qingchan/data/concept-flow/state/setup-receipt.tsv`; `/home/qingchan/data/concept-flow/state/health.env`; reviewer receipt `/home/qingchan/.codex/state/claude-review-concept-flow/review-20260904T125408780802Z.json`.
 
 ## Paper-planning gate
 
