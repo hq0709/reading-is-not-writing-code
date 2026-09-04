@@ -177,6 +177,20 @@ class AnswerEncodingTests(unittest.TestCase):
                 with self.subTest(field=key), self.assertRaises(ValueError):
                     ae.validate_grid(invalid, rows, ("A_present",), ("Effusion",))
 
+    def test_probability_tolerance_accepts_float32_rounding_near_one(self):
+        rows = rows_fixture(2)
+        records = [r for r in grid_fixture(rows, ("A_present",), ("Effusion",)) if r["alpha"] == 0]
+        probability = np.float32(expit(8.0))
+        for _ in range(3):
+            probability = np.nextafter(probability, np.float32(1.0))
+        self.assertGreater(abs(float(probability) - expit(8.0)), 1e-7)
+        records[0].update(raw_margin=8.0, semantic_margin=8.0, semantic_probability=float(probability))
+        with patch.object(ae, "EVAL_ROWS", 2):
+            ae.validate_grid(records, rows, ("A_present",), ("Effusion",), ae.CONFIGURATIONS[:1])
+            records[0]["semantic_probability"] = 0.99
+            with self.assertRaisesRegex(ValueError, "invalid finite score"):
+                ae.validate_grid(records, rows, ("A_present",), ("Effusion",), ae.CONFIGURATIONS[:1])
+
     def test_weighted_auroc_matches_explicit_resampling_with_ties(self):
         labels = np.array([0, 1, 0, 1])
         scores = np.array([0., 0.5, 0.5, 1.])
@@ -372,10 +386,14 @@ class AnswerEncodingTests(unittest.TestCase):
         class Processor:
             tokenizer = Tokenizer({"A": [0], "B": [1], "yes": [0], "no": [1]})
 
+            def __init__(self):
+                self.build_sizes = []
+
             def apply_chat_template(self, messages, **kwargs):
                 return messages[0]["content"][-1]["text"]
 
             def __call__(self, text, **kwargs):
+                self.build_sizes.append(len(text))
                 return Inputs(prompt=text[0], size=len(text))
 
         class Model:
@@ -420,7 +438,8 @@ class AnswerEncodingTests(unittest.TestCase):
             stack.enter_context(patch.object(ae, "load_source", return_value=(source, rows, calibration_rows, validation, {})))
             stack.enter_context(patch.object(intervene, "load_registered_directions", return_value=(clinical, "accepted-digest")))
             stack.enter_context(patch("src.gpu_env.bind_gpu"))
-            factory = SimpleNamespace(from_pretrained=lambda *args, **kwargs: Processor())
+            processor = Processor()
+            factory = SimpleNamespace(from_pretrained=lambda *args, **kwargs: processor)
             model = Model(wrong_mapping=True)
             model_factory = unittest.mock.Mock(return_value=model)
             stack.enter_context(patch.dict(sys.modules, {"transformers": SimpleNamespace(
@@ -456,14 +475,22 @@ class AnswerEncodingTests(unittest.TestCase):
                              [(e, q) for e in ae.ENCODINGS[1:] for q in ae.CONCEPTS])
             model = Model()
             model_factory.return_value = model
-            self.assertTrue(ae.run(root, root, 0, root / "preflight-only", preflight_only=True))
+            processor.build_sizes.clear()
+            with patch.object(ae, "score_logits", wraps=ae.score_logits) as scoring:
+                self.assertTrue(ae.run(root, root, 0, root / "preflight-only", preflight_only=True))
+                self.assertEqual(sum(call.args[0].shape[0] == 16 for call in scoring.call_args_list), 64)
+            self.assertEqual(processor.build_sizes.count(16), 2)
             self.assertEqual(model.calls, 75)
             self.assertFalse((root / "preflight-only/per-image.csv").exists())
             model = Model()
             model_factory.return_value = model
+            processor.build_sizes.clear()
             with patch.object(ae.time, "perf_counter", side_effect=[0., 100.]), patch("builtins.print"):
                 self.assertFalse(ae.run(root, root, 0, root / "slow"))
+            self.assertEqual(processor.build_sizes.count(16), 2)
+            self.assertEqual(model.calls, 75)
             self.assertFalse((root / "slow/calibration.csv").exists())
+            self.assertFalse((root / "slow/per-image.csv").exists())
             preflight = ae.read_json(root / "slow/preflight.json")
             self.assertEqual(preflight["throughput"]["image_condition_equivalents"], 1024)
             self.assertEqual(preflight["throughput"]["predicted_scientific_seconds"], 100 * 200400 / 1024)

@@ -220,7 +220,7 @@ def validate_grid(records, rows, encodings=ENCODINGS, questions=CONCEPTS, condit
         score = np.array([float(record[k]) for k in FIELDS[-3:]])
         if (not np.isfinite(score).all() or not 0 <= score[2] <= 1
                 or not np.isclose(score[1], orient(score[0], encodings[e]), atol=1e-7, rtol=0)
-                or not np.isclose(score[2], expit(score[1]), atol=1e-7, rtol=0)):
+                or not np.isclose(score[2], expit(score[1]), atol=1e-7, rtol=1e-6)):
             raise ValueError("invalid finite score or answer orientation")
         values[e, q, c, i], seen[e, q, c, i] = score, True
     if not seen.all():
@@ -328,16 +328,17 @@ def run(ownership_run, manifest, gpu, out, preflight_only=False):
             preflight["nonzero_max_logit_change"] = None
         if preflight["passed"]:
             started = time.perf_counter()
+            pilot_inputs = {encoding: inputs_for(prompt_for(CONCEPTS[0], encoding), validation)
+                            for encoding in ENCODINGS[1:]}
             with steerer:
                 for batch in range(PILOT_EQUIVALENTS // 16):
                     encoding = ENCODINGS[1 + batch % 2]
                     steerer.vec, steerer.alpha = clinical[CONCEPTS[0]], DOSES[batch % 2]
-                    inputs = inputs_for(prompt_for(CONCEPTS[0], encoding), validation)
-                    score_logits(forward(inputs), tokenizer, encoding, ab_ids)
-                    del inputs
+                    score_logits(forward(pilot_inputs[encoding]), tokenizer, encoding, ab_ids)
                     if (batch + 1) % 16 == 0:
                         print(f"validation throughput: {(batch + 1) * 16}/{PILOT_EQUIVALENTS} equivalents", flush=True)
             elapsed = time.perf_counter() - started
+            del pilot_inputs
             predicted = elapsed * SCIENTIFIC_OUTCOMES / PILOT_EQUIVALENTS
             preflight["throughput"] = {"image_condition_equivalents": PILOT_EQUIVALENTS,
                 "elapsed_seconds": elapsed, "predicted_scientific_seconds": predicted,
