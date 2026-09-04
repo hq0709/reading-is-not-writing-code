@@ -4,14 +4,15 @@ Updated: 2026-09-04. Scientific state uses `PLANNED`, `RUNNING`, `FAILED`, and `
 
 ## Active research stage
 
-- Run: `qwen7b-vislast-answer-encoding` registration and implementation; accepted ownership outcomes also enter descriptive score, discrimination, and label-conditioned diagnostics.
+- Run: `20260904T230152Z-21dad2f72726-answer-encoding`, source `21dad2f`, GPU 0; validation preflight passed, and the scientific intervention evaluation has reached `standard/Effusion`.
 - Observation: the existing Qwen ownership matrix covers six clinical questions at one yes/no encoding and one positive dose. The available LLaVA causal comparison covers two concepts. Encoding dependence, input-supported intervention geometry, and architecture transfer are the next evidence targets.
-- Scientific state: `PLANNED`.
-- Gate disposition: `BLOCKED` for GPU dispatch pending the final probability-consistency tolerance adjustment requested by the pinned implementation review. The scientific design and remaining implementation checks are accepted.
+- Scientific state: `RUNNING`.
+- Gate disposition: registration `PASS`; validation-only checks passed for exact zero-dose behavior, nonzero intervention, all eight mapping cases, and throughput. Final evidence awaits complete outcomes and terminal review.
 - Diagnostic run: `20260904T224225Z-1ab7576193a7-ownership-diagnostics` completed on CPU from pushed source `1ab7576`. All six ownership margins remain negative in logit coordinates; all six matched-steering AUROC point estimates are below their baselines. Descriptive findings in `docs/OWNERSHIP_DIAGNOSTICS.md` passed pinned result review and are ready for paper handoff.
 - Supervision: heartbeat `concept-flow` checks this task every 30 minutes, remaining quiet when progress or resource availability does not require action.
-- Next step: does the direction-by-question response follow clinical meaning when the answer-code mapping is exchanged? Complete the registered crossover implementation, run its validation-only preflight, and dispatch the full paired sensitivity experiment.
-- Writer ownership: local Codex owns the code repository and experiment protocol; the separate paper task owns the Overleaf manuscript. The server checkout was clean at `d0a4265`, with GPU 0 available at the initial inventory. GPU availability is checked again by the dispatcher.
+- Next step: does the direction-by-question response follow clinical meaning when the answer-code mapping is exchanged? Complete the immutable paired experiment, inspect calibration eligibility and the registered response-energy contrast, then perform terminal review.
+- Writer ownership: local Codex owns the code repository and experiment protocol; the immutable run owns its artifacts; the separate paper task owns the Overleaf manuscript. The active source snapshot remains `21dad2f` while current state is updated through GitHub.
+- Registration evidence: `docs/reviews/qwen7b-vislast-answer-encoding-registration.md`; pinned receipt `/home/qingchan/.codex/state/claude-review-concept-flow/review-20260904T230054355352Z.json`.
 - Protocol: `docs/RESEARCH_PLAN.md#iclr-evidence-expansion` and `#qwen-answer-encoding-crossover`.
 
 ## Bootstrap gate
