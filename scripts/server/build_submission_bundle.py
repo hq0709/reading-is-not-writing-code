@@ -31,6 +31,7 @@ SOURCE_FILES = (
     "sections/A_appendix.tex",
     "tables/table_decoding.tex",
     "tables/table_gates.tex",
+    "tables/table_mechanisms.tex",
     "figures/fig1_evidence_ladder.pdf",
     "figures/fig2_dose_responses.pdf",
     "figures/fig3_direction_specificity.pdf",

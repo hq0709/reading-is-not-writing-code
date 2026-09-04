@@ -57,13 +57,13 @@ Updated: 2026-09-04. Scientific state uses `PLANNED`, `RUNNING`, `FAILED`, and `
 
 ## Paper-compilation gate
 
-- Run: immutable paper build `20260903T123856Z-00f0adc-paper-compile` compiled the evidence-locked source with the pinned Tectonic 0.17.0 toolchain after a fresh agent followed the documented invocation verbatim.
-- Observation: the PDF has 10 total pages, with the main body ending on page 8 against the nine-page limit, references beginning on page 8, and the appendix beginning on page 9. All 28 fonts are embedded; static validation covers 18 adjudicated values and 15 citations; no unresolved PDF marker or overfull box remains; visual inspection confirms readable tables and figures.
+- Run: immutable no-GPU build `20260904T170512Z-e477a63-sixgate-paper-compile` compiled clean pushed source `e477a634410f9867d9aa2be70b0795ad04f691e2` with pinned Tectonic 0.17.0.
+- Observation: the 11-page PDF has SHA-256 `91ab6dd2ecbb745a238e616a7fffd5827fb80c648d21887a040a1630a9c23102`, conservative main-body page 9 of 9, all 30 fonts embedded, all 27 adjudicated values, no unresolved marker or overfull box, and readable decision-bearing figures and tables.
 - Scientific state: accepted experimental evidence remains `OBSERVED`.
-- Gate decision: `PASS`; deterministic compilation checks and the configured pinned read-only Claude review passed with no required actions.
-- Gate disposition: `READY`.
-- Evidence: `/home/qingchan/data/concept-flow/runs/20260903T123856Z-00f0adc-paper-compile/`; reviewer receipt `/home/qingchan/.codex/state/claude-review-concept-flow/review-20260903T124039710820Z.json`; `docs/reviews/evidence-locked-paper-compilation.md`; `paper/main.pdf`.
-
+- Gate decision: `PASS`; terminal manifest validation, compile checks, visual inspection, and the configured pinned read-only Claude review passed with no required actions.
+- Gate disposition: `READY` for anonymous bundle validation.
+- Next step: can the accepted six-gate PDF and its complete minimal source reproduce byte-identically as an anonymous submission bundle? Build and validate the registered immutable bundle.
+- Evidence: `/home/qingchan/data/concept-flow/runs/20260904T170512Z-e477a63-sixgate-paper-compile/`; reviewer receipt `/home/qingchan/.codex/state/claude-review-concept-flow/review-20260904T170638706411Z.json`; `docs/reviews/six-gate-paper-compilation.md`.
 ## Submission-bundle gate
 
 - Run: immutable bundle run `20260903T125459Z-51b652c-submission-bundle` packaged the accepted paper source and assets, then rebuilt it with the pinned Tectonic toolchain.

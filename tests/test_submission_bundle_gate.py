@@ -78,14 +78,16 @@ class SubmissionBundleGateTests(unittest.TestCase):
     def test_runner_is_bound_to_accepted_compile_receipt(self) -> None:
         runner = (ROOT / "scripts/server/run_submission_bundle_gate.sh").read_text(encoding="utf-8")
         for value in (
-            "20260903T123856Z-00f0adc-paper-compile",
-            "00f0adc32a4ac36dba3d0f21feca485f1c8ef972",
-            "e88c7f9a42baa4f04c7ccdbfdf9653501e4f96a81bd1c1ee238163671e5106e2",
-            "SOURCE_DATE_EPOCH=1788439147",
+            "20260904T170512Z-e477a63-sixgate-paper-compile",
+            "e477a634410f9867d9aa2be70b0795ad04f691e2",
+            "91ab6dd2ecbb745a238e616a7fffd5827fb80c648d21887a040a1630a9c23102",
+            "SOURCE_DATE_EPOCH=1788541513",
             'env SOURCE_DATE_EPOCH="$SOURCE_DATE_EPOCH" FORCE_SOURCE_DATE=1',
             "byteIdenticalToAcceptedPdf",
         ):
             self.assertIn(value, runner)
+
+        self.assertIn("tables/table_mechanisms.tex", BUNDLE.SOURCE_FILES)
 
 
 if __name__ == "__main__":
