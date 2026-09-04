@@ -80,15 +80,9 @@ PREVIOUS_SHA256 = {
     "./artifacts/registered-rows.json": (
         "f55839817554cdf8f6abbc43d9c72d7f021b0f02a86bd3007f31aed417c8e8df"
     ),
-    "./command_exit_status": (
-        "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
-    ),
-    "./exit_status": (
-        "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
-    ),
-    "./metadata.env": (
-        "5c8dca661c74859dc9177edb81b7cdbc8f6cad67130f1cf4df2607e87c235c5a"
-    ),
+    "./command_exit_status": ("9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"),
+    "./exit_status": ("9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"),
+    "./metadata.env": ("5c8dca661c74859dc9177edb81b7cdbc8f6cad67130f1cf4df2607e87c235c5a"),
 }
 EVAL_ROWS = 400
 N_RANDOM = 119
@@ -176,15 +170,12 @@ def validate_source(
         (previous_run / "artifacts/registered-rows.json").read_text(encoding="utf-8")
     )
     derived_rows = json.loads(prior_derived.read_text(encoding="utf-8"))
-    if (
-        previous_rows.get("row_ids") != derived_rows.get("row_ids")
-        or previous_rows.get("row_ids_sha256") != derived_rows.get("row_ids_sha256")
-    ):
+    if previous_rows.get("row_ids") != derived_rows.get("row_ids") or previous_rows.get(
+        "row_ids_sha256"
+    ) != derived_rows.get("row_ids_sha256"):
         raise ValueError("accepted direction-specificity cohort changed")
     previous_summary = json.loads(
-        (previous_run / "artifacts/direction-specificity-summary.json").read_text(
-            encoding="utf-8"
-        )
+        (previous_run / "artifacts/direction-specificity-summary.json").read_text(encoding="utf-8")
     )
     if (
         previous_summary.get("source_run_id") != SOURCE_RUN_ID
@@ -245,8 +236,7 @@ def _question_effects(
     row_position = {row_id: index for index, row_id in enumerate(row_ids)}
     patient_by_row = dict(zip(row_ids, patient_ids, strict=True))
     values = {
-        condition: np.full(EVAL_ROWS, np.nan, dtype=np.float64)
-        for condition in expected_conditions
+        condition: np.full(EVAL_ROWS, np.nan, dtype=np.float64) for condition in expected_conditions
     }
     seen: set[tuple[str, str, float]] = set()
     for record in records:
@@ -278,9 +268,7 @@ def _question_effects(
     for index, concept in enumerate(CONCEPTS):
         stored = "concept" if concept == question else f"unrelated_{concept}"
         clinical[index] = values[(stored, ALPHA)] - baseline
-    random = np.stack(
-        [values[(f"random{index}", ALPHA)] - baseline for index in range(N_RANDOM)]
-    )
+    random = np.stack([values[(f"random{index}", ALPHA)] - baseline for index in range(N_RANDOM)])
     sham = values[("sham", ALPHA)] - baseline
     return clinical, random, sham
 
@@ -296,9 +284,9 @@ def _simultaneous_lower_bounds(
     standard_error = bootstrap.std(axis=0, ddof=1)
     standardized = np.zeros_like(bootstrap)
     varying = standard_error > 1e-12
-    standardized[:, varying] = (
-        bootstrap[:, varying] - estimates[None, varying]
-    ) / standard_error[None, varying]
+    standardized[:, varying] = (bootstrap[:, varying] - estimates[None, varying]) / standard_error[
+        None, varying
+    ]
     critical = _percentile(standardized.max(axis=1), 95.0) if varying.any() else 0.0
     return estimates - critical * standard_error, critical
 
@@ -321,9 +309,7 @@ def summarize_ownership_matrix(
     random = np.empty((len(CONCEPTS), N_RANDOM, EVAL_ROWS), dtype=np.float64)
     sham = np.empty((len(CONCEPTS), EVAL_ROWS), dtype=np.float64)
     for question_index, question in enumerate(CONCEPTS):
-        c, r, s = _question_effects(
-            question, records_by_question[question], row_ids, patient_ids
-        )
+        c, r, s = _question_effects(question, records_by_question[question], row_ids, patient_ids)
         clinical[:, question_index] = c
         random[question_index] = r
         sham[question_index] = s
@@ -347,20 +333,14 @@ def summarize_ownership_matrix(
     matrix_bootstrap = np.empty(
         (BOOTSTRAP_RESAMPLES, len(CONCEPTS), len(CONCEPTS)), dtype=np.float64
     )
-    ownership_bootstrap = np.empty(
-        (BOOTSTRAP_RESAMPLES, len(CONCEPTS)), dtype=np.float64
-    )
+    ownership_bootstrap = np.empty((BOOTSTRAP_RESAMPLES, len(CONCEPTS)), dtype=np.float64)
     pairwise_bootstrap = np.full(
         (BOOTSTRAP_RESAMPLES, len(CONCEPTS), len(CONCEPTS)),
         np.nan,
         dtype=np.float64,
     )
-    shared_score_bootstrap = np.empty(
-        (BOOTSTRAP_RESAMPLES, len(CONCEPTS)), dtype=np.float64
-    )
-    shared_effect_bootstrap = np.empty(
-        (BOOTSTRAP_RESAMPLES, len(CONCEPTS)), dtype=np.float64
-    )
+    shared_score_bootstrap = np.empty((BOOTSTRAP_RESAMPLES, len(CONCEPTS)), dtype=np.float64)
+    shared_effect_bootstrap = np.empty((BOOTSTRAP_RESAMPLES, len(CONCEPTS)), dtype=np.float64)
     for draw in range(BOOTSTRAP_RESAMPLES):
         sampled = rng.integers(0, EVAL_ROWS, size=EVAL_ROWS)
         sampled_matrix = clinical[:, :, sampled].mean(axis=2)
@@ -369,8 +349,8 @@ def summarize_ownership_matrix(
         for question_index in range(len(CONCEPTS)):
             off_diagonal = sampled_matrix[:, question_index].copy()
             off_diagonal[question_index] = -np.inf
-            ownership_bootstrap[draw, question_index] = (
-                sampled_diagonal[question_index] - float(off_diagonal.max())
+            ownership_bootstrap[draw, question_index] = sampled_diagonal[question_index] - float(
+                off_diagonal.max()
             )
             for direction_index in range(len(CONCEPTS)):
                 if direction_index != question_index:
@@ -412,12 +392,8 @@ def summarize_ownership_matrix(
     pairwise_simultaneous_lower[pairwise_valid] = pairwise_lower
 
     shared_estimates = np.concatenate((shared_scores, shared_effects))
-    shared_bootstrap = np.concatenate(
-        (shared_score_bootstrap, shared_effect_bootstrap), axis=1
-    )
-    shared_lower, shared_critical = _simultaneous_lower_bounds(
-        shared_estimates, shared_bootstrap
-    )
+    shared_bootstrap = np.concatenate((shared_score_bootstrap, shared_effect_bootstrap), axis=1)
+    shared_lower, shared_critical = _simultaneous_lower_bounds(shared_estimates, shared_bootstrap)
     shared_score_lower = shared_lower[: len(CONCEPTS)]
     shared_effect_lower = shared_lower[len(CONCEPTS) :]
 
@@ -466,8 +442,7 @@ def summarize_ownership_matrix(
         column_random_means = random_means[index]
         random_max = float(column_random_means.max())
         exact_random_p = float(
-            (1 + np.count_nonzero(column_random_means >= diagonal[index]))
-            / (N_RANDOM + 1)
+            (1 + np.count_nonzero(column_random_means >= diagonal[index])) / (N_RANDOM + 1)
         )
         generic_selectivity = bool(
             diagonal[index] > 0
@@ -524,10 +499,7 @@ def summarize_ownership_matrix(
         ),
         "matrix_orientation": "rows are steering directions; columns are clinical questions",
         "effect_matrix": {
-            direction: {
-                question: float(matrix[d, q])
-                for q, question in enumerate(CONCEPTS)
-            }
+            direction: {question: float(matrix[d, q]) for q, question in enumerate(CONCEPTS)}
             for d, direction in enumerate(CONCEPTS)
         },
         "columns": columns,
@@ -540,9 +512,7 @@ def summarize_ownership_matrix(
                 "a fixed direction's mean off-diagonal excess over each question's named "
                 "direction, selected under simultaneous dominance and positive-effect bounds"
             ),
-            "direction": (
-                CONCEPTS[shared_direction_index] if qualifying_aliases else None
-            ),
+            "direction": (CONCEPTS[shared_direction_index] if qualifying_aliases else None),
             "candidate_direction": CONCEPTS[shared_direction_index],
             "relative_dominance": float(shared_scores[shared_direction_index]),
             "relative_dominance_simultaneous_lower_95": float(
@@ -554,6 +524,16 @@ def summarize_ownership_matrix(
             ),
             "global_random_effect_max": global_random_alias_max,
             "global_absolute_sham_effect_max": global_sham_max,
+            "by_direction": {
+                direction: {
+                    "relative_dominance": float(shared_scores[index]),
+                    "relative_dominance_simultaneous_lower_95": float(shared_score_lower[index]),
+                    "off_diagonal_effect": float(shared_effects[index]),
+                    "off_diagonal_effect_simultaneous_lower_95": float(shared_effect_lower[index]),
+                    "qualified": index in qualifying_aliases,
+                }
+                for index, direction in enumerate(CONCEPTS)
+            },
             "detected": bool(qualifying_aliases),
         },
     }

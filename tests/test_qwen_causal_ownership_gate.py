@@ -69,14 +69,10 @@ class QwenCausalOwnershipGateTests(unittest.TestCase):
         selected, digest = derive_registered_rows(manifest, discovery, previous)
 
         by_id = {row["row_id"]: row for row in manifest}
-        excluded_patients = {
-            by_id[row_id]["patient_id"] for row_id in discovery + previous
-        }
+        excluded_patients = {by_id[row_id]["patient_id"] for row_id in discovery + previous}
         self.assertEqual(EVAL_ROWS, len(selected))
         self.assertEqual(EVAL_ROWS, len({row["patient_id"] for row in selected}))
-        self.assertFalse(
-            {row["patient_id"] for row in selected} & excluded_patients
-        )
+        self.assertFalse({row["patient_id"] for row in selected} & excluded_patients)
         self.assertEqual(REGISTERED_ROWS_SHA256, digest)
 
     def test_registered_rows_are_deterministic_and_patient_disjoint_portably(self) -> None:
@@ -101,9 +97,7 @@ class QwenCausalOwnershipGateTests(unittest.TestCase):
             for index in range(EVAL_ROWS + 5)
         )
 
-        selected, digest = derive_registered_rows(
-            manifest, ["discovery-row"], ["previous-row"]
-        )
+        selected, digest = derive_registered_rows(manifest, ["discovery-row"], ["previous-row"])
         replay, replay_digest = derive_registered_rows(
             list(reversed(manifest)), ["discovery-row"], ["previous-row"]
         )
@@ -131,6 +125,10 @@ class QwenCausalOwnershipGateTests(unittest.TestCase):
         self.assertEqual(0, summary["n_off_diagonal_winners"])
         self.assertFalse(summary["shared_alias"]["detected"])
         self.assertIsNone(summary["shared_alias"]["direction"])
+        self.assertEqual(set(CONCEPTS), set(summary["shared_alias"]["by_direction"]))
+        self.assertFalse(
+            any(item["qualified"] for item in summary["shared_alias"]["by_direction"].values())
+        )
         for concept in CONCEPTS:
             self.assertGreater(summary["columns"][concept]["ownership_margin"], 0.10)
             self.assertTrue(summary["columns"][concept]["owned"])
@@ -146,13 +144,12 @@ class QwenCausalOwnershipGateTests(unittest.TestCase):
             )
 
         self.assertEqual("Nodule", summary["shared_alias"]["direction"])
-        self.assertGreater(
-            summary["shared_alias"]["relative_dominance_simultaneous_lower_95"], 0.0
-        )
+        self.assertGreater(summary["shared_alias"]["relative_dominance_simultaneous_lower_95"], 0.0)
         self.assertGreater(
             summary["shared_alias"]["off_diagonal_effect_simultaneous_lower_95"], 0.0
         )
         self.assertTrue(summary["shared_alias"]["detected"])
+        self.assertTrue(summary["shared_alias"]["by_direction"]["Nodule"]["qualified"])
         self.assertEqual(5, summary["n_off_diagonal_winners"])
         self.assertFalse(summary["columns"]["Effusion"]["owned"])
         self.assertEqual("Nodule", summary["columns"]["Effusion"]["winner"])
@@ -199,9 +196,7 @@ class QwenCausalOwnershipGateTests(unittest.TestCase):
             for record in question_records:
                 if record["direction"] == "concept" and float(record["alpha"]) == 0.0:
                     continue
-                if record["direction"] == "concept" or record["direction"].startswith(
-                    "unrelated_"
-                ):
+                if record["direction"] == "concept" or record["direction"].startswith("unrelated_"):
                     record["p_yes"] = "0.3"
         with TemporaryDirectory() as temp:
             summary = summarize_ownership_matrix(
@@ -224,9 +219,9 @@ class QwenCausalOwnershipGateTests(unittest.TestCase):
             )
 
     def test_runner_fixes_the_six_question_grid_and_fresh_cohort(self) -> None:
-        runner = (
-            ROOT / "scripts/server/run_qwen_causal_ownership_gate.sh"
-        ).read_text(encoding="utf-8")
+        runner = (ROOT / "scripts/server/run_qwen_causal_ownership_gate.sh").read_text(
+            encoding="utf-8"
+        )
         for token in (
             "20260903T000321Z-caaae3ef346d-qwen-full",
             "20260903T103508Z-456c81bad460-7a3edc4b",
@@ -237,6 +232,9 @@ class QwenCausalOwnershipGateTests(unittest.TestCase):
             "--n-eval 400",
             "--eval-row-ids-file",
             "Effusion|Atelectasis|Pneumothorax|Cardiomegaly|Mass|Nodule",
+            "src.qwen_mechanism_route",
+            "causal-ownership-summary.json",
+            "mechanism-route.json",
         ):
             self.assertIn(token, runner)
         self.assertIn("printf '%s\\n' \"$concepts\"", runner)
@@ -269,9 +267,7 @@ class QwenCausalOwnershipGateTests(unittest.TestCase):
                 encoding="utf-8",
             )
 
-            with patch(
-                "src.qwen_causal_ownership_gate.PREVIOUS_SHA256", expected
-            ):
+            with patch("src.qwen_causal_ownership_gate.PREVIOUS_SHA256", expected):
                 _validate_previous_run_receipt(run)
                 (run / "exit_status").write_text("1\n", encoding="utf-8")
                 with self.assertRaisesRegex(ValueError, "dispatcher failed"):
@@ -302,12 +298,8 @@ class QwenCausalOwnershipGateTests(unittest.TestCase):
                 direction_effects[question] = 0.20
                 if alias_direction is not None and question != alias_direction:
                     direction_effects[alias_direction] = 0.27
-                for direction_index, (direction, effect) in enumerate(
-                    direction_effects.items()
-                ):
-                    effect += 0.01 * (
-                        ((patient_index + 3 * direction_index) % 9) - 4
-                    ) / 4
+                for direction_index, (direction, effect) in enumerate(direction_effects.items()):
+                    effect += 0.01 * (((patient_index + 3 * direction_index) % 9) - 4) / 4
                     stored_direction = (
                         "concept" if direction == question else f"unrelated_{direction}"
                     )

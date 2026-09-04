@@ -77,3 +77,10 @@ python "$source_dir/src/qwen_causal_ownership_gate.py" summarize \
   --registered-rows "$artifacts/registered-rows.json" \
   --bootstrap "$artifacts/causal-ownership-bootstrap.npz" \
   --out "$artifacts/causal-ownership-summary.json"
+
+(
+  cd "$source_dir"
+  python -m src.qwen_mechanism_route \
+    --summary "$artifacts/causal-ownership-summary.json" \
+    --output "$artifacts/mechanism-route.json"
+)
