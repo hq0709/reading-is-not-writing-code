@@ -119,7 +119,7 @@ Model & Concept & Cohort & Clinical margin [95\% CI] & Stopped at \\
 \toprule
 Gate & Cohort & Target statistic & Registered comparator & Uncertainty boundary & Outcome \\
 \midrule
-Ownership & {ownership['n_eval_patients']} patients & Alias candidate {ownership['shared_alias']['off_diagonal_effect']:.4f} & Random max {ownership['shared_alias']['global_random_effect_max']:.4f} & 0/6 owned & No ownership or alias \\
+Ownership & {ownership['n_eval_patients']} patients & Alias candidate {ownership['shared_alias']['off_diagonal_effect']:.4f} & Random max {ownership['shared_alias']['global_random_effect_max']:.4f} & Alias LCB {ownership['shared_alias']['off_diagonal_effect_simultaneous_lower_95']:.4f} & 0/6 owned; no alias \\
 Input closure & {closure['n_pairs']} pairs & $G_C={closure['concept_closure_gain']:.4f}$ & Random max {closure['random_closure_gain_max']:.4f} & $\gamma$ LCB {closure['input_displacement']['one_sided_lower_95']:.4f}; $M$ LCB {closure['clinical_familywise_margin']['one_sided_lower_95']:.4f} & No closure \\
 \bottomrule
 \end{{tabular*}}

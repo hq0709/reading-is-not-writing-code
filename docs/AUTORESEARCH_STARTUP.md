@@ -8,7 +8,7 @@ This project applies the bootstrap contract in `../auto-research-contracts/autor
 - Problem: measure how much clinical information a medical VLM uses, rather than treating linear decodability as use.
 - Source material: `README.md`, `docs/00_PAPER_PLAN.md`, `docs/02_RESULTS.md`, `docs/10_RESULTS.md`, and `docs/11_RELATED_WORK.md`.
 - Core question and protocol: `docs/RESEARCH_PLAN.md`.
-- Current gate: `six-gate-evidence-locked-manuscript`; the accepted Consolidation nonconfirmation routes directly to claim and manuscript reconciliation, with no further experiment authorized.
+- Current gate: `six-gate-paper-compilation`; the reviewed six-gate manuscript is ready for immutable compilation, with no further scientific experiment authorized.
 - Evidence root: `/home/qingchan/data/concept-flow/runs`.
 - Runtime: local `E:/projects/concept-flow-project`; server `/home/qingchan/work/concept-flow`; data `/home/qingchan/data/concept-flow`.
 - Environment: `source scripts/server/activate_env.sh`; Python 3.13; lock `uv.lock`.

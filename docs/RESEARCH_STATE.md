@@ -47,13 +47,13 @@ Updated: 2026-09-04. Scientific state uses `PLANNED`, `RUNNING`, `FAILED`, and `
 
 ## Manuscript-drafting gate
 
-- Run: reconcile the evidence-locked manuscript and generated evidence snapshot with the accepted six-gate sequence.
-- Observation: the draft now includes the Qwen ownership matrix and paired Consolidation closure gate in the protocol, results, discussion, conclusion, provenance appendix, and a generated mechanism table. Static validation finds all 27 adjudicated manuscript values and all 15 citations; cross-review and immutable compilation remain pending.
+- Run: reconcile the evidence-locked manuscript and generated evidence snapshot with the accepted six-gate sequence, validate and render it, inspect the decision-bearing pages, and request pinned read-only review at pushed commit `7e70d1db3ca95178abc1c0663c8030af65ea8005`.
+- Observation: the draft includes the Qwen ownership matrix and paired Consolidation closure gate throughout the claim chain. Static validation finds all 27 adjudicated values and 15 citations; the 11-page render ends the main body on page 8, embeds all fonts, and has no unresolved reference, overfull box, or clipped table. The reviewer returned `PASS`, `READY`, and no required actions; its optional clarity notes are incorporated.
 - Scientific state: accepted experimental evidence remains `OBSERVED`.
-- Gate decision: `RUNNING` at validator commit `0046d1e506c1b7a13fff02777cc16c8a358accf5` plus the current manuscript update.
-- Gate disposition: pending pinned read-only review.
-- Next step: can the updated draft preserve the accepted six-gate claim and fit the nine-page ICLR main-body budget? Push a clean draft checkpoint, request review, and compile the accepted revision.
-- Evidence: `paper/`; `CLAIMS_FROM_RESULTS.md`; `docs/reviews/six-gate-result-to-claim.md`.
+- Gate decision: `PASS`.
+- Gate disposition: `READY` for immutable compilation.
+- Next step: can the accepted six-gate source compile reproducibly from an immutable commit while preserving the nine-page main-body limit, all 27 adjudicated values, readable tables, and fully embedded fonts? Run the registered immutable compile gate.
+- Evidence: `paper/`; `CLAIMS_FROM_RESULTS.md`; reviewer receipt `/home/qingchan/.codex/state/claude-review-concept-flow/review-20260904T165826704963Z.json`; `docs/reviews/six-gate-evidence-locked-manuscript.md`.
 
 ## Paper-compilation gate
 
