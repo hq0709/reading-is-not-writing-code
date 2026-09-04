@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate the paper's evidence-ladder hero figure."""
+"""Generate the paper's reader-writer mismatch hero figure."""
 
 from __future__ import annotations
 
@@ -14,77 +14,91 @@ from plot_style import BLUE, GRAY, GREEN, LIGHT_GRAY, ORANGE, save
 
 PAPER = Path(__file__).resolve().parents[1]
 data = json.loads((PAPER / "data" / "accepted_results.json").read_text(encoding="utf-8"))
+qwen = next(cell for cell in data["cells"] if cell["key"] == "qwen_effusion")
+specificity = data["specificity"]
 
-fig = plt.figure(figsize=(10.2, 3.0))
-grid = fig.add_gridspec(1, 3, width_ratios=[1.15, 1.0, 1.1], wspace=0.5)
+fig = plt.figure(figsize=(10.2, 2.75))
+grid = fig.add_gridspec(1, 3, width_ratios=[1.15, 1.25, 0.9], wspace=0.48)
 
-# (a) Same-locus measurement and intervention.
+
+def box(ax, xy, width, height, label, *, color=LIGHT_GRAY, alpha=0.55):
+    patch = FancyBboxPatch(
+        xy,
+        width,
+        height,
+        boxstyle="round,pad=0.025",
+        facecolor=color,
+        edgecolor="black",
+        linewidth=0.8,
+        alpha=alpha,
+    )
+    ax.add_patch(patch)
+    ax.text(xy[0] + width / 2, xy[1] + height / 2, label, ha="center", va="center")
+
+
+# (a) The probe is trained as a reader.
 ax = fig.add_subplot(grid[0, 0])
 ax.set_axis_off()
-boxes = [
-    (0.02, 0.58, 0.26, 0.20, "Image\n$x$"),
-    (0.37, 0.58, 0.28, 0.20, "Final visual\nblock $h$"),
-    (0.75, 0.58, 0.23, 0.20, "Answer\n$P(yes)$"),
-    (0.37, 0.12, 0.28, 0.20, "Fixed linear\nprobe $w$"),
-]
-for x, y, w, h, label in boxes:
-    color = BLUE if "visual" in label else LIGHT_GRAY
-    ax.add_patch(
-        FancyBboxPatch(
-            (x, y), w, h, boxstyle="round,pad=0.025", facecolor=color,
-            edgecolor="black", linewidth=0.8, alpha=0.22 if color == BLUE else 0.6
-        )
-    )
-    ax.text(x + w / 2, y + h / 2, label, ha="center", va="center")
-for start, end in [((0.28, 0.68), (0.37, 0.68)), ((0.65, 0.68), (0.75, 0.68)), ((0.51, 0.58), (0.51, 0.32))]:
+box(ax, (0.00, 0.54), 0.25, 0.18, "Chest\nX-ray")
+box(ax, (0.37, 0.54), 0.27, 0.18, "Consumed\nvisual block", color=BLUE, alpha=0.20)
+box(ax, (0.76, 0.54), 0.22, 0.18, "Effusion\nreader $w_E$", color=GREEN, alpha=0.22)
+for start, end in [((0.25, 0.63), (0.37, 0.63)), ((0.64, 0.63), (0.76, 0.63))]:
     ax.add_patch(FancyArrowPatch(start, end, arrowstyle="-|>", mutation_scale=10, linewidth=1.0))
-ax.annotate(
-    r"edit $h_t+\alpha\|h_t\|\hat w$",
-    xy=(0.68, 0.68), xytext=(0.55, 0.90), ha="center", color=ORANGE,
-    arrowprops={"arrowstyle": "-|>", "color": ORANGE, "lw": 1.0},
-)
-ax.text(0.0, 1.02, "a", transform=ax.transAxes, fontweight="bold", fontsize=11)
+lo, hi = qwen["selectivity_ci95"]
+ax.text(0.5, 0.30, f"AUROC = {qwen['auroc']:.3f}", ha="center", fontweight="bold")
+ax.text(0.5, 0.18, f"controlled $S$ = {qwen['selectivity']:.3f}", ha="center")
+ax.text(0.5, 0.08, f"95% CI [{lo:.3f}, {hi:.3f}]", ha="center", color=GRAY)
+ax.text(0.0, 1.02, "a  Train to read", transform=ax.transAxes, fontweight="bold", fontsize=10)
 
-# (b) Controlled decodability.
+
+# (b) Reusing the normal as a writer creates semantic competition.
 ax = fig.add_subplot(grid[0, 1])
-labels = ["LLaVA\nEffusion", "LLaVA\nEdema", "Qwen\nEffusion"]
-y = list(range(3))[::-1]
-for yi, item in zip(y, data["cells"]):
-    lo, hi = item["selectivity_ci95"]
-    ax.errorbar(
-        item["selectivity"], yi,
-        xerr=[[item["selectivity"] - lo], [hi - item["selectivity"]]],
-        fmt="o", color=BLUE, ecolor=BLUE, capsize=3, markersize=5,
-    )
+effects = specificity["direction_effects"]
+labels = ["Sham", "Random p95", "Effusion $w_E$", "Nodule $w_N$"]
+values = [
+    specificity["absolute_sham_effect"],
+    specificity["random_effect_p95"],
+    effects["concept"],
+    effects["unrelated_Nodule"],
+]
+colors = [GRAY, GRAY, BLUE, ORANGE]
+y = [3, 2, 1, 0]
 ax.axvline(0, color="black", linewidth=0.8)
+for yi, value, color in zip(y, values, colors):
+    ax.plot([0, value], [yi, yi], color=color, linewidth=2.2, alpha=0.75)
+    ax.scatter(value, yi, s=45, color=color, edgecolor="black", linewidth=0.5, zorder=3)
+    ax.text(value + 0.009, yi, f"{value:.3f}", va="center", color=color)
 ax.set_yticks(y, labels)
-ax.set_xlabel("Controlled selectivity\n(real AUROC $-$ control mean)")
-ax.set_xlim(-0.01, 0.18)
-ax.text(0.0, 1.02, "b", transform=ax.transAxes, fontweight="bold", fontsize=11)
+ax.set_xlim(-0.005, 0.30)
+ax.set_ylim(-0.6, 3.6)
+ax.set_xlabel(r"Change in Effusion-answer mean $P(yes)$")
+ax.grid(axis="x", color=LIGHT_GRAY, linewidth=0.6)
+ax.text(0.0, 1.02, "b  Reuse to write", transform=ax.transAxes, fontweight="bold", fontsize=10)
 
-# (c) The evidentiary ladder.
+
+# (c) The familywise clinical comparison breaks Effusion-specific attribution.
 ax = fig.add_subplot(grid[0, 2])
-states = [[1, -1, 0], [1, -1, 0], [1, 1, -1]]
-for row, values in enumerate(states):
-    yy = 2 - row
-    for col, value in enumerate(values):
-        if value == 1:
-            ax.scatter(col, yy, s=105, marker="o", facecolor=GREEN, edgecolor="black", linewidth=0.5)
-            ax.text(col, yy, "+", color="white", ha="center", va="center", fontweight="bold")
-        elif value == -1:
-            ax.scatter(col, yy, s=105, marker="X", facecolor=ORANGE, edgecolor="black", linewidth=0.5)
-        else:
-            ax.scatter(col, yy, s=45, marker="o", facecolor="white", edgecolor=GRAY, linewidth=0.8)
-ax.plot([0, 2], [2, 2], color=LIGHT_GRAY, zorder=0)
-ax.plot([0, 2], [1, 1], color=LIGHT_GRAY, zorder=0)
-ax.plot([0, 2], [0, 0], color=LIGHT_GRAY, zorder=0)
-ax.set_xticks([0, 1, 2], ["Decodable", "Above\nrandom/sham", "Above fixed\nclinical dirs."])
-ax.set_yticks([2, 1, 0], labels)
-ax.set_xlim(-0.35, 2.35)
-ax.set_ylim(-0.55, 2.55)
-for spine in ax.spines.values():
-    spine.set_visible(False)
-ax.tick_params(length=0)
-ax.text(0.0, 1.02, "c", transform=ax.transAxes, fontweight="bold", fontsize=11)
+margin = specificity["primary"]["margin"]
+ci_lo, ci_hi = specificity["primary"]["ci95"]
+ax.axvline(0, color="black", linewidth=0.9)
+ax.errorbar(
+    margin,
+    0.58,
+    xerr=[[margin - ci_lo], [ci_hi - margin]],
+    fmt="o",
+    color=ORANGE,
+    ecolor=ORANGE,
+    capsize=4,
+    markersize=6,
+)
+ax.set_xlim(-0.082, 0.018)
+ax.set_ylim(0, 1)
+ax.set_yticks([])
+ax.set_xlabel(r"$\Delta_E-\max_d\Delta_d$")
+ax.text(0.5, 0.83, "Familywise clinical margin", transform=ax.transAxes, ha="center")
+label_box = {"facecolor": "white", "edgecolor": "none", "pad": 1.0, "alpha": 0.9}
+ax.text(0.5, 0.29, "Non-generic writer: yes", transform=ax.transAxes, ha="center", color=GREEN, fontweight="bold", fontsize=8.5, bbox=label_box)
+ax.text(0.5, 0.15, "Effusion-specific: no", transform=ax.transAxes, ha="center", color=ORANGE, fontweight="bold", fontsize=8.5, bbox=label_box)
+ax.text(0.0, 1.02, "c  Test attribution", transform=ax.transAxes, fontweight="bold", fontsize=10)
 
 save(fig, "fig1_evidence_ladder")

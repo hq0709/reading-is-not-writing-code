@@ -20,9 +20,20 @@ for index, (ax, item) in enumerate(zip(axes, data["cells"])):
     effects = [row["raw_change"] for row in item["dose"]]
     ax.plot(alphas, effects, color=BLUE, marker="o", markersize=3.5, linewidth=1.3, label="Probe normal")
     ctrl_alphas = sorted(float(value) for value in item["controls"])
-    lows = [item["controls"][str(value)]["random_p05"] for value in ctrl_alphas]
-    highs = [item["controls"][str(value)]["random_p95"] for value in ctrl_alphas]
-    shams = [item["controls"][str(value)]["sham_effect"] for value in ctrl_alphas]
+    # Stored controls are oriented as sign(alpha) * raw_change for the decision
+    # rule. Convert negative-dose values back to raw-change coordinates before
+    # plotting them against the raw target curve.
+    lows, highs, shams = [], [], []
+    for alpha in ctrl_alphas:
+        control = item["controls"][str(alpha)]
+        if alpha < 0:
+            lows.append(-control["random_p95"])
+            highs.append(-control["random_p05"])
+            shams.append(-control["sham_effect"])
+        else:
+            lows.append(control["random_p05"])
+            highs.append(control["random_p95"])
+            shams.append(control["sham_effect"])
     ax.fill_between(ctrl_alphas, lows, highs, color=GRAY, alpha=0.2, label="Random 5--95%")
     ax.scatter(ctrl_alphas, shams, color=ORANGE, marker="x", s=22, label="Sham")
     ax.axhline(0, color="black", linewidth=0.7)
