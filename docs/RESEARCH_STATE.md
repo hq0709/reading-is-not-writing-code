@@ -29,13 +29,14 @@ Updated: 2026-09-04. Scientific state uses `PLANNED`, `RUNNING`, `FAILED`, and `
 
 ## Qwen Consolidation input-closure gate
 
-- Run: prospectively register `qwen7b-consolidation-vislast-input-closure` on 50 fresh within-patient positive/negative Consolidation pairs, using the train-fitted capacity-matched probe normal and displacement-matched `reltoken` writes against 119 random, sham, and six clinical controls.
-- Observation: implementation and deterministic pair identity are under internal validation; no scientific output has been evaluated.
-- Scientific state: `PLANNED`.
-- Gate decision: pending internal validation and configured pinned read-only registration review.
-- Gate disposition: pending registration evidence.
-- Next step: can a within-patient Consolidation representation displacement be closed by the matching probe-normal write beyond random, sham, and fixed clinical controls? Validate and review the prospective runner, then dispatch its immutable payload on `PASS`.
-- Writer ownership: Codex owns registration, implementation, and dispatch; no scientific run or manuscript-build process is active.
+- Run: immutable run `20260904T162317Z-8a55a4c2f6b6-consolidation-closure` evaluates 50 fresh within-patient positive/negative Consolidation pairs using the train-fitted capacity-matched probe normal and displacement-matched `reltoken` writes against 119 random, sham, and six clinical controls.
+- Observation: the deterministic pair receipt excludes all 1,000 prior Qwen intervention rows. The repository suite passed 130 tests with one platform skip, and the configured pinned read-only Claude registration review returned `PASS` with no required actions. Fresh launch preflight passed at source commit `8a55a4c2f6b6feeb7c8ccfaf818a342dffce1a56`; GPU 0 used 1 MiB before dispatch.
+- Scientific state: `RUNNING`; no input-closure outcome exists yet.
+- Gate decision: `RUNNING`; terminal internal replay and hard-gate review remain pending.
+- Gate disposition: pending terminal evidence.
+- Next step: can a within-patient Consolidation representation displacement be closed by the matching probe-normal write beyond random, sham, and fixed clinical controls? Validate the completed receipt and paired bootstrap, then request the pinned hard-gate review.
+- Writer ownership: immutable run `20260904T162317Z-8a55a4c2f6b6-consolidation-closure` owns experimental artifacts; Codex owns state recording and terminal gate advancement. No manuscript-build process is active.
+- Evidence: `/home/qingchan/data/concept-flow/runs/20260904T162317Z-8a55a4c2f6b6-consolidation-closure/`; `/home/qingchan/data/concept-flow/state/consolidation-registration-validation-20260904T161712Z-PRV2oo/`; reviewer receipt `/home/qingchan/.codex/state/claude-review-concept-flow/review-20260904T162255731007Z.json`; `docs/reviews/qwen7b-consolidation-vislast-input-closure-registration.md`.
 
 ## Paper-planning gate
 
