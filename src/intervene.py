@@ -55,13 +55,12 @@ from registry import REGISTRY
 YES_WORDS = ("yes", "Yes", "YES")
 NO_WORDS = ("no", "No", "NO")
 REGISTERED_UNRELATED = ("Atelectasis", "Pneumothorax", "Cardiomegaly", "Mass", "Nodule")
+REGISTERED_CLINICAL_DIRECTIONS = ("Effusion", *REGISTERED_UNRELATED)
 REGISTERED_PROMPT = "Is there a pleural effusion in this chest radiograph? Answer yes or no."
 
 
 def registered_unrelated(concept: str) -> tuple[str, ...]:
-    if concept == "Edema":
-        return ("Effusion", *tuple(name for name in REGISTERED_UNRELATED if name != concept))
-    return tuple(name for name in REGISTERED_UNRELATED if name != concept)
+    return tuple(name for name in REGISTERED_CLINICAL_DIRECTIONS if name != concept)
 
 
 def load_shards(act_dir):
@@ -97,7 +96,11 @@ def load_registered_directions(path, expected_dim, concept):
         projection = np.asarray(bundle["projection"], dtype=np.float64)
         scale = np.asarray(bundle["scale"], dtype=np.float64)
         coefficients = np.asarray(bundle["coefficients"], dtype=np.float64)
-        expected_names = [concept, *registered_unrelated(concept)]
+        expected_names = (
+            list(REGISTERED_CLINICAL_DIRECTIONS)
+            if concept in REGISTERED_CLINICAL_DIRECTIONS
+            else [concept, *registered_unrelated(concept)]
+        )
         if names != expected_names or str(bundle["locus"]) != "vis.last":
             raise ValueError("direction bundle identity mismatch")
         if int(bundle["raw_dim"]) != expected_dim or vectors.shape != (len(names), expected_dim):

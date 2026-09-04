@@ -153,6 +153,59 @@ class CrossCellGateTests(unittest.TestCase):
             loaded, _ = load_registered_directions(path, 3, "Edema")
         self.assertEqual(set(names), set(loaded))
 
+    def test_registered_six_concept_grid_always_uses_the_other_five_directions(self) -> None:
+        concepts = (
+            "Effusion",
+            "Atelectasis",
+            "Pneumothorax",
+            "Cardiomegaly",
+            "Mass",
+            "Nodule",
+        )
+        for concept in concepts:
+            with self.subTest(concept=concept):
+                self.assertEqual(
+                    tuple(name for name in concepts if name != concept),
+                    registered_unrelated(concept),
+                )
+
+    def test_canonical_six_direction_bundle_can_target_each_registered_concept(self) -> None:
+        concepts = (
+            "Effusion",
+            "Atelectasis",
+            "Pneumothorax",
+            "Cardiomegaly",
+            "Mass",
+            "Nodule",
+        )
+        rng = np.random.default_rng(5)
+        projection = rng.standard_normal((3, 512)).astype(np.float32)
+        scale = np.linspace(0.5, 2.0, 512)
+        coefficients = rng.standard_normal((len(concepts), 512))
+        vectors = np.stack(
+            [capacity_direction(projection, scale, coefficient) for coefficient in coefficients]
+        )
+        with TemporaryDirectory() as temp:
+            path = Path(temp) / "directions.npz"
+            np.savez_compressed(
+                path,
+                names=np.asarray(concepts),
+                vectors=vectors,
+                projection=projection,
+                scale=scale,
+                coefficients=coefficients,
+                locus=np.asarray("vis.last"),
+                raw_dim=np.asarray(3),
+                projection_dim=np.asarray(512),
+                projection_seed=np.asarray(0),
+                C=np.asarray(1.0),
+                probe_seed=np.asarray(0),
+            )
+            for concept in concepts:
+                with self.subTest(concept=concept):
+                    loaded, _ = load_registered_directions(path, 3, concept)
+                    self.assertEqual(set(concepts), set(loaded))
+
     def test_source_receipt_allows_pre_fusion_prompt_reuse(self) -> None:
         with TemporaryDirectory() as temp:
             run = Path(temp) / SOURCE_RUN_ID

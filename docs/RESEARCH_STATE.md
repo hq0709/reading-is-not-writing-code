@@ -18,6 +18,16 @@ Updated: 2026-09-03. Scientific state uses `PLANNED`, `RUNNING`, `FAILED`, and `
 - Gate disposition: `READY` for the accepted paper claim.
 - Evidence: immutable runs `20260902T191411Z-ffd523c464c8-f99e2f39`, `20260902T221534Z-110b84618d1b-edema`, `20260903T000321Z-caaae3ef346d-qwen-full`, and `20260903T103508Z-456c81bad460-7a3edc4b`; `CLAIMS_FROM_RESULTS.md`; `.aris/evidence_precheck.json`.
 
+## ICLR 6+ causal-ownership gate
+
+- Run: `qwen7b-vislast-causal-ownership` is registered at the accepted Qwen final visual block. It crosses six fixed clinical probe directions with six matching questions on a third, label-blind cohort of 400 patients absent from both earlier Qwen interventions.
+- Observation: no matrix outcome exists yet. The cohort rule, prompts, direction family, dose, 119-direction random control, simultaneous ownership and shared-alias statistics, bootstrap, decision branches, and four-hour cap are fixed in `docs/RESEARCH_PLAN.md`.
+- Scientific state: `PLANNED`.
+- Gate decision: implementation tests pass locally; GPU dispatch is `BLOCKED` while both visible A100s exceed the project's 500 MiB launch threshold.
+- Gate disposition: `BLOCKED` until one registered GPU is below 500 MiB immediately before immutable dispatch.
+- Next step: does the six-by-six matrix reveal diagonal clinical ownership or a shared causal alias? Dispatch the immutable gate on the first eligible GPU, then follow its registered mechanism or Consolidation fallback branch.
+- Writer ownership: local Codex owns the registration and source update; the immutable server runner owns artifacts after dispatch. No manuscript-build process is active.
+
 ## Paper-planning gate
 
 - Run: the accepted four-gate evidence was organized into the six-section ICLR outline in `PAPER_PLAN.md`.
@@ -51,8 +61,7 @@ Updated: 2026-09-03. Scientific state uses `PLANNED`, `RUNNING`, `FAILED`, and `
 - Gate decision: `PASS`; the deterministic internal check and configured pinned read-only Claude review passed with no required actions.
 - Gate disposition: `READY` for submission handoff.
 - Evidence: `/home/qingchan/data/concept-flow/runs/20260903T125459Z-51b652c-submission-bundle/`; `/home/qingchan/data/concept-flow/state/submission-bundle-internal-validation-20260903T125553Z/receipt.json`; reviewer receipt `/home/qingchan/.codex/state/claude-review-concept-flow/review-20260903T125705202059Z.json`; `docs/reviews/anonymous-submission-bundle.md`.
-- Next step: can the accepted bundle and PDF be delivered through the selected submission workflow without changing their verified identities? After the user selects and authorizes that workflow, transfer the accepted artifacts and verify their SHA-256 values.
-- Writer ownership: server Codex/ARIS; no manuscript-build process is active and no successor experiment is registered.
+- The accepted bundle remains the reproducible baseline while the causal-ownership gate raises the paper's scientific ceiling. The Overleaf-facing source remains in the separate `concept-flow-paper` repository.
 
 ## Transition rules
 

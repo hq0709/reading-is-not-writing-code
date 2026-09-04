@@ -70,6 +70,9 @@ class OperationalContractTests(unittest.TestCase):
         self.assertRegex(text, r"git\s+worktree\s+add|git\s+archive")
         self.assertIn("START_EPOCH", text)
         self.assertIn("GPU_COUNT", text)
+        self.assertIn("--query-gpu=index,memory.used", text)
+        self.assertIn("MAX_GPU_MEMORY_USED_MIB", text)
+        self.assertIn("GPU_MEMORY_USED_MIB", text)
         self.assertIn("ABORT_SIGNAL", text)
         self.assertIn("trap finalize EXIT", text)
 
@@ -123,6 +126,7 @@ class OperationalContractTests(unittest.TestCase):
             "MAX_WALL_CLOCK_HOURS",
             "MAX_GPU_HOURS",
             "MAX_SINGLE_RUN_HOURS",
+            "MAX_GPU_MEMORY_USED_MIB",
         ):
             self.assertRegex(text, rf"(?m)^{key}=.+$")
 

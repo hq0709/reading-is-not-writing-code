@@ -32,6 +32,7 @@ gpu_inventory_count=$(grep -c '^GPU ' <<<"$gpu_inventory" || true)
 gpu_names=$(nvidia-smi --query-gpu=name --format=csv,noheader | paste -sd ';' -) || fail 'cannot identify GPUs'
 gpu_count=0
 cuda_visible_devices=
+gpu_memory_used_mib=none
 if test "$gpu_ids" != none; then
   IFS=, read -r -a requested_gpu_ids <<<"$gpu_ids"
   declare -A seen_gpu_ids=()
@@ -59,6 +60,22 @@ failures=$(find "$runs_dir" -mindepth 2 -maxdepth 2 -name command_exit_status -p
 failure_count=0
 while IFS= read -r file; do test -n "$file" || continue; test "$(cat "$file")" -eq 0 && break; failure_count=$((failure_count + 1)); done <<<"$failures"
 test "$failure_count" -lt "$MAX_CONSECUTIVE_FAILURES" || fail 'consecutive failure threshold reached'
+
+if test "$gpu_ids" != none; then
+  [[ "$MAX_GPU_MEMORY_USED_MIB" =~ ^[1-9][0-9]*$ ]] || fail 'invalid GPU occupancy threshold'
+  gpu_memory_csv=$(nvidia-smi --query-gpu=index,memory.used --format=csv,noheader,nounits) || fail 'cannot inspect GPU occupancy'
+  gpu_memory_used_mib=
+  for gpu_id in "${requested_gpu_ids[@]}"; do
+    memory_used=$(awk -F, -v requested="$gpu_id" '
+      { gsub(/[[:space:]]/, "", $1); gsub(/[[:space:]]/, "", $2) }
+      $1 == requested { print $2; found=1 }
+      END { if (!found) exit 1 }
+    ' <<<"$gpu_memory_csv") || fail "cannot inspect occupancy for GPU $gpu_id"
+    [[ "$memory_used" =~ ^[0-9]+$ ]] || fail "invalid occupancy for GPU $gpu_id"
+    test "$memory_used" -lt "$MAX_GPU_MEMORY_USED_MIB" || fail "GPU $gpu_id uses ${memory_used} MiB"
+    gpu_memory_used_mib+="${gpu_memory_used_mib:+,}$gpu_id:$memory_used"
+  done
+fi
 
 run_dir="$runs_dir/$run_id"
 inside_home "$run_dir" || fail 'run path escapes authorized home'
@@ -115,6 +132,7 @@ trap 'on_signal HUP' HUP
   printf 'GPU_COUNT=%q\n' "$gpu_count"
   printf 'GPU_INVENTORY_COUNT=%q\n' "$gpu_inventory_count"
   printf 'GPU_NAMES=%q\n' "$gpu_names"
+  printf 'GPU_MEMORY_USED_MIB=%q\n' "$gpu_memory_used_mib"
 } >"$run_dir/metadata.env"
 mkdir -p "$run_dir/source"
 git archive "$requested_sha" | tar -x -C "$run_dir/source"
