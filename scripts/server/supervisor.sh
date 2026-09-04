@@ -4,6 +4,14 @@ set -euo pipefail
 readonly AUTHORIZED_HOME=/home/qingchan
 readonly MANAGED_STOP_CONTENT='AUTORESEARCH_SUPERVISOR_BLOCK_V1'
 readonly REVIEW_RECEIPT_MAX_AGE_SECONDS=86400
+readonly RECOVERY_BACKOFF_MAX_SECONDS=3600
+readonly RECOVERY_STABLE_MULTIPLIER=10
+readonly RECOVERY_LAUNCH_TIMEOUT_SECONDS=300
+readonly -a RECOVERY_GATE_NAMES=(
+  STOP_OK DISK_OK WALL_CLOCK_OK GPU_BUDGET_OK FAILURE_BUDGET_OK API_BUDGET_OK
+  GIT_OK CODEX_AUTH_OK ARIS_AUDIT_OK REVIEWER_RECEIPT_OK EXPERIMENT_TMUX_LIVE
+  EXPERIMENT_PROGRESS_OK
+)
 
 repo_root=$(git rev-parse --show-toplevel)
 cd "$repo_root"
@@ -22,6 +30,7 @@ done
 state_dir="$DATA_ROOT/state"
 runs_dir="$DATA_ROOT/runs"
 health_file="$state_dir/health.env"
+recovery_state_file="$state_dir/recovery.env"
 mkdir -p "$state_dir" "$runs_dir"
 
 mode=${1:-}
@@ -30,6 +39,105 @@ if test "$mode" != --gate-only; then
   exec 9>"$state_dir/supervisor.lock"
   flock -n 9 || fail 'supervisor already running'
 fi
+
+is_uint "$SUPERVISOR_INTERVAL_SECONDS" && test "$SUPERVISOR_INTERVAL_SECONDS" -gt 0 || fail 'invalid supervisor interval'
+recovery_backoff_initial_seconds=$SUPERVISOR_INTERVAL_SECONDS
+if test "$recovery_backoff_initial_seconds" -gt "$RECOVERY_BACKOFF_MAX_SECONDS"; then
+  recovery_backoff_initial_seconds=$RECOVERY_BACKOFF_MAX_SECONDS
+fi
+recovery_backoff_seconds=$recovery_backoff_initial_seconds
+recovery_next_epoch=0
+recovery_stable_since_epoch=0
+startup_epoch=$(date +%s)
+
+load_recovery_state() {
+  local saved_backoff saved_next saved_stable max_next
+  test -f "$recovery_state_file" || return 0
+  saved_next=$(awk -F= '$1 == "RECOVERY_NEXT_EPOCH" {print $2}' "$recovery_state_file")
+  saved_backoff=$(awk -F= '$1 == "RECOVERY_BACKOFF_SECONDS" {print $2}' "$recovery_state_file")
+  saved_stable=$(awk -F= '$1 == "RECOVERY_STABLE_SINCE_EPOCH" {print $2}' "$recovery_state_file")
+  max_next=$((startup_epoch + RECOVERY_BACKOFF_MAX_SECONDS))
+  if is_uint "${saved_next:-}" && is_uint "${saved_backoff:-}" && is_uint "${saved_stable:-}" &&
+     test "$saved_backoff" -ge "$recovery_backoff_initial_seconds" &&
+     test "$saved_backoff" -le "$RECOVERY_BACKOFF_MAX_SECONDS"; then
+    if test "$saved_next" -gt "$max_next"; then
+      recovery_next_epoch=$max_next
+    else
+      recovery_next_epoch=$saved_next
+    fi
+    recovery_backoff_seconds=$saved_backoff
+    recovery_stable_since_epoch=$saved_stable
+  fi
+}
+
+write_recovery_state() {
+  local tmp
+  tmp=$(mktemp "$state_dir/.recovery.XXXXXX")
+  {
+    printf 'RECOVERY_NEXT_EPOCH=%s\n' "$recovery_next_epoch"
+    printf 'RECOVERY_BACKOFF_SECONDS=%s\n' "$recovery_backoff_seconds"
+    printf 'RECOVERY_STABLE_SINCE_EPOCH=%s\n' "$recovery_stable_since_epoch"
+  } >"$tmp"
+  chmod 600 "$tmp"
+  mv -f "$tmp" "$recovery_state_file"
+}
+
+load_recovery_state
+
+attempt_agent_recovery() {
+  local now_epoch=$1 gate_name doubled_backoff stable_threshold
+  RECOVERY_ATTEMPTED=0
+  RECOVERY_BACKOFF_ACTIVE=0
+  RECOVERY_LAUNCHER_STATUS=not_attempted
+
+  test "$mode" != --gate-only || return 0
+  if test "$AGENT_LIVE" -eq 1; then
+    if test "$recovery_stable_since_epoch" -eq 0; then
+      recovery_stable_since_epoch=$now_epoch
+      write_recovery_state
+    else
+      stable_threshold=$((RECOVERY_STABLE_MULTIPLIER * recovery_backoff_seconds))
+      if test $((now_epoch - recovery_stable_since_epoch)) -ge "$stable_threshold"; then
+        recovery_backoff_seconds=$recovery_backoff_initial_seconds
+        recovery_next_epoch=0
+        recovery_stable_since_epoch=0
+        write_recovery_state
+      fi
+    fi
+    return 0
+  fi
+  if test "$recovery_stable_since_epoch" -ne 0; then
+    recovery_stable_since_epoch=0
+    write_recovery_state
+  fi
+  for gate_name in "${RECOVERY_GATE_NAMES[@]}"; do
+    test "${!gate_name}" -eq 1 || return 0
+  done
+  if test "$now_epoch" -lt "$recovery_next_epoch"; then
+    RECOVERY_BACKOFF_ACTIVE=1
+    return 0
+  fi
+
+  RECOVERY_ATTEMPTED=1
+  recovery_next_epoch=$((now_epoch + recovery_backoff_seconds))
+  doubled_backoff=$((recovery_backoff_seconds * 2))
+  if test "$doubled_backoff" -gt "$RECOVERY_BACKOFF_MAX_SECONDS"; then
+    recovery_backoff_seconds=$RECOVERY_BACKOFF_MAX_SECONDS
+  else
+    recovery_backoff_seconds=$doubled_backoff
+  fi
+  write_recovery_state
+  if timeout -k 10 "$RECOVERY_LAUNCH_TIMEOUT_SECONDS" "$repo_root/scripts/start_aris.sh" 9>&-; then
+    RECOVERY_LAUNCHER_STATUS=0
+    tmux -S "$TMUX_SOCKET" has-session -t "$AGENT_TMUX" 2>/dev/null && AGENT_LIVE=1
+    if test "$AGENT_LIVE" -eq 1; then
+      recovery_stable_since_epoch=$now_epoch
+      write_recovery_state
+    fi
+  else
+    RECOVERY_LAUNCHER_STATUS=$?
+  fi
+}
 
 check_health() {
   local now_epoch start_epoch free_kb gpu_seconds failure_count api_spend
@@ -124,7 +232,6 @@ PY
   if test "$mode" != --gate-only; then
     tmux -S "$TMUX_SOCKET" has-session -t "$AGENT_TMUX" 2>/dev/null || AGENT_LIVE=0
     tmux -S "$TMUX_SOCKET" has-session -t "$EXPERIMENT_TMUX" 2>/dev/null || EXPERIMENT_TMUX_LIVE=0
-    test "$AGENT_LIVE" -eq 1 || reasons+=(agent_tmux)
     test "$EXPERIMENT_TMUX_LIVE" -eq 1 || reasons+=(experiment_tmux)
     if test "$EXPERIMENT_TMUX_LIVE" -eq 1; then
       active_windows=$(tmux -S "$TMUX_SOCKET" list-windows -t "$EXPERIMENT_TMUX" -F '#{window_name} #{window_active}' 2>/dev/null |
@@ -138,9 +245,12 @@ PY
     fi
   fi
 
-  HEALTHY=1
-  for value in "$STOP_OK" "$DISK_OK" "$WALL_CLOCK_OK" "$GPU_BUDGET_OK" "$FAILURE_BUDGET_OK" "$API_BUDGET_OK" "$GIT_OK" "$CODEX_AUTH_OK" "$ARIS_AUDIT_OK" "$REVIEWER_RECEIPT_OK" "$AGENT_LIVE" "$EXPERIMENT_TMUX_LIVE" "$EXPERIMENT_PROGRESS_OK"; do
-    test "$value" -eq 1 || HEALTHY=0
+  attempt_agent_recovery "$now_epoch"
+  test "$AGENT_LIVE" -eq 1 || reasons+=(agent_tmux)
+
+  HEALTHY=$AGENT_LIVE
+  for gate_name in "${RECOVERY_GATE_NAMES[@]}"; do
+    test "${!gate_name}" -eq 1 || HEALTHY=0
   done
 
   tmp=$(mktemp "$state_dir/.health.XXXXXX")
@@ -151,6 +261,7 @@ PY
     printf 'API_BUDGET_OK=%s\nAPI_SPEND_USD=%q\nGIT_OK=%s\nCODEX_AUTH_OK=%s\n' "$API_BUDGET_OK" "$api_spend" "$GIT_OK" "$CODEX_AUTH_OK"
     printf 'ARIS_AUDIT_OK=%s\nREVIEWER_RECEIPT_OK=%s\nAGENT_LIVE=%s\nEXPERIMENT_TMUX_LIVE=%s\n' "$ARIS_AUDIT_OK" "$REVIEWER_RECEIPT_OK" "$AGENT_LIVE" "$EXPERIMENT_TMUX_LIVE"
     printf 'EXPERIMENT_PROGRESS_OK=%s\nACTIVE_EXPERIMENT_WINDOWS=%q\nLATEST_PROGRESS_EPOCH=%q\n' "$EXPERIMENT_PROGRESS_OK" "$active_windows" "$latest_progress"
+    printf 'RECOVERY_ATTEMPTED=%s\nRECOVERY_BACKOFF_ACTIVE=%s\nRECOVERY_LAUNCHER_STATUS=%q\nRECOVERY_NEXT_EPOCH=%q\nRECOVERY_BACKOFF_SECONDS=%q\nRECOVERY_STABLE_SINCE_EPOCH=%q\n' "$RECOVERY_ATTEMPTED" "$RECOVERY_BACKOFF_ACTIVE" "$RECOVERY_LAUNCHER_STATUS" "$recovery_next_epoch" "$recovery_backoff_seconds" "$recovery_stable_since_epoch"
     printf 'FREE_KB=%q\nREASONS=%q\n' "$free_kb" "${reasons[*]:-none}"
   } >"$tmp"
   chmod 600 "$tmp"

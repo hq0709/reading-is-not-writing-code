@@ -98,6 +98,134 @@ git -C {shlex_quote(self.repo_wsl)} commit -qm initial
             timeout=10,
         )
 
+    def install_recovery_harness(
+        self, *, launcher_succeeds: bool
+    ) -> tuple[Path, Path, Path]:
+        fake_bin = self.home / "recovery-bin"
+        fake_bin.mkdir()
+        launcher_log = self.home / "launcher.log"
+        agent_live = self.home / "agent-live"
+        clock = self.home / "recovery-clock"
+        clock.write_text(str(int(time.time()) + 60) + "\n", encoding="utf-8", newline="\n")
+
+        date = fake_bin / "date"
+        date.write_text(
+            f"""#!/usr/bin/env bash
+if test "$*" = +%s; then cat {shlex_quote(wsl_path(clock))}; else exec /usr/bin/date "$@"; fi
+""",
+            encoding="utf-8",
+            newline="\n",
+        )
+
+        git = fake_bin / "git"
+        git.write_text(
+            f"""#!/usr/bin/env bash
+case "$*" in
+  'rev-parse --show-toplevel') echo {self.repo_wsl} ;;
+  'status --porcelain --untracked-files=all'|'fetch origin --quiet') ;;
+  'rev-parse HEAD'|'rev-parse @{{upstream}}') printf '%040d\n' 1 ;;
+  -C*' rev-parse HEAD') echo 94d8093ed21d20a790830318190095b9f5036ce8 ;;
+esac
+""",
+            encoding="utf-8",
+            newline="\n",
+        )
+        tmux = fake_bin / "tmux"
+        tmux.write_text(
+            f"""#!/usr/bin/env bash
+case "$*" in
+  *'has-session -t concept-flow-aris'*) test -e {shlex_quote(wsl_path(agent_live))} ;;
+  *'has-session -t concept-flow-exp'*) exit 0 ;;
+  *'list-windows -t concept-flow-exp'*) printf 'control 1\n' ;;
+  *) exit 64 ;;
+esac
+""",
+            encoding="utf-8",
+            newline="\n",
+        )
+        codex = self.home / ".local/bin/codex"
+        codex.parent.mkdir(parents=True)
+        codex.write_text("#!/usr/bin/env bash\nexit 0\n", encoding="utf-8", newline="\n")
+
+        adapter = self.repo / "scripts/server/claude_review_adapter.py"
+        adapter.write_text("# reviewer\n", encoding="utf-8", newline="\n")
+        for relative in (
+            "config/aris-skills.txt",
+            "config/aris-forbidden-skills.txt",
+            "config/reviewer-routing.tsv",
+        ):
+            (self.repo / relative).write_text(relative + "\n", encoding="utf-8", newline="\n")
+
+        def digest(relative: str) -> str:
+            return hashlib.sha256((self.repo / relative).read_bytes()).hexdigest()
+
+        audit = self.home / "data/concept-flow/state/aris-audit.env"
+        audit.write_text(
+            "\n".join(
+                [
+                    "ARIS_FULL_SHA=94d8093ed21d20a790830318190095b9f5036ce8",
+                    f"SKILL_LIST_SHA256={digest('config/aris-skills.txt')}",
+                    f"FORBIDDEN_LIST_SHA256={digest('config/aris-forbidden-skills.txt')}",
+                    f"REVIEWER_ROUTING_SHA256={digest('config/reviewer-routing.tsv')}",
+                    f"REVIEWER_WRAPPER_SHA256={digest('scripts/server/claude_review_adapter.py')}",
+                ]
+            )
+            + "\n",
+            encoding="utf-8",
+            newline="\n",
+        )
+        receipt_dir = self.home / ".codex/state/claude-review-concept-flow"
+        receipt_dir.mkdir(parents=True)
+        receipt_dir.joinpath("review-recovery.json").write_text(
+            """{"valid":true,"readOnly":true,"modelsObserved":["claude-fable-5-1"],
+"arisFullSha":"94d8093ed21d20a790830318190095b9f5036ce8",
+"wrapperSha256":"%s"}\n""" % digest("scripts/server/claude_review_adapter.py"),
+            encoding="utf-8",
+            newline="\n",
+        )
+        interpreter = self.home / "miniforge3/envs/conceptflow/bin/python"
+        interpreter.parent.mkdir(parents=True)
+        interpreter.write_text(
+            '#!/usr/bin/env bash\nexec /usr/bin/python3 "$@"\n', encoding="utf-8", newline="\n"
+        )
+        launcher = self.repo / "scripts/start_aris.sh"
+        launcher.parent.mkdir(exist_ok=True)
+        launcher.write_text(
+            "#!/usr/bin/env bash\n"
+            f"printf '%s\\n' \"$0\" >> {shlex_quote(wsl_path(launcher_log))}\n"
+            + (f"touch {shlex_quote(wsl_path(agent_live))}\nexit 0\n" if launcher_succeeds else "exit 64\n"),
+            encoding="utf-8",
+            newline="\n",
+        )
+        setup = "chmod 700 " + " ".join(
+            shlex_quote(wsl_path(path))
+            for path in (date, git, tmux, codex, interpreter, launcher)
+        )
+        subprocess.run(["bash", "-lc", setup], check=True)
+        return fake_bin, launcher_log, agent_live
+
+    def run_recovery_supervisor(
+        self, fake_bin: Path, *, once: bool = True
+    ) -> subprocess.CompletedProcess[str] | subprocess.Popen[str]:
+        once_arg = " --once" if once else ""
+        command = (
+            f"cd {shlex_quote(self.repo_wsl)} && HOME={shlex_quote(self.home_wsl)} "
+            f"PATH={shlex_quote(wsl_path(fake_bin))}:/usr/bin:/bin "
+            f"bash scripts/server/supervisor.sh{once_arg}"
+        )
+        if not once:
+            return subprocess.Popen(
+                ["bash", "-lc", command], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
+            )
+        return subprocess.run(
+            ["bash", "-lc", command],
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            timeout=10,
+        )
+
     def test_expired_wall_budget_blocks_dispatch_without_killing_active_work(self) -> None:
         old_epoch = str(1)
         (self.home / "data/concept-flow/state/bootstrap_started_epoch").write_text(
@@ -293,6 +421,79 @@ ln -s /usr/bin/python3 {shlex_quote(wsl_path(python_path))}
         finally:
             daemon.terminate()
             daemon.communicate(timeout=5)
+
+    def test_recovery_never_bypasses_user_stop_or_failed_gate(self) -> None:
+        fake_bin, launcher_log, _ = self.install_recovery_harness(launcher_succeeds=True)
+        bootstrap = self.home / "data/concept-flow/state/bootstrap_started_epoch"
+        bootstrap.write_text("1\n", encoding="utf-8", newline="\n")
+
+        failed_gate = self.run_recovery_supervisor(fake_bin)
+        self.assertNotEqual(0, failed_gate.returncode)
+        self.assertFalse(launcher_log.exists(), "failed non-agent gates must suppress recovery")
+
+        bootstrap.write_text(str(int(time.time())) + "\n", encoding="utf-8", newline="\n")
+        stop = self.home / "data/concept-flow/STOP"
+        stop.write_text("operator requested stop\n", encoding="utf-8", newline="\n")
+        user_stop = self.run_recovery_supervisor(fake_bin)
+        self.assertNotEqual(0, user_stop.returncode)
+        self.assertFalse(launcher_log.exists(), "a user stop must suppress recovery")
+        self.assertEqual("operator requested stop\n", stop.read_text(encoding="utf-8"))
+
+    def test_recovery_backoff_prevents_restart_storm(self) -> None:
+        fake_bin, launcher_log, _ = self.install_recovery_harness(launcher_succeeds=False)
+        first = self.run_recovery_supervisor(fake_bin)
+        second = self.run_recovery_supervisor(fake_bin)
+
+        attempts = launcher_log.read_text(encoding="utf-8").splitlines()
+        self.assertEqual(1, len(attempts), first.stdout + first.stderr)
+        self.assertNotEqual(0, second.returncode)
+        health = (self.home / "data/concept-flow/state/health.env").read_text(encoding="utf-8")
+        self.assertIn("RECOVERY_BACKOFF_ACTIVE=1", health)
+
+    def test_recovery_backoff_survives_transient_agent_exit(self) -> None:
+        fake_bin, launcher_log, agent_live = self.install_recovery_harness(launcher_succeeds=True)
+
+        first = self.run_recovery_supervisor(fake_bin)
+        agent_live.unlink()
+        second = self.run_recovery_supervisor(fake_bin)
+
+        self.assertEqual(0, first.returncode, first.stdout + first.stderr)
+        self.assertNotEqual(0, second.returncode)
+        self.assertEqual(1, len(launcher_log.read_text(encoding="utf-8").splitlines()))
+        health = (self.home / "data/concept-flow/state/health.env").read_text(encoding="utf-8")
+        self.assertIn("RECOVERY_BACKOFF_ACTIVE=1", health)
+
+    def test_recovery_backoff_resets_after_stable_agent_window(self) -> None:
+        fake_bin, _, _ = self.install_recovery_harness(launcher_succeeds=True)
+        clock = self.home / "recovery-clock"
+
+        first = self.run_recovery_supervisor(fake_bin)
+        now = int(clock.read_text(encoding="utf-8"))
+        clock.write_text(str(now + 120) + "\n", encoding="utf-8", newline="\n")
+        stable = self.run_recovery_supervisor(fake_bin)
+
+        self.assertEqual(0, first.returncode, first.stdout + first.stderr)
+        self.assertEqual(0, stable.returncode, stable.stdout + stable.stderr)
+        recovery = (self.home / "data/concept-flow/state/recovery.env").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("RECOVERY_BACKOFF_SECONDS=1", recovery)
+        self.assertIn("RECOVERY_NEXT_EPOCH=0", recovery)
+
+    def test_recovery_uses_normal_launcher_and_managed_stop(self) -> None:
+        fake_bin, launcher_log, agent_live = self.install_recovery_harness(launcher_succeeds=True)
+        stop = self.home / "data/concept-flow/STOP"
+        stop.write_text("AUTORESEARCH_SUPERVISOR_BLOCK_V1\n", encoding="utf-8", newline="\n")
+
+        result = self.run_recovery_supervisor(fake_bin)
+
+        self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+        self.assertTrue(agent_live.exists())
+        self.assertEqual(
+            [f"{self.repo_wsl}/scripts/start_aris.sh"],
+            launcher_log.read_text(encoding="utf-8").splitlines(),
+        )
+        self.assertFalse(stop.exists(), "healthy recovery must clear only the managed sentinel")
 
     def test_reviewer_health_uses_fresh_structured_receipt_and_pinned_python(self) -> None:
         adapter = self.repo / "scripts/server/claude_review_adapter.py"
