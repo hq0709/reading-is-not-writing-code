@@ -21,13 +21,21 @@ Updated: 2026-09-04. Scientific state uses `PLANNED`, `RUNNING`, `FAILED`, and `
 ## ICLR 6+ causal-ownership gate
 
 - Run: immutable run `20260904T125710Z-a3bd883540eb-causal-ownership` crosses the six fixed clinical probe directions with six matching questions on the registered third, label-blind cohort of 400 patients.
-- Observation: the clean pushed source, fixed environment, pinned toolchain and reviewer receipt, accepted data references, budgets, disk, stop sentinel, and GPU launch threshold passed. The runner reproduced the registered cohort and source-reference receipts and is evaluating the matrix on GPU 0.
-- Scientific state: `RUNNING`; no matrix outcome exists yet.
-- Gate decision: `RUNNING`; terminal internal replay and the configured pinned read-only Claude review remain pending.
-- Gate disposition: pending terminal evidence.
-- Next step: does the six-by-six matrix reveal diagonal clinical ownership or a shared causal alias? Validate the completed receipt and matrix, request the pinned review, then dispatch the registered mechanism or Consolidation fallback branch on `PASS`.
-- Writer ownership: immutable run `20260904T125710Z-a3bd883540eb-causal-ownership` owns experimental artifacts; Codex owns state recording and terminal gate advancement. No manuscript-build process is active.
-- Evidence: `/home/qingchan/data/concept-flow/runs/20260904T125710Z-a3bd883540eb-causal-ownership/`; `/home/qingchan/data/concept-flow/state/setup-receipt.tsv`; `/home/qingchan/data/concept-flow/state/health.env`; reviewer receipt `/home/qingchan/.codex/state/claude-review-concept-flow/review-20260904T125408780802Z.json`.
+- Observation: all six diagonal ownership margins are negative and all six diagonals lose to at least one of 119 same-column random directions. Effusion is the strongest shared-alias candidate, with relative-dominance lower bound `0.1332` and off-diagonal-effect lower bound `0.2808`, but its raw off-diagonal effect `0.2909` remains below the registered global random maximum `0.3402`; no shared alias is detected.
+- Scientific state: `OBSERVED`.
+- Gate decision: `PASS`; the 304,800-outcome summary, 5,000-draw bootstrap, and mechanism route replayed byte-identically, 21 targeted tests passed, and the configured pinned read-only Claude review accepted the result and `consolidation_fallback` route.
+- Gate disposition: `READY`.
+- Evidence: `/home/qingchan/data/concept-flow/runs/20260904T125710Z-a3bd883540eb-causal-ownership/`; `/home/qingchan/data/concept-flow/state/causal-ownership-internal-validation-20260904T160302Z-Uu2oNg/`; reviewer receipt `/home/qingchan/.codex/state/claude-review-concept-flow/review-20260904T160448231526Z.json`; `docs/reviews/qwen7b-vislast-causal-ownership.md`.
+
+## Qwen Consolidation input-closure gate
+
+- Run: prospectively register `qwen7b-consolidation-vislast-input-closure` on 50 fresh within-patient positive/negative Consolidation pairs, using the train-fitted capacity-matched probe normal and displacement-matched `reltoken` writes against 119 random, sham, and six clinical controls.
+- Observation: implementation and deterministic pair identity are under internal validation; no scientific output has been evaluated.
+- Scientific state: `PLANNED`.
+- Gate decision: pending internal validation and configured pinned read-only registration review.
+- Gate disposition: pending registration evidence.
+- Next step: can a within-patient Consolidation representation displacement be closed by the matching probe-normal write beyond random, sham, and fixed clinical controls? Validate and review the prospective runner, then dispatch its immutable payload on `PASS`.
+- Writer ownership: Codex owns registration, implementation, and dispatch; no scientific run or manuscript-build process is active.
 
 ## Paper-planning gate
 
