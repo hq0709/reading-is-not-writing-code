@@ -5,7 +5,8 @@ The reset-specific inventory, download list, fixed paths, and ordered rebuild pr
 
 ## Fixed topology and environment
 
-- Source: `wy-coliney/concept-flow`; server checkout `/home/qingchan/work/concept-flow`.
+- Research source: `wy-coliney/concept-flow`; local checkout `concept-flow-code/`; server checkout `/home/qingchan/work/concept-flow`.
+- Publication source: `wy-coliney/concept-flow-paper`; local sibling checkout `concept-flow-paper/`; `main.tex` stays at its repository root for user-managed GitHub-to-Overleaf import.
 - Data/runs: `/home/qingchan/data/concept-flow`; ARIS: `/home/qingchan/aris_repo`.
 - Environment: `/home/qingchan/miniforge3/envs/conceptflow`; activate with `source scripts/server/activate_env.sh`; install with `UV_PROJECT_ENVIRONMENT` equal to that prefix and `uv sync --frozen`.
 - Python 3.13; PyTorch 2.7.0 from the official cu126 index. Import smoke verifies CUDA availability and an A100 device.
@@ -18,4 +19,4 @@ Here, immutable means the dispatcher writes a terminal snapshot that the single-
 
 Codex CLI is pinned to 0.152.1; Claude Code is pinned to 2.1.258; ARIS is pinned to the SHA in `config/autoresearch.env`. `config/toolchain-provenance.tsv` owns official source URLs, verified installer hashes, expected versions and binary hashes, and sanitized installation commands. From a clean server checkout, `bash scripts/server/write_setup_receipt.sh` verifies those pins and writes `/home/qingchan/data/concept-flow/state/setup-receipt.tsv` atomically with mode 600. The receipt adds UTC, host, current commit, observed versions and installed binary hashes, and the live ARIS full SHA. Authentication uses official interactive commands and is never recorded.
 
-`paper/` is authoritative. `paper-overleaf/` is an ignored separate publishing clone and is `CONDITIONAL N/A` until configured.
+`paper/` is the accepted evidence-linked snapshot retained with the research code. The sibling `concept-flow-paper/` repository is the Overleaf-facing manuscript source. Keep the two Git repositories separate and synchronize only through their GitHub remotes.

@@ -15,7 +15,6 @@ htmlcov/
 /.aris/
 /.venv/
 results/remote/
-paper-overleaf/
 artifacts/raw_runs/
 *.ckpt
 *.bin

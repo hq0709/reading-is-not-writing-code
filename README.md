@@ -1,9 +1,12 @@
 # Concept Flow — measuring what a medical VLM *uses*, not just what it encodes
 
-Code, result tables, and the authoritative paper source for the study behind
+Code, result tables, and the evidence-locked paper snapshot for the study behind
 **“Medical Vision-Language Models Do Not Use What They Encode.”**
-The paper lives in [`paper/`](paper/). A future `paper-overleaf/` checkout is an ignored publishing and
-collaboration mirror rather than a second GitHub source repository.
+The local workspace keeps this repository in `concept-flow-code/` and the independent,
+Overleaf-facing manuscript repository in the sibling `concept-flow-paper/` directory. The accepted
+paper snapshot remains in [`paper/`](paper/) for result-to-claim verification; current publication
+work lives in the private [`wy-coliney/concept-flow-paper`](https://github.com/wy-coliney/concept-flow-paper)
+repository. Keep the two repositories as siblings.
 
 ## The idea in one paragraph
 
@@ -32,7 +35,7 @@ models and nine chest-radiograph findings the median is **9%**, and in **22 of 4
 | `runs/*.csv` | the released result tables — every number in the paper is computed from these |
 | `docs/` | the evidence ledger, the figure standard, and the literature survey |
 | `fonts/` | the vendored fonts the figures need (Lato, Tinos) |
-| `paper/` | the authoritative LaTeX paper source |
+| `paper/` | the accepted, evidence-locked LaTeX snapshot used by repository checks |
 
 Not here: ~105 GB of cached activations, model weights, and the source images. **The tables in `runs/`
 are the released artefact** — every number in the paper is computed from them, and they are what to read

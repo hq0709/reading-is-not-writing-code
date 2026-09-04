@@ -30,7 +30,6 @@ class OperationalContractTests(unittest.TestCase):
             "scripts/remote_run.ps1",
             "scripts/fetch_results.sh",
             "scripts/fetch_results.ps1",
-            "scripts/sync_overleaf.sh",
             "scripts/server/dispatch_run.sh",
             "scripts/server/run_command.sh",
             "scripts/server/supervisor.sh",
