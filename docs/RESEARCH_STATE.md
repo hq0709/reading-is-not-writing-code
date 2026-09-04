@@ -2,6 +2,16 @@
 
 Updated: 2026-09-04. Scientific state uses `PLANNED`, `RUNNING`, `FAILED`, and `OBSERVED`; gate disposition uses `READY`, `BLOCKED`, and `UNAVAILABLE`.
 
+## Active research stage
+
+- Run: `qwen7b-vislast-answer-encoding` registration and implementation; accepted ownership outcomes also enter descriptive score, discrimination, and label-conditioned diagnostics.
+- Observation: the existing Qwen ownership matrix covers six clinical questions at one yes/no encoding and one positive dose. The available LLaVA causal comparison covers two concepts. Encoding dependence, input-supported intervention geometry, and architecture transfer are the next evidence targets.
+- Scientific state: `PLANNED`.
+- Gate disposition: `BLOCKED` for GPU dispatch. The configured reviewer request for `claude-fable-5-1` returned canonical model `claude-opus-5`; implementation tests and a valid pinned registration review are required. The identity failure is recorded once in `docs/EXPERIMENT_REGISTRY.md`.
+- Next step: does the direction-by-question response follow clinical meaning when the answer-code mapping is exchanged? Complete the registered crossover implementation, run its validation-only preflight, and dispatch the full paired sensitivity experiment.
+- Writer ownership: local Codex owns the code repository and experiment protocol; the separate paper task owns the Overleaf manuscript. The server checkout was clean at `d0a4265`, with GPU 0 available at the initial inventory. GPU availability is checked again by the dispatcher.
+- Protocol: `docs/RESEARCH_PLAN.md#iclr-evidence-expansion` and `#qwen-answer-encoding-crossover`.
+
 ## Bootstrap gate
 
 - Run: infrastructure bootstrap and immutable smoke run `20260902T071539Z-7a4e7552d9e1-75d3510c`.
@@ -33,9 +43,9 @@ Updated: 2026-09-04. Scientific state uses `PLANNED`, `RUNNING`, `FAILED`, and `
 - Observation: the probe is eligible with selectivity `0.0642` (95% CI `[0.0302, 0.0976]`). Mean displacement is `0.1091`, but its one-sided lower bound is `-0.0364`; concept closure gain `0.0022` is below random maximum `0.0025`, and the clinical-familywise lower bound is `-0.0015`. The immutable run completed 6,450 outcomes in 445 seconds. The validator-only ordering correction reused the artifact, all 257 arrays match, and the pinned read-only Claude review accepted `input_closure=false`.
 - Scientific state: `OBSERVED`.
 - Gate decision: `PASS`; the six-gate result-to-claim pass reports `claim_supported=yes`, confidence `high`, integrity `pass`, and routing action `confirm`.
-- Gate disposition: `READY` for manuscript reconciliation; no further experiment is authorized.
-- Next step: can the six-gate evidence be integrated into the evidence-locked manuscript while preserving exact scope, provenance, and the nine-page main-body budget? Update and cross-review the manuscript.
-- Writer ownership: immutable run `20260904T162317Z-8a55a4c2f6b6-consolidation-closure` owns experimental artifacts; Codex owns claim and manuscript reconciliation. No experiment process is active.
+- Gate disposition: `READY`; accepted evidence is available for the manuscript and the active evidence-expansion stage.
+- Next step: how does input-supported intervention geometry explain the paired response? Develop the registered component/complement comparison after the answer-encoding crossover.
+- Writer ownership: immutable run `20260904T162317Z-8a55a4c2f6b6-consolidation-closure` owns the accepted experimental artifacts; current writer ownership is recorded in the active research stage.
 - Evidence: `/home/qingchan/data/concept-flow/runs/20260904T162317Z-8a55a4c2f6b6-consolidation-closure/`; `/home/qingchan/data/concept-flow/state/consolidation-input-closure-validator-replay-a-20260904T1634XXZ-F1ruMl/receipt.json`; reviewer receipts `/home/qingchan/.codex/state/claude-review-concept-flow/review-20260904T163729487366Z.json` and `/home/qingchan/.codex/state/claude-review-concept-flow/review-20260904T164410087766Z.json`; `docs/reviews/qwen7b-consolidation-vislast-input-closure.md`; `docs/reviews/six-gate-result-to-claim.md`.
 
 ## Paper-planning gate
@@ -71,7 +81,7 @@ Updated: 2026-09-04. Scientific state uses `PLANNED`, `RUNNING`, `FAILED`, and `
 - Scientific state: accepted experimental evidence remains `OBSERVED`.
 - Gate decision: `PASS`; the deterministic internal check and configured pinned read-only Claude review passed with no required actions.
 - Gate disposition: `READY` for submission handoff.
-- Next step: can the accepted bundle and PDF be delivered through a user-selected submission workflow without changing their verified identities? Await workflow selection and transfer authorization, then verify the delivered hashes.
+- Next step: integrate accepted findings from the active evidence-expansion stage through the independent paper task.
 - Evidence: `/home/qingchan/data/concept-flow/runs/20260904T171115Z-3625aeb-sixgate-submission-bundle/`; reviewer receipt `/home/qingchan/.codex/state/claude-review-concept-flow/review-20260904T171201801981Z.json`; `docs/reviews/six-gate-anonymous-submission-bundle.md`. The Overleaf-facing source remains in the separate `concept-flow-paper` repository.
 
 ## Transition rules
