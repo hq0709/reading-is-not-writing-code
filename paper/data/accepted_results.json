@@ -1,5 +1,5 @@
 {
-  "schema": "concept-flow-paper-evidence-v1",
+  "schema": "concept-flow-paper-evidence-v2",
   "cells": [
     {
       "key": "llava_effusion",
@@ -540,5 +540,208 @@
     },
     "direction_specific": false,
     "source": "/home/qingchan/data/concept-flow/runs/20260903T103508Z-456c81bad460-7a3edc4b/artifacts/direction-specificity-summary.json"
+  },
+  "causal_ownership": {
+    "run_id": "20260904T125710Z-a3bd883540eb-causal-ownership",
+    "n_eval_patients": 400,
+    "n_random": 119,
+    "bootstrap_resamples": 5000,
+    "n_owned_concepts": 0,
+    "n_off_diagonal_winners": 6,
+    "columns": {
+      "Atelectasis": {
+        "absolute_sham_effect": 0.03264079101849347,
+        "diagonal_effect": 0.09338349042925984,
+        "exact_random_rank_p": 0.5166666666666667,
+        "generic_selectivity": false,
+        "maximum_off_diagonal_effect": 0.3229331303434446,
+        "owned": false,
+        "ownership_descriptive_ci95": [
+          -0.23784256871510298,
+          -0.22109412707015874
+        ],
+        "ownership_margin": -0.22954963991418478,
+        "ownership_simultaneous_lower_95": -0.24174470371436477,
+        "random_effect_max": 0.3666087081329897,
+        "winner": "Nodule"
+      },
+      "Cardiomegaly": {
+        "absolute_sham_effect": 0.193428318426013,
+        "diagonal_effect": 0.11437215736368671,
+        "exact_random_rank_p": 0.23333333333333334,
+        "generic_selectivity": false,
+        "maximum_off_diagonal_effect": 0.3115416916855611,
+        "owned": false,
+        "ownership_descriptive_ci95": [
+          -0.20770593608450147,
+          -0.1859598598564044
+        ],
+        "ownership_margin": -0.1971695343218744,
+        "ownership_simultaneous_lower_95": -0.21306511487943383,
+        "random_effect_max": 0.5211665060021915,
+        "winner": "Atelectasis"
+      },
+      "Effusion": {
+        "absolute_sham_effect": 0.015767282383458224,
+        "diagonal_effect": 0.18121685596794124,
+        "exact_random_rank_p": 0.016666666666666666,
+        "generic_selectivity": false,
+        "maximum_off_diagonal_effect": 0.2451767870844924,
+        "owned": false,
+        "ownership_descriptive_ci95": [
+          -0.07521267382835505,
+          -0.05276298915653026
+        ],
+        "ownership_margin": -0.06395993111655116,
+        "ownership_simultaneous_lower_95": -0.08023677788126926,
+        "random_effect_max": 0.26445344528794523,
+        "winner": "Nodule"
+      },
+      "Mass": {
+        "absolute_sham_effect": 0.029864941661362537,
+        "diagonal_effect": 0.3586256375751691,
+        "exact_random_rank_p": 0.06666666666666667,
+        "generic_selectivity": false,
+        "maximum_off_diagonal_effect": 0.5114338044478791,
+        "owned": false,
+        "ownership_descriptive_ci95": [
+          -0.16420337315509095,
+          -0.14147598463715988
+        ],
+        "ownership_margin": -0.15280816687271004,
+        "ownership_simultaneous_lower_95": -0.16945123230066028,
+        "random_effect_max": 0.6110929498850601,
+        "winner": "Effusion"
+      },
+      "Nodule": {
+        "absolute_sham_effect": 0.0471762949321419,
+        "diagonal_effect": 0.09862744921352715,
+        "exact_random_rank_p": 0.18333333333333332,
+        "generic_selectivity": false,
+        "maximum_off_diagonal_effect": 0.1817516554472968,
+        "owned": false,
+        "ownership_descriptive_ci95": [
+          -0.09566992743522859,
+          -0.07066178695834241
+        ],
+        "ownership_margin": -0.08312420623376965,
+        "ownership_simultaneous_lower_95": -0.10148102008961332,
+        "random_effect_max": 0.21393248136620968,
+        "winner": "Effusion"
+      },
+      "Pneumothorax": {
+        "absolute_sham_effect": 0.21412391543242848,
+        "diagonal_effect": 0.08564726877812064,
+        "exact_random_rank_p": 0.43333333333333335,
+        "generic_selectivity": false,
+        "maximum_off_diagonal_effect": 0.19424766062613344,
+        "owned": false,
+        "ownership_descriptive_ci95": [
+          -0.11579078191611916,
+          -0.10161602135002613
+        ],
+        "ownership_margin": -0.1086003918480128,
+        "ownership_simultaneous_lower_95": -0.11890169051355891,
+        "random_effect_max": 0.4747727402471355,
+        "winner": "Effusion"
+      }
+    },
+    "shared_alias": {
+      "by_direction": {
+        "Atelectasis": {
+          "off_diagonal_effect": 0.13081075271137527,
+          "off_diagonal_effect_simultaneous_lower_95": 0.12309454012187683,
+          "qualified": false,
+          "relative_dominance": -0.03688712106831372,
+          "relative_dominance_simultaneous_lower_95": -0.042971306870745525
+        },
+        "Cardiomegaly": {
+          "off_diagonal_effect": 0.04806035483966116,
+          "off_diagonal_effect_simultaneous_lower_95": 0.04106485129047389,
+          "qualified": false,
+          "relative_dominance": -0.11543978555314242,
+          "relative_dominance_simultaneous_lower_95": -0.12127956591223381
+        },
+        "Effusion": {
+          "off_diagonal_effect": 0.2909364313397673,
+          "off_diagonal_effect_simultaneous_lower_95": 0.28083605156555386,
+          "qualified": false,
+          "relative_dominance": 0.1408052306678146,
+          "relative_dominance_simultaneous_lower_95": 0.13321401700916094
+        },
+        "Mass": {
+          "off_diagonal_effect": 0.12124555024551227,
+          "off_diagonal_effect_simultaneous_lower_95": 0.11484234108115499,
+          "qualified": false,
+          "relative_dominance": 0.006596105895005163,
+          "relative_dominance_simultaneous_lower_95": 0.0001547492164041802
+        },
+        "Nodule": {
+          "off_diagonal_effect": 0.22631075741921086,
+          "off_diagonal_effect_simultaneous_lower_95": 0.21838880421866746,
+          "qualified": false,
+          "relative_dominance": 0.05966167539637535,
+          "relative_dominance_simultaneous_lower_95": 0.051009389108665364
+        },
+        "Pneumothorax": {
+          "off_diagonal_effect": -0.002351687409507576,
+          "off_diagonal_effect_simultaneous_lower_95": -0.01054369631733977,
+          "qualified": false,
+          "relative_dominance": -0.17159680551942438,
+          "relative_dominance_simultaneous_lower_95": -0.17863310843344266
+        }
+      },
+      "candidate_direction": "Effusion",
+      "detected": false,
+      "direction": null,
+      "global_absolute_sham_effect_max": 0.21412391543242848,
+      "global_random_effect_max": 0.34022399436600975,
+      "off_diagonal_effect": 0.2909364313397673,
+      "off_diagonal_effect_simultaneous_lower_95": 0.28083605156555386,
+      "relative_dominance": 0.1408052306678146,
+      "relative_dominance_simultaneous_lower_95": 0.13321401700916094,
+      "statistic": "a fixed direction's mean off-diagonal excess over each question's named direction, selected under simultaneous dominance and positive-effect bounds"
+    },
+    "source": "/home/qingchan/data/concept-flow/runs/20260904T125710Z-a3bd883540eb-causal-ownership/artifacts/causal-ownership-summary.json"
+  },
+  "input_closure": {
+    "run_id": "20260904T162317Z-8a55a4c2f6b6-consolidation-closure",
+    "n_pairs": 50,
+    "n_random": 119,
+    "bootstrap_resamples": 5000,
+    "probe": {
+      "availability_eligible": true,
+      "real_auroc": 0.7218194409485241,
+      "selectivity": 0.06418548021200365,
+      "selectivity_ci95": [
+        0.030158249563824062,
+        0.09758492650943741
+      ]
+    },
+    "input_displacement": {
+      "estimate": 0.10906783267855644,
+      "one_sided_lower_95": -0.036407997652888296
+    },
+    "concept_closure_gain": 0.0022028424963355065,
+    "random_closure_gain_max": 0.0024608347192406656,
+    "exact_random_rank_p": 0.025,
+    "sham_closure_gain": -0.0004612077958881855,
+    "maximum_unrelated": {
+      "closure_gain": 0.00023771589621901512,
+      "concept": "Effusion"
+    },
+    "clinical_familywise_margin": {
+      "estimate": 0.0019651266001164914,
+      "maximum_recomputed_inside_each_bootstrap": true,
+      "one_sided_lower_95": -0.0015283454516902566
+    },
+    "alpha": {
+      "fraction_at_cap": 0.0,
+      "max": 0.00040672482374097215,
+      "median": 3.557946696589258e-05,
+      "min": -0.00036530639488782803
+    },
+    "input_closure": false,
+    "source": "/home/qingchan/data/concept-flow/runs/20260904T162317Z-8a55a4c2f6b6-consolidation-closure/artifacts/input-closure-summary.json"
   }
 }

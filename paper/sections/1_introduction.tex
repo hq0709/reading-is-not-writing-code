@@ -14,13 +14,13 @@ We ask a narrow causal question: when a clinical concept is robustly linearly de
     \label{fig:evidence-ladder}
 \end{figure*}
 
-Our evidence consists of three registered model--concept cells on NIH ChestX-ray14. All three target labels are linearly available, with AUROC between 0.7742 and 0.8009 and positive controlled selectivity. The two LLaVA cells do not clear random/sham controls. Qwen Effusion does clear those controls, including on a prospectively selected cohort of 400 new patients, but the fixed Nodule direction produces a larger response. Its familywise Effusion-minus-maximum-unrelated interval lies entirely below zero.
+Our evidence begins with three registered model--concept cells on NIH ChestX-ray14. All three target labels are linearly available, with AUROC between 0.7742 and 0.8009 and positive controlled selectivity. The two LLaVA cells do not clear random/sham controls. Qwen Effusion clears those controls on a prospectively selected cohort of 400 new patients, but the fixed Nodule direction produces a larger response and the familywise Effusion-minus-maximum-unrelated interval lies entirely below zero. We then test mechanism more directly. A six-direction by six-question Qwen matrix yields no owned clinical concept or shared alias beyond 119 random directions, and a fresh within-patient Consolidation test does not close the measured input gap beyond its registered controls.
 
 The paper makes three contributions:
 \begin{itemize}
     \item We introduce a forward-path, capacity-controlled protocol that separates controlled decodability, random/sham intervention selectivity, and clinical direction specificity at one consumed representation.
     \item We report three final-block cells in which controlled decodability is positive while the registered direction-specific endpoint is not reached.
-    \item We replicate the Qwen behavioural response on independent patients and show that passing random/sham controls is insufficient when a fixed unrelated clinical direction is reliably stronger.
+    \item We replicate Qwen's behavioural response on independent patients, then find zero owned concepts in a prospective $6\times6$ direction--question matrix and no controlled input closure for Consolidation.
 \end{itemize}
 
-The resulting principle is practical: a decoded clinical direction warrants a causal interpretation only after controls test clinical direction specificity at the same locus and dose. Sections~\ref{sec:related}--\ref{sec:protocol} place and define this test, Section~\ref{sec:results} reports the evidence ladder, and Sections~\ref{sec:discussion}--\ref{sec:conclusion} give its interpretation and scope.
+The resulting principle is practical: a decoded clinical direction warrants a concept-specific causal interpretation only after matched controls establish specificity and the proposed read--write mechanism survives direct tests at the same locus and dose. Sections~\ref{sec:related}--\ref{sec:protocol} place and define these tests, Section~\ref{sec:results} reports the evidence chain, and Sections~\ref{sec:discussion}--\ref{sec:conclusion} give its interpretation and scope.

@@ -70,6 +70,15 @@ def main() -> None:
         "supplement_nodule": "0.2519",
         "supplement_margin": "-0.0573",
         "supplement_one_sided": "-0.0678",
+        "ownership_alias_candidate": "0.2909",
+        "ownership_random_max": "0.3402",
+        "closure_selectivity": "0.0642",
+        "closure_selectivity_ci_low": "0.0302",
+        "closure_displacement": "0.1091",
+        "closure_displacement_lower": "-0.0364",
+        "closure_gain": "0.0022",
+        "closure_random_max": "0.0025",
+        "closure_clinical_lower": "-0.0015",
     }
     missing = [name for name, value in required_numbers.items() if value not in TEXT]
     if missing:

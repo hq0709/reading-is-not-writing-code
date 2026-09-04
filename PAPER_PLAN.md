@@ -3,21 +3,21 @@
 **Working title:** Decodable Is Not Direction-Specific: Causal Tests at the Final Visual Block of Medical Vision-Language Models
 **Venue:** ICLR
 **Type:** Empirical/diagnostic
-**Date:** 2026-09-03
+**Date:** 2026-09-04
 **Page budget:** 9 pages through Conclusion, including title/abstract and excluding references and appendix
 **Section count:** 6
 
-Run: organize the accepted LLaVA Effusion, LLaVA Edema, Qwen Effusion, and independent-row Qwen direction-specificity gates into one paper whose claims remain bound to the registered protocol.
+Run: reconcile the evidence-locked paper with the accepted LLaVA and Qwen cells, the independent-row direction-specificity supplement, the Qwen causal-ownership matrix, and the within-patient Consolidation input-closure gate.
 
-Observation: every final-block cell has positive controlled linear decodability, while none reaches the direction-specific evidentiary endpoint. LLaVA Effusion and Edema stop at the random/sham rung; Qwen Effusion clears that rung on 400 independent patients but stops at the fixed clinical-direction rung because Nodule remains reliably larger.
+Observation: every final-block cell has positive controlled linear decodability. LLaVA Effusion and Edema stop at random/sham; Qwen Effusion clears that rung on 400 independent patients but stops at fixed clinical directions. The prospective Qwen matrix finds zero owned concepts and no shared alias beyond random directions, while the fresh paired Consolidation gate does not confirm input closure.
 
-Gate decision: `PASS`; all 18 adjudicated values map to primary artifacts, the section and page accounting is internally consistent, and the configured pinned read-only Claude review returned `PASS`, disposition `READY`, with no required actions.
+Gate decision: `PASS`; all 26 claim-audit values map to primary artifacts, the claim is supported with high confidence and integrity `pass`, and the configured pinned read-only Claude result-to-claim review returned disposition `READY` with no required actions.
 
-Next step: can the accepted evidence-locked outline be drafted into a manuscript whose prose, figures, and tables remain traceable to the four accepted gates? Draft section by section from this plan.
+Next step: can the six-gate evidence be integrated into the evidence-locked manuscript while preserving exact scope, provenance, and the nine-page main-body budget? Update and compile the manuscript from this plan.
 
 ## One-sentence contribution
 
-Under capacity-controlled, patient-split NIH ChestX-ray14 evaluation, robust linear decodability at the consumed final visual block did not establish direction-specific causal influence under registered probe-normal interventions in three model–concept cells.
+Under capacity-controlled, patient-split NIH ChestX-ray14 evaluation, linear decodability at consumed final visual blocks did not establish concept-specific causal use under registered probe-normal specificity, ownership, and input-closure tests.
 
 ## Claims–evidence matrix
 
@@ -27,6 +27,7 @@ Under capacity-controlled, patient-split NIH ChestX-ray14 evaluation, robust lin
 | Robust controlled decodability coexists with failure at the registered causal-control rung in all three final-block cells. | AUROC range `0.7742–0.8009`; selectivity CIs exclude zero. LLaVA Effusion and Edema fail the original random/sham conjunction; Qwen Effusion clears random/sham but fails the supplement's clinical-direction criterion. | Supported empirical claim | §4.1–§4.3 |
 | Random/sham selectivity is insufficient for clinical direction specificity in the Qwen Effusion cell. | On 400 independent patients, Effusion changes mean `P(yes)` by `0.1945`, above random p95 `0.0878` and absolute sham `0.0157`, while Nodule changes it by `0.2519`; familywise margin `-0.0573`, 95% CI `[-0.0694, -0.0450]`. | Supported empirical claim | §4.3 |
 | The paired controlled-decoding contrasts do not resolve an architecture or concept ordering. | Qwen-minus-LLaVA Effusion selectivity `0.0026`, paired 95% CI `[-0.0155, 0.0215]`; Edema-minus-Effusion in LLaVA `0.0221`, paired 95% CI `[-0.0175, 0.0590]`. | Supported boundary | §4.2, §5 |
+| The prospective Qwen mechanism sequence does not identify a concept-specific owner, shared alias, or within-patient input-closure effect under its registered controls. | Ownership: 0/6 owned concepts; Effusion alias candidate `0.2909` below global random maximum `0.3402`. Closure: Consolidation gain `0.0022` below random maximum `0.0025`, with displacement LCB `-0.0364` and clinical-familywise LCB `-0.0015`. | Supported registered nonconfirmation | §4.4, §5 |
 
 ## Story and paper structure
 
@@ -101,6 +102,8 @@ Under capacity-controlled, patient-split NIH ChestX-ray14 evaluation, robust lin
 - Finding 1: all three final-block representations make the target label robustly available to the fixed linear readout.
 - Finding 2: LLaVA Effusion and Edema stop at the original random/sham rung, so availability does not determine whether the probe normal clears generic intervention controls.
 - Finding 3: Qwen Effusion clears the original random/sham rung but stops at the supplement's clinical-direction rung, so generic selectivity does not determine clinical specificity.
+- Finding 4: the Qwen ownership matrix finds zero owned concepts and no shared alias beyond random directions.
+- Finding 5: the fresh paired Consolidation gate is decodable but does not confirm input closure beyond random and clinical controls.
 
 ### §5 Discussion and Limitations (1.25 pages)
 
@@ -128,6 +131,7 @@ Under capacity-controlled, patient-split NIH ChestX-ray14 evaluation, robust lin
 | Figure 3 | Direction comparison | Qwen 400-patient effects for Effusion, 20 random directions, sham, and five fixed clinical normals; annotate Nodule and the bootstrap margin interval. | `direction-specificity-summary.json` and bootstrap artifact | High |
 | Table 1 | Controlled decoding | AUROC, bootstrap CI, control mean/spread, selectivity, selectivity CI, model, concept, locus. | Three probe JSON artifacts | High |
 | Table 2 | Gate outcomes | One row per cohort with model, concept, cohort identity, alpha rule/value, N, concept effect, random interval/p95, absolute sham, clinical-direction statistic, failed criterion rung, and disposition. Original-cell rows mark the prospectively familywise clinical-direction endpoint `N/A`; the supplement row reports it. | Four accepted summaries | High |
+| Table 3 | Mechanism gates | Qwen ownership candidate versus global random maximum; Consolidation closure gain versus random maximum, with displacement and clinical-familywise lower bounds. | Ownership and input-closure summaries | High |
 | Appendix A | Protocol detail | Prompts, row selection, alpha grids, random seeds, direction construction, hook tests, and exact model revisions. | `docs/RESEARCH_PLAN.md` and immutable receipts | High |
 | Appendix B | Complete controls | Full unrelated-direction and random-direction values, full dose curves, and paired-bootstrap details. | Per-image outputs and bootstrap artifacts | Medium |
 

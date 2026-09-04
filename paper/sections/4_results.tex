@@ -42,6 +42,15 @@ The independent cohort reproduces Qwen's generic response (Figure~\ref{fig:speci
 
 The clinical comparison reverses the interpretation of that generic pass. Nodule changes mean $P(yes)$ by 0.2519 and realizes the maximum unrelated-direction effect. The reported Effusion-minus-maximum-unrelated margin is $-0.0573$. When the maximum over all five fixed clinical directions is recomputed in each bootstrap replicate, its two-sided 95\% CI is $[-0.0694,-0.0450]$ and its one-sided 95\% lower bound is $-0.0678$. The direction-specific conjunction therefore fails despite replicated random/sham selectivity.
 
-\subsection{The three-rung finding chain}
+\subsection{Prospective mechanism gates confirm the attribution boundary}
+\label{sec:mechanism-results}
 
-The results form one ordered finding. First, every target is robustly available to the same-capacity linear readout. Second, the two LLaVA probe normals stop at the random/sham rung, showing that availability does not determine generic intervention selectivity. Third, Qwen Effusion passes generic controls twice but stops at the clinical-direction rung, showing that generic selectivity does not determine clinical specificity. The location, dose, controls, and uncertainty calculation identify the rung at which each interpretation is supported.
+\input{tables/table_mechanisms}
+
+The causal-ownership matrix provides no named replacement for the failed Effusion attribution. All six diagonal ownership margins are negative, so zero of six clinical concepts is owned under the simultaneous and random-control rules. Every column is instead won by an off-diagonal clinical direction. Effusion is the strongest shared-alias candidate: its mean off-diagonal effect is 0.2909 with simultaneous lower bound 0.2808, but the registered global random maximum is larger at 0.3402. The matrix therefore confirms neither clinical ownership nor a shared alias.
+
+The registered Consolidation fallback separates availability from input closure on 50 fresh within-patient pairs. Its probe selectivity is 0.0642 with 95\% CI $[0.0302,0.0976]$, so the readout is eligible. Mean positive-minus-negative displacement along the Consolidation normal is 0.1091, but its one-sided lower bound is $-0.0364$. Writing the measured displacement back produces mean closure gain 0.0022, below the maximum over 119 random directions, 0.0025. The familywise Consolidation-minus-maximum-clinical lower bound is also negative at $-0.0015$. The registered input-closure conjunction is not met.
+
+\subsection{The evidence chain}
+
+The results form one ordered finding. Every target is available to the same-capacity linear readout. The two LLaVA probe normals stop at random/sham, while Qwen Effusion passes generic controls twice but stops at fixed clinical directions. The prospective matrix does not recover a named owner or alias, and the paired fallback does not recover input closure. Together these tests establish that availability and generic perturbation sensitivity do not suffice for concept-specific causal attribution under the registered final-block interventions.

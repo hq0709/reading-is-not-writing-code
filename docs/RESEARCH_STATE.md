@@ -30,13 +30,13 @@ Updated: 2026-09-04. Scientific state uses `PLANNED`, `RUNNING`, `FAILED`, and `
 ## Qwen Consolidation input-closure gate
 
 - Run: immutable run `20260904T162317Z-8a55a4c2f6b6-consolidation-closure` evaluates 50 fresh within-patient positive/negative Consolidation pairs using the train-fitted capacity-matched probe normal and displacement-matched `reltoken` writes against 119 random, sham, and six clinical controls.
-- Observation: the deterministic pair receipt excludes all 1,000 prior Qwen intervention rows. The repository suite passed 130 tests with one platform skip, and the configured pinned read-only Claude registration review returned `PASS` with no required actions. Fresh launch preflight passed at source commit `8a55a4c2f6b6feeb7c8ccfaf818a342dffce1a56`; GPU 0 used 1 MiB before dispatch.
-- Scientific state: `RUNNING`; no input-closure outcome exists yet.
-- Gate decision: `RUNNING`; terminal internal replay and hard-gate review remain pending.
-- Gate disposition: pending terminal evidence.
-- Next step: can a within-patient Consolidation representation displacement be closed by the matching probe-normal write beyond random, sham, and fixed clinical controls? Validate the completed receipt and paired bootstrap, then request the pinned hard-gate review.
-- Writer ownership: immutable run `20260904T162317Z-8a55a4c2f6b6-consolidation-closure` owns experimental artifacts; Codex owns state recording and terminal gate advancement. No manuscript-build process is active.
-- Evidence: `/home/qingchan/data/concept-flow/runs/20260904T162317Z-8a55a4c2f6b6-consolidation-closure/`; `/home/qingchan/data/concept-flow/state/consolidation-registration-validation-20260904T161712Z-PRV2oo/`; reviewer receipt `/home/qingchan/.codex/state/claude-review-concept-flow/review-20260904T162255731007Z.json`; `docs/reviews/qwen7b-consolidation-vislast-input-closure-registration.md`.
+- Observation: the probe is eligible with selectivity `0.0642` (95% CI `[0.0302, 0.0976]`). Mean displacement is `0.1091`, but its one-sided lower bound is `-0.0364`; concept closure gain `0.0022` is below random maximum `0.0025`, and the clinical-familywise lower bound is `-0.0015`. The immutable run completed 6,450 outcomes in 445 seconds. The validator-only ordering correction reused the artifact, all 257 arrays match, and the pinned read-only Claude review accepted `input_closure=false`.
+- Scientific state: `OBSERVED`.
+- Gate decision: `PASS`; the six-gate result-to-claim pass reports `claim_supported=yes`, confidence `high`, integrity `pass`, and routing action `confirm`.
+- Gate disposition: `READY` for manuscript reconciliation; no further experiment is authorized.
+- Next step: can the six-gate evidence be integrated into the evidence-locked manuscript while preserving exact scope, provenance, and the nine-page main-body budget? Update and cross-review the manuscript.
+- Writer ownership: immutable run `20260904T162317Z-8a55a4c2f6b6-consolidation-closure` owns experimental artifacts; Codex owns claim and manuscript reconciliation. No experiment process is active.
+- Evidence: `/home/qingchan/data/concept-flow/runs/20260904T162317Z-8a55a4c2f6b6-consolidation-closure/`; `/home/qingchan/data/concept-flow/state/consolidation-input-closure-validator-replay-a-20260904T1634XXZ-F1ruMl/receipt.json`; reviewer receipts `/home/qingchan/.codex/state/claude-review-concept-flow/review-20260904T163729487366Z.json` and `/home/qingchan/.codex/state/claude-review-concept-flow/review-20260904T164410087766Z.json`; `docs/reviews/qwen7b-consolidation-vislast-input-closure.md`; `docs/reviews/six-gate-result-to-claim.md`.
 
 ## Paper-planning gate
 
@@ -47,12 +47,13 @@ Updated: 2026-09-04. Scientific state uses `PLANNED`, `RUNNING`, `FAILED`, and `
 
 ## Manuscript-drafting gate
 
-- Run: draft the evidence-locked manuscript and generate Figures 1--3 and Tables 1--2 from the four accepted receipts.
-- Observation: the manuscript, compact evidence snapshot, three vector figures, and two generated tables pass static validation with 18/18 adjudicated values, 15/15 cited bibliography entries, matched labels/references, anonymous authorship, and no stale section files or draft markers. The repository suite passes 83 tests with one platform skip. The pinned read-only Claude action-closure review reports `REQUIRED_ACTIONS: NONE`.
+- Run: reconcile the evidence-locked manuscript and generated evidence snapshot with the accepted six-gate sequence.
+- Observation: the draft now includes the Qwen ownership matrix and paired Consolidation closure gate in the protocol, results, discussion, conclusion, provenance appendix, and a generated mechanism table. Static validation finds all 27 adjudicated manuscript values and all 15 citations; cross-review and immutable compilation remain pending.
 - Scientific state: accepted experimental evidence remains `OBSERVED`.
-- Gate decision: `PASS` at pushed source commit `d3f7663674331e04e6c97474885995edfc205abe`.
-- Gate disposition: `READY`.
-- Evidence: `paper/`; `/home/qingchan/data/concept-flow/state/manuscript-draft-validation-20260903T120926Z/receipt.json`; reviewer receipts `/home/qingchan/.codex/state/claude-review-concept-flow/review-20260903T120710736411Z.json` and `/home/qingchan/.codex/state/claude-review-concept-flow/review-20260903T120851250065Z.json`; `docs/reviews/evidence-locked-manuscript-draft.md`.
+- Gate decision: `RUNNING` at validator commit `0046d1e506c1b7a13fff02777cc16c8a358accf5` plus the current manuscript update.
+- Gate disposition: pending pinned read-only review.
+- Next step: can the updated draft preserve the accepted six-gate claim and fit the nine-page ICLR main-body budget? Push a clean draft checkpoint, request review, and compile the accepted revision.
+- Evidence: `paper/`; `CLAIMS_FROM_RESULTS.md`; `docs/reviews/six-gate-result-to-claim.md`.
 
 ## Paper-compilation gate
 

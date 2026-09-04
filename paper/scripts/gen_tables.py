@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate Tables 1--2 from the accepted paper-data snapshot."""
+"""Generate the paper tables from the accepted paper-data snapshot."""
 
 from __future__ import annotations
 
@@ -107,8 +107,28 @@ Model & Concept & Cohort & Clinical margin [95\% CI] & Stopped at \\
 """
     (PAPER / "tables" / "table_decoding.tex").write_text(table1, encoding="utf-8")
     (PAPER / "tables" / "table_gates.tex").write_text(table2, encoding="utf-8")
+    ownership = data["causal_ownership"]
+    closure = data["input_closure"]
+    table3 = rf"""\begin{{table*}}[t]
+\centering
+\scriptsize
+\setlength{{\tabcolsep}}{{3.0pt}}
+\caption{{Prospective Qwen mechanism gates at \texttt{{vis.last}}. Ownership crosses six probe normals with six matching questions; input closure writes each patient's measured Consolidation displacement back into the negative study. LCB denotes a one-sided simultaneous or familywise 95\% lower confidence bound.}}
+\label{{tab:mechanisms}}
+\begin{{tabular*}}{{\textwidth}}{{@{{\extracolsep{{\fill}}}}llcccl@{{}}}}
+\toprule
+Gate & Cohort & Target statistic & Registered comparator & Uncertainty boundary & Outcome \\
+\midrule
+Ownership & {ownership['n_eval_patients']} patients & Alias candidate {ownership['shared_alias']['off_diagonal_effect']:.4f} & Random max {ownership['shared_alias']['global_random_effect_max']:.4f} & 0/6 owned & No ownership or alias \\
+Input closure & {closure['n_pairs']} pairs & $G_C={closure['concept_closure_gain']:.4f}$ & Random max {closure['random_closure_gain_max']:.4f} & $\gamma$ LCB {closure['input_displacement']['one_sided_lower_95']:.4f}; $M$ LCB {closure['clinical_familywise_margin']['one_sided_lower_95']:.4f} & No closure \\
+\bottomrule
+\end{{tabular*}}
+\end{{table*}}
+"""
+    (PAPER / "tables" / "table_mechanisms.tex").write_text(table3, encoding="utf-8")
     print(PAPER / "tables" / "table_decoding.tex")
     print(PAPER / "tables" / "table_gates.tex")
+    print(PAPER / "tables" / "table_mechanisms.tex")
 
 
 if __name__ == "__main__":

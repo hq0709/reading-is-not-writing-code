@@ -36,5 +36,11 @@ M=\DeltaEff-\max_{d\in\mathcal D_{\mathrm{clinical}}}\Delta_d.
 \end{equation}
 The maximum is recomputed inside each of 5,000 patient-bootstrap draws. Direction specificity requires a positive Effusion effect above random p95 and absolute sham, together with a one-sided 95\% lower bound for $M$ above zero.
 
+\paragraph{Causal-ownership matrix.}
+To test whether another clinical normal better matches the answer pathway, we prospectively cross six Qwen directions---Effusion, Atelectasis, Pneumothorax, Cardiomegaly, Mass, and Nodule---with their six matching questions on 400 new patients. Every column uses the same $alpha=+0.25$, 119 random directions, and a sham. For question $c$, ownership requires the diagonal effect to exceed every other clinical direction, every random direction, and the absolute sham effect. A centered studentized max-$T$ bootstrap gives simultaneous 95\% lower bounds over all 30 clinical contrasts. A separate 12-statistic max-$T$ family tests whether one direction is a shared off-diagonal alias; its effect must also exceed the global random and sham maxima.
+
+\paragraph{Within-patient input closure.}
+When the matrix confirms neither ownership nor an alias, the registered fallback tests Consolidation on 50 fresh patients who each have one hash-selected positive and negative study. Let $\gamma_i$ be the positive-minus-negative pooled \texttt{vis.last} displacement along the train-fitted Consolidation normal. The write dose is $\alpha_i=\operatorname{clip}(\gamma_i/\overline{\lVert h_{it}\rVert},-0.25,0.25)$ on the negative study. The closure gain is the reduction in its absolute $P(yes)$ gap from the paired positive study. Confirmation requires a positive displacement lower bound, a concept gain above all 119 random directions and the sham, and a positive familywise lower bound against six fixed clinical normals over 5,000 paired bootstraps.
+
 \paragraph{Evidence and review.}
 Every run uses an immutable commit snapshot and records commands, environment, timings, outputs, and terminal checksums. Internal validation replays decision summaries from accepted artifacts. A pinned, read-only cross-family reviewer checks each hard gate after internal verification; review can reject a gate but cannot create experimental evidence.

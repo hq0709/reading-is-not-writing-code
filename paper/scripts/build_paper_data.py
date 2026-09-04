@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Extract the evidence-locked paper data from the four accepted run receipts."""
+"""Extract the evidence-locked paper data from the accepted run receipts."""
 
 from __future__ import annotations
 
@@ -16,6 +16,8 @@ RUNS = {
     "llava_edema": "20260902T221534Z-110b84618d1b-edema",
     "qwen_effusion": "20260903T000321Z-caaae3ef346d-qwen-full",
     "qwen_specificity": "20260903T103508Z-456c81bad460-7a3edc4b",
+    "qwen_ownership": "20260904T125710Z-a3bd883540eb-causal-ownership",
+    "qwen_closure": "20260904T162317Z-8a55a4c2f6b6-consolidation-closure",
 }
 EXPECTED = {
     "llava_effusion": {
@@ -64,6 +66,25 @@ EXPECTED = {
         "margin": -0.057328132013790334,
         "ci95": [-0.0693829501046566, -0.04500512929691468],
         "one_sided": -0.06779789115232414,
+    },
+    "ownership": {
+        "n_owned": 0,
+        "n_off_diagonal_winners": 6,
+        "candidate_effect": 0.2909364313397673,
+        "candidate_effect_lower": 0.28083605156555386,
+        "candidate_dominance_lower": 0.13321401700916094,
+        "global_random_max": 0.34022399436600975,
+    },
+    "closure": {
+        "probe_auroc": 0.7218194409485241,
+        "probe_selectivity": 0.06418548021200365,
+        "probe_selectivity_ci95": [0.030158249563824062, 0.09758492650943741],
+        "displacement": 0.10906783267855644,
+        "displacement_lower": -0.036407997652888296,
+        "concept_gain": 0.0022028424963355065,
+        "random_max": 0.0024608347192406656,
+        "clinical_margin": 0.0019651266001164914,
+        "clinical_lower": -0.0015283454516902566,
     },
 }
 
@@ -220,8 +241,72 @@ def main() -> None:
         supplement["primary"]["one_sided_lower_95"],
         specificity_expected["one_sided"],
     )
+    ownership_run = RUNS["qwen_ownership"]
+    ownership_path = (
+        DATA_ROOT / "runs" / ownership_run / "artifacts" / "causal-ownership-summary.json"
+    )
+    ownership = load_json(ownership_path)
+    ownership_expected = EXPECTED["ownership"]
+    exact("ownership.n_owned", ownership["n_owned_concepts"], ownership_expected["n_owned"])
+    exact(
+        "ownership.n_off_diagonal_winners",
+        ownership["n_off_diagonal_winners"],
+        ownership_expected["n_off_diagonal_winners"],
+    )
+    shared_alias = ownership["shared_alias"]
+    exact("ownership.candidate_effect", shared_alias["off_diagonal_effect"], ownership_expected["candidate_effect"])
+    exact(
+        "ownership.candidate_effect_lower",
+        shared_alias["off_diagonal_effect_simultaneous_lower_95"],
+        ownership_expected["candidate_effect_lower"],
+    )
+    exact(
+        "ownership.candidate_dominance_lower",
+        shared_alias["relative_dominance_simultaneous_lower_95"],
+        ownership_expected["candidate_dominance_lower"],
+    )
+    exact(
+        "ownership.global_random_max",
+        shared_alias["global_random_effect_max"],
+        ownership_expected["global_random_max"],
+    )
+
+    closure_run = RUNS["qwen_closure"]
+    closure_path = DATA_ROOT / "runs" / closure_run / "artifacts" / "input-closure-summary.json"
+    closure = load_json(closure_path)
+    closure_expected = EXPECTED["closure"]
+    exact("closure.probe_auroc", closure["probe"]["real_auroc"], closure_expected["probe_auroc"])
+    exact(
+        "closure.probe_selectivity",
+        closure["probe"]["selectivity"],
+        closure_expected["probe_selectivity"],
+    )
+    for index, value in enumerate(closure["probe"]["selectivity_ci95"]):
+        exact(
+            f"closure.probe_selectivity_ci95[{index}]",
+            value,
+            closure_expected["probe_selectivity_ci95"][index],
+        )
+    exact("closure.displacement", closure["input_displacement"]["estimate"], closure_expected["displacement"])
+    exact(
+        "closure.displacement_lower",
+        closure["input_displacement"]["one_sided_lower_95"],
+        closure_expected["displacement_lower"],
+    )
+    exact("closure.concept_gain", closure["concept_closure_gain"], closure_expected["concept_gain"])
+    exact("closure.random_max", closure["random_closure_gain_max"], closure_expected["random_max"])
+    exact(
+        "closure.clinical_margin",
+        closure["clinical_familywise_margin"]["estimate"],
+        closure_expected["clinical_margin"],
+    )
+    exact(
+        "closure.clinical_lower",
+        closure["clinical_familywise_margin"]["one_sided_lower_95"],
+        closure_expected["clinical_lower"],
+    )
     output = {
-        "schema": "concept-flow-paper-evidence-v1",
+        "schema": "concept-flow-paper-evidence-v2",
         "cells": cells,
         "specificity": {
             "run_id": supplement_run,
@@ -235,6 +320,34 @@ def main() -> None:
             "primary": supplement["primary"],
             "direction_specific": supplement["direction_specific"],
             "source": str(supplement_path),
+        },
+        "causal_ownership": {
+            "run_id": ownership_run,
+            "n_eval_patients": ownership["n_eval_patients"],
+            "n_random": ownership["n_random"],
+            "bootstrap_resamples": ownership["bootstrap_resamples"],
+            "n_owned_concepts": ownership["n_owned_concepts"],
+            "n_off_diagonal_winners": ownership["n_off_diagonal_winners"],
+            "columns": ownership["columns"],
+            "shared_alias": shared_alias,
+            "source": str(ownership_path),
+        },
+        "input_closure": {
+            "run_id": closure_run,
+            "n_pairs": closure["n_pairs"],
+            "n_random": closure["n_random"],
+            "bootstrap_resamples": closure["bootstrap_resamples"],
+            "probe": closure["probe"],
+            "input_displacement": closure["input_displacement"],
+            "concept_closure_gain": closure["concept_closure_gain"],
+            "random_closure_gain_max": closure["random_closure_gain_max"],
+            "exact_random_rank_p": closure["exact_random_rank_p"],
+            "sham_closure_gain": closure["sham_closure_gain"],
+            "maximum_unrelated": closure["maximum_unrelated"],
+            "clinical_familywise_margin": closure["clinical_familywise_margin"],
+            "alpha": closure["alpha"],
+            "input_closure": closure["input_closure"],
+            "source": str(closure_path),
         },
     }
     destination = PAPER / "data" / "accepted_results.json"

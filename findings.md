@@ -1,11 +1,11 @@
 # Research findings
 
-Run: the updated result-to-claim gate compared the accepted LLaVA Effusion, LLaVA Edema, Qwen Effusion, and independent-row Qwen direction-specificity evidence against the registered primary claim.
+Run: the six-gate result-to-claim pass compared the accepted final-block decoding, intervention-specificity, causal-ownership, and paired input-closure evidence against the registered claim.
 
-Observation: robust controlled decodability coexists with different levels of probe-normal behavioural response. The two LLaVA effects remain within their registered control bounds. Qwen Effusion replicates above random and sham on independent rows, but Nodule produces the larger response; the familywise margin is `-0.0573` with its full 95% interval below zero. This establishes a final-locus decodability-versus-direction-specific-use dissociation for the registered NIH cells and shows that random/sham selectivity is insufficient for clinical direction specificity in the Qwen cell.
+Observation: the fixed linear readouts recover clinical labels, but each causal interpretation stops at a registered control boundary. LLaVA stops at random/sham; Qwen Effusion passes generic controls but not clinical-direction specificity; the Qwen matrix identifies neither an owned concept nor a shared alias beyond random directions; and the paired Consolidation gate does not separate closure from random or clinical controls. The resulting evidence establishes an availability-versus-concept-specific-use dissociation for the registered NIH cells and protocols.
 
-Gate decision: `PASS`; the pinned cross-family reviewer judged the registered claim supported with high confidence and integrity `pass`, and routed the project to `confirm`. No further experiment is needed for this claim.
+Gate decision: `PASS`; the pinned cross-family reviewer judged the scoped claim supported with high confidence and integrity `pass`, and routed the project to `confirm`. No further experiment is authorized by this result.
 
-Next step: can the accepted four-gate evidence be organized into a paper plan whose claims, tables, and limitations preserve the registered scope? Run the paper-planning gate before drafting.
+Next step: can the six-gate evidence be integrated into the evidence-locked manuscript while preserving exact scope, provenance, and the nine-page main-body budget? Update, cross-review, and compile the manuscript.
 
-Evidence: [CLAIMS_FROM_RESULTS.md](CLAIMS_FROM_RESULTS.md); `/home/qingchan/.codex/state/claude-review-concept-flow/review-20260903T110714659808Z.json`; `.aris/traces/result-to-claim/2026-09-03_run01/`.
+Evidence: [CLAIMS_FROM_RESULTS.md](CLAIMS_FROM_RESULTS.md); `/home/qingchan/.codex/state/claude-review-concept-flow/review-20260904T164410087766Z.json`; `.aris/traces/result-to-claim/2026-09-04_run01/`.
