@@ -14,6 +14,8 @@ Gate decision: pre-scientific gate `FAILED`, failure class `MEASUREMENT`; scient
 
 Next step: can a separately prospective measurement amendment establish usable A/B semantic orientation without evaluating the untouched diagnostic cohort? Do not rerun or substitute prompts or scoring under the current registration.
 
+Writer return: the bounded server assignment is complete at the documented blocker. Integrate the clean pushed branch by fast-forward into `main`, return code-repository ownership to local project task `01a06ec5-fec9-7241-b066-72c1bc5632b8`, and leave the checkout clean and pushed.
+
 ## Authoritative inputs
 
 - `docs/RESEARCH_PLAN.md#llava-effusion-readout-diagnostic` fixes the prospective sample, six prompts, scores, frozen reader, inference and resource limits. Use the unstudentized maximum absolute centered deviation for the six simultaneous intervals.
