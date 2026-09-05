@@ -100,6 +100,29 @@ class ProtocolTests(unittest.TestCase):
             source.index('temporary.replace(out / "per-image.csv")'), source.index("text_only = []")
         )
 
+    def test_inherited_scorer_prompts_are_bound_before_use(self):
+        token = {
+            "raw_first": runner.PINNED_YES,
+            "raw_second": runner.PINNED_NO,
+            "present": runner.PINNED_YES,
+            "absent": runner.PINNED_NO,
+            "candidate_ids": sorted(runner.PINNED_YES + runner.PINNED_NO),
+        }
+        with patch.object(
+            runner.parent,
+            "load_scorer",
+            return_value=(lambda *_args, **_kwargs: None, {"0Y": token, "1Y": token}, {}),
+        ):
+            _score, _tokens, _runtime, prompts = runner.load_scorer({}, 0)
+        self.assertEqual(prompts, runner.consumed_prompts())
+        changed = tuple(dict(item) for item in runner.parent.core.CONDITIONS)
+        changed[3]["prompt"] = "drift"
+        with (
+            patch.object(runner.parent.core, "CONDITIONS", changed),
+            self.assertRaisesRegex(ValueError, "inherited scorer prompt"),
+        ):
+            runner.load_scorer({}, 0)
+
     def test_yes_no_preflight_requires_primary_and_lse_signs(self):
         token = {
             "raw_first": runner.PINNED_YES,
@@ -121,6 +144,7 @@ class ProtocolTests(unittest.TestCase):
             "forwarded_no_cls_exact": True,
             "pooling": "mean over all 577 block-output tokens",
             "clean_repeat_exact": True,
+            "consumed_prompts": runner.consumed_prompts(),
             "mapping_cases": cases,
             "token_ids": {"0Y": token, "1Y": dict(token)},
             "throughput": runner.budget(1.0, 10.0, 2.0),
@@ -129,6 +153,13 @@ class ProtocolTests(unittest.TestCase):
         changed = {**flight, "mapping_cases": [dict(item) for item in cases]}
         changed["mapping_cases"][1]["lse_margin"] = 0.0
         with self.assertRaisesRegex(ValueError, "orientation"):
+            runner.validate_preflight(changed, "a" * 40, "/model", 2.0)
+        changed = {
+            **flight,
+            "consumed_prompts": [dict(item) for item in flight["consumed_prompts"]],
+        }
+        changed["consumed_prompts"][1]["prompt"] = "drift"
+        with self.assertRaisesRegex(ValueError, "identity"):
             runner.validate_preflight(changed, "a" * 40, "/model", 2.0)
 
 

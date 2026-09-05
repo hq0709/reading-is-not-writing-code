@@ -240,7 +240,26 @@ def expected_mapping_cases():
     ]
 
 
+def consumed_prompts():
+    result = []
+    for condition, spec in enumerate(core.CONDITIONS):
+        parent_index = condition * 3
+        inherited = parent.core.CONDITIONS[parent_index]
+        if inherited.get("prompt") != spec["prompt"] or inherited.get("wording") != spec["wording"]:
+            raise ValueError("inherited scorer prompt differs from the registered yes/no prompt")
+        result.append(
+            {
+                "condition": spec["name"],
+                "parent_condition_index": parent_index,
+                "wording": inherited["wording"],
+                "prompt": inherited["prompt"],
+            }
+        )
+    return result
+
+
 def load_scorer(source, gpu):
+    prompts = consumed_prompts()
     parent_score, parent_tokens, runtime = parent.load_scorer(source, gpu)
     tokens = token_metadata(parent_tokens)
 
@@ -249,7 +268,7 @@ def load_scorer(source, gpu):
             raise ValueError("yes/no condition must be zero or one")
         return parent_score(condition * 3, rows, capture=capture, prompt_override=prompt_override)
 
-    return score, tokens, runtime
+    return score, tokens, runtime, prompts
 
 
 def mapping_cases(score):
@@ -299,6 +318,7 @@ def validate_preflight(flight, source_commit, model_source, preparation_seconds)
         or flight.get("forwarded_no_cls_exact") is not True
         or flight.get("pooling") != "mean over all 577 block-output tokens"
         or flight.get("clean_repeat_exact") is not True
+        or flight.get("consumed_prompts") != consumed_prompts()
     ):
         raise ValueError("yes/no preflight identity or consumed-locus check failed")
     validate_token_metadata(flight.get("token_ids", {}))
@@ -414,7 +434,7 @@ def run(data_root, out, source_commit, gpu, preflight_only=False):
         "validation_row_ids": accepted.VALIDATION_ROW_IDS,
     }
     try:
-        score, tokens, runtime = load_scorer(meta["sources"]["model"], gpu)
+        score, tokens, runtime, prompts = load_scorer(meta["sources"]["model"], gpu)
         validation = pilot.load_sources(root)[3]["preflight"]
         clean = score(0, validation, capture=True)
         repeat = score(0, validation, capture=True)
@@ -434,6 +454,7 @@ def run(data_root, out, source_commit, gpu, preflight_only=False):
                 "module": core.MODULE,
                 "pooling": "mean over all 577 block-output tokens",
                 "runtime": runtime,
+                "consumed_prompts": prompts,
                 "token_ids": tokens,
                 "mapping_cases": mapping_cases(score),
                 "forwarded_no_cls_exact": clean["forwarded_no_cls_exact"]

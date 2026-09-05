@@ -196,6 +196,18 @@ def expected_mapping_cases():
     ]
 
 
+def expected_consumed_prompts():
+    return [
+        {
+            "condition": f"{index}Y",
+            "parent_condition_index": index * 3,
+            "wording": index,
+            "prompt": f"{wording} {SUFFIX}",
+        }
+        for index, wording in enumerate(WORDINGS)
+    ]
+
+
 def validate_token_metadata(tokens):
     expected = {
         "raw_first": YES,
@@ -217,6 +229,7 @@ def validate_preflight(preflight, preparation_seconds, commit, model_source):
         and preflight.get("pooling") == "mean over all 577 block-output tokens"
         and preflight.get("forwarded_no_cls_exact") is True
         and preflight.get("clean_repeat_exact") is True
+        and preflight.get("consumed_prompts") == expected_consumed_prompts()
         and preflight.get("passed") is True,
         "preflight source and consumed-locus identity",
     )

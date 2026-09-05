@@ -135,6 +135,7 @@ class TerminalReplayTests(unittest.TestCase):
             "pooling": "mean over all 577 block-output tokens",
             "forwarded_no_cls_exact": True,
             "clean_repeat_exact": True,
+            "consumed_prompts": terminal.expected_consumed_prompts(),
             "passed": True,
             "runtime": {
                 "gpu_name": "NVIDIA A100 80GB PCIe",
@@ -152,6 +153,10 @@ class TerminalReplayTests(unittest.TestCase):
         changed = deepcopy(preflight)
         changed["runtime"]["positions"] = "cls"
         with self.assertRaisesRegex(AssertionError, "runtime"):
+            terminal.validate_preflight(changed, preparation, "a" * 40, terminal.MODEL_SOURCE)
+        changed = deepcopy(preflight)
+        changed["consumed_prompts"][0]["prompt"] = "drift"
+        with self.assertRaisesRegex(AssertionError, "consumed-locus"):
             terminal.validate_preflight(changed, preparation, "a" * 40, terminal.MODEL_SOURCE)
 
     def test_text_only_native_logits_and_partition_are_replayed(self):
