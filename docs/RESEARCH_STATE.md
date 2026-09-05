@@ -1,18 +1,18 @@
 # Research state
 
-Updated: 2026-09-04. Scientific state uses `PLANNED`, `RUNNING`, `FAILED`, and `OBSERVED`; gate disposition uses `READY`, `BLOCKED`, and `UNAVAILABLE`.
+Updated: 2026-09-05. Scientific state uses `PLANNED`, `RUNNING`, `FAILED`, and `OBSERVED`; gate disposition uses `READY`, `BLOCKED`, and `UNAVAILABLE`.
 
 ## Active research stage
 
-- Run: `20260904T230152Z-21dad2f72726-answer-encoding`, source `21dad2f`, GPU 0; validation preflight passed, and the scientific intervention evaluation has reached `standard/Effusion`.
-- Observation: the existing Qwen ownership matrix covers six clinical questions at one yes/no encoding and one positive dose. The available LLaVA causal comparison covers two concepts. Encoding dependence, input-supported intervention geometry, and architecture transfer are the next evidence targets.
-- Scientific state: `RUNNING`.
-- Gate disposition: registration `PASS`; validation-only checks passed for exact zero-dose behavior, nonzero intervention, all eight mapping cases, and throughput. Final evidence awaits complete outcomes and terminal review.
-- Diagnostic run: `20260904T224225Z-1ab7576193a7-ownership-diagnostics` completed on CPU from pushed source `1ab7576`. All six ownership margins remain negative in logit coordinates; all six matched-steering AUROC point estimates are below their baselines. Descriptive findings in `docs/OWNERSHIP_DIAGNOSTICS.md` passed pinned result review and are ready for paper handoff.
-- Supervision: heartbeat `concept-flow` checks this task every 30 minutes, remaining quiet when progress or resource availability does not require action.
-- Next step: does the direction-by-question response follow clinical meaning when the answer-code mapping is exchanged? Complete the immutable paired experiment, inspect calibration eligibility and the registered response-energy contrast, then perform terminal review.
-- Writer ownership: local Codex owns the code repository and experiment protocol; the immutable run owns its artifacts; the separate paper task owns the Overleaf manuscript. The active source snapshot remains `21dad2f` while current state is updated through GitHub.
-- Registration evidence: `docs/reviews/qwen7b-vislast-answer-encoding-registration.md`; pinned receipt `/home/qingchan/.codex/state/claude-review-concept-flow/review-20260904T230054355352Z.json`.
+- Run: `20260904T230152Z-21dad2f72726-answer-encoding`, source `21dad2f`, completed all 200,400 outcomes in 6,402 seconds on GPU 0. Both terminal exit statuses are zero; no scientific run is active.
+- Observation: four independently calibrated questions are eligible. The mapping-even minus mapping-odd energy contrast is -2.1786 (95% CI [-2.4061, -1.9810]); random/sham responses are also mapping-odd dominant. Mass's descriptive clinical logit margin changes from -0.7181 under standard yes/no to +0.2825 and +0.2900 under the two coded prompts. Under both coded prompts, the matched Mass-direction effect exceeds all 20 random effects and the absolute sham effect.
+- Scientific state: answer-encoding `OBSERVED`; independent-patient Mass confirmation `PLANNED`.
+- Gate disposition: answer-encoding `PASS`; complete-grid internal verification and pinned read-only result review accepted the evidence. The next confirmation requires a locked protocol, implementation and registration review.
+- Next step: does Mass retain its prompt-conditioned clinical advantage on independent patients? Prepare the confirmation before choosing the natural-displacement concept and readout; maintain the cross-architecture comparison in the evidence queue.
+- Writer ownership: project task `01a06ec5-fec9-7241-b066-72c1bc5632b8` coordinates research, evidence and delivery and owns code and experiment dispatch. Paper task `01a06afe-5c66-7a80-b922-b3ede71eab3e` owns the separate paper repository. Existing unrelated local edits remain with their author.
+- Supervision: heartbeat `concept-flow` is ACTIVE, bound to the project task every 30 minutes, advancing research and paper coordination and remaining quiet on unchanged state.
+- Evidence: `docs/ANSWER_ENCODING_RESULTS.md`, `docs/reviews/qwen7b-vislast-answer-encoding.md`; pinned receipt `/home/qingchan/.codex/state/claude-review-concept-flow/review-20260905T005436988285Z.json`; immutable run artifacts include complete signed-dose matrices, AUROC/Brier summaries and calibration data.
+- Diagnostic handoff: paper task accepted `docs/OWNERSHIP_DIAGNOSTICS.md` findings and holds the descriptive material in its `docs/ownership-response-diagnostics.md`.
 - Protocol: `docs/RESEARCH_PLAN.md#iclr-evidence-expansion` and `#qwen-answer-encoding-crossover`.
 
 ## Bootstrap gate
