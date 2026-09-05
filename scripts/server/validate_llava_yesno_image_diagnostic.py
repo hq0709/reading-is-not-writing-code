@@ -80,6 +80,10 @@ weights = base.weights
 auc = base.auc
 
 
+def read_path(path):
+    return read(Path(path))
+
+
 def expected_conditions():
     return [
         {"name": f"{index}Y", "wording": index, "prompt": f"{wording} {SUFFIX}"}
@@ -402,7 +406,7 @@ def parent_source(root, prepared, cohort):
     )
     parent_cohort = read(run / "artifacts/cohort.json")
     check(parent_cohort == cohort == base.replay_allocation(root), "retained allocation replay")
-    internal = read(PARENT_INTERNAL_RECEIPT)
+    internal = read_path(PARENT_INTERNAL_RECEIPT)
     check(
         internal.get("status") == "VERIFIED_FAILED_PREFLIGHT"
         and internal.get("failure_class") == "MEASUREMENT"
@@ -412,7 +416,7 @@ def parent_source(root, prepared, cohort):
         "accepted parent measurement receipt",
     )
     source = prepared["sources"]["parent_allocation"]
-    validate_parent_review(read(PARENT_REVIEW_RECEIPT))
+    validate_parent_review(read_path(PARENT_REVIEW_RECEIPT))
     check(
         source["run_id"] == PARENT_RUN_ID
         and source["source_commit"] == PARENT_COMMIT

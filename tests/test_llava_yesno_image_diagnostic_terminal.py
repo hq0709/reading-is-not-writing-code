@@ -1,5 +1,8 @@
+import json
+import tempfile
 import unittest
 from copy import deepcopy
+from pathlib import Path
 
 import numpy as np
 
@@ -8,6 +11,12 @@ from src import llava_yesno_image_diagnostic as diagnostic
 
 
 class TerminalReplayTests(unittest.TestCase):
+    def test_string_receipt_paths_are_converted_for_shared_reader(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "receipt.json"
+            path.write_text(json.dumps({"status": "ok"}), encoding="utf-8")
+            self.assertEqual(terminal.read_path(str(path)), {"status": "ok"})
+
     def test_independent_primary_vector_matches_registration(self):
         np.testing.assert_allclose(
             terminal.primary(np.asarray([0.8, 0.7]), np.asarray([0.2, 0.35])),
