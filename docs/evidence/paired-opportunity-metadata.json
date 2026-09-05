@@ -1,0 +1,638 @@
+{
+  "source_commit": "b8145c601dee787f3d67d42ef49209191e6296a4",
+  "verified_utc": "2026-09-05T03:33:04Z",
+  "transport": "ssh -o BatchMode=yes asimov1",
+  "python": "/home/qingchan/miniforge3/envs/conceptflow/bin/python",
+  "commands": [
+    "python -B -m scripts.audit_paired_opportunity --manifest /home/qingchan/data/concept-flow/datasets/nih-chestxray14/manifest.csv --runs-root /home/qingchan/data/concept-flow/runs",
+    "python -B -m scripts.audit_nih_paired_pool --dataset-root /home/qingchan/data/concept-flow/datasets/nih-chestxray14 --runs-root /home/qingchan/data/concept-flow/runs"
+  ],
+  "exit_codes": [
+    0,
+    0
+  ],
+  "sampled_manifest": {
+    "manifest": "/home/qingchan/data/concept-flow/datasets/nih-chestxray14/manifest.csv",
+    "runs_root": "/home/qingchan/data/concept-flow/runs",
+    "fields": [
+      "row_id",
+      "image_path",
+      "patient_id",
+      "split",
+      "age",
+      "no_finding",
+      "view_AP",
+      "sex_M",
+      "Effusion",
+      "Atelectasis",
+      "Pneumothorax",
+      "Consolidation",
+      "Cardiomegaly",
+      "Edema",
+      "Infiltration",
+      "Mass",
+      "Nodule"
+    ],
+    "test_rows": 5343,
+    "test_patients": 1659,
+    "exclusions": [
+      {
+        "name": "initial",
+        "receipt": "20260903T000321Z-caaae3ef346d-qwen-full/artifacts/intervention-summary.json",
+        "extraction_key": "eval_row_ids",
+        "rows": 200,
+        "unique_rows": 200,
+        "patients": 167,
+        "overlap_with_previous_patients": 0
+      },
+      {
+        "name": "specificity",
+        "receipt": "20260903T103508Z-456c81bad460-7a3edc4b/artifacts/registered-rows.json",
+        "extraction_key": "row_ids",
+        "rows": 400,
+        "unique_rows": 400,
+        "patients": 400,
+        "overlap_with_previous_patients": 0
+      },
+      {
+        "name": "ownership",
+        "receipt": "20260904T125710Z-a3bd883540eb-causal-ownership/artifacts/registered-rows.json",
+        "extraction_key": "row_ids",
+        "rows": 400,
+        "unique_rows": 400,
+        "patients": 400,
+        "overlap_with_previous_patients": 0
+      },
+      {
+        "name": "closure",
+        "receipt": "20260904T162317Z-8a55a4c2f6b6-consolidation-closure/artifacts/registered-pairs.json",
+        "extraction_key": "pairs",
+        "rows": 100,
+        "unique_rows": 100,
+        "patients": 50,
+        "overlap_with_previous_patients": 0
+      },
+      {
+        "name": "active",
+        "receipt": "20260905T015725Z-1c9820d7b576-mass-prompts/artifacts/registered-rows.json",
+        "extraction_key": "row_ids",
+        "rows": 200,
+        "unique_rows": 200,
+        "patients": 200,
+        "overlap_with_previous_patients": 0,
+        "calibration_coverage": {
+          "rows": 200,
+          "patients": 200,
+          "covered_patients": 200,
+          "uncovered_patients": 0
+        }
+      }
+    ],
+    "excluded_patients": 1217,
+    "remaining_rows": 890,
+    "remaining_patients": 442,
+    "missing_values": {
+      "row_id": 0,
+      "image_path": 0,
+      "patient_id": 0,
+      "split": 0,
+      "age": 0,
+      "no_finding": 0,
+      "view_AP": 0,
+      "sex_M": 0,
+      "Effusion": 0,
+      "Atelectasis": 0,
+      "Pneumothorax": 0,
+      "Consolidation": 0,
+      "Cardiomegaly": 0,
+      "Edema": 0,
+      "Infiltration": 0,
+      "Mass": 0,
+      "Nodule": 0
+    },
+    "no_finding_with_any_retained_disease": 0,
+    "audit": {
+      "Mass": {
+        "tiers": {
+          "unconstrained": {
+            "patients": 25,
+            "pairs": 169,
+            "patients_with_any_strict_control": 8,
+            "patients_with_image_disjoint_strict_control": 8
+          },
+          "same_view": {
+            "patients": 19,
+            "pairs": 93,
+            "patients_with_any_strict_control": 6,
+            "patients_with_image_disjoint_strict_control": 6
+          },
+          "same_view_sex": {
+            "patients": 19,
+            "pairs": 93,
+            "patients_with_any_strict_control": 6,
+            "patients_with_image_disjoint_strict_control": 6
+          },
+          "same_view_sex_age": {
+            "patients": 12,
+            "pairs": 80,
+            "patients_with_any_strict_control": 5,
+            "patients_with_image_disjoint_strict_control": 5
+          },
+          "same_view_sex_age_eight_other_diseases": {
+            "patients": 8,
+            "pairs": 27,
+            "patients_with_any_strict_control": 4,
+            "patients_with_image_disjoint_strict_control": 4
+          },
+          "same_view_sex_age_all_other_labels": {
+            "patients": 2,
+            "pairs": 6,
+            "patients_with_any_strict_control": 2,
+            "patients_with_image_disjoint_strict_control": 2
+          }
+        },
+        "unconstrained_mismatch": {
+          "no_finding": {
+            "pairs": 89,
+            "patients": 18
+          },
+          "view_AP": {
+            "pairs": 76,
+            "patients": 14
+          },
+          "Atelectasis": {
+            "pairs": 67,
+            "patients": 7
+          },
+          "Infiltration": {
+            "pairs": 56,
+            "patients": 10
+          },
+          "Effusion": {
+            "pairs": 43,
+            "patients": 9
+          },
+          "age": {
+            "pairs": 29,
+            "patients": 11
+          },
+          "Cardiomegaly": {
+            "pairs": 11,
+            "patients": 3
+          },
+          "Nodule": {
+            "pairs": 10,
+            "patients": 10
+          },
+          "Pneumothorax": {
+            "pairs": 1,
+            "patients": 1
+          },
+          "Edema": {
+            "pairs": 1,
+            "patients": 1
+          }
+        }
+      },
+      "Consolidation": {
+        "tiers": {
+          "unconstrained": {
+            "patients": 1,
+            "pairs": 8,
+            "patients_with_any_strict_control": 1,
+            "patients_with_image_disjoint_strict_control": 1
+          },
+          "same_view": {
+            "patients": 1,
+            "pairs": 5,
+            "patients_with_any_strict_control": 1,
+            "patients_with_image_disjoint_strict_control": 1
+          },
+          "same_view_sex": {
+            "patients": 1,
+            "pairs": 5,
+            "patients_with_any_strict_control": 1,
+            "patients_with_image_disjoint_strict_control": 1
+          },
+          "same_view_sex_age": {
+            "patients": 1,
+            "pairs": 5,
+            "patients_with_any_strict_control": 1,
+            "patients_with_image_disjoint_strict_control": 1
+          },
+          "same_view_sex_age_eight_other_diseases": {
+            "patients": 1,
+            "pairs": 1,
+            "patients_with_any_strict_control": 1,
+            "patients_with_image_disjoint_strict_control": 1
+          },
+          "same_view_sex_age_all_other_labels": {
+            "patients": 0,
+            "pairs": 0,
+            "patients_with_any_strict_control": 0,
+            "patients_with_image_disjoint_strict_control": 0
+          }
+        },
+        "unconstrained_mismatch": {
+          "Effusion": {
+            "pairs": 4,
+            "patients": 1
+          },
+          "view_AP": {
+            "pairs": 3,
+            "patients": 1
+          },
+          "Infiltration": {
+            "pairs": 3,
+            "patients": 1
+          },
+          "Atelectasis": {
+            "pairs": 2,
+            "patients": 1
+          },
+          "no_finding": {
+            "pairs": 1,
+            "patients": 1
+          }
+        }
+      }
+    },
+    "label_unchanged_controls": {
+      "patients": 56,
+      "unordered_pairs": 210,
+      "max_image_disjoint_pairs": 94,
+      "by_target_label": {
+        "Mass": {
+          "0": {
+            "patients": 55,
+            "unordered_pairs": 192,
+            "max_image_disjoint_pairs": 88
+          },
+          "1": {
+            "patients": 2,
+            "unordered_pairs": 18,
+            "max_image_disjoint_pairs": 6
+          }
+        },
+        "Consolidation": {
+          "0": {
+            "patients": 56,
+            "unordered_pairs": 210,
+            "max_image_disjoint_pairs": 94
+          },
+          "1": {
+            "patients": 0,
+            "unordered_pairs": 0,
+            "max_image_disjoint_pairs": 0
+          }
+        }
+      }
+    }
+  },
+  "original_pool": {
+    "manifest_raw_agreement": {
+      "rows_checked": 26229,
+      "fields": [
+        "patient_id",
+        "split",
+        "sex_M",
+        "view_AP",
+        "age",
+        "no_finding",
+        "Effusion",
+        "Atelectasis",
+        "Pneumothorax",
+        "Consolidation",
+        "Cardiomegaly",
+        "Edema",
+        "Infiltration",
+        "Mass",
+        "Nodule"
+      ],
+      "values_checked": 393435
+    },
+    "exclusions": [
+      {
+        "name": "initial",
+        "receipt": "20260903T000321Z-caaae3ef346d-qwen-full/artifacts/intervention-summary.json",
+        "extraction_key": "eval_row_ids",
+        "rows": 200,
+        "unique_rows": 200,
+        "patients": 167,
+        "overlap_with_previous_patients": 0
+      },
+      {
+        "name": "specificity",
+        "receipt": "20260903T103508Z-456c81bad460-7a3edc4b/artifacts/registered-rows.json",
+        "extraction_key": "row_ids",
+        "rows": 400,
+        "unique_rows": 400,
+        "patients": 400,
+        "overlap_with_previous_patients": 0
+      },
+      {
+        "name": "ownership",
+        "receipt": "20260904T125710Z-a3bd883540eb-causal-ownership/artifacts/registered-rows.json",
+        "extraction_key": "row_ids",
+        "rows": 400,
+        "unique_rows": 400,
+        "patients": 400,
+        "overlap_with_previous_patients": 0
+      },
+      {
+        "name": "closure",
+        "receipt": "20260904T162317Z-8a55a4c2f6b6-consolidation-closure/artifacts/registered-pairs.json",
+        "extraction_key": "pairs",
+        "rows": 100,
+        "unique_rows": 100,
+        "patients": 50,
+        "overlap_with_previous_patients": 0
+      },
+      {
+        "name": "active",
+        "receipt": "20260905T015725Z-1c9820d7b576-mass-prompts/artifacts/registered-rows.json",
+        "extraction_key": "row_ids",
+        "rows": 200,
+        "unique_rows": 200,
+        "patients": 200,
+        "overlap_with_previous_patients": 0,
+        "calibration_coverage": {
+          "rows": 200,
+          "patients": 200,
+          "covered_patients": 200,
+          "uncovered_patients": 0
+        }
+      }
+    ],
+    "inventory": {
+      "png_files": 112120,
+      "files_without_metadata": 0,
+      "metadata": {
+        "patients": 30805,
+        "images": 112120
+      },
+      "available": {
+        "patients": 30805,
+        "images": 112120
+      },
+      "unavailable": {
+        "patients": 0,
+        "images": 0
+      },
+      "original_manifest": {
+        "patients": 8297,
+        "images": 26229
+      },
+      "original_manifest_test": {
+        "patients": 1659,
+        "images": 5343
+      },
+      "original_manifest_unavailable_images": 0,
+      "exclusion_union": 1217,
+      "available_test": {
+        "patients": 6139,
+        "images": 22229
+      },
+      "available_test_residual": {
+        "patients": 4922,
+        "images": 15311
+      },
+      "original_manifest_remaining": {
+        "patients": 442,
+        "images": 890
+      },
+      "raw_residual_patients_absent_entire_manifest": {
+        "patients": 4480,
+        "images": 13874
+      },
+      "raw_residual_patients_present_in_manifest": {
+        "patients": 442,
+        "images": 1437
+      },
+      "residual_images_outside_manifest": {
+        "patients": 4679,
+        "images": 14421
+      },
+      "metadata_only_test_residual": {
+        "patients": 0,
+        "images": 0
+      }
+    },
+    "raw_metadata": {
+      "columns": [
+        "Image Index",
+        "Finding Labels",
+        "Follow-up #",
+        "Patient ID",
+        "Patient Age",
+        "Patient Sex",
+        "View Position",
+        "OriginalImage[Width",
+        "Height]",
+        "OriginalImagePixelSpacing[x",
+        "y]"
+      ],
+      "field_availability": {
+        "Image Index": true,
+        "Finding Labels": true,
+        "Follow-up #": true,
+        "Patient ID": true,
+        "Patient Age": true,
+        "Patient Sex": true,
+        "View Position": true,
+        "OriginalImage[Width": true,
+        "Height]": true,
+        "OriginalImagePixelSpacing[x": true,
+        "y]": true
+      },
+      "missing_blank": {
+        "Image Index": 0,
+        "Finding Labels": 0,
+        "Follow-up #": 0,
+        "Patient ID": 0,
+        "Patient Age": 0,
+        "Patient Sex": 0,
+        "View Position": 0,
+        "OriginalImage[Width": 0,
+        "Height]": 0,
+        "OriginalImagePixelSpacing[x": 0,
+        "y]": 0
+      },
+      "diseases": [
+        "Atelectasis",
+        "Cardiomegaly",
+        "Consolidation",
+        "Edema",
+        "Effusion",
+        "Emphysema",
+        "Fibrosis",
+        "Hernia",
+        "Infiltration",
+        "Mass",
+        "Nodule",
+        "Pleural_Thickening",
+        "Pneumonia",
+        "Pneumothorax"
+      ],
+      "additional_labels": [
+        "No Finding"
+      ],
+      "no_finding_with_disease": 0,
+      "view_counts": {
+        "PA": 67310,
+        "AP": 44810
+      },
+      "sex_counts": {
+        "M": 63340,
+        "F": 48780
+      },
+      "age_min": 0,
+      "age_max": 95,
+      "followup": {
+        "populated": 112120,
+        "min": 0,
+        "max": 183,
+        "nonzero": 81315
+      }
+    },
+    "pairs": {
+      "all_available_test_residual": {
+        "Mass": {
+          "all_pos_neg": {
+            "patients": 278,
+            "pairs": 7803,
+            "images": 3515,
+            "pairs_negative_no_finding": 3148
+          },
+          "same_view_sex": {
+            "patients": 260,
+            "pairs": 4686,
+            "images": 2753,
+            "pairs_negative_no_finding": 1831
+          },
+          "plus_same_age": {
+            "patients": 230,
+            "pairs": 3351,
+            "images": 2195,
+            "pairs_negative_no_finding": 1225
+          },
+          "plus_exact_other13": {
+            "patients": 135,
+            "pairs": 644,
+            "images": 702,
+            "pairs_negative_no_finding": 429
+          },
+          "plus_same_no_finding": {
+            "patients": 63,
+            "pairs": 215,
+            "images": 257,
+            "pairs_negative_no_finding": 0
+          }
+        },
+        "Consolidation": {
+          "all_pos_neg": {
+            "patients": 243,
+            "pairs": 14423,
+            "images": 4194,
+            "pairs_negative_no_finding": 5721
+          },
+          "same_view_sex": {
+            "patients": 236,
+            "pairs": 10249,
+            "images": 3347,
+            "pairs_negative_no_finding": 3951
+          },
+          "plus_same_age": {
+            "patients": 222,
+            "pairs": 7037,
+            "images": 2770,
+            "pairs_negative_no_finding": 2585
+          },
+          "plus_exact_other13": {
+            "patients": 121,
+            "pairs": 1207,
+            "images": 905,
+            "pairs_negative_no_finding": 799
+          },
+          "plus_same_no_finding": {
+            "patients": 73,
+            "pairs": 408,
+            "images": 375,
+            "pairs_negative_no_finding": 0
+          }
+        }
+      },
+      "absent_entire_original_manifest": {
+        "Mass": {
+          "all_pos_neg": {
+            "patients": 252,
+            "pairs": 7448,
+            "images": 3317,
+            "pairs_negative_no_finding": 2944
+          },
+          "same_view_sex": {
+            "patients": 237,
+            "pairs": 4497,
+            "images": 2637,
+            "pairs_negative_no_finding": 1738
+          },
+          "plus_same_age": {
+            "patients": 213,
+            "pairs": 3188,
+            "images": 2108,
+            "pairs_negative_no_finding": 1148
+          },
+          "plus_exact_other13": {
+            "patients": 124,
+            "pairs": 593,
+            "images": 653,
+            "pairs_negative_no_finding": 383
+          },
+          "plus_same_no_finding": {
+            "patients": 60,
+            "pairs": 210,
+            "images": 249,
+            "pairs_negative_no_finding": 0
+          }
+        },
+        "Consolidation": {
+          "all_pos_neg": {
+            "patients": 242,
+            "pairs": 14407,
+            "images": 4177,
+            "pairs_negative_no_finding": 5719
+          },
+          "same_view_sex": {
+            "patients": 235,
+            "pairs": 10239,
+            "images": 3336,
+            "pairs_negative_no_finding": 3949
+          },
+          "plus_same_age": {
+            "patients": 221,
+            "pairs": 7027,
+            "images": 2759,
+            "pairs_negative_no_finding": 2583
+          },
+          "plus_exact_other13": {
+            "patients": 120,
+            "pairs": 1205,
+            "images": 902,
+            "pairs_negative_no_finding": 797
+          },
+          "plus_same_no_finding": {
+            "patients": 73,
+            "pairs": 408,
+            "images": 375,
+            "pairs_negative_no_finding": 0
+          }
+        }
+      }
+    },
+    "inputs": {
+      "dataset_root": "/home/qingchan/data/concept-flow/datasets/nih-chestxray14",
+      "runs_root": "/home/qingchan/data/concept-flow/runs",
+      "image_directory": "/home/qingchan/data/concept-flow/datasets/nih-chestxray14/png/images"
+    }
+  }
+}

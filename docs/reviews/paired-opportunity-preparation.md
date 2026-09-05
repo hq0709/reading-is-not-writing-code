@@ -1,0 +1,11 @@
+# Paired-opportunity preparation review
+
+Run: metadata utilities from `b8145c601dee787f3d67d42ef49209191e6296a4` completed on `asimov1` at 2026-09-05 03:33 UTC. Both commands exited 0; their source-bound output is retained in `docs/evidence/paired-opportunity-metadata.json`.
+
+Observation: all four patient/pair tables and unchanged-label control counts reproduced. The active confirmation's 200 calibration patients are covered by the existing exclusion union. All 26,229 manifest rows agree with original NIH metadata across 15 retained fields, totaling 393,435 values. The original-pool audit supports 124 Mass and 120 Consolidation entirely manifest-absent patients under view, sex, age and 13-other-disease matching.
+
+Gate decision: preparation and metadata evidence `PASS`. Independent internal review accepted the sampled/full-pool audit implementations, patient exclusions, matching interpretation, manifest-builder header fix, pooled-reader projection and relative-token write decomposition. The full local suite ran 190 tests with zero failures and six environment-dependent skips. The subsequent calibration-coverage and field-agreement changes passed all 16 focused audit/builder tests; the independent closure reviewer also passed all 14 audit tests. Both documented module entry points passed help checks in the fixed `conceptflow` environment.
+
+Pinned review `review-20260905T032823984601Z.json` accepted the bounded design and identified execution, calibration-coverage and manifest-provenance closure items. Final review `review-20260905T033555094881Z.json` returned `PASS`, closing all three against the source and supplied replay JSON. Its receipt verifies `claude-fable-5-1`, medium effort, valid read-only transport, disabled tools and unchanged clean checkout `b8145c601dee787f3d67d42ef49209191e6296a4`. Receipts are under `/home/qingchan/.codex/state/claude-review-concept-flow/`.
+
+Next step: does a metadata-matched fresh-patient cohort supply a positive paired behavioral opportunity under the selected prompt? Accept the terminal Mass confirmation, then register the selected opportunity cohort, metric, uncertainty, budget and implementation before evaluating its images. The preparation protocol is `docs/RESEARCH_PLAN.md#paired-opportunity-preparation`.

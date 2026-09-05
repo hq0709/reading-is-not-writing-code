@@ -61,6 +61,8 @@ The sampled manifest omits five source disease labels, follow-up indices, dimens
 
 ## Evidence
 
+Both committed utilities completed with exit status 0 at 03:33 UTC from `b8145c601dee787f3d67d42ef49209191e6296a4`. Their output is retained in `docs/evidence/paired-opportunity-metadata.json`. Every table above reproduced; all 200 active calibration patients were covered by the existing exclusion union. Cross-source agreement passed for all 26,229 manifest rows and 393,435 values across 15 fields.
+
 Manifest: `/home/qingchan/data/concept-flow/datasets/nih-chestxray14/manifest.csv`.
 
 Original labels: the same dataset directory's `Data_Entry_2017_v2020.csv`; image inventory: `png/images`. The second audit verified stored manifest patient IDs and splits against the raw labels and the existing `concept-flow-v1` split function.
