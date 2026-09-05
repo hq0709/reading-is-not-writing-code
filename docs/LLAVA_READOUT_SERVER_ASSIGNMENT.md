@@ -10,9 +10,9 @@ Run: the server implementation is complete on `research/llava-readout-diagnostic
 
 Observation: the runner, immutable launcher and independent terminal verifier implement the fixed allocation, six-condition score grid, image-free controls, frozen-reader provenance and joint simultaneous inference. The internal evidence record is `docs/reviews/llava-readout-diagnostic-implementation.md`.
 
-Gate decision: internal implementation `PASS`; scientific state `PLANNED`. Pinned read-only registration review remains required.
+Gate decision: internal implementation and pinned read-only registration review `PASS`; scientific state `PLANNED`, gate disposition `READY` for one immutable run.
 
-Next step: does the pinned reviewer accept the clean pushed executable for dispatch? Push the implementation checkpoint, request that review, and launch the registered immutable experiment in the same turn only on `PASS` with valid identity and read-only evidence.
+Next step: does the registered diagnostic pass its pre-scientific checks and complete within the fixed resource limits? Push the registration record, rerun every safety gate and launch the immutable experiment only if all checks remain valid.
 
 ## Authoritative inputs
 
