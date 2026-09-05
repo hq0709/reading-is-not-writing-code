@@ -5,7 +5,7 @@ Updated: 2026-09-05. Scientific state uses `PLANNED`, `RUNNING`, `FAILED`, and `
 ## Active research stage
 
 - Run: immutable run `20260905T232313Z-2a95dfbed888-llava-yesno`, source `2a95dfbed888fce12b7481812065e5d68b712e8a`; all 2,800 image and two text outcomes completed in 260 dispatcher seconds before post-execution summarization stopped.
-- Observation: the registered native CSV, candidate logits, partitions and frozen-reader activations are complete. NumPy replay of the Torch float32 log-sum-exp values differs by at most `3.814697265625e-6`, while the original summarizer required `1e-6`.
+- Observation: the registered native CSV, candidate logits, partitions and frozen-reader activations are complete. NumPy replay of the Torch float32 log-sum-exp and descriptive token-mass reductions differs by at most `3.814697265625e-6` and `2.0265579223632812e-6`, respectively.
 - Scientific state: `FAILED`; the model outcomes remain unadjudicated pending validator-only recovery from the preserved immutable artifact.
 - Gate decision: gate disposition `BLOCKED` at summary validation; registration remains `PASS` and no scientific rerun is authorised.
 - Next step: can a source-bound validator-only recovery reproduce and independently accept the complete registered result from the unchanged native artifact?

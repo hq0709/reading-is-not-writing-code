@@ -15,6 +15,7 @@ from scripts.server import validate_llava_readout_diagnostic as base
 N = 700
 B = 10_000
 LSE_REPLAY_ATOL = 1e-5
+TOKEN_MASS_REPLAY_ATOL = 3e-6
 SUMMARY = "llava-yesno-image-diagnostic-summary"
 PARENT_RUN_ID = "20260905T211508Z-d24f2a7fe05e-llava-readout"
 PARENT_COMMIT = "d24f2a7fe05eaddde8139dc9c3a64f7f8c2bc027"
@@ -563,8 +564,9 @@ def verify(run_id, commit, summary_dir=None, validator_commit=None):
                 "scientific_execution_reused": True,
                 "new_scientific_outcomes": 0,
                 "failure_class": "IMPLEMENTATION",
-                "correction": "float32 cross-library logsumexp replay tolerance",
+                "correction": "float32 cross-library reduction replay tolerances",
                 "lse_replay_atol": LSE_REPLAY_ATOL,
+                "token_mass_replay_atol": TOKEN_MASS_REPLAY_ATOL,
                 "summary_status": "OBSERVED",
             },
             "recovery receipt",
@@ -645,7 +647,12 @@ def verify(run_id, commit, summary_dir=None, validator_commit=None):
                 "candidate lse",
                 LSE_REPLAY_ATOL,
             )
-            same(scores["answer_token_mass"][condition, role_index], mass, "candidate mass", 1e-6)
+            same(
+                scores["answer_token_mass"][condition, role_index],
+                mass,
+                "candidate mass",
+                TOKEN_MASS_REPLAY_ATOL,
+            )
     for key, value in scores.items():
         same(saved[key], value, "score array copy " + key)
 

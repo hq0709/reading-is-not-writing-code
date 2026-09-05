@@ -28,6 +28,19 @@ class TerminalReplayTests(unittest.TestCase):
                 "lse reduction",
                 terminal.LSE_REPLAY_ATOL,
             )
+        terminal.same(
+            np.asarray([0.0]),
+            np.asarray([2.0265579223632812e-6]),
+            "token mass reduction",
+            terminal.TOKEN_MASS_REPLAY_ATOL,
+        )
+        with self.assertRaisesRegex(AssertionError, "token mass reduction"):
+            terminal.same(
+                np.asarray([0.0]),
+                np.asarray([terminal.TOKEN_MASS_REPLAY_ATOL * 1.01]),
+                "token mass reduction",
+                terminal.TOKEN_MASS_REPLAY_ATOL,
+            )
 
     def test_independent_prompt_and_mapping_identities_are_exact(self):
         self.assertEqual([item["name"] for item in terminal.expected_conditions()], ["0Y", "1Y"])

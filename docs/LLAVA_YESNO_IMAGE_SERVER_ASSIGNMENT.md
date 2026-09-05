@@ -21,7 +21,7 @@ At safe checkpoints commit/push owned files, integrate the completed verified br
 
 Run: immutable run `20260905T232313Z-2a95dfbed888-llava-yesno` completed the registered image and text grid before post-execution summarization stopped.
 
-Observation: the complete native artifact is preserved; validator-only recovery is limited to the float32 log-sum-exp replay check and derived summary/terminal receipt.
+Observation: the complete native artifact is preserved; validator-only recovery is limited to bounded float32 reduction replay checks and the derived summary/terminal receipt.
 
 Gate decision: execution `FAILED` at implementation validation; registration remains `PASS`, and scientific disposition is unavailable until recovery review passes.
 

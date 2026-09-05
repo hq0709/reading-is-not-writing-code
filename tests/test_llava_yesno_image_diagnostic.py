@@ -109,6 +109,19 @@ class ProtocolTests(unittest.TestCase):
                 "lse margin",
                 runner.LSE_REPLAY_ATOL,
             )
+        runner.require_native_replay(
+            observed,
+            np.asarray([2.0265579223632812e-6]),
+            "token mass",
+            runner.TOKEN_MASS_REPLAY_ATOL,
+        )
+        with self.assertRaisesRegex(ValueError, "token mass"):
+            runner.require_native_replay(
+                observed,
+                np.asarray([runner.TOKEN_MASS_REPLAY_ATOL * 1.01]),
+                "token mass",
+                runner.TOKEN_MASS_REPLAY_ATOL,
+            )
 
     def test_image_grid_precedes_the_two_text_only_outputs(self):
         source = inspect.getsource(runner.run)

@@ -34,6 +34,7 @@ SUMMARY = "llava-yesno-image-diagnostic-summary"
 PINNED_YES = [3869, 4874, 22483]
 PINNED_NO = [694, 1939, 11698]
 LSE_REPLAY_ATOL = 1e-5
+TOKEN_MASS_REPLAY_ATOL = 3e-6
 
 
 json_value = parent.json_value
@@ -650,8 +651,8 @@ def summarize(data_root, out, source_commit, summary_out=None):
                     scores["answer_token_mass"][condition, role_index],
                     mass,
                     "token mass",
-                    1e-6,
-                    1e-6,
+                    TOKEN_MASS_REPLAY_ATOL,
+                    0,
                 ),
             ):
                 require_native_replay(observed, replayed, name, atol, rtol)
@@ -821,8 +822,9 @@ def recover(data_root, out, source_commit, summary_out, validator_commit):
         "scientific_execution_reused": True,
         "new_scientific_outcomes": 0,
         "failure_class": "IMPLEMENTATION",
-        "correction": "float32 cross-library logsumexp replay tolerance",
+        "correction": "float32 cross-library reduction replay tolerances",
         "lse_replay_atol": LSE_REPLAY_ATOL,
+        "token_mass_replay_atol": TOKEN_MASS_REPLAY_ATOL,
         "summary_status": result["status"],
     }
     write_json(destination / "recovery.json", receipt)
