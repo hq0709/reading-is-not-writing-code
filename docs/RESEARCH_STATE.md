@@ -6,9 +6,9 @@ Updated: 2026-09-05. Scientific state uses `PLANNED`, `RUNNING`, `FAILED`, and `
 
 - Run: `20260905T015725Z-1c9820d7b576-mass-prompts`, source `1c9820d7b5765c2ec220d9f4afaafd4c743e43e4`, completed all 179,200 outcomes in 8,783 seconds at 04:24:13 UTC.
 - Observation: all seven calibration cells are eligible. The original `show` A/B conditions have positive clinical-family simultaneous bounds, but their Mass effects remain below the registered random maxima. Both `is` coded clinical margins are negative. Direct paired comparisons show prompt-conditioned clinical competition.
-- Scientific state: independent-patient Mass confirmation `OBSERVED`; Consolidation paired behavioral opportunity `PLANNED`.
+- Scientific state: independent-patient Mass confirmation `OBSERVED`; Consolidation run `20260905T052025Z-9bc918b414ff-paired-opportunity` is `FAILED` at measurement preflight, before scientific scoring. Its fixed 100-patient opportunity remains unevaluated.
 - Gate disposition: Mass internal verification and pinned result review `PASS`; `cross_wording_specificity=false`, `discovery_wording_replication=false`. Consolidation opportunity protocol and implementation passed independent internal and pinned registration review. The local suite passed 219 tests with six environment-specific skips.
-- Next step: does the fresh, metadata-matched Consolidation cohort supply a positive paired behavioral opportunity? Bind 100 patients and run the 200-outcome clean-response gate on one A100 with a 15-minute cap.
+- Next step: does the fixed, metadata-matched Consolidation cohort supply a positive paired behavioral opportunity? Complete the pre-scientific-outcome mapping-validation amendment review, then run the unchanged 200-outcome image comparison on one A100 with a 15-minute cap.
 - Writer ownership: project task `01a06ec5-fec9-7241-b066-72c1bc5632b8` coordinates research, evidence and delivery and owns code and experiment dispatch. Paper task `01a06afe-5c66-7a80-b922-b3ede71eab3e` owns the separate paper repository. Existing unrelated local edits remain with their author.
 - Supervision: heartbeat `concept-flow` is ACTIVE and bound to the project task. Its current 10-minute interval reflects short review and experiment handoffs; adjust it to the next decision window as work changes, remaining quiet on unchanged state.
 - Evidence: `docs/MASS_PROMPT_SPECIFICITY_RESULTS.md`; `docs/reviews/qwen7b-mass-prompt-specificity-results.md`; internal receipt `/home/qingchan/data/concept-flow/state/mass-confirmation-internal-20260905T042600Z/smallreceipt.json`; pinned result receipt `review-20260905T051404447778Z.json`.
@@ -16,6 +16,7 @@ Updated: 2026-09-05. Scientific state uses `PLANNED`, `RUNNING`, `FAILED`, and `
 - Paper handoff: accepted Mass evidence and writing objectives have been sent for integration into paper main `4706ea5`. The paper task owns manuscript changes, build and independent writing review; project coordination tracks any resulting scientific gaps.
 - Protocol: `docs/RESEARCH_PLAN.md#qwen-paired-behavioral-opportunity`.
 - Registration: `docs/reviews/qwen7b-paired-opportunity-registration.md`; pinned receipt `review-20260905T051705042400Z.json`.
+- Current validation: `docs/reviews/qwen7b-paired-opportunity-validation.md`; internal design review accepts reuse of the pre-existing generic semantic-mapping standard. Implementation and pinned review are pending; the original run remains in the run ledger.
 
 ## Bootstrap gate
 

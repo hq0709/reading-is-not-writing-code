@@ -67,6 +67,11 @@ def source_fixture(root, concept="Mass"):
     runner.write_json(evidence, {"source_commit": "b" * 40, "exit_codes": [0, 0],
         "original_pool": {"inputs": {"dataset_root": str(dataset), "runs_root": str(runs),
                                      "image_directory": str(images)}}})
+    if concept == "Consolidation":
+        _, reference = core.select_pairs(raw, manifest, have, receipts, concept)
+        reference["source_commit"] = "9bc918b" + "0" * 33
+        runner.write_json(runs / "20260905T052025Z-9bc918b414ff-paired-opportunity"
+                          / "artifacts/registered-pairs.json", reference)
     return {"dataset_root": dataset, "runs_root": runs, "out": out,
             "source_commit": "a" * 40, "concept": concept, "evidence": evidence}
 
@@ -163,6 +168,60 @@ class RunnerTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "identities"):
                 runner.cohort(**args)
 
+    def test_consolidation_matches_reference_with_new_source_commit(self):
+        with tempfile.TemporaryDirectory() as directory:
+            args = source_fixture(Path(directory), "Consolidation")
+            path = args["runs_root"] / "20260905T052025Z-9bc918b414ff-paired-opportunity/artifacts/registered-pairs.json"
+            reference = runner.read_json(path)
+            receipt = runner.cohort(**args)
+            self.assertEqual(receipt["cohort_reference"], str(path.resolve()))
+            for key in ("concept", "selection_seed", "patient_ids", "pairs"):
+                self.assertEqual(receipt[key], reference[key])
+            self.assertNotEqual(receipt["source_commit"], reference["source_commit"])
+
+    def test_consolidation_reference_rejects_drift_before_registration(self):
+        with tempfile.TemporaryDirectory() as directory:
+            args = source_fixture(Path(directory), "Consolidation")
+            path = args["runs_root"] / "20260905T052025Z-9bc918b414ff-paired-opportunity/artifacts/registered-pairs.json"
+            reference = runner.read_json(path)
+            for kind in ("concept", "selection_seed", "patient_order", "pair_order", "raw_metadata"):
+                changed = deepcopy(reference)
+                if kind == "concept":
+                    changed["concept"] = "Mass"
+                elif kind == "selection_seed":
+                    changed["selection_seed"] += 1
+                elif kind == "patient_order":
+                    changed["patient_ids"].reverse()
+                elif kind == "pair_order":
+                    changed["patient_ids"].reverse()
+                    changed["pairs"].reverse()
+                else:
+                    changed["pairs"][0]["positive_metadata"]["Height]"] = "2048"
+                runner.write_json(path, changed)
+                with self.subTest(kind=kind), self.assertRaisesRegex(ValueError, "reference cohort"):
+                    runner.cohort(**args)
+                self.assertFalse((args["out"] / "registered-pairs.json").exists())
+
+    def test_consolidation_requires_reference_and_rejects_source_metadata_drift(self):
+        with tempfile.TemporaryDirectory() as directory:
+            args = source_fixture(Path(directory), "Consolidation")
+            path = args["runs_root"] / "20260905T052025Z-9bc918b414ff-paired-opportunity/artifacts/registered-pairs.json"
+            reference = runner.read_json(path)
+            path.unlink()
+            with self.assertRaises(FileNotFoundError):
+                runner.cohort(**args)
+            runner.write_json(path, reference)
+            raw_path = args["dataset_root"] / "Data_Entry_2017_v2020.csv"
+            with raw_path.open(newline="", encoding="utf-8") as stream:
+                rows = list(csv.DictReader(stream))
+            selected = reference["pairs"][0]["positive_image_index"]
+            next(r for r in rows if r["Image Index"] == selected)["Height]"] = "2048"
+            write_csv(raw_path, rows, RAW_FIELDS)
+            with patch("src.gpu_env.bind_gpu") as bind, self.assertRaisesRegex(ValueError, "reference cohort"):
+                runner.run(**args, ownership_run=Path(directory), gpu=0)
+            bind.assert_not_called()
+            self.assertFalse((args["out"] / "registered-pairs.json").exists())
+
     def test_grid_requires_complete_order_identities_metadata_and_finite_scores(self):
         with tempfile.TemporaryDirectory() as directory:
             receipt = runner.cohort(**source_fixture(Path(directory)))
@@ -200,10 +259,6 @@ class RunnerTests(unittest.TestCase):
     def test_preflight_mapping_repeat_and_budget_failures(self):
         for concept in ("Mass", "Consolidation"):
             valid = preflight(concept)
-            finding = "A lung mass" if concept == "Mass" else "Consolidation"
-            for case in valid["mapping_cases"]:
-                self.assertTrue(case["prompt"].startswith(finding + " is "))
-                self.assertTrue(case["prompt"].endswith(core.PROMPTS[concept][case["prompt_cell"]]))
             self.assertTrue(runner.validate_preflight(valid, concept))
             invalid = deepcopy(valid)
             invalid["mapping_cases"][0]["scores"] = score(-1., core.PRIMARY_PROMPTS[concept][0])
@@ -218,6 +273,20 @@ class RunnerTests(unittest.TestCase):
             invalid["throughput"] = runner.budget(100., 500., 200 * len(core.PRIMARY_PROMPTS[concept]))
             with self.assertRaisesRegex(ValueError, "budget"):
                 runner.validate_preflight(invalid, concept)
+
+    def test_mapping_cases_exactly_reuse_accepted_generic_construction(self):
+        from src import qwen_mass_prompt_specificity as mass
+        for concept in ("Mass", "Consolidation"):
+            expected = []
+            for cell in core.PRIMARY_PROMPTS[concept]:
+                encoding = "yes_no" if cell == "anchor" else runner.encoding_for(cell)
+                expected.extend({"prompt_cell": cell, "case": i, "expected_present": label,
+                    "prompt": f"{statement} Is the finding present? {mass.instruction(encoding)}"}
+                    for i, (statement, label) in enumerate(mass.ae.STATEMENTS))
+            self.assertEqual(runner.mapping_cases(concept), expected)
+        self.assertEqual(runner.encoding_for("anchor"), "standard")
+        self.assertEqual(core.PROMPTS["Consolidation"]["anchor"],
+                         "Is there consolidation in this chest radiograph? Answer yes or no.")
 
     def test_cpu_summarize_cli_npz_replay_and_retained_patients(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -332,7 +401,9 @@ class RunnerTests(unittest.TestCase):
     def test_module_and_cli_help_are_cpu_only(self):
         root = Path(__file__).resolve().parents[1]
         result = subprocess.run([sys.executable, "-B", "-c",
-            "import sys; import src.run_qwen_paired_opportunity; assert 'torch' not in sys.modules"],
+            "import sys; import src.run_qwen_paired_opportunity as runner; "
+            "runner.mapping_cases('Mass'); runner.mapping_cases('Consolidation'); "
+            "assert 'torch' not in sys.modules"],
             cwd=root, capture_output=True, text=True)
         self.assertEqual(result.returncode, 0, result.stderr)
         result = subprocess.run([sys.executable, "-B", "-m", "src.run_qwen_paired_opportunity", "--help"],

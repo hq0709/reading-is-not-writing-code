@@ -22,6 +22,7 @@ from src import qwen_paired_opportunity as core
 
 MASS_RUN_ID = "20260905T015725Z-1c9820d7b576-mass-prompts"
 MASS_COMMIT = "1c9820d7b5765c2ec220d9f4afaafd4c743e43e4"
+CONSOLIDATION_COHORT_RUN_ID = "20260905T052025Z-9bc918b414ff-paired-opportunity"
 MODEL_ID = "Qwen/Qwen2.5-VL-7B-Instruct"
 MODEL_REVISION = "cc594898137f460bfe9f0759e9844b3ce807cfb5"
 BATCH_SIZE = 16
@@ -78,6 +79,7 @@ def terminal_route(mass_run, requested_concept=None):
 def protocol_metadata(concept):
     core._check_concept(concept)
     return {"gate": "qwen7b-paired-behavioral-opportunity", "concept": concept,
+            "mapping_protocol": "generic_finding_explicit_instruction",
             "n_pairs": core.EVAL_PAIRS, "primary_prompts": list(core.PRIMARY_PROMPTS[concept]),
             "prompts": core.PROMPTS[concept], "scientific_outcomes": 200 * len(core.PRIMARY_PROMPTS[concept]),
             "selection_seed": core.SELECTION_SEED, "bootstrap_seed": core.BOOTSTRAP_SEED,
@@ -122,6 +124,13 @@ def cohort(dataset_root, runs_root, out, source_commit, concept=None, evidence=N
                  "runs_root": str(runs_root.resolve()), "image_directory": str(image_directory.resolve()),
                  "metadata_evidence": str(evidence.resolve()), "metadata_evidence_source_commit": audit["source_commit"]})
     validate_pairs(receipt)
+    if concept == "Consolidation":
+        reference_path = runs_root / CONSOLIDATION_COHORT_RUN_ID / "artifacts/registered-pairs.json"
+        reference = read_json(reference_path)
+        if any(receipt[key] != reference.get(key)
+               for key in ("concept", "selection_seed", "patient_ids", "pairs")):
+            raise ValueError("selection differs from the registered reference cohort")
+        receipt["cohort_reference"] = str(reference_path.resolve())
     registered = out / "registered-pairs.json"
     if registered.exists() and read_json(registered) != receipt:
         raise ValueError("existing prospective cohort differs from selection")
@@ -210,15 +219,13 @@ def budget(pilot_seconds, elapsed_seconds, scientific_outcomes):
 
 def mapping_cases(concept):
     core._check_concept(concept)
-    finding = "A lung mass" if concept == "Mass" else "Consolidation"
-    statements = ((f"{finding} is present.", 1), (f"{finding} is absent.", 0),
-                  (f"{finding} is explicitly reported as present.", 1),
-                  (f"{finding} is explicitly reported as absent.", 0))
+    from src import qwen_mass_prompt_specificity as mass
     cases = []
     for cell in core.PRIMARY_PROMPTS[concept]:
+        encoding = "yes_no" if cell == "anchor" else encoding_for(cell)
         cases.extend({"prompt_cell": cell, "case": i, "expected_present": label,
-                      "prompt": f"{statement} {core.PROMPTS[concept][cell]}"}
-                     for i, (statement, label) in enumerate(statements))
+                      "prompt": f"{statement} Is the finding present? {mass.instruction(encoding)}"}
+                     for i, (statement, label) in enumerate(mass.ae.STATEMENTS))
     return cases
 
 
