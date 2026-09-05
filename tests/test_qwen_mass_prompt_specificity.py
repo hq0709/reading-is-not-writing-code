@@ -310,7 +310,7 @@ class MassPromptTests(unittest.TestCase):
             self.assertFalse((root / "mapping-failed/calibration.csv").exists())
             model = Model()
             model_factory.return_value = model
-            with patch.object(mass.time, "perf_counter", side_effect=[0., 50.]):
+            with patch.object(mass.time, "perf_counter", side_effect=[0., 60.]):
                 self.assertFalse(mass.run(root, root, 0, root / "slow"))
             self.assertEqual(model.calls, 79)
             self.assertFalse((root / "slow/calibration.csv").exists())
