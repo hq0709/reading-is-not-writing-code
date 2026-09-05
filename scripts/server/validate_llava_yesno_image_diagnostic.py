@@ -14,6 +14,7 @@ from scripts.server import validate_llava_readout_diagnostic as base
 
 N = 700
 B = 10_000
+LSE_REPLAY_ATOL = 1e-5
 SUMMARY = "llava-yesno-image-diagnostic-summary"
 PARENT_RUN_ID = "20260905T211508Z-d24f2a7fe05e-llava-readout"
 PARENT_COMMIT = "d24f2a7fe05eaddde8139dc9c3a64f7f8c2bc027"
@@ -488,7 +489,7 @@ def interval(values):
     return np.percentile(values[np.isfinite(values)], [2.5, 97.5], method="linear")
 
 
-def verify(run_id, commit):
+def verify(run_id, commit, summary_dir=None, validator_commit=None):
     root = Path("/home/qingchan/data/concept-flow")
     run, out = root / "runs" / run_id, root / "runs" / run_id / "artifacts"
     check(run.parent == root / "runs" and len(commit) == 40, "run identity")
@@ -497,11 +498,13 @@ def verify(run_id, commit):
         for line in (run / "metadata.env").read_text().splitlines()
         if "=" in line
     )
+    recovery = summary_dir is not None
+    expected_status = "1" if recovery else "0"
     expected_terminal = {
         "RUN_ID": run_id,
         "SOURCE_COMMIT": commit,
-        "COMMAND_STATUS": "0",
-        "DISPATCHER_STATUS": "0",
+        "COMMAND_STATUS": expected_status,
+        "DISPATCHER_STATUS": expected_status,
         "CLEANUP_STATUS": "0",
         "ABORT_SIGNAL": "none",
         "GPU_COUNT": "1",
@@ -509,7 +512,7 @@ def verify(run_id, commit):
     check(all(metadata.get(k) == v for k, v in expected_terminal.items()), "terminal metadata")
     check(
         all(
-            (run / name).read_text().strip() == "0"
+            (run / name).read_text().strip() == expected_status
             for name in ("command_exit_status", "exit_status")
         ),
         "terminal statuses",
@@ -525,10 +528,10 @@ def verify(run_id, commit):
             "text-only.json",
             "per-image.csv",
             "scores.npz",
-            SUMMARY + ".json",
-            SUMMARY + ".npz",
         )
     ]
+    if not recovery:
+        names.extend(("artifacts/" + SUMMARY + ".json", "artifacts/" + SUMMARY + ".npz"))
     digests = {}
     for name in names:
         with (run / name).open("rb") as stream:
@@ -536,16 +539,42 @@ def verify(run_id, commit):
         check(terminal_manifest.get(name) == digest, "decision-bearing terminal manifest " + name)
         digests[name] = digest
 
-    cohort, prepared, preflight, text, summary = [
-        read(out / name)
-        for name in (
-            "cohort.json",
-            "prepared.json",
-            "preflight.json",
-            "text-only.json",
-            SUMMARY + ".json",
+    summary_root = out
+    if recovery:
+        summary_root = Path(summary_dir).resolve(strict=True)
+        check(
+            summary_root.parent == root / "state" and validator_commit is not None,
+            "recovery summary identity",
         )
+        recovery_manifest = inventory(summary_root / "SHA256SUMS")
+        for name in (SUMMARY + ".json", SUMMARY + ".npz", "recovery.json"):
+            with (summary_root / name).open("rb") as stream:
+                digest = hashlib.file_digest(stream, "sha256").hexdigest()
+            check(recovery_manifest.get(name) == digest, "recovery manifest " + name)
+            digests["recovery/" + name] = digest
+        recovery_receipt = read(summary_root / "recovery.json")
+        check(
+            recovery_receipt
+            == {
+                "status": "RECOVERED_SUMMARY",
+                "source_run_id": run_id,
+                "source_commit": commit,
+                "validator_commit": validator_commit,
+                "scientific_execution_reused": True,
+                "new_scientific_outcomes": 0,
+                "failure_class": "IMPLEMENTATION",
+                "correction": "float32 cross-library logsumexp replay tolerance",
+                "lse_replay_atol": LSE_REPLAY_ATOL,
+                "summary_status": "OBSERVED",
+            },
+            "recovery receipt",
+        )
+
+    cohort, prepared, preflight, text = [
+        read(out / name)
+        for name in ("cohort.json", "prepared.json", "preflight.json", "text-only.json")
     ]
+    summary = read(summary_root / (SUMMARY + ".json"))
     parent_source(root, prepared, cohort)
     validate_protocol(prepared["protocol"])
     validate_model_source(prepared["sources"]["model"])
@@ -583,7 +612,7 @@ def verify(run_id, commit):
     scores = csv_scores(out / "per-image.csv", cohort, commit, summary["protocol"]["conditions"])
     with np.load(out / "scores.npz", allow_pickle=False) as archive:
         stored = {key: archive[key] for key in archive.files}
-    with np.load(out / (SUMMARY + ".npz"), allow_pickle=False) as archive:
+    with np.load(summary_root / (SUMMARY + ".npz"), allow_pickle=False) as archive:
         saved = {key: archive[key] for key in archive.files}
     check(
         saved["source_commit"].item() == commit and saved["route"].item() == "evidence_synthesis",
@@ -610,9 +639,13 @@ def verify(run_id, commit):
             mass = np.exp(np.logaddexp.reduce(logits, axis=1) - partition)
             same(scores["raw_margin"][condition, role_index], raw, "candidate raw", 1e-6)
             same(scores["semantic_margin"][condition, role_index], raw, "candidate semantic", 1e-6)
-            same(scores["lse_margin"][condition, role_index], lse, "candidate lse", 1e-6)
+            same(
+                scores["lse_margin"][condition, role_index],
+                lse,
+                "candidate lse",
+                LSE_REPLAY_ATOL,
+            )
             same(scores["answer_token_mass"][condition, role_index], mass, "candidate mass", 1e-6)
-            scores["lse_margin"][condition, role_index] = lse
     for key, value in scores.items():
         same(saved[key], value, "score array copy " + key)
 
@@ -790,4 +823,12 @@ def verify(run_id, commit):
 
 
 if __name__ == "__main__":
-    print(json.dumps(verify(sys.argv[1], sys.argv[2]), allow_nan=False))
+    extra = sys.argv[3:]
+    if len(extra) not in (0, 2):
+        raise SystemExit("usage: VALIDATOR RUN_ID SOURCE_COMMIT [SUMMARY_DIR VALIDATOR_COMMIT]")
+    print(
+        json.dumps(
+            verify(sys.argv[1], sys.argv[2], *extra) if extra else verify(sys.argv[1], sys.argv[2]),
+            allow_nan=False,
+        )
+    )

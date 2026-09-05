@@ -16,3 +16,13 @@ Complete `llava-yesno-image-diagnostic` in `docs/RESEARCH_PLAN.md`. After clean 
 Produce an accepted report with four answer AUROCs, both image advantages, the three simultaneous intervals and opportunity/wording decisions, frozen-reader replication and controls, and secondary scoring/prior diagnostics. Cite the accepted text-calibration report only as measurement-route provenance. The assignment ends with evidence synthesis or a documented blocker; subsequent confirmations or interventions require separate registration.
 
 At safe checkpoints commit/push owned files, integrate the completed verified branch into main and return a clean pushed checkout with writer ownership recorded. Keep artifacts and processes under `/home/qingchan/` and synchronize source through GitHub. The local task consumes receipts and coordinates the manuscript without duplicating server execution.
+
+## Current handoff
+
+Run: immutable run `20260905T232313Z-2a95dfbed888-llava-yesno` completed the registered image and text grid before post-execution summarization stopped.
+
+Observation: the complete native artifact is preserved; validator-only recovery is limited to the float32 log-sum-exp replay check and derived summary/terminal receipt.
+
+Gate decision: execution `FAILED` at implementation validation; registration remains `PASS`, and scientific disposition is unavailable until recovery review passes.
+
+Next step: validate the unchanged artifact through a clean pushed recovery commit, independent replay and pinned read-only result review; do not rerun model outcomes.

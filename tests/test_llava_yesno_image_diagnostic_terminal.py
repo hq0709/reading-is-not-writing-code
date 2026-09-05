@@ -14,6 +14,21 @@ class TerminalReplayTests(unittest.TestCase):
             [0.3, 0.2, 0.15],
         )
 
+    def test_terminal_lse_tolerance_covers_observed_float32_reduction_only(self):
+        terminal.same(
+            np.asarray([0.0]),
+            np.asarray([3.814697265625e-6]),
+            "lse reduction",
+            terminal.LSE_REPLAY_ATOL,
+        )
+        with self.assertRaisesRegex(AssertionError, "lse reduction"):
+            terminal.same(
+                np.asarray([0.0]),
+                np.asarray([terminal.LSE_REPLAY_ATOL * 1.01]),
+                "lse reduction",
+                terminal.LSE_REPLAY_ATOL,
+            )
+
     def test_independent_prompt_and_mapping_identities_are_exact(self):
         self.assertEqual([item["name"] for item in terminal.expected_conditions()], ["0Y", "1Y"])
         self.assertEqual(len(terminal.expected_mapping_cases()), 4)

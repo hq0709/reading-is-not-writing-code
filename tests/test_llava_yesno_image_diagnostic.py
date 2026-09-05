@@ -94,6 +94,22 @@ class ProtocolTests(unittest.TestCase):
         self.assertTrue(runner.budget(pilot, boundary_gpu, preparation)["passed"])
         self.assertFalse(runner.budget(pilot, boundary_gpu + 1e-6, preparation)["passed"])
 
+    def test_native_lse_replay_allows_only_float32_reduction_tolerance(self):
+        observed = np.asarray([0.0])
+        runner.require_native_replay(
+            observed,
+            np.asarray([3.814697265625e-6]),
+            "lse margin",
+            runner.LSE_REPLAY_ATOL,
+        )
+        with self.assertRaisesRegex(ValueError, "lse margin"):
+            runner.require_native_replay(
+                observed,
+                np.asarray([runner.LSE_REPLAY_ATOL * 1.01]),
+                "lse margin",
+                runner.LSE_REPLAY_ATOL,
+            )
+
     def test_image_grid_precedes_the_two_text_only_outputs(self):
         source = inspect.getsource(runner.run)
         self.assertLess(

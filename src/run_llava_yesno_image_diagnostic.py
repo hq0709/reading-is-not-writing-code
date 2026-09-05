@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import argparse
 import csv
+import hashlib
+import subprocess
 import time
 from pathlib import Path
 
@@ -31,6 +33,7 @@ PILOT_COMMIT = parent.PILOT_COMMIT
 SUMMARY = "llava-yesno-image-diagnostic-summary"
 PINNED_YES = [3869, 4874, 22483]
 PINNED_NO = [694, 1939, 11698]
+LSE_REPLAY_ATOL = 1e-5
 
 
 json_value = parent.json_value
@@ -422,6 +425,11 @@ def validate_text_only(records):
     return True
 
 
+def require_native_replay(observed, replayed, name, atol=1e-6, rtol=0):
+    if not np.allclose(observed, replayed, atol=atol, rtol=rtol):
+        raise ValueError("candidate logits do not reproduce " + name)
+
+
 def run(data_root, out, source_commit, gpu, preflight_only=False):
     root, out = paths(data_root, out, source_commit)
     if any((out / name).exists() for name in ("preflight.json", "per-image.csv", "scores.npz")):
@@ -581,7 +589,7 @@ def _interval(values):
     )
 
 
-def summarize(data_root, out, source_commit):
+def summarize(data_root, out, source_commit, summary_out=None):
     root, out = paths(data_root, out, source_commit)
     meta, allocation, prepared = load_prepared(root, out, source_commit)
     flight = accepted.read_json(out / "preflight.json")
@@ -631,7 +639,13 @@ def summarize(data_root, out, source_commit):
             for observed, replayed, name, atol, rtol in (
                 (scores["raw_margin"][condition, role_index], raw, "raw margin", 1e-6, 0),
                 (scores["semantic_margin"][condition, role_index], raw, "semantic margin", 1e-6, 0),
-                (scores["lse_margin"][condition, role_index], lse, "lse margin", 1e-6, 0),
+                (
+                    scores["lse_margin"][condition, role_index],
+                    lse,
+                    "lse margin",
+                    LSE_REPLAY_ATOL,
+                    0,
+                ),
                 (
                     scores["answer_token_mass"][condition, role_index],
                     mass,
@@ -640,8 +654,7 @@ def summarize(data_root, out, source_commit):
                     1e-6,
                 ),
             ):
-                if not np.allclose(observed, replayed, atol=atol, rtol=rtol):
-                    raise ValueError("candidate logits do not reproduce " + name)
+                require_native_replay(observed, replayed, name, atol, rtol)
 
     labels = np.asarray([row["Effusion"] for row in allocation["index"]], dtype=np.int8)
     donor_labels = np.asarray([row["Effusion"] for row in allocation["donor"]], dtype=np.int8)
@@ -743,15 +756,88 @@ def summarize(data_root, out, source_commit):
         "source_commit": np.asarray(source_commit),
         "route": np.asarray(result["route"]),
     }
-    np.savez_compressed(out / (SUMMARY + ".npz"), **arrays)
-    write_json(out / (SUMMARY + ".json"), result)
+    destination = out if summary_out is None else Path(summary_out).resolve()
+    if destination == root or not destination.is_relative_to(root):
+        raise ValueError("summary output must remain below the accepted data root")
+    destination.mkdir(parents=True, exist_ok=True)
+    for name in (SUMMARY + ".npz", SUMMARY + ".json"):
+        if (destination / name).exists():
+            raise ValueError("summary output already exists: " + name)
+    np.savez_compressed(destination / (SUMMARY + ".npz"), **arrays)
+    write_json(destination / (SUMMARY + ".json"), result)
     return result
+
+
+def recover(data_root, out, source_commit, summary_out, validator_commit):
+    root, out = paths(data_root, out, source_commit)
+    destination = Path(summary_out).resolve()
+    if destination.parent != root / "state" or destination.exists():
+        raise ValueError("recovery output must be a fresh direct child of the state directory")
+    validator_commit = full_sha(validator_commit)
+    repository = Path(__file__).resolve().parents[1]
+    head = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=repository, text=True).strip()
+    upstream = subprocess.check_output(
+        ["git", "rev-parse", "@{upstream}"], cwd=repository, text=True
+    ).strip()
+    status = subprocess.check_output(
+        ["git", "status", "--porcelain", "--untracked-files=all"], cwd=repository, text=True
+    )
+    if head != validator_commit or upstream != validator_commit or status:
+        raise ValueError("recovery validator commit must be clean and pushed")
+    run = out.parent
+    metadata = _metadata(run / "metadata.env")
+    manifest = _manifest(run / "SHA256SUMS")
+    native = (
+        "cohort.json",
+        "prepared.json",
+        "prepared.npz",
+        "preflight.json",
+        "text-only.json",
+        "per-image.csv",
+        "scores.npz",
+    )
+    if (
+        metadata.get("RUN_ID") != run.name
+        or metadata.get("SOURCE_COMMIT") != source_commit
+        or metadata.get("COMMAND_STATUS") != "1"
+        or metadata.get("DISPATCHER_STATUS") != "1"
+        or metadata.get("CLEANUP_STATUS") != "0"
+        or metadata.get("ABORT_SIGNAL") != "none"
+        or (run / "command_exit_status").read_text().strip() != "1"
+        or (run / "exit_status").read_text().strip() != "1"
+    ):
+        raise ValueError("recovery source terminal receipt mismatch")
+    for name in native:
+        with (out / name).open("rb") as stream:
+            digest = hashlib.file_digest(stream, "sha256").hexdigest()
+        if manifest.get("artifacts/" + name) != digest:
+            raise ValueError("recovery source manifest mismatch: " + name)
+    result = summarize(data_root, out, source_commit, destination)
+    receipt = {
+        "status": "RECOVERED_SUMMARY",
+        "source_run_id": run.name,
+        "source_commit": source_commit,
+        "validator_commit": validator_commit,
+        "scientific_execution_reused": True,
+        "new_scientific_outcomes": 0,
+        "failure_class": "IMPLEMENTATION",
+        "correction": "float32 cross-library logsumexp replay tolerance",
+        "lse_replay_atol": LSE_REPLAY_ATOL,
+        "summary_status": result["status"],
+    }
+    write_json(destination / "recovery.json", receipt)
+    with (destination / "SHA256SUMS").open("x", encoding="utf-8") as stream:
+        for name in (SUMMARY + ".json", SUMMARY + ".npz", "recovery.json"):
+            with (destination / name).open("rb") as artifact:
+                digest = hashlib.file_digest(artifact, "sha256").hexdigest()
+            stream.write(f"{digest}  {name}\n")
+    return receipt
 
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(dest="command", required=True)
-    for command in ("prepare", "run", "summarize"):
+    for command in ("prepare", "run", "summarize", "recover"):
         sub = commands.add_parser(command)
         sub.add_argument("--data-root", type=Path, required=True)
         sub.add_argument("--out", type=Path, required=True)
@@ -759,8 +845,15 @@ def main(argv=None):
         if command == "run":
             sub.add_argument("--gpu", type=int, required=True)
             sub.add_argument("--preflight-only", action="store_true")
+        if command == "summarize":
+            sub.add_argument("--summary-out", type=Path)
+        if command == "recover":
+            sub.add_argument("--summary-out", type=Path, required=True)
+            sub.add_argument("--validator-commit", type=full_sha, required=True)
     args = vars(parser.parse_args(argv))
-    return {"prepare": prepare, "run": run, "summarize": summarize}[args.pop("command")](**args)
+    return {"prepare": prepare, "run": run, "summarize": summarize, "recover": recover}[
+        args.pop("command")
+    ](**args)
 
 
 if __name__ == "__main__":
