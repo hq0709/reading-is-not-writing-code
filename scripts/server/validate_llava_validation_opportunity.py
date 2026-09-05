@@ -203,6 +203,11 @@ def probability(m):
     return np.where(m >= 0, 1 / (1 + z), z / (1 + z))
 
 
+def replay_control_scores(features, coefficients, intercepts):
+    return np.stack([features @ coefficient + intercept
+                     for coefficient, intercept in zip(coefficients, intercepts, strict=True)])
+
+
 def weights(indices, n):
     return np.array([np.bincount(row, minlength=n) for row in indices])
 
@@ -311,7 +316,8 @@ def verify(run_id, commit):
     for name in ['clinical_scores', 'control_scores', 'control_coefficients', 'control_intercepts', 'calibration_features', 'calibration_projected', 'train_mean']:
         check(np.isfinite(prep[name]).all(), 'finite preparation ' + name)
     same(prep['clinical_scores'], (prep['calibration_features'] @ prep['coefficients'].T).T, 'stored clinical score binding')
-    same(prep['control_scores'], (prep['calibration_features'] @ prep['control_coefficients'].T + prep['control_intercepts']).T, 'stored control score binding')
+    same(prep['control_scores'], replay_control_scores(prep['calibration_features'],
+         prep['control_coefficients'], prep['control_intercepts']), 'stored control score binding')
     check(set(prep['train_row_ids'].tolist()) == {r['row_id'] for r in rows if r['split'] == 'train'} and len(prep['train_row_ids']) == 18212, 'train-only fit population')
     ci = np.random.default_rng(20260914).integers(0, 700, size=(2000, 700), dtype=np.int64)
     wi = np.random.default_rng(20260915).integers(0, 100, size=(5000, 100), dtype=np.int64)

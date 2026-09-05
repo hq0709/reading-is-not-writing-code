@@ -57,6 +57,17 @@ class TerminalArrayShapeTests(unittest.TestCase):
             with self.subTest(key=key), self.assertRaises(AssertionError):
                 validator.verify_prepared_shapes(changed)
 
+    def test_float32_control_replay_preserves_per_fit_accumulation(self):
+        from src import run_llava_validation_opportunity as runner
+        rng = np.random.default_rng(91)
+        features = rng.standard_normal((700, 512), dtype=np.float32)
+        coefficients = rng.standard_normal((20, 512), dtype=np.float32)
+        intercepts = rng.standard_normal(20, dtype=np.float32)
+        expected = np.stack([features @ coefficient + intercept
+                             for coefficient, intercept in zip(coefficients, intercepts, strict=True)])
+        np.testing.assert_array_equal(runner.replay_control_scores(features, coefficients, intercepts), expected)
+        np.testing.assert_array_equal(validator.replay_control_scores(features, coefficients, intercepts), expected)
+
 
 class TerminalQualificationTests(unittest.TestCase):
     def fixture(self):

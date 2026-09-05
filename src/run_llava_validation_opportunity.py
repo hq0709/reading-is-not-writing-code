@@ -61,6 +61,12 @@ def inside(root, path, require_exists=True):
     return path
 
 
+def replay_control_scores(features, coefficients, intercepts):
+    """Match each float32 sklearn decision_function call's GEMV accumulation."""
+    return np.stack([features @ coefficient + intercept
+                     for coefficient, intercept in zip(coefficients, intercepts, strict=True)])
+
+
 def terminal(run, run_id, commit):
     meta = dict(line.split('=', 1) for line in (run / 'metadata.env').read_text(encoding='utf-8').splitlines() if '=' in line)
     expected = {'RUN_ID': run_id, 'SOURCE_COMMIT': commit, 'COMMAND_STATUS': '0',
@@ -237,7 +243,7 @@ def load_prepared(root, out, source_commit):
     coef = core.finite_array(arrays['control_coefficients'], (20, 512), 'control coefficients')
     intercept = core.finite_array(arrays['control_intercepts'], (20,), 'control intercepts')
     for key, expected in (('clinical_scores', (features @ bundle['coefficients'].T).T),
-                          ('control_scores', (features @ coef.T + intercept).T)):
+                          ('control_scores', replay_control_scores(features, coef, intercept))):
         if not np.allclose(arrays[key], expected, rtol=1e-12, atol=1e-12):
             raise ValueError('prepared score/parameter binding mismatch')
     by_id = {r['row_id']: r for r in rows}
