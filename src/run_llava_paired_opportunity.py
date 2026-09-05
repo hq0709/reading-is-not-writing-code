@@ -258,10 +258,10 @@ def validate_processor(processor, config):
     expected = {"do_resize": True, "size": {"shortest_edge": 336}, "do_center_crop": True,
                 "crop_size": {"height": 336, "width": 336}, "do_convert_rgb": True,
                 "do_normalize": True, "do_rescale": True, "resample": 3,
-                "rescale_factor": 1 / 255,
-                "image_mean": [0.48145466, 0.4578275, 0.40821073],
-                "image_std": [0.26862954, 0.26130258, 0.27577711]}
+                "rescale_factor": 1 / 255}
     if (any(getattr(image, k, None) != v for k, v in expected.items())
+            or not np.array_equal(image.image_mean, [0.48145466, 0.4578275, 0.40821073])
+            or not np.array_equal(image.image_std, [0.26862954, 0.26130258, 0.27577711])
             or any(getattr(processor, k, None) != v for k, v in {
                 "patch_size": 14, "vision_feature_select_strategy": "default",
                 "num_additional_image_tokens": 1, "image_token": "<image>"}.items())

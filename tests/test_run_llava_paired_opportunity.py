@@ -365,8 +365,8 @@ class RunnerTests(unittest.TestCase):
             do_resize=True, size=SizeDict(shortest_edge=336), do_center_crop=True,
             crop_size=SizeDict(height=336, width=336), do_convert_rgb=True,
             do_normalize=True, do_rescale=True, resample=3, rescale_factor=1 / 255,
-            image_mean=[0.48145466, 0.4578275, 0.40821073],
-            image_std=[0.26862954, 0.26130258, 0.27577711])
+            image_mean=(0.48145466, 0.4578275, 0.40821073),
+            image_std=(0.26862954, 0.26130258, 0.27577711))
         processor = Mock(image_processor=image_processor, patch_size=14, num_additional_image_tokens=1,
                          vision_feature_select_strategy="default", image_token="<image>",
                          chat_template="native template", tokenizer=Tokenizer())
