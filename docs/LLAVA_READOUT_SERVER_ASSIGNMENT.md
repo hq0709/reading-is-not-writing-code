@@ -4,6 +4,16 @@
 
 Continue the current project through the registered Effusion readout diagnostic. After clean GitHub synchronization and verified project-launcher start, server Codex + ARIS owns code and dispatch on `research/llava-readout-diagnostic`; local project task `01a06ec5-fec9-7241-b066-72c1bc5632b8` supervises read-only until a clean pushed return. Paper task `01a06afe-5c66-7a80-b922-b3ede71eab3e` owns the independent paper repository. Its validation-pilot integration is delivered and its pinned-reviewer lease is released.
 
+## Current handoff status
+
+Run: the server implementation is complete on `research/llava-readout-diagnostic`; real metadata preparation, focused checks, the complete repository suite and independent internal executable review passed without evaluating a new cohort image.
+
+Observation: the runner, immutable launcher and independent terminal verifier implement the fixed allocation, six-condition score grid, image-free controls, frozen-reader provenance and joint simultaneous inference. The internal evidence record is `docs/reviews/llava-readout-diagnostic-implementation.md`.
+
+Gate decision: internal implementation `PASS`; scientific state `PLANNED`. Pinned read-only registration review remains required.
+
+Next step: does the pinned reviewer accept the clean pushed executable for dispatch? Push the implementation checkpoint, request that review, and launch the registered immutable experiment in the same turn only on `PASS` with valid identity and read-only evidence.
+
 ## Authoritative inputs
 
 - `docs/RESEARCH_PLAN.md#llava-effusion-readout-diagnostic` fixes the prospective sample, six prompts, scores, frozen reader, inference and resource limits. Use the unstudentized maximum absolute centered deviation for the six simultaneous intervals.
