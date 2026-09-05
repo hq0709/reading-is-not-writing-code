@@ -77,7 +77,7 @@ def main():
             "patient_id": r["Patient ID"],
             "split": patient_split(r["Patient ID"]),
             "view_AP": int(r["View Position"] == "AP"),
-            "sex_M": int(r["Patient Gender"] == "M"),
+            "sex_M": int(r["Patient Sex"] == "M"),
             "age": age,
             "no_finding": int("No Finding" in found),
         }

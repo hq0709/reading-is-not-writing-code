@@ -174,6 +174,23 @@ Before either test cohort is evaluated, run validation-only forward-path, exact 
 
 If cross-wording specificity is confirmed, register the Mass within-patient behavioral-opportunity gate before component/complement geometry. If only discovery-wording replication is confirmed, use that wording for a conditional Mass opportunity gate. If the original coded conditions do not confirm, return to the Consolidation opportunity gate while preserving every valid result and interval. An interval spanning zero is unresolved evidence; implementation or measurement invalidity follows the failure ledger and existing recovery contract.
 
+### Paired-opportunity preparation
+
+Preparation status: `PLANNED`; the geometry protocol becomes dispatchable after the Mass confirmation route, cohort feasibility, implementation and registration reviews are resolved. The active Mass protocol and statistical decisions above remain fixed. Metadata feasibility is recorded in `docs/PAIRED_OPPORTUNITY_FEASIBILITY.md`.
+
+The natural-input comparison uses a target-positive and target-negative image from the same patient. A fresh-patient gate first needs a metadata-defined cohort with usable acquisition and co-label matching. Availability in the sampled probe manifest and availability in the original NIH image pool are separate questions. A cohort drawn from additional available NIH images must retain the existing patient split, exclude every previous intervention patient, bind the complete source labels and image inventory, and receive its own registration. The selected concept and prompt follow the completed Mass decision; when its selected opportunity cohort is unavailable, record that disposition before choosing the next evidence-expansion step.
+
+The behavioral opportunity is the paired finding-present logit difference, `m(x+) - m(x-)`, measured on every metadata-selected pair. Selection and prompt choice precede these outcomes. A geometry comparison is informative about clinical recovery only when the paired baseline supplies a positive behavioral opportunity. The eventual protocol must specify patient-level uncertainty, the opportunity criterion and its relationship to the geometry endpoint before execution.
+
+For corresponding token arrays `H-` and `H+` at the consumed final visual block, define `D = H+ - H-`, with `T` tokens, and let `u` be the accepted unit clinical probe normal. The mean-pool reader gives `g = <mean_t D_t, u>`. Two decompositions answer distinct questions:
+
+- **Pooled-reader decomposition:** `D_reader,t = g u` and `D_complement = D - D_reader`. Under the flattened Euclidean inner product, this is the orthogonal projection onto the single direction formed by repeating `u` over all `T` tokens. Its complementary component has zero pooled probe displacement.
+- **Relative-token write decomposition:** with recipient norms `n_t = ||H-_t||`, let `a = g / mean_t n_t` and `D_write,t = a n_t u`. Its residual `D - D_write` also has zero pooled probe displacement. This is the implementation's norm-weighted realization of the same reader displacement; its residual is generally not Euclidean-orthogonal to the write. A dose cap replaces `a` by its clipped value and generally changes the achieved reader displacement.
+
+These identities are grounded in `ActivationCache._pool` in `src/loci.py`, `Steerer._delta` in `src/intervene.py`, and the displacement-matched closure implementation. Tokenwise projection, `<D_t,u>u` at each token, is a different, `T`-dimensional subspace operation from the pooled-reader projection. A registered comparison must name the operation it implements.
+
+Full donor-token replacement supplies a positive measurement control after token count, order, grid and downstream image-context compatibility are verified. Reader-component, complementary-component and norm-weighted-write interventions use the same recipient baseline. Preserve each decomposition's native component magnitudes; report their norms and achieved reader displacements, with any equal-norm controls defined separately. Nonlinear downstream responses require reporting the interaction between component effects rather than assuming their behavioral recoveries add. Validation-only tests establish tensor reconstruction, pooled-score identities, zero-dose behavior, clipping behavior and downstream consumption before patient outcomes.
+
 ## Evaluation and fairness
 
 - Train/test separation is patient-level; validation may select implementation parameters but never report headline evidence.
