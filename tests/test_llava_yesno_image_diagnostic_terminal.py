@@ -3,6 +3,7 @@ import tempfile
 import unittest
 from copy import deepcopy
 from pathlib import Path
+from unittest.mock import patch
 
 import numpy as np
 
@@ -16,6 +17,24 @@ class TerminalReplayTests(unittest.TestCase):
             path = Path(directory) / "receipt.json"
             path.write_text(json.dumps({"status": "ok"}), encoding="utf-8")
             self.assertEqual(terminal.read_path(str(path)), {"status": "ok"})
+
+    def test_terminal_validator_requires_clean_pushed_commit(self):
+        commit = "a" * 40
+        with patch.object(
+            terminal.subprocess,
+            "check_output",
+            side_effect=(commit + "\n", commit + "\n", ""),
+        ):
+            self.assertEqual(terminal.validate_checkout(commit), commit)
+        with (
+            patch.object(
+                terminal.subprocess,
+                "check_output",
+                side_effect=(commit + "\n", "b" * 40 + "\n", ""),
+            ),
+            self.assertRaisesRegex(AssertionError, "validator checkout"),
+        ):
+            terminal.validate_checkout(commit)
 
     def test_independent_primary_vector_matches_registration(self):
         np.testing.assert_allclose(

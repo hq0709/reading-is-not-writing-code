@@ -5,6 +5,7 @@ from __future__ import annotations
 import csv
 import hashlib
 import json
+import subprocess
 import sys
 from pathlib import Path
 
@@ -82,6 +83,21 @@ auc = base.auc
 
 def read_path(path):
     return read(Path(path))
+
+
+def validate_checkout(commit):
+    commit = str(commit)
+    check(len(commit) == 40, "terminal validator commit")
+    repository = Path(__file__).resolve().parents[2]
+    head = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=repository, text=True).strip()
+    upstream = subprocess.check_output(
+        ["git", "rev-parse", "@{upstream}"], cwd=repository, text=True
+    ).strip()
+    status = subprocess.check_output(
+        ["git", "status", "--porcelain", "--untracked-files=all"], cwd=repository, text=True
+    )
+    check(head == commit and upstream == commit and not status, "terminal validator checkout")
+    return commit
 
 
 def expected_conditions():
@@ -494,7 +510,7 @@ def interval(values):
     return np.percentile(values[np.isfinite(values)], [2.5, 97.5], method="linear")
 
 
-def verify(run_id, commit, summary_dir=None, validator_commit=None):
+def verify(run_id, commit, summary_dir=None, validator_commit=None, terminal_commit=None):
     root = Path("/home/qingchan/data/concept-flow")
     run, out = root / "runs" / run_id, root / "runs" / run_id / "artifacts"
     check(run.parent == root / "runs" and len(commit) == 40, "run identity")
@@ -548,9 +564,12 @@ def verify(run_id, commit, summary_dir=None, validator_commit=None):
     if recovery:
         summary_root = Path(summary_dir).resolve(strict=True)
         check(
-            summary_root.parent == root / "state" and validator_commit is not None,
+            summary_root.parent == root / "state"
+            and validator_commit is not None
+            and terminal_commit is not None,
             "recovery summary identity",
         )
+        terminal_commit = validate_checkout(terminal_commit)
         recovery_manifest = inventory(summary_root / "SHA256SUMS")
         for name in (SUMMARY + ".json", SUMMARY + ".npz", "recovery.json"):
             with (summary_root / name).open("rb") as stream:
@@ -818,7 +837,7 @@ def verify(run_id, commit, summary_dir=None, validator_commit=None):
         and summary["route"] == "evidence_synthesis",
         "summary status, counts, and route",
     )
-    return {
+    result = {
         "status": "PASS",
         "run_id": run_id,
         "source_commit": commit,
@@ -831,12 +850,20 @@ def verify(run_id, commit, summary_dir=None, validator_commit=None):
         "simultaneous_radius": float(radius),
         "max_numerical_discrepancy": base.MAX_ERROR,
     }
+    if recovery:
+        result.update(
+            recovery_validator_commit=validator_commit,
+            terminal_validator_commit=terminal_commit,
+        )
+    return result
 
 
 if __name__ == "__main__":
     extra = sys.argv[3:]
-    if len(extra) not in (0, 2):
-        raise SystemExit("usage: VALIDATOR RUN_ID SOURCE_COMMIT [SUMMARY_DIR VALIDATOR_COMMIT]")
+    if len(extra) not in (0, 3):
+        raise SystemExit(
+            "usage: VALIDATOR RUN_ID SOURCE_COMMIT [SUMMARY_DIR RECOVERY_COMMIT TERMINAL_COMMIT]"
+        )
     print(
         json.dumps(
             verify(sys.argv[1], sys.argv[2], *extra) if extra else verify(sys.argv[1], sys.argv[2]),
