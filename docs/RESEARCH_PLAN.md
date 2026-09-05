@@ -273,6 +273,76 @@ At least one question with reader, capability and write opportunity advances to 
 
 Internal validation verifies source/allocation binding, train-only control fitting, exact score grids, the calibration-to-write routing decision and patient-bootstrap replay. Pinned read-only registration review precedes dispatch; independent terminal verification followed by pinned result review precedes acceptance and paper handoff.
 
+### LLaVA Effusion readout diagnostic
+
+Preparation status: `PLANNED`, pending executable and pinned registration review. The gate `llava-effusion-readout-diagnostic` asks whether label-linked image advantage changes under a fixed wording-by-answer-encoding design while frozen-direction availability replicates on new validation patients. The six structural estimands below are the primary family. This diagnostic informs a separately registered confirmation; it does not select a replacement interpretation of the accepted pilot.
+
+#### Population and independent image controls
+
+Use the original NIH metadata and accepted PNG inventory with the existing `concept-flow-v1` patient split. Retain only `val` patients absent from the entire original 26,229-row manifest. Select the lexicographically smallest original `Image Index` per patient, then sort patient IDs as strings and permute with `default_rng(20260916)`. The first 700 are index patients; the next 700 are donors, paired by position. Retain the remaining 823 patients outside this gate. Attach disease and demographic labels after identifier allocation and persist the complete 1,400-patient receipt before model loading. Every donor is distinct from every index patient. The protected original 100 write patients and all original training/test patients retain their existing roles.
+
+Metadata feasibility gives 2,223 candidate patients, all representative images available, and complete coverage by the twenty frozen type-label maps. The fixed index sample contains 25 Effusion-positive and 675 negative patients; donors contain 22 positives and 678 negatives. Index endpoints are patient `19570` / `00019570_000.png` and `28163` / `00028163_000.png`; donor endpoints are `15575` / `00015575_000.png` and `12195` / `00012195_000.png`. Fewer than 1,400 candidates, unavailable required images, unsupported control types or fewer than ten index patients in either clinical class makes preparation `UNAVAILABLE`. Allocation is retained without replacement sampling.
+
+Both real-image and donor-image answer AUROCs use the **index patient's label**. The donor's own label is retained for source auditing and descriptive checks. Each bootstrap unit is one index-donor pair; no person appears in another unit. The donor contrast measures label-linked image dependence in this population, including any correlated visual findings.
+
+#### Fixed model, questions and scores
+
+Reuse the accepted `llava-hf/llava-1.5-7b-hf` revision `b234b804b114d9e37bb655e11cbbb5f5e971b7a9`, local snapshot, native 336-pixel processor, chat template, BF16 loading configuration and batch size 16. Use consumed `model.vision_tower.encoder.layers.22` (`vis.last`) with the accepted pooling and float16 activation-storage convention. This gate uses clean forward passes.
+
+Cross the two exact question stems with all three exact suffixes, joined by one space, in wording-major then encoding order:
+
+| Index | Wording |
+|---|---|
+| 0 | `Is there a pleural effusion in this chest radiograph?` |
+| 1 | `Does this chest radiograph show a pleural effusion?` |
+
+| Encoding | Suffix |
+|---|---|
+| Y | `Answer yes or no.` |
+| A | `Answer A if the finding is present and B if it is absent. Reply with A or B only.` |
+| B | `Answer B if the finding is present and A if it is absent. Reply with A or B only.` |
+
+For each condition, score index images in allocation order, then paired donor images in the same order. The complete grid has 8,400 image-prompt evaluations. Save all singleton candidate token IDs and their final-position float32 logits, semantic margins, sigmoid scores and summed answer-token probability mass. Singleton groups use the existing deduplicated tokenization convention, including its permitted leading-space forms. Y uses the accepted maximum-over-yes-variants minus maximum-over-no-variants margin. A uses maximum A minus maximum B; B negates that same raw A-minus-B margin. All semantic margins point toward finding present. Nonempty, disjoint singleton groups are required; sequence-scoring substitution requires a new registration.
+
+On the same Y logits, additionally calculate log-sum-exp(yes group) minus log-sum-exp(no group), using exactly the same deduplicated groups. Its two wording-specific image-advantage differences from max-variant scoring are secondary descriptive endpoints, with no extra model evaluation or fit.
+
+Run one image-free evaluation for each of the six complete prompts, omitting the image placeholder through the same processor interface. Save its raw and semantic margins and answer-token mass. This adds six text-only outcomes. Each condition has one constant image-free score: its AUROC against a two-class index cohort is exactly 0.5 with half-credit ties, and subtracting the constant cannot change image AUROC. These outputs describe language/output priors rather than patient discrimination.
+
+#### Frozen-reader replication
+
+Capture each index image's pooled accepted `vis.last` representation during condition 0Y. Reuse the exact projection, original training mean, scale, Effusion coefficient, twenty fitted logistic control coefficients/intercepts and original type assignments from accepted pilot run `20260905T093108Z-42a43207c848-llava-validation` (`prepared.npz` and `prepared.json`). Keep projection, pooling, dtype conversions and per-fit control-score contraction consistent with the accepted executable. Fit no new parameter and assign no new random control label.
+
+Reader selectivity is Effusion AUROC minus the mean of all twenty control AUROCs, each control evaluated against its own assigned type labels on the index patients. Report every control result, real AUROC, selectivity and its two-sided percentile 95% interval. Replication requires the 2.5th-percentile selectivity bound above zero, ten index patients per clinical class and at least 9,500 jointly valid draws. A joint reader draw requires the clinical AUROC and every one of the twenty controls to be finite. This separate prespecified endpoint does not filter or truncate the answer grid.
+
+#### Paired estimands and joint inference
+
+For wording `w` and encoding `e`, define `G_we = AUROC(real margin, index label) - AUROC(donor margin, index label)` and `S_w = (G_wA + G_wB)/2`. `S_w` averages advantages, not raw scores. The primary family is exactly:
+
+| Estimand | Contrast |
+|---|---|
+| Accepted-condition image advantage | `G_0Y` |
+| Wording effect | `sum_e(G_1e - G_0e)/3` |
+| Symbol-versus-yes/no effect | `sum_w(S_w - G_wY)/2` |
+| Mapping asymmetry | `sum_w(G_wA - G_wB)/2` |
+| Wording × encoding | `(S_1 - G_1Y) - (S_0 - G_0Y)` |
+| Wording × mapping | `(G_1A - G_1B) - (G_0A - G_0B)` |
+
+Generate 10,000 shared pair-bootstrap index rows as `default_rng(20260917).integers(0, 700, size=(10000, 700), dtype=int64)` and persist them. Every draw resamples all paired outputs, index labels and reader/control rows together. Tie-aware AUROC gives ties half credit. A primary-family draw is valid only when every required real/donor AUROC and all six resulting contrasts are finite; require at least 9,500 common valid draws.
+
+For each primary contrast `j`, calculate its original point estimate `theta_j`. On each common valid draw calculate the unstudentized maximum absolute centered deviation `D_b = max_j(abs(theta_bj - theta_j))`. Let `q` be the linear-method 95th percentile of `D_b`. Report simultaneous two-sided intervals `[theta_j - q, theta_j + q]` for all six contrasts and preserve untruncated bounds. All contrasts are in AUROC-difference units; the shared radius can be driven by noisier contrasts and may reduce sensitivity for more precise ones. Keep all six contrasts in the maximum when a mapping contrast is constant. If the entire bootstrap distribution collapses and `q=0`, report the family as bootstrap-degenerate alongside the numerical intervals and make no population-certainty claim. These are approximate joint bootstrap intervals; substantial uncertainty with 25 positive index patients remains possible.
+
+Report all six real AUROCs, donor AUROCs, image advantages and descriptive percentile 95% intervals, together with clinical label counts, mean margins, sigmoid-score Brier diagnostics and token mass. Sigmoid values are model scores, not calibrated disease probabilities. A positive image advantage alone does not establish above-chance clinical discrimination. Simultaneous structural contrasts are the familywise inference; individual-cell descriptive intervals and the two same-logit aggregation contrasts do not select an operational prompt.
+
+#### Preflight, resource bounds and decision
+
+Before any new cohort image, check semantic orientation using the four exact generic statements in `src/qwen_answer_encoding.py:STATEMENTS`, each followed by `Is the finding present?` and each of the three registered answer suffixes. All twelve cases require finite, strictly correctly signed primary semantic margins; the four Y cases additionally require correctly signed log-sum-exp margins. Verify finite exact clean repeats and accepted consumed-module/pooling capture on the sixteen existing implementation-preflight images. A mapping or measurement failure stops before scientific images and receives measurement review under the recovery contract.
+
+A 512-image-condition-equivalent timing pilot on those implementation images cycles all six prompt conditions. Measured loading and preflight time plus `8406 * pilot_seconds / 512` and 600 seconds of analysis allowance must not exceed 3,600 seconds. The allocation budget is one A100, at most 1.5 GPU-hours and 1.5 wall-clock hours, enforced by an outer 90-minute timeout with finite termination cleanup. Existing clean pushed source, idle-GPU, supervisor, disk, stop and total-budget gates remain required.
+
+Prospective internal design and executable review followed by pinned read-only registration review precedes scientific image evaluation. Independent terminal verification checks the complete 8,400-row paired grid, six image-free outputs, frozen reader provenance, saved bootstrap indices, every primary contrast and simultaneous interval. Reuse upstream accepted receipts; validate this new terminal artifact's decision-bearing manifest once. Pinned result review precedes `OBSERVED` acceptance and paper handoff.
+
+The accepted result routes to a mechanism-oriented synthesis and, when justified, a separately registered confirmation using untouched patients. Wording and encoding manipulate the full downstream computation; a structural effect describes measurement dependence rather than uniquely locating an answer-token mechanism. Same-logit aggregation isolates scoring-rule sensitivity. A stable image advantage across conditions supports readout robustness within this fixed design; unresolved contrasts retain their uncertainty. Any new intervention trial requires its own registration and capability/control gates.
+
 ## Evaluation and fairness
 
 - Train/test separation is patient-level; validation may select implementation parameters but never report headline evidence.
