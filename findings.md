@@ -9,3 +9,13 @@ Gate decision: `PASS`; the pinned cross-family reviewer judged the scoped claim 
 Next step: can the six-gate evidence be integrated into the evidence-locked manuscript while preserving exact scope, provenance, and the nine-page main-body budget? Update, cross-review, and compile the manuscript.
 
 Evidence: [CLAIMS_FROM_RESULTS.md](CLAIMS_FROM_RESULTS.md); `/home/qingchan/.codex/state/claude-review-concept-flow/review-20260904T164410087766Z.json`; `.aris/traces/result-to-claim/2026-09-04_run01/`.
+
+## LLaVA validation opportunity
+
+Run: the registered validation-only pilot evaluated six frozen clinical readers and the corresponding clean singleton yes/no margins before admitting any question to a protected write cohort.
+
+Observation: Effusion and Cardiomegaly retain controlled reader selectivity, but no question has a clean-margin AUROC fifth-percentile bound above 0.5. This supports a measurement-stage direction/readout separation. Effusion is the informative follow-up anchor; Cardiomegaly's reader lower bound is only `0.000164`.
+
+Gate decision: `PASS`; `claim_supported=yes`, confidence high, integrity pass and routing action `confirm`. The write screen remains unexecuted by the registered `K=0` rule. Evidence is [docs/LLAVA_VALIDATION_OPPORTUNITY_RESULTS.md](docs/LLAVA_VALIDATION_OPPORTUNITY_RESULTS.md), `.aris/evidence_precheck.json` and `.aris/traces/result-to-claim/2026-09-05_run01/`.
+
+Next step: can a prospectively registered Effusion diagnostic distinguish prompt/language-prior sensitivity from answer-token verbalizer routing while independently replicating frozen-direction availability?

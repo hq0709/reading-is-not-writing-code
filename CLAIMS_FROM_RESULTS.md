@@ -9,3 +9,13 @@ Gate decision: `PASS`; `claim_supported=yes`, confidence `high`, integrity statu
 Next step: can the six-gate evidence be integrated into the evidence-locked manuscript while preserving exact scope, provenance, and the nine-page main-body budget? Update, cross-review, and compile the manuscript.
 
 Evidence: immutable runs `20260902T191411Z-ffd523c464c8-f99e2f39`, `20260902T221534Z-110b84618d1b-edema`, `20260903T000321Z-caaae3ef346d-qwen-full`, `20260903T103508Z-456c81bad460-7a3edc4b`, `20260904T125710Z-a3bd883540eb-causal-ownership`, and `20260904T162317Z-8a55a4c2f6b6-consolidation-closure`; `.aris/evidence_precheck.json`; reviewer receipt `/home/qingchan/.codex/state/claude-review-concept-flow/review-20260904T164410087766Z.json`; trace `.aris/traces/result-to-claim/2026-09-04_run01/`.
+
+## LLaVA validation opportunity
+
+Run: immutable validation-only pilot `20260905T093108Z-42a43207c848-llava-validation`, with eleven cited decision values verified in the primary artifacts, independent terminal replay and pinned read-only Claude hard-gate review.
+
+Observation: Effusion and Cardiomegaly pass the frozen-direction reader screen, while every clean singleton yes/no capability lower bound is below 0.5. The supported claim is a measurement-stage dissociation between direction-level selectivity and the specified answer margin in this cohort. With `K=0`, the protocol leaves causal write efficacy unadjudicated.
+
+Gate decision: `PASS`; `claim_supported=yes`, confidence high, integrity status pass and routing action `confirm` for the scoped claim. The fresh reviewer identifies Effusion as the stronger mechanistic anchor because Cardiomegaly's positive reader lower bound is `0.000164`. Evidence is `docs/LLAVA_VALIDATION_OPPORTUNITY_RESULTS.md`, `.aris/evidence_precheck.json`, pinned receipt `/home/qingchan/.codex/state/claude-review-concept-flow/review-20260905T094007326743Z.json` and trace `.aris/traces/result-to-claim/2026-09-05_run01/`.
+
+Next step: can a prospectively registered Effusion diagnostic distinguish prompt/language-prior sensitivity from answer-token verbalizer routing while independently replicating frozen-direction availability?

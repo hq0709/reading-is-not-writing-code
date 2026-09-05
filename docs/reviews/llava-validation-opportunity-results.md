@@ -1,0 +1,9 @@
+# LLaVA validation opportunity result review
+
+Run: immutable run `20260905T093108Z-42a43207c848-llava-validation`, source `42a43207c848acfcadecf2f3e0bf866ea71d9dc7`, completed 4,200 validation calibration outcomes in 366 seconds. Command, dispatcher and cleanup statuses are zero.
+
+Observation: preflight exactness and timing passed. Effusion and Cardiomegaly have positive registered reader-selectivity lower bounds of `0.065803` and `0.000164`; all six clean-margin AUROC fifth-percentile bounds are below 0.5, from `0.372164` to `0.473107`. All class-count and 2,000-draw requirements pass. Hence `K=0`, the write cohort is untouched and the registered route is `evidence_synthesis`. Independent replay verified twelve manifest-bound files and every decision with maximum numerical discrepancy `0.0`.
+
+Gate decision: `PASS`; scientific state `OBSERVED`, gate disposition `READY`. The configured pinned reviewer returned `PASS / READY`, required actions `NONE`, with canonical `claude-fable-5-1`, medium effort, valid read-only execution, tools disabled and unchanged clean checkout. The scoped result-to-claim judgment is `claim_supported=yes`, confidence high: this is a measurement-stage direction/readout separation, not a causal-efficacy result. Evidence is `docs/LLAVA_VALIDATION_OPPORTUNITY_RESULTS.md`, internal receipt `/home/qingchan/data/concept-flow/state/llava-validation-opportunity-internal-20260905T093743Z/receipt.json`, pinned receipt `/home/qingchan/.codex/state/claude-review-concept-flow/review-20260905T094007326743Z.json` and trace `.aris/traces/result-to-claim/2026-09-05_run01/`.
+
+Next step: can a prospectively registered Effusion diagnostic distinguish prompt/language-prior sensitivity from answer-token verbalizer routing while independently replicating frozen-direction availability? Registration must precede any new GPU execution.

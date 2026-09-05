@@ -6,6 +6,8 @@ The user is shutting down the local computer and asked for already-authorized lo
 
 The bounded assignment is to finish executable acceptance, registration, execution and terminal review of the LLaVA validation-only intervention opportunity pilot, then deliver an evidence report and the next research decision. Accepted prior experiments and the manuscript remain valid inputs.
 
+Completion: the bounded assignment is complete. Immutable run `20260905T093108Z-42a43207c848-llava-validation` completed the registered calibration, independent terminal replay and pinned result review. The valid `K=0` result routes to evidence synthesis; `docs/LLAVA_VALIDATION_OPPORTUNITY_RESULTS.md` records the evidence and the next prospective registration question. No follow-on GPU experiment is registered. The server writer returns the repository through a clean pushed Git handoff after integrating this branch into `main`.
+
 ## References and current maturity
 
 - `docs/RESEARCH_STATE.md`: current stage, accepted evidence and writer ownership.
