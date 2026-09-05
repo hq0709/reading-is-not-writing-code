@@ -16,6 +16,6 @@ Run: the registered validation-only pilot evaluated six frozen clinical readers 
 
 Observation: Effusion and Cardiomegaly retain controlled reader selectivity, but no question has a clean-margin AUROC fifth-percentile bound above 0.5. This supports a measurement-stage direction/readout separation. Effusion is the informative follow-up anchor; Cardiomegaly's reader lower bound is only `0.000164`.
 
-Gate decision: `PASS`; `claim_supported=yes`, confidence high, integrity pass and routing action `confirm`. The write screen remains unexecuted by the registered `K=0` rule. Evidence is [docs/LLAVA_VALIDATION_OPPORTUNITY_RESULTS.md](docs/LLAVA_VALIDATION_OPPORTUNITY_RESULTS.md), `.aris/evidence_precheck.json` and `.aris/traces/result-to-claim/2026-09-05_run01/`.
+Gate decision: `PASS`; `claim_supported=yes`, confidence high, integrity pass and routing action `confirm`. The write screen remains unexecuted by the registered `K=0` rule, and pinned synthesis review accepts the scoped interpretation and next gap. Evidence is [docs/LLAVA_VALIDATION_OPPORTUNITY_RESULTS.md](docs/LLAVA_VALIDATION_OPPORTUNITY_RESULTS.md), `.aris/evidence_precheck.json`, `.aris/traces/result-to-claim/2026-09-05_run01/` and `/home/qingchan/.codex/state/claude-review-concept-flow/review-20260905T094932091464Z.json`.
 
 Next step: can a prospectively registered Effusion diagnostic distinguish prompt/language-prior sensitivity from answer-token verbalizer routing while independently replicating frozen-direction availability?
