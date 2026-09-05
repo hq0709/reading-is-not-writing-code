@@ -165,7 +165,7 @@ check_health() {
 
   GPU_BUDGET_OK=0
   gpu_seconds=$(find "$runs_dir" -mindepth 2 -maxdepth 2 -name metadata.env -print0 2>/dev/null |
-    xargs -0 -r awk -F= '/^ELAPSED_SECONDS=/{e=$2}/^GPU_COUNT=/{g=$2; s+=e*g} END{print s+0}')
+    xargs -0 -r awk -F= 'FNR==1{s+=e*g; e=g=0} /^ELAPSED_SECONDS=/{e=$2} /^GPU_COUNT=/{g=$2} END{print s+e*g+0}')
   gpu_seconds=${gpu_seconds:-0}
   if is_uint "$MAX_GPU_HOURS" && awk -v used="$gpu_seconds" -v limit="$((MAX_GPU_HOURS * 3600))" 'BEGIN {exit !(used < limit)}'; then GPU_BUDGET_OK=1; else reasons+=(gpu_budget); fi
 

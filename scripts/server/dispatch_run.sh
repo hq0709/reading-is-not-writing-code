@@ -54,7 +54,7 @@ start_budget_epoch=$(cat "$state_dir/bootstrap_started_epoch")
 test $((now_epoch - start_budget_epoch)) -lt $((MAX_WALL_CLOCK_HOURS * 3600)) || fail 'wall-clock budget exhausted'
 free_kb=$(df -Pk "$DATA_ROOT" | awk 'NR==2 {print $4}')
 test "$free_kb" -ge $((MIN_FREE_DISK_GB * 1024 * 1024)) || fail 'free disk below threshold'
-gpu_seconds=$(awk -F= '/^ELAPSED_SECONDS=/{e=$2}/^GPU_COUNT=/{g=$2; s+=e*g} END{print s+0}' "$runs_dir"/*/metadata.env 2>/dev/null || true)
+gpu_seconds=$(awk -F= 'FNR==1{s+=e*g; e=g=0} /^ELAPSED_SECONDS=/{e=$2} /^GPU_COUNT=/{g=$2} END{print s+e*g+0}' "$runs_dir"/*/metadata.env 2>/dev/null || true)
 test "${gpu_seconds:-0}" -lt $((MAX_GPU_HOURS * 3600)) || fail 'GPU budget exhausted'
 failures=$(find "$runs_dir" -mindepth 2 -maxdepth 2 -name command_exit_status -printf '%T@ %p\n' 2>/dev/null | sort -nr | head -n "$MAX_CONSECUTIVE_FAILURES" | cut -d' ' -f2-)
 failure_count=0
