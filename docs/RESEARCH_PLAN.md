@@ -402,6 +402,47 @@ Incumbent outcomes are descriptive and cannot replace the candidate in the routi
 
 Use one A100 with a total fifteen-minute envelope including model loading and finite cleanup, at most 0.25 GPU-hours and 0.25 wall-clock hours. A fourteen-minute TERM timeout with at most sixty seconds to KILL fits that envelope. Fixed environment, four OMP/OpenBLAS/MKL threads, source/asset identity, clean pushed SHA, supervisor, idle-GPU, disk, STOP and cumulative-budget gates apply. Internal executable review and pinned registration PASS precede the one immutable execution. Independent terminal verification checks its decision-bearing manifest once, exact eighty-case identity/order and every derived score/route from saved logits; pinned result review precedes accepted measurement reporting. A subsequent image protocol receives its own registration.
 
+### LLaVA yes/no image diagnostic
+
+Preparation status: `PLANNED`, pending executable and pinned registration review. Gate `llava-yesno-image-diagnostic` asks whether the accepted Effusion wording discriminates above chance with label-linked image advantage, and whether a fixed wording change alters that advantage. The registered text-calibration route `yes_no_route` supplies measurement eligibility; patient-image evidence is prospective.
+
+#### Allocation, model and outcomes
+
+Retain the exact 700 index and 700 donor patients specified in `LLaVA Effusion readout diagnostic`: original NIH validation split, exclusion from the entire original manifest, lexicographically first image per patient, string-sorted identifiers, permutation seed `20260916`, first 700 index and next 700 donor paired by position. Reuse the stored allocation in run `20260905T211508Z-d24f2a7fe05e-llava-readout/artifacts/cohort.json` after identity comparison against the registered metadata construction; reuse its accepted terminal receipt. Index support is 25 Effusion positives and 675 negatives; donors have 22 positives and 678 negatives. The four allocation anchors, twenty control-map coverage requirements and preparation-UNAVAILABLE conditions remain as registered there. Preserve the other 823 candidate patients and all original protected patients. Persist this gate's allocation/provenance before model loading.
+
+Reuse the accepted LLaVA snapshot revision `b234b804b114d9e37bb655e11cbbb5f5e971b7a9`, native 336-pixel processor/chat template, BF16 model configuration and batch size 16. The two complete prompts, with exactly one space between stem and suffix, are:
+
+- 0: `Is there a pleural effusion in this chest radiograph? Answer yes or no.`
+- 1: `Does this chest radiograph show a pleural effusion? Answer yes or no.`
+
+Run prompt 0 on index rows then donor rows, followed by prompt 1 on index then donor rows, preserving pair order. This gives 2,800 image outcomes. After that grid, obtain exactly two image-free outcomes in prompt order through the native interface without an image placeholder. These two constant scores describe output priors; their AUROC against the index labels is 0.5 with half-credit ties.
+
+Retain the accepted singleton groups yes `[3869, 4874, 22483]` and no `[694, 1939, 11698]`, validated against the tokenizer. The primary score is max yes minus max no at the final token position. Preserve all candidate float32 logits, token IDs, log partition, semantic margins, sigmoid scores and answer-token mass. Retain log-sum-exp yes minus log-sum-exp no from the same logits for secondary scoring-rule comparisons. Sigmoid scores are not calibrated disease probabilities.
+
+Capture each index image's consumed `model.vision_tower.encoder.layers.22` output during prompt 0, using the accepted mean over all 577 tokens and float16 storage. Reuse frozen projection, training mean, scale, Effusion coefficient and all twenty fitted controls/intercepts/type assignments from accepted pilot `20260905T093108Z-42a43207c848-llava-validation`. Preserve accepted dtype conversions and per-fit control-score contraction. No parameter is fitted in this gate.
+
+#### Primary family and reader replication
+
+Let `Aw = AUROC(real_w, index labels)`, `Dw = AUROC(donor_w, index labels)` and `Gw = Aw - Dw`. Donor AUROCs always use the paired index labels; donor labels remain provenance/descriptive fields. The three-member primary vector is exactly `(A0 - 0.5, G0, G1 - G0)`, measuring accepted-wording discrimination, accepted-wording image advantage and wording-dependent image advantage respectively. Prompt 1 is a fixed sensitivity comparison, not a second opportunity-selection route.
+
+Persist `default_rng(20260917).integers(0, 700, size=(10000, 700), dtype=int64)` and use these same pair-bootstrap rows for every answer and reader endpoint. Resample complete index-donor pairs across both prompts. AUROC gives ties half credit. An answer-family draw requires all four answer AUROCs and all three contrasts finite; require at least 9,500 common valid draws. On valid draws calculate `D_b = max_j(abs(theta_bj - theta_j))`, set `q = percentile(D, 95, method="linear")`, and report all three untruncated simultaneous intervals `[theta_j - q, theta_j + q]`. Keep all three coordinates even if one is constant.
+
+For a complete, valid, nondegenerate family, `opportunity_detected=true` exactly when the first two simultaneous lower bounds are strictly positive; otherwise it is false and opportunity is not established. The third interval records wording dependence as `positive`, `negative` or `unresolved` according to whether it lies strictly above zero, strictly below zero or includes zero. Inclusion of zero does not establish equivalence. If fewer than 9,500 common draws are valid, or `q=0`, set population inference `UNAVAILABLE` and opportunity/wording decisions to null, retaining numerical summaries and an explicit insufficient-draw or bootstrap-degenerate reason. A degenerate bootstrap cannot establish population certainty.
+
+Reader selectivity is clinical Effusion AUROC minus the mean of twenty control AUROCs, each evaluated against its own assigned labels. Compute its percentile 95% interval using the shared bootstrap indices but its own validity mask, requiring the clinical and all twenty control AUROCs finite. Replication requires index clinical support at least ten per class, at least 9,500 jointly valid reader draws and the selectivity 2.5th-percentile bound strictly positive. Inadequate reader support/draws makes reader inference `UNAVAILABLE`; it never filters the answer grid, answer bootstrap mask or opportunity decision. Report every control AUROC and the frozen reader result separately.
+
+Report all four answer AUROCs, both `Gw`, `A1-A0`, their descriptive percentile intervals, mean margins, sigmoid Brier diagnostics and token masses. For each wording, report the secondary difference between LSE-based and max-based image advantage from the same retained logits. Secondary estimates do not replace the primary score or select a prompt.
+
+#### Preflight, execution and routing
+
+Before any retained patient image, evaluate exactly the four generic statements from `src/qwen_answer_encoding.py:STATEMENTS`, each followed by `Is the finding present? Answer yes or no.` Require strictly correct finite primary and LSE signs. Validate singleton identity, exact clean repeat and consumed non-CLS forwarding/capture on the sixteen established implementation-preflight images from `src/run_llava_validation_opportunity.py`. A measurement failure stops before the retained cohort and follows the existing recovery contract.
+
+The 512-image-equivalent timing pilot cycles the two complete prompts on those implementation images. Admission requires `elapsed_preparation_loading_preflight_and_pilot + 2802 * pilot_seconds / 512 + 600 <= 2700` seconds; elapsed time includes the pilot itself. The whole allocation has one A100, at most one GPU-hour and one wall-clock hour, enforced by an outer 59-minute TERM timeout plus at most sixty seconds to KILL. Fixed environment, four OMP/OpenBLAS/MKL threads, clean pushed full SHA, supervisor, idle-GPU, disk, STOP and cumulative-budget gates remain required.
+
+Independent design and executable reviews plus pinned read-only registration PASS precede image execution from an immutable source snapshot. Independent terminal verification checks the new decision-bearing manifest once, the exact 2,800-image/two-text grid, allocation, frozen parameter provenance, all scores and bootstrap indices, three-member simultaneous family and separate reader decisions. Reuse upstream accepted receipts. Pinned result review precedes acceptance and paper handoff.
+
+Accepted valid evidence routes to `evidence_synthesis`. An opportunity may motivate a separately registered intervention with its own capability/control gates; wording dependence may motivate a separately registered confirmation. Neither route is dispatched by this gate. Broad intervals remain possible with 25 positives. Donor contrasts identify label-linked image dependence, including correlated findings; the wording contrast does not by itself locate the responsible computation.
+
 ## Evaluation and fairness
 
 - Train/test separation is patient-level; validation may select implementation parameters but never report headline evidence.
