@@ -10,10 +10,12 @@ This construction tests generic output-symbol semantics directly. Its use is fai
 
 The scientific prompt, clinical score, fixed ordered 100-pair cohort, selection seed, endpoint, bootstrap and opportunity threshold remain unchanged. Recovery binds patient and image order and complete source records to the original selection receipt; its execution receives separate immutable provenance.
 
-Gate decision: independent internal design and implementation review `PASS`. All 30 focused CPU tests passed, including exact mapping parity, reference-cohort identity and full metadata drift rejection, CPU-only imports and both mocked concept runs. Pinned amendment review precedes dispatch.
+Gate decision: independent internal design and implementation review and pinned amendment review `PASS`. All 30 focused CPU tests passed, including exact mapping parity, reference-cohort identity and full metadata drift rejection, CPU-only imports and both mocked concept runs. The full suite completed 223 tests in 81.958 seconds with zero failures and six environment-specific skips.
 
-The first pinned review accepted the design and implementation and requested tracked provenance for this registration and the failed-run ledger entry. Its closure review evaluates those exact records. The semantic-mapping criterion remains strict sign agreement on the four pre-existing cases; the recorded reference margins are provenance for the established test, while exact-repeat verification is performed on the clean validation image.
+The first pinned review (`review-20260905T053220943784Z.json`) accepted the design and implementation and requested tracked provenance for this registration and the failed-run ledger entry. The closure review accepted both tracked records at pushed commit `f0317eaf3f4e3d97a18c266eb3d84b0f1c09baec` and returned `PAIRED_OPPORTUNITY_VALIDATION PASS`. The semantic-mapping criterion remains strict sign agreement on the four pre-existing cases; recorded reference margins are provenance for the established test, while exact-repeat verification is performed on the clean validation image.
 
 Next step: does the fixed Consolidation cohort have positive paired behavioral opportunity under a validated output mapping? Execute the registered image comparison after amendment acceptance.
 
 Evidence: original run `artifacts/preflight.json`, `artifacts/registered-pairs.json` and `metadata.env`; accepted semantic mapping in Mass run `20260905T015725Z-1c9820d7b576-mass-prompts`; protocol `docs/RESEARCH_PLAN.md#qwen-paired-behavioral-opportunity`.
+
+Pinned closure receipt: `/home/qingchan/.codex/state/claude-review-concept-flow/review-20260905T053453798343Z.json`; canonical `claude-fable-5-1`, medium effort, valid, read-only, tools disabled, exit 0. Server checkout remained clean at `f0317eaf3f4e3d97a18c266eb3d84b0f1c09baec`.
