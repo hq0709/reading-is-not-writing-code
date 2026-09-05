@@ -343,6 +343,65 @@ Prospective internal design and executable review followed by pinned read-only r
 
 The accepted result routes to a mechanism-oriented synthesis and, when justified, a separately registered confirmation using untouched patients. Wording and encoding manipulate the full downstream computation; a structural effect describes measurement dependence rather than uniquely locating an answer-token mechanism. Same-logit aggregation isolates scoring-rule sensitivity. A stable image advantage across conditions supports readout robustness within this fixed design; unresolved contrasts retain their uncertainty. Any new intervention trial requires its own registration and capability/control gates.
 
+### LLaVA text semantic calibration
+
+Preparation status: `PLANNED`, pending executable and pinned registration review. Gate `llava-text-semantic-calibration` asks whether a fixed option-list format supports both A/B semantic mappings on balanced prospective text descriptions. This is a finite measurement suite; its output determines the next prospective image protocol.
+
+#### Fixed suite and prompts
+
+Use objects `red square`, then `blue circle`. Each description starts with `The target finding is a {object}.`, one space, and one sentence from the following table. Iterate object-major, table-row-major, positive then negative.
+
+| Pair | Positive sentence | Negative sentence |
+|---|---|---|
+| 1 | `The scene contains a {object}.` | `The scene contains no {object}.` |
+| 2 | `A {object} is present.` | `A {object} is absent.` |
+| 3 | `It is false that the {object} is absent.` | `It is false that the {object} is present.` |
+| 4 | `The list is complete. Listed objects: {object}, green triangle.` | `The list is complete. Listed objects: green triangle.` |
+
+Cross all sixteen descriptions with five conditions in order `Y`, `incumbent-A`, `incumbent-B`, `candidate-A`, `candidate-B`, yielding exactly eighty text-only outcomes. For each description, evaluate conditions in that order. Each independent user message is `{description} Is the finding present? {suffix}`. Every brace is substituted before tokenization.
+
+Y suffix: `Answer yes or no.`
+
+Incumbent-A suffix: `Answer A if the finding is present and B if it is absent. Reply with A or B only.`
+
+Incumbent-B suffix: `Answer B if the finding is present and A if it is absent. Reply with A or B only.`
+
+Candidate-A suffix, with literal newlines:
+
+```text
+Choose the correct option.
+A. The finding is present.
+B. The finding is absent.
+Reply with A or B only.
+```
+
+Candidate-B suffix, with literal newlines:
+
+```text
+Choose the correct option.
+A. The finding is absent.
+B. The finding is present.
+Reply with A or B only.
+```
+
+The option-list format is the sole prospective candidate. All sixteen descriptions are evaluation cases, fixed before any of their outcomes. There is no fitting, development split, candidate ranking or adaptive retry. Prospective refers to evaluation timing, not model-training exposure. The incumbent conditions provide a contemporaneous reference on the same descriptions.
+
+#### Frozen execution and decision
+
+Reuse the accepted LLaVA revision `b234b804b114d9e37bb655e11cbbb5f5e971b7a9`, BF16 configuration, native processor/chat template and the verified image-free scorer interface in `src/run_llava_readout_diagnostic.py`. Each user message is its own conversation, with no image placeholder and one forward pass. Reuse the accepted deduplicated singleton IDs: yes `[3869, 4874, 22483]`, no `[694, 1939, 11698]`, A `[319]`, B `[350]`. Validate these against the tokenizer. Y margin is max yes minus max no; A mappings use A minus B; B mappings use B minus A. Preserve final-position float32 candidate logits, log partition, answer-token mass, raw and semantic margins, and Y log-sum-exp margins. Each expected sign is positive for present and negative for absent; zero fails.
+
+Complete all eighty outcomes despite semantic errors. Execution errors, nonfinite outputs or invalid token identities make execution invalid. Report all outputs, sign errors per condition and pair, each condition's minimum correctly oriented margin, and descriptive paired positive-minus-negative semantic margins. No bootstrap or population confidence claim is attached to this constructed finite suite.
+
+The terminal route is exactly:
+
+- `candidate_eligible`: all sixteen Y primary signs and all sixteen Y log-sum-exp signs are correct, and all thirty-two candidate A/B signs are strictly correct. Prepare a separately registered image diagnostic using the exact candidate suffixes.
+- `yes_no_route`: Y meets both sixteen-case requirements and at least one candidate sign fails. End this option-list calibration and prepare a separately registered Y-only wording/image-donor comparison.
+- `comprehension_unresolved`: any Y primary or log-sum-exp sign fails. Review text comprehension/measurement before selecting an image protocol; A/B errors alone do not localize the cause.
+
+Incumbent outcomes are descriptive and cannot replace the candidate in the routing decision. This calibration evaluates no patient images, loads no patient activation archive and makes no image-experiment dispatch. All 700 index and 700 donor patients retain their prospective status. The four earlier preflight statements stay in the prior run's evidence.
+
+Use one A100 with a total fifteen-minute envelope including model loading and finite cleanup, at most 0.25 GPU-hours and 0.25 wall-clock hours. A fourteen-minute TERM timeout with at most sixty seconds to KILL fits that envelope. Fixed environment, four OMP/OpenBLAS/MKL threads, source/asset identity, clean pushed SHA, supervisor, idle-GPU, disk, STOP and cumulative-budget gates apply. Internal executable review and pinned registration PASS precede the one immutable execution. Independent terminal verification checks its decision-bearing manifest once, exact eighty-case identity/order and every derived score/route from saved logits; pinned result review precedes accepted measurement reporting. A subsequent image protocol receives its own registration.
+
 ## Evaluation and fairness
 
 - Train/test separation is patient-level; validation may select implementation parameters but never report headline evidence.
