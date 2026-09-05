@@ -7,13 +7,14 @@ Updated: 2026-09-05. Scientific state uses `PLANNED`, `RUNNING`, `FAILED`, and `
 - Run: `20260904T230152Z-21dad2f72726-answer-encoding`, source `21dad2f`, completed all 200,400 outcomes in 6,402 seconds on GPU 0. Both terminal exit statuses are zero; no scientific run is active.
 - Observation: four independently calibrated questions are eligible. The mapping-even minus mapping-odd energy contrast is -2.1786 (95% CI [-2.4061, -1.9810]); random/sham responses are also mapping-odd dominant. Mass's descriptive clinical logit margin changes from -0.7181 under standard yes/no to +0.2825 and +0.2900 under the two coded prompts. Under both coded prompts, the matched Mass-direction effect exceeds all 20 random effects and the absolute sham effect.
 - Scientific state: answer-encoding `OBSERVED`; independent-patient Mass confirmation `PLANNED`.
-- Gate disposition: answer-encoding `PASS`; complete-grid internal verification and pinned read-only result review accepted the evidence. The next confirmation requires a locked protocol, implementation and registration review.
-- Next step: does Mass retain its prompt-conditioned clinical advantage on independent patients? Prepare the confirmation before choosing the natural-displacement concept and readout; maintain the cross-architecture comparison in the evidence queue.
+- Gate disposition: answer-encoding and Mass registration `PASS`. The new confirmation passed independent design/implementation review, the 177-test local suite (six skips), syntax checks and pinned read-only registration review. Metadata-only exclusion leaves 642 eligible test patients and 1,334 images for the fixed 200-patient selection.
+- Next step: does Mass retain its prompt-conditioned clinical advantage on independent patients across the two question wordings? Dispatch the registered seven-condition, 179,200-outcome confirmation from the clean pushed commit; its validation preflight gates the scientific grid.
 - Writer ownership: project task `01a06ec5-fec9-7241-b066-72c1bc5632b8` coordinates research, evidence and delivery and owns code and experiment dispatch. Paper task `01a06afe-5c66-7a80-b922-b3ede71eab3e` owns the separate paper repository. Existing unrelated local edits remain with their author.
 - Supervision: heartbeat `concept-flow` is ACTIVE, bound to the project task every 30 minutes, advancing research and paper coordination and remaining quiet on unchanged state.
 - Evidence: `docs/ANSWER_ENCODING_RESULTS.md`, `docs/reviews/qwen7b-vislast-answer-encoding.md`; pinned receipt `/home/qingchan/.codex/state/claude-review-concept-flow/review-20260905T005436988285Z.json`; immutable run artifacts include complete signed-dose matrices, AUROC/Brier summaries and calibration data.
-- Diagnostic handoff: paper task accepted `docs/OWNERSHIP_DIAGNOSTICS.md` findings and holds the descriptive material in its `docs/ownership-response-diagnostics.md`.
-- Protocol: `docs/RESEARCH_PLAN.md#iclr-evidence-expansion` and `#qwen-answer-encoding-crossover`.
+- Registration evidence: `docs/reviews/qwen7b-mass-prompt-specificity-registration.md`; pinned receipt `review-20260905T014243639442Z.json`.
+- Paper handoff: the paper task integrated answer-encoding and ownership diagnostics into paper main `4706ea5`, with a 24-page PDF and nine-page main body. Its internal, build, visual and pinned writing reviews passed; see paper `docs/reviews/answer-encoding-integration.md`.
+- Protocol: `docs/RESEARCH_PLAN.md#qwen-mass-prompt-conditioned-specificity`.
 
 ## Bootstrap gate
 
@@ -51,41 +52,12 @@ Updated: 2026-09-05. Scientific state uses `PLANNED`, `RUNNING`, `FAILED`, and `
 - Writer ownership: immutable run `20260904T162317Z-8a55a4c2f6b6-consolidation-closure` owns the accepted experimental artifacts; current writer ownership is recorded in the active research stage.
 - Evidence: `/home/qingchan/data/concept-flow/runs/20260904T162317Z-8a55a4c2f6b6-consolidation-closure/`; `/home/qingchan/data/concept-flow/state/consolidation-input-closure-validator-replay-a-20260904T1634XXZ-F1ruMl/receipt.json`; reviewer receipts `/home/qingchan/.codex/state/claude-review-concept-flow/review-20260904T163729487366Z.json` and `/home/qingchan/.codex/state/claude-review-concept-flow/review-20260904T164410087766Z.json`; `docs/reviews/qwen7b-consolidation-vislast-input-closure.md`; `docs/reviews/six-gate-result-to-claim.md`.
 
-## Paper-planning gate
+## Accepted paper delivery
 
-- Run: the accepted four-gate evidence was organized into the six-section ICLR outline in `PAPER_PLAN.md`.
-- Observation: all 18 adjudicated values map to primary artifacts, and the outline preserves the registered availability, random/sham, and clinical-direction rungs.
-- Gate decision: `PASS`; the pinned read-only Claude review returned disposition `READY` with no required actions.
-- Evidence: `PAPER_PLAN.md`; reviewer receipt `/home/qingchan/.codex/state/claude-review-concept-flow/review-20260903T112856162325Z.json`; `docs/reviews/paper-plan.md`.
-
-## Manuscript-drafting gate
-
-- Run: reconcile the evidence-locked manuscript and generated evidence snapshot with the accepted six-gate sequence, validate and render it, inspect the decision-bearing pages, and request pinned read-only review at pushed commit `7e70d1db3ca95178abc1c0663c8030af65ea8005`.
-- Observation: the draft includes the Qwen ownership matrix and paired Consolidation closure gate throughout the claim chain. Static validation finds all 27 adjudicated values and 15 citations; the 11-page render ends the main body on page 8, embeds all fonts, and has no unresolved reference, overfull box, or clipped table. The reviewer returned `PASS`, `READY`, and no required actions; its optional clarity notes are incorporated.
-- Scientific state: accepted experimental evidence remains `OBSERVED`.
-- Gate decision: `PASS`.
-- Gate disposition: `READY` for immutable compilation.
-- Next step: can the accepted six-gate source compile reproducibly from an immutable commit while preserving the nine-page main-body limit, all 27 adjudicated values, readable tables, and fully embedded fonts? Run the registered immutable compile gate.
-- Evidence: `paper/`; `CLAIMS_FROM_RESULTS.md`; reviewer receipt `/home/qingchan/.codex/state/claude-review-concept-flow/review-20260904T165826704963Z.json`; `docs/reviews/six-gate-evidence-locked-manuscript.md`.
-
-## Paper-compilation gate
-
-- Run: immutable no-GPU build `20260904T170512Z-e477a63-sixgate-paper-compile` compiled clean pushed source `e477a634410f9867d9aa2be70b0795ad04f691e2` with pinned Tectonic 0.17.0.
-- Observation: the 11-page PDF has SHA-256 `91ab6dd2ecbb745a238e616a7fffd5827fb80c648d21887a040a1630a9c23102`, conservative main-body page 9 of 9, all 30 fonts embedded, all 27 adjudicated values, no unresolved marker or overfull box, and readable decision-bearing figures and tables.
-- Scientific state: accepted experimental evidence remains `OBSERVED`.
-- Gate decision: `PASS`; terminal manifest validation, compile checks, visual inspection, and the configured pinned read-only Claude review passed with no required actions.
-- Gate disposition: `READY` for anonymous bundle validation.
-- Next step: can the accepted six-gate PDF and its complete minimal source reproduce byte-identically as an anonymous submission bundle? Build and validate the registered immutable bundle.
-- Evidence: `/home/qingchan/data/concept-flow/runs/20260904T170512Z-e477a63-sixgate-paper-compile/`; reviewer receipt `/home/qingchan/.codex/state/claude-review-concept-flow/review-20260904T170638706411Z.json`; `docs/reviews/six-gate-paper-compilation.md`.
-## Submission-bundle gate
-
-- Run: immutable no-GPU bundle run `20260904T171115Z-3625aeb-sixgate-submission-bundle` packaged the accepted six-gate source and PDF, then rebuilt it with pinned Tectonic 0.17.0.
-- Observation: the 24-member archive has SHA-256 `11ae2a9e4cc41cde85bd2c1e65a0b03d92f4e73cf4f46eee0357d1521aa252e0`; all 22 source assets pass the manifest, every member is regular and safely rooted, and clean-room reproduction is byte-identical to the accepted PDF at SHA-256 `91ab6dd2ecbb745a238e616a7fffd5827fb80c648d21887a040a1630a9c23102`. Anonymous authorship and the identity-marker scan pass.
-- Scientific state: accepted experimental evidence remains `OBSERVED`.
-- Gate decision: `PASS`; the deterministic internal check and configured pinned read-only Claude review passed with no required actions.
-- Gate disposition: `READY` for submission handoff.
-- Next step: integrate accepted findings from the active evidence-expansion stage through the independent paper task.
-- Evidence: `/home/qingchan/data/concept-flow/runs/20260904T171115Z-3625aeb-sixgate-submission-bundle/`; reviewer receipt `/home/qingchan/.codex/state/claude-review-concept-flow/review-20260904T171201801981Z.json`; `docs/reviews/six-gate-anonymous-submission-bundle.md`. The Overleaf-facing source remains in the separate `concept-flow-paper` repository.
+- Run: the six-gate evidence passed paper planning, drafting, immutable compilation and anonymous-bundle validation.
+- Observation: the accepted baseline compiled from `e477a63` as an 11-page PDF with a nine-page main body, all 27 adjudicated values and embedded fonts. Bundle run `20260904T171115Z-3625aeb-sixgate-submission-bundle` reproduced that PDF byte-identically from 22 source assets.
+- Gate decision: baseline delivery `PASS`; all required internal and pinned read-only reviews passed. Current manuscript integration belongs to the independent paper task.
+- Evidence: `docs/reviews/paper-plan.md`, `docs/reviews/six-gate-evidence-locked-manuscript.md`, `docs/reviews/six-gate-paper-compilation.md`, `docs/reviews/six-gate-anonymous-submission-bundle.md`; exact run identities and receipts remain in `docs/EXPERIMENT_REGISTRY.md`.
 
 ## Transition rules
 
