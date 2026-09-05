@@ -6,13 +6,13 @@ Continue the current project through the registered Effusion readout diagnostic.
 
 ## Current handoff status
 
-Run: the server implementation is complete on `research/llava-readout-diagnostic`; real metadata preparation, focused checks, the complete repository suite and independent internal executable review passed without evaluating a new cohort image.
+Run: immutable execution `20260905T211508Z-d24f2a7fe05e-llava-readout` followed accepted implementation and registration review and stopped at the pre-scientific measurement gate before evaluating a new cohort image.
 
-Observation: the runner, immutable launcher and independent terminal verifier implement the fixed allocation, six-condition score grid, image-free controls, frozen-reader provenance and joint simultaneous inference. The internal evidence record is `docs/reviews/llava-readout-diagnostic-implementation.md`.
+Observation: the executable behaved as registered and preserved the failed preflight receipt without creating scientific score artifacts. Independent verification and the pinned measurement reviewer agree on the terminal classification; provenance is recorded in the failure ledger and receipts referenced by `docs/RESEARCH_STATE.md`.
 
-Gate decision: internal implementation and pinned read-only registration review `PASS`; scientific state `PLANNED`, gate disposition `READY` for one immutable run.
+Gate decision: pre-scientific gate `FAILED`, failure class `MEASUREMENT`; scientific state `PLANNED`, gate disposition `BLOCKED`.
 
-Next step: does the registered diagnostic pass its pre-scientific checks and complete within the fixed resource limits? Push the registration record, rerun every safety gate and launch the immutable experiment only if all checks remain valid.
+Next step: can a separately prospective measurement amendment establish usable A/B semantic orientation without evaluating the untouched diagnostic cohort? Do not rerun or substitute prompts or scoring under the current registration.
 
 ## Authoritative inputs
 
