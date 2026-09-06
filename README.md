@@ -1,14 +1,33 @@
 # Concept Flow — measuring what a medical VLM *uses*, not just what it encodes
 
-Code, result tables, and the evidence-locked paper snapshot for the study behind
-**“Medical Vision-Language Models Do Not Use What They Encode.”**
+Research code, registered protocols, accepted evidence, and manuscript dependencies
+for Concept Flow: clinical readout, steering efficacy, and direction-specific competition.
 The local workspace keeps this repository in `concept-flow-code/` and the independent,
 Overleaf-facing manuscript repository in the sibling `concept-flow-paper/` directory. The accepted
 paper snapshot remains in [`paper/`](paper/) for result-to-claim verification; current publication
 work lives in the private [`wy-coliney/concept-flow-paper`](https://github.com/wy-coliney/concept-flow-paper)
 repository. Keep the two repositories as siblings.
 
-## The idea in one paragraph
+## Research progress and records
+
+Start with [Research state](docs/RESEARCH_STATE.md) for the current stage, completed
+research, accepted findings, paper delivery, remaining decisions and task ownership.
+It is the authoritative progress page and is updated at research and delivery checkpoints.
+
+| Record | Purpose |
+| --- | --- |
+| [Research state](docs/RESEARCH_STATE.md) | Current progress, evidence map, paper/report links and next decision |
+| [Research plan](docs/RESEARCH_PLAN.md) | Prospective questions, locked protocols and gate criteria |
+| [Experiment registry](docs/EXPERIMENT_REGISTRY.md) | Run identities, execution status, artifacts and failure ledger |
+| [Research reviews](docs/reviews/) | Protocol, implementation and result acceptance records |
+| [Manuscript and reviews](https://github.com/wy-coliney/concept-flow-paper) | Current publication sources, PDF, manuscript reviews and review-package archive |
+| [Project contract](AGENTS.md) | Harness entry point and links to writing, evidence and remote-operation constraints |
+
+The following sections document the original utilisation analysis and its released
+tables. Its scripts and reproduction claims apply to that analysis; the current
+registered research and manuscript dependencies are indexed in the records above.
+
+## Original utilisation analysis
 
 A linear probe decodes a clinical finding from a layer of a medical vision-language model, and the finding
 is said to be *represented* there. We argue that such a score is the sum of three things, and that the
