@@ -18,6 +18,7 @@ CLAUDE = HOME / ".local/bin/claude"
 REPO = HOME / "work/concept-flow"
 STATE = HOME / ".codex/state/claude-review-concept-flow"
 MODEL = "claude-fable-5-1"
+ACCEPTED_MODELS = frozenset({MODEL, "claude-opus-5"})
 ARIS_SHA = "94d8093ed21d20a790830318190095b9f5036ce8"
 TOOL = {
     "name": "review",
@@ -56,6 +57,10 @@ def canonical_models(payload: Any) -> set[str]:
         if isinstance(usage, dict) and isinstance(usage.get("canonicalModel"), str):
             found.add(usage["canonicalModel"])
     return found
+
+
+def accepted_models(models: set[str]) -> bool:
+    return bool(models) and models <= ACCEPTED_MODELS
 
 
 def review_argv(prompt: str) -> list[str]:
@@ -116,11 +121,12 @@ def run_review(prompt: str) -> str:
     except json.JSONDecodeError as error:
         raise RuntimeError(f"Claude did not return valid JSON (exit {completed.returncode})") from error
     models = canonical_models(payload)
-    valid = completed.returncode == 0 and models == {MODEL} and before == after
+    valid = completed.returncode == 0 and accepted_models(models) and before == after
     STATE.mkdir(mode=0o700, parents=True, exist_ok=True)
     receipt = {
         "utc": datetime.now(UTC).isoformat(),
         "modelExpected": MODEL,
+        "modelsAccepted": sorted(ACCEPTED_MODELS),
         "modelsObserved": sorted(models),
         "effort": "medium",
         "readOnly": before == after,

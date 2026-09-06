@@ -220,7 +220,8 @@ with open(sys.argv[1], encoding="utf-8") as stream:
     receipt = json.load(stream)
 assert receipt.get("valid") is True
 assert receipt.get("readOnly") is True
-assert receipt.get("modelsObserved") == [sys.argv[2]]
+observed = set(receipt.get("modelsObserved", []))
+assert observed and observed <= {sys.argv[2], "claude-opus-5"}
 assert receipt.get("arisFullSha") == sys.argv[3]
 assert receipt.get("wrapperSha256") == sys.argv[4]
 PY

@@ -464,3 +464,7 @@ If preparation is ready, register weight staging and a validation-only measureme
 ## Data and model prerequisites
 
 Fresh infrastructure smoke tests require no private data. Full table regeneration requires a server-local ChestX-ray14 image tree and manifest with image paths; ISIC requires its terms and a contact email; LLaVA-Med requires the converted local model directory expected by `src/registry.py`. Missing external assets are `BLOCKED`, never `FAILED` experiments.
+
+## Reviewer routing policy
+
+For Concept Flow, reviewer requests use `claude-fable-5-1`, medium effort and the fixed read-only transport. The user authorizes provider-side routing to `claude-opus-5`; returned canonical models must be a nonempty subset of these two names. Receipts retain the requested model, accepted model set and actual observed models. Successful process exit and an unchanged clean checkout remain required. This policy applies to new reviews; historical receipts retain their original verdicts.
