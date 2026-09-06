@@ -19,10 +19,10 @@ At safe checkpoints commit/push owned files, integrate the completed verified br
 
 ## Current handoff
 
-Run: immutable run `20260905T232313Z-2a95dfbed888-llava-yesno` completed the registered image and text grid before post-execution summarization stopped.
+Run: immutable run `20260905T232313Z-2a95dfbed888-llava-yesno` completed the registered 2,800-image/two-text grid; source-bound validator-only recovery reused every native outcome and terminal replay passed.
 
-Observation: the complete native artifact is preserved; validator-only recovery is limited to bounded float32 reduction replay checks and the derived summary/terminal receipt.
+Observation: accepted-wording image AUROC is `0.5259` with advantage `0.1187`; alternate-wording AUROC is `0.5089` with advantage `0.1113`. All three registered simultaneous intervals cross zero, and frozen-reader replication is false.
 
-Gate decision: execution `FAILED` at implementation validation; registration remains `PASS`, and scientific disposition is unavailable until recovery review passes.
+Gate decision: result `PASS`, scientific state `OBSERVED`, gate disposition `READY`; opportunity is false, wording is unresolved, and pinned read-only review accepts evidence synthesis. The server-writer assignment is complete.
 
-Next step: validate the unchanged artifact through a clean pushed recovery commit, independent replay and pinned read-only result review; do not rerun model outcomes.
+Next step: can the accepted negative/unresolved diagnostic be integrated into the evidence-locked manuscript without widening its registered scope? Integrate the verified branch into `main` and hand the accepted evidence to the independent paper writer; no rerun is authorised.
