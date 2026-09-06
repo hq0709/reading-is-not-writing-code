@@ -443,6 +443,16 @@ Independent design and executable reviews plus pinned read-only registration PAS
 
 Accepted valid evidence routes to `evidence_synthesis`. An opportunity may motivate a separately registered intervention with its own capability/control gates; wording dependence may motivate a separately registered confirmation. Neither route is dispatched by this gate. Broad intervals remain possible with 25 positives. Donor contrasts identify label-linked image dependence, including correlated findings; the wording contrast does not by itself locate the responsible computation.
 
+### Medical-domain runtime feasibility
+
+The next preparation gate asks whether `microsoft/llava-med-v1.5-mistral-7b` at `91bb16c122001ddc9cf1fd36ce1dae09448943a2` can support a faithful, auditable first-answer measurement in the fixed Concept Flow environment. It follows the medical-domain extension in the ICLR evidence-expansion route. The accepted general-model experiments retain their protocols and dispositions. Metadata and runtime observations are in `docs/MEDICAL_MODEL_FEASIBILITY.md`.
+
+The project task owns a source/configuration audit using official implementation commit `30697ca50b5c29a8e955c99330b259776aef27b9`. Bound this preparation to one CPU hour, public source and small configuration/tokenizer/index files, and zero GPU work or patient evaluation. Preserve the fixed environment. Examine (1) checkpoint-key mapping and shape expectations including embedded vision weights, (2) tokenizer and Mistral conversation construction, (3) square-padding and CLIP normalization, (4) layer `-2` patch selection and projector placement, and (5) the current Transformers forward/position/cache interface. Record the smallest viable loading path and each unresolved equivalence check.
+
+A `READY` preparation requires a concrete source-grounded implementation path, explicit preservation of the model's complete learned parameters, an executable verification design for image-token insertion and first-answer scoring, and a bounded asset-staging estimate. A dependency change, unsupported model interface or unresolved weight/feature mapping yields `BLOCKED` with the specific missing decision. No inference result is needed or permitted to choose the loading path. Internal independent review precedes acceptance of the preparation report.
+
+If preparation is ready, register weight staging and a validation-only measurement preflight with pinned read-only review before execution. That subsequent protocol must lock asset verification, inputs, token scoring, timing and stop conditions. Patient-level scientific evaluation then requires its own registered sample allocation, clean-image versus mismatched-image comparison, uncertainty and conditional read/write routing. This preparation gate alone does not authorize model-weight downloads, archive-wide extraction or clinical interventions.
+
 ## Evaluation and fairness
 
 - Train/test separation is patient-level; validation may select implementation parameters but never report headline evidence.
