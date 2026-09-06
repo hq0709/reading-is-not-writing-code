@@ -21,6 +21,7 @@ artifacts/raw_runs/
 *.safetensors
 .pytest_cache/
 .ruff_cache/
+.omc/
 # activations, weights and images are not redistributed; see the README
 runs/act_*/
 runs/int_*/
