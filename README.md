@@ -18,6 +18,7 @@ It is the authoritative progress page and is updated at research and delivery ch
 | --- | --- |
 | [Research state](docs/RESEARCH_STATE.md) | Current progress, evidence map, paper/report links and next decision |
 | [Research plan](docs/RESEARCH_PLAN.md) | Prospective questions, locked protocols and gate criteria |
+| [External replication package](docs/external-replication/README.md) | Multi-model/scale/domain experiment specification, hardware planning and return-data contract |
 | [Experiment registry](docs/EXPERIMENT_REGISTRY.md) | Run identities, execution status, artifacts and failure ledger |
 | [Research reviews](docs/reviews/) | Protocol, implementation and result acceptance records |
 | [Manuscript and reviews](https://github.com/wy-coliney/concept-flow-paper) | Current publication sources, PDF, manuscript reviews and review-package archive |

@@ -1,0 +1,23 @@
+model_key,model_id,family,nominal_size_b,batch,recommended_bf16_hardware,role,source_url
+q25-3,Qwen/Qwen2.5-VL-3B-Instruct,qwen2.5-vl,3,phase1,1x48GB,small-scale,https://huggingface.co/Qwen/Qwen2.5-VL-3B-Instruct
+q25-7,Qwen/Qwen2.5-VL-7B-Instruct,qwen2.5-vl,7,phase1,1x80GB,bridge,https://huggingface.co/Qwen/Qwen2.5-VL-7B-Instruct
+q25-32,Qwen/Qwen2.5-VL-32B-Instruct,qwen2.5-vl,32,phase1,2x80GB,external-large,https://huggingface.co/Qwen/Qwen2.5-VL-32B-Instruct
+q25-72,Qwen/Qwen2.5-VL-72B-Instruct,qwen2.5-vl,72,phase2,4x80GB or 2x141GB,external-large,https://huggingface.co/Qwen/Qwen2.5-VL-72B-Instruct
+q3-4,Qwen/Qwen3-VL-4B-Instruct,qwen3-vl,4,phase1,1x48GB,small-scale,https://huggingface.co/Qwen/Qwen3-VL-4B-Instruct
+q3-8,Qwen/Qwen3-VL-8B-Instruct,qwen3-vl,8,phase1,1x80GB,family-anchor,https://huggingface.co/Qwen/Qwen3-VL-8B-Instruct
+q3-32,Qwen/Qwen3-VL-32B-Instruct,qwen3-vl,32,phase1,2x80GB,external-large,https://huggingface.co/Qwen/Qwen3-VL-32B-Instruct
+iv35-8,OpenGVLab/InternVL3_5-8B-HF,internvl3.5,8,phase1,1x80GB,family-anchor,https://huggingface.co/OpenGVLab/InternVL3_5-8B-HF
+iv35-14,OpenGVLab/InternVL3_5-14B-HF,internvl3.5,14,phase1,1x80GB,middle-scale,https://huggingface.co/OpenGVLab/InternVL3_5-14B-HF
+iv35-38,OpenGVLab/InternVL3_5-38B-HF,internvl3.5,38,phase1,2x80GB,external-large,https://huggingface.co/OpenGVLab/InternVL3_5-38B-HF
+gemma3-4,google/gemma-3-4b-it,gemma3,4,phase1,1x48GB,general-medical-pair,https://huggingface.co/google/gemma-3-4b-it
+gemma3-12,google/gemma-3-12b-it,gemma3,12,phase2,1x80GB,middle-scale,https://huggingface.co/google/gemma-3-12b-it
+gemma3-27,google/gemma-3-27b-it,gemma3,27,phase1,2x80GB,general-medical-pair,https://huggingface.co/google/gemma-3-27b-it
+medgemma-4,google/medgemma-4b-it,medgemma,4,phase1,1x48GB,general-medical-pair,https://huggingface.co/google/medgemma-4b-it
+medgemma-27,google/medgemma-27b-it,medgemma,27,phase1,2x80GB,external-medical-pair,https://huggingface.co/google/medgemma-27b-it
+llama32-11,meta-llama/Llama-3.2-11B-Vision-Instruct,llama3.2-vision,11,phase1,1x80GB,cross-attention-anchor,https://huggingface.co/meta-llama/Llama-3.2-11B-Vision-Instruct
+llama32-90,meta-llama/Llama-3.2-90B-Vision-Instruct,llama3.2-vision,90,phase2,4x80GB,external-large,https://huggingface.co/meta-llama/Llama-3.2-90B-Vision-Instruct
+llava15-7,llava-hf/llava-1.5-7b-hf,llava1.5,7,phase1,1x48GB,bridge,https://huggingface.co/llava-hf/llava-1.5-7b-hf
+llava15-13,llava-hf/llava-1.5-13b-hf,llava1.5,13,phase2,1x80GB,bridge-scale,https://huggingface.co/llava-hf/llava-1.5-13b-hf
+lingshu-7,lingshu-medical-mllm/Lingshu-7B,lingshu,7,phase1,1x80GB,medical-family,https://huggingface.co/lingshu-medical-mllm/Lingshu-7B
+llavamed-7,microsoft/llava-med-v1.5-mistral-7b,llava-med,7,phase2,1x80GB,medical-runtime,https://huggingface.co/microsoft/llava-med-v1.5-mistral-7b
+lingshu-32,lingshu-medical-mllm/Lingshu-32B,lingshu,32,phase2,2x80GB,external-medical-pair,https://huggingface.co/lingshu-medical-mllm/Lingshu-32B

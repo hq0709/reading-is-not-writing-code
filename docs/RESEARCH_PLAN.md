@@ -465,6 +465,12 @@ If preparation is ready, register weight staging and a validation-only measureme
 
 Fresh infrastructure smoke tests require no private data. Full table regeneration requires a server-local ChestX-ray14 image tree and manifest with image paths; ISIC requires its terms and a contact email; LLaVA-Med requires the converted local model directory expected by `src/registry.py`. Missing external assets are `BLOCKED`, never `FAILED` experiments.
 
+## External phenomenon replication
+
+Prospective protocol `cf-transfer-v1` is specified in [the external execution package](external-replication/README.md), with [machine-readable configuration](external-replication/protocol.json) and [return-data requirements](external-replication/return-format.md). It covers 22 checkpoints, NIH/CheXpert/COCO, six concepts per dataset, and three main tables for model/scale, dataset/domain, and measurement stability. The fixed NIH evaluation manifest is included; additional dataset manifests and family adapters are execution prerequisites.
+
+This protocol defines a new fixed-dose, shared-panel comparison. Earlier registered results keep their original cohorts and inference. Model revisions, consumed loci, shared data manifests and validated adapters are locked before test outcomes. The project accepts collaborators' own infrastructure and then performs the existing independent and pinned read-only evidence reviews before scientific integration. Preparation is authorised; external execution is allocated through the user and no run is dispatched by this document.
+
 ## Reviewer routing policy
 
 For Concept Flow, reviewer requests use `claude-fable-5-1`, medium effort and the fixed read-only transport. The user authorizes provider-side routing to `claude-opus-5`; returned canonical models must be a nonempty subset of these two names. Receipts retain the requested model, accepted model set and actual observed models. Successful process exit and an unchanged clean checkout remain required. This policy applies to new reviews; historical receipts retain their original verdicts.

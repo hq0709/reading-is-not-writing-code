@@ -1,0 +1,499 @@
+{
+  "protocol_id": "cf-transfer-v1",
+  "status": "PLANNED",
+  "code_reference_commit": "763072d39dfedb34d42432415408de4e6f547f9b",
+  "dataset": {
+    "name": "NIH ChestX-ray14",
+    "manifest": "data/manifest.csv",
+    "cohorts": "docs/external-replication/cohorts.csv",
+    "train_rule": "all original train rows",
+    "preflight_patients": 16,
+    "calibration_patients": 400,
+    "test_patients": 600,
+    "images": "row_id + .png; licensed local image root supplied by operator",
+    "patient_disjoint_roles": true,
+    "prior_study_patient_overlap": "allowed and disclosed; shared-panel model replication, not fresh-patient confirmation",
+    "primary_datasets": [
+      "nih",
+      "chexpert",
+      "coco"
+    ],
+    "nih_concepts": [
+      "Effusion",
+      "Atelectasis",
+      "Pneumothorax",
+      "Cardiomegaly",
+      "Mass",
+      "Nodule"
+    ],
+    "chexpert_concepts": [
+      "Effusion",
+      "Atelectasis",
+      "Pneumothorax",
+      "Cardiomegaly",
+      "Consolidation",
+      "Edema"
+    ],
+    "coco_concepts": [
+      "person",
+      "dog",
+      "car",
+      "chair",
+      "bottle",
+      "bicycle"
+    ],
+    "chexpert_finding_phrases": [
+      "a pleural effusion",
+      "atelectasis",
+      "a pneumothorax",
+      "cardiomegaly",
+      "consolidation",
+      "pulmonary edema"
+    ],
+    "coco_finding_phrases": [
+      "a person",
+      "a dog",
+      "a car",
+      "a chair",
+      "a bottle",
+      "a bicycle"
+    ],
+    "templates_image_phrase": {
+      "nih": "this chest radiograph",
+      "chexpert": "this chest radiograph",
+      "coco": "this photograph"
+    },
+    "additional_manifests": "CheXpert and COCO ordered manifests must be constructed once using README section 4 and shared before model runs"
+  },
+  "concepts": [
+    "Effusion",
+    "Atelectasis",
+    "Pneumothorax",
+    "Cardiomegaly",
+    "Mass",
+    "Nodule"
+  ],
+  "finding_phrases": [
+    "a pleural effusion",
+    "atelectasis",
+    "a pneumothorax",
+    "cardiomegaly",
+    "a lung mass",
+    "a lung nodule"
+  ],
+  "primary": {
+    "module": "CORE",
+    "question_template": "IY",
+    "locus": "consumed final visual feature block, before connector",
+    "direction_fit_seed": 0,
+    "alpha": 0.25,
+    "clinical_directions": 6,
+    "random_directions": 119,
+    "question_specific_shams": 1,
+    "configurations_per_question": 127,
+    "test_rows": 457200,
+    "score": "max present-candidate logit minus max absent-candidate logit",
+    "primary_ownership_coordinate": "sigmoid(semantic_margin)",
+    "primary_family": "22 models x 3 datasets x 6 questions x 5 clinical/object contrasts = 1980; separate bootstrap within dataset, shared across models",
+    "bootstrap_draws": 5000,
+    "bootstrap_seed": 2026090601,
+    "simultaneous_interval": "two-sided max-absolute-centered-Z with fixed per-contrast bootstrap SD"
+  },
+  "probe": {
+    "projection_dim": 512,
+    "projection_seed": 0,
+    "projection": "PCG64 standard_normal(D,512)/sqrt(512), float32",
+    "standardization": "fit train only; StandardScaler",
+    "classifier": "LogisticRegression(C=1, max_iter=2000, solver=lbfgs, class_weight=null, random_state=0)",
+    "clinical_orientation": "positive diagnosis",
+    "control_seeds": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19
+    ],
+    "type_columns": [
+      "view_AP",
+      "sex_M",
+      "age_decade"
+    ],
+    "nuisances": [
+      "view_AP",
+      "sex_M"
+    ],
+    "refit_seeds": [
+      1,
+      2
+    ],
+    "refit": "bootstrap training patients with replacement seeds1,2, retain all rows per sampled patient multiplicity; refit train scaler and all6logistic probes with fixed projection; COCO resample images"
+  },
+  "intervention": {
+    "mode": "reltoken",
+    "formula": "h_token_new = h_token + alpha * norm(h_token,2) * unit_direction",
+    "random_seed": 0,
+    "random_rng": "PCG64; one 119xD standard_normal draw then row normalization; saved vectors authoritative",
+    "sham": "after random draw, permute each clinical normal in concept order; save all permutations",
+    "tensor_policy": "preserve special tokens and padding; perturb consumed image tokens; record branch selection"
+  },
+  "templates": {
+    "IY": "Is there {finding} in {image_phrase}? Answer yes or no.",
+    "WY": "Does {image_phrase} show {finding}? Answer yes or no.",
+    "IA": "Is there {finding} in {image_phrase}? Answer A if the finding is present and B if it is absent. Reply with A or B only.",
+    "IB": "Is there {finding} in {image_phrase}? Answer B if the finding is present and A if it is absent. Reply with A or B only.",
+    "WA": "Does {image_phrase} show {finding}? Answer A if the finding is present and B if it is absent. Reply with A or B only.",
+    "WB": "Does {image_phrase} show {finding}? Answer B if the finding is present and A if it is absent. Reply with A or B only."
+  },
+  "modules": {
+    "CALIBRATION": {
+      "NIH_COCO_rows_each": 6400,
+      "CheXpert_rows": 2400,
+      "LOCUS_rows_each_NIH_COCO": 2400
+    },
+    "CORE": {
+      "cohort": "test",
+      "concepts": "all",
+      "templates": [
+        "IY"
+      ],
+      "alpha": [
+        0.25
+      ],
+      "directions": "baseline+6clinical+119random+question_sham",
+      "expected_rows": 457200,
+      "datasets": [
+        "nih",
+        "chexpert",
+        "coco"
+      ]
+    },
+    "PROMPT": {
+      "cohort": "test",
+      "templates": [
+        "WY",
+        "IA",
+        "IB",
+        "WA",
+        "WB"
+      ],
+      "alpha": [
+        0.25
+      ],
+      "directions": "baseline+6clinical+119random+question_sham",
+      "expected_rows": 762000,
+      "datasets": [
+        "nih",
+        "coco"
+      ],
+      "concepts_by_dataset": {
+        "nih": [
+          "Effusion",
+          "Mass"
+        ],
+        "coco": [
+          "person",
+          "bottle"
+        ]
+      }
+    },
+    "DOSE": {
+      "cohort": "first 200 test rows in cohorts.csv order",
+      "concepts": "all",
+      "templates": [
+        "IY"
+      ],
+      "alpha": [
+        -0.5,
+        -0.25,
+        -0.1,
+        0.1,
+        0.5
+      ],
+      "directions": "6clinical+first20random+question_sham",
+      "expected_rows": 162000,
+      "baseline": "reuse CORE",
+      "datasets": [
+        "nih",
+        "coco"
+      ]
+    },
+    "REFIT": {
+      "cohort": "test",
+      "concepts": "all",
+      "templates": [
+        "IY"
+      ],
+      "alpha": [
+        0.25
+      ],
+      "seeds": [
+        1,
+        2
+      ],
+      "directions": "6clinical+question_sham",
+      "expected_rows": 50400,
+      "baseline": "reuse CORE",
+      "datasets": [
+        "nih",
+        "coco"
+      ]
+    },
+    "LOCUS": {
+      "datasets": [
+        "nih",
+        "coco"
+      ],
+      "status": "required_for_full_package",
+      "locus": "connector_output (single consumed image embedding stream; family adaptation recorded)",
+      "directions": "baseline+6concept+119random+question_sham",
+      "alpha": [
+        0.25
+      ],
+      "concepts": "all",
+      "templates": [
+        "IY"
+      ],
+      "cohort": "test",
+      "expected_rows_per_dataset_checkpoint": 457200,
+      "calibration_rows_per_dataset_checkpoint": 2400
+    }
+  },
+  "numerics": {
+    "weights": "BF16 primary; record exceptions as separate condition",
+    "eval_mode": true,
+    "dropout": false,
+    "gradient": "disabled",
+    "max_generation_tokens": 0,
+    "logit_storage": "float32",
+    "aggregate_storage": "float64",
+    "quantization": "separate sensitivity condition only"
+  },
+  "activation_storage": {
+    "required": "pooled unprojected features, float16 or float32, all train/calibration/test rows; row ids and masks metadata",
+    "optional": "full token tensors for 16 preflight images only"
+  },
+  "planned_models": [
+    {
+      "model_key": "q25-3",
+      "model_id": "Qwen/Qwen2.5-VL-3B-Instruct",
+      "batch": "phase1",
+      "required_for_full_package": true,
+      "model_revision": null,
+      "processor_revision": null,
+      "execution_state": "NOT_STARTED"
+    },
+    {
+      "model_key": "q25-7",
+      "model_id": "Qwen/Qwen2.5-VL-7B-Instruct",
+      "batch": "phase1",
+      "required_for_full_package": true,
+      "model_revision": null,
+      "processor_revision": null,
+      "execution_state": "NOT_STARTED"
+    },
+    {
+      "model_key": "q25-32",
+      "model_id": "Qwen/Qwen2.5-VL-32B-Instruct",
+      "batch": "phase1",
+      "required_for_full_package": true,
+      "model_revision": null,
+      "processor_revision": null,
+      "execution_state": "NOT_STARTED"
+    },
+    {
+      "model_key": "q25-72",
+      "model_id": "Qwen/Qwen2.5-VL-72B-Instruct",
+      "batch": "phase2",
+      "required_for_full_package": true,
+      "model_revision": null,
+      "processor_revision": null,
+      "execution_state": "NOT_STARTED"
+    },
+    {
+      "model_key": "q3-4",
+      "model_id": "Qwen/Qwen3-VL-4B-Instruct",
+      "batch": "phase1",
+      "required_for_full_package": true,
+      "model_revision": null,
+      "processor_revision": null,
+      "execution_state": "NOT_STARTED"
+    },
+    {
+      "model_key": "q3-8",
+      "model_id": "Qwen/Qwen3-VL-8B-Instruct",
+      "batch": "phase1",
+      "required_for_full_package": true,
+      "model_revision": null,
+      "processor_revision": null,
+      "execution_state": "NOT_STARTED"
+    },
+    {
+      "model_key": "q3-32",
+      "model_id": "Qwen/Qwen3-VL-32B-Instruct",
+      "batch": "phase1",
+      "required_for_full_package": true,
+      "model_revision": null,
+      "processor_revision": null,
+      "execution_state": "NOT_STARTED"
+    },
+    {
+      "model_key": "iv35-8",
+      "model_id": "OpenGVLab/InternVL3_5-8B-HF",
+      "batch": "phase1",
+      "required_for_full_package": true,
+      "model_revision": null,
+      "processor_revision": null,
+      "execution_state": "NOT_STARTED"
+    },
+    {
+      "model_key": "iv35-14",
+      "model_id": "OpenGVLab/InternVL3_5-14B-HF",
+      "batch": "phase1",
+      "required_for_full_package": true,
+      "model_revision": null,
+      "processor_revision": null,
+      "execution_state": "NOT_STARTED"
+    },
+    {
+      "model_key": "iv35-38",
+      "model_id": "OpenGVLab/InternVL3_5-38B-HF",
+      "batch": "phase1",
+      "required_for_full_package": true,
+      "model_revision": null,
+      "processor_revision": null,
+      "execution_state": "NOT_STARTED"
+    },
+    {
+      "model_key": "gemma3-4",
+      "model_id": "google/gemma-3-4b-it",
+      "batch": "phase1",
+      "required_for_full_package": true,
+      "model_revision": null,
+      "processor_revision": null,
+      "execution_state": "NOT_STARTED"
+    },
+    {
+      "model_key": "gemma3-12",
+      "model_id": "google/gemma-3-12b-it",
+      "batch": "phase2",
+      "required_for_full_package": true,
+      "model_revision": null,
+      "processor_revision": null,
+      "execution_state": "NOT_STARTED"
+    },
+    {
+      "model_key": "gemma3-27",
+      "model_id": "google/gemma-3-27b-it",
+      "batch": "phase1",
+      "required_for_full_package": true,
+      "model_revision": null,
+      "processor_revision": null,
+      "execution_state": "NOT_STARTED"
+    },
+    {
+      "model_key": "medgemma-4",
+      "model_id": "google/medgemma-4b-it",
+      "batch": "phase1",
+      "required_for_full_package": true,
+      "model_revision": null,
+      "processor_revision": null,
+      "execution_state": "NOT_STARTED"
+    },
+    {
+      "model_key": "medgemma-27",
+      "model_id": "google/medgemma-27b-it",
+      "batch": "phase1",
+      "required_for_full_package": true,
+      "model_revision": null,
+      "processor_revision": null,
+      "execution_state": "NOT_STARTED"
+    },
+    {
+      "model_key": "llama32-11",
+      "model_id": "meta-llama/Llama-3.2-11B-Vision-Instruct",
+      "batch": "phase1",
+      "required_for_full_package": true,
+      "model_revision": null,
+      "processor_revision": null,
+      "execution_state": "NOT_STARTED"
+    },
+    {
+      "model_key": "llama32-90",
+      "model_id": "meta-llama/Llama-3.2-90B-Vision-Instruct",
+      "batch": "phase2",
+      "required_for_full_package": true,
+      "model_revision": null,
+      "processor_revision": null,
+      "execution_state": "NOT_STARTED"
+    },
+    {
+      "model_key": "llava15-7",
+      "model_id": "llava-hf/llava-1.5-7b-hf",
+      "batch": "phase1",
+      "required_for_full_package": true,
+      "model_revision": null,
+      "processor_revision": null,
+      "execution_state": "NOT_STARTED"
+    },
+    {
+      "model_key": "llava15-13",
+      "model_id": "llava-hf/llava-1.5-13b-hf",
+      "batch": "phase2",
+      "required_for_full_package": true,
+      "model_revision": null,
+      "processor_revision": null,
+      "execution_state": "NOT_STARTED"
+    },
+    {
+      "model_key": "lingshu-7",
+      "model_id": "lingshu-medical-mllm/Lingshu-7B",
+      "batch": "phase1",
+      "required_for_full_package": true,
+      "model_revision": null,
+      "processor_revision": null,
+      "execution_state": "NOT_STARTED"
+    },
+    {
+      "model_key": "llavamed-7",
+      "model_id": "microsoft/llava-med-v1.5-mistral-7b",
+      "batch": "phase2",
+      "required_for_full_package": true,
+      "model_revision": null,
+      "processor_revision": null,
+      "execution_state": "NOT_STARTED"
+    },
+    {
+      "model_key": "lingshu-32",
+      "model_id": "lingshu-medical-mllm/Lingshu-32B",
+      "batch": "phase2",
+      "required_for_full_package": true,
+      "model_revision": null,
+      "processor_revision": null,
+      "execution_state": "NOT_STARTED"
+    }
+  ],
+  "total_planned_outcomes": {
+    "models": 22,
+    "datasets": 3,
+    "primary_concept_cells": 396,
+    "core_clinical_matrix_cells": 2376,
+    "primary_CORE_rows": 30175200,
+    "all_test_and_calibration_rows": 93605600,
+    "excludes": "feature extraction, interface preflight and retries"
+  }
+}
