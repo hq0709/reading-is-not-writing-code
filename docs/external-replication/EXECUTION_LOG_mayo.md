@@ -346,7 +346,9 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   dog 0.757 / car / +0.751 / 0.025 / 0.008; car 0.628 / dog / +0.612 / 0.012 / 0.006; chair 0.873 / dog / +0.872 /
   0.024 / 0.038; bottle 0.561 / bicycle / +0.512 / 0.050 / 0.025; bicycle 0.812 / person / +0.814 / 0.012 / 0.002.
   Every object concept is OWNED: steering reference met (rank 1/120) and all five simultaneous lower bounds
-  positive for all six questions. Random directions and shams barely move any answer (max random delta <= 0.05).
+  positive for all six questions. Random directions and shams barely move any answer (largest random delta 0.13
+  for bottle, <= 0.06 for the other five; shams <= 0.04). Raw check: bottle baseline P(yes) 0.10 -> 0.66 under its own
+  direction, 0.02-0.08 under other object directions; person 0.50 -> 0.99 (own) vs 0.31 (dog direction).
   On NIH the same model, projection, readout capacity, dose and controls give zero owned concepts (all six
   diagonals lose to a clinical competitor). The "decodable but not direction-specific" phenomenon is therefore
   not a property of the model or of the protocol: it is specific to the report-mined chest-radiograph concepts.
