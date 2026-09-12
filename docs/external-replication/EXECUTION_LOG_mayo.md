@@ -371,3 +371,12 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   shows more negative ownership than the vision block for LLaVA); median label gap -0.005 [-0.026, +0.016];
   wording IY-WY: Effusion -0.017 [-0.019, -0.015], Mass +0.011 [0.009, 0.014]; mapping contrasts not measurable.
 - Gate decision: second complete NIH deliverable (with the interface disposition for A/B templates).
+
+## 2026-09-12 CheXpert images staged
+
+- Run: five CheXpert Plus PNG zip chunks (720 GB) streamed from Redivis at 76-80 MB/s; the 21,016 manifest images
+  extracted (members under `PNG/train/...`, matched on the trailing path); 114 GB under
+  `cf-transfer/data/chexpert/images/train/`; completion marker written.
+- Gate decision: CheXpert data READY; the 102 queued CheXpert tasks (preparation, CORE, CALIBRATION for 17
+  checkpoints) are now claimable by the workers. The zip chunks are kept for now (re-downloadable) and can be
+  deleted once the CheXpert blocks are accepted.
