@@ -426,3 +426,12 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   steering reference (bottle rank 10/120), but effects are small (W_qq 0.01-0.07) because LLaVA already answers
   object questions near ceiling. Table 3: dose range 0.031, refit SD 0.004, connector O +0.001, label gap -0.20.
 - Gate decision: valid OBSERVED; llava15-7 COCO block packaged COMPLETE (yes/no templates).
+
+## 2026-09-12 llavamed-7 NIH gate
+
+- Run: NIH preparation for LLaVA-Med v1.5 on a Slurm worker (features, fits, preflight both loci).
+- Observation: reach/determinism/no-op/isolation/fp32 checks pass (20.2/s); yes/no mapping passes (IY margins [(1, 6.33), (0, -2.31), (1, 7.57), (0, -3.27)]);
+  A/B letter mapping fails as for llava15-7 and llavamed-7/CheXpert, so IA/IB/WA/WB are INELIGIBLE (eligibility {'IY': True, 'WY': True, 'IA': False, 'IB': False, 'WA': False, 'WB': False}).
+  Calibration selectivity: Effusion 0.119, Atelectasis 0.105, Pneumothorax 0.110, Cardiomegaly 0.061, Mass 0.085,
+  Nodule 0.019.
+- Gate decision: READY for yes/no templates; CORE/DOSE/REFIT/LOCUS and the WY PROMPT block are claimable.
