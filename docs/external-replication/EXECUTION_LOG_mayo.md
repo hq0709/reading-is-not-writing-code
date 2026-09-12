@@ -248,3 +248,16 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   loses it under "Is there", exactly the prompt-conditioned competition the paper reports for Mass (show A/B
   positive, is negative); Effusion's attribution deficit is wording-independent.
 - Gate decision: valid OBSERVED; both registered PROMPT contrasts filled for q25-7 (45 table cells now filled).
+
+## 2026-09-12 q3-8 NIH calibration flags and Table 3 aggregates
+
+- Observation (calibration, 400 patients): readable = Effusion (S 0.128), Pneumothorax (0.127), Cardiomegaly (0.202),
+  Mass (0.124); not readable = Atelectasis (0.069), Nodule (-0.071). Answer-capable = all six (clean IY AUROC
+  Effusion 0.766, Atelectasis 0.653, Pneumothorax 0.656, Cardiomegaly 0.799, Mass 0.641, Nodule 0.651).
+  Table 3: median signed-dose O range 0.470 [0.443, 0.497]; median refit O SD 0.103 [0.094, 0.110];
+  connector median O -0.021 [-0.025, -0.016]; median label gap -1.093 [-1.587, -0.710] logit units
+  (matched directions shift disease-negative patients far more than positives).
+- Gate decision: valid OBSERVED. Contrast with q25-7: Qwen3-VL-8B answers every question above chance and reads
+  four concepts, but at alpha 0.25 no clinical direction beats the random family (steering reference 0/6) while
+  Qwen2.5-VL-7B met it for Effusion; readability/capability do not predict steering specificity across the two
+  generations.
