@@ -337,3 +337,24 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   q3-32 0.36-0.39, q25-7 COCO 0.33). llava15-7 COCO fails only the A/B mapping check (same failure as NIH), so
   IA/IB/WA/WB are INELIGIBLE for llava15-7 on COCO as well.
 - Gate decision: READY for q25-32, q3-32 (both datasets), q25-7 COCO, llava15-7 COCO (yes/no templates).
+
+## 2026-09-12 q25-7 COCO: CORE, CALIBRATION, DOSE, REFIT complete (first cross-domain result)
+
+- Run: COCO CORE (457,200 outcomes over 600 val2017 images; queue workers), CALIBRATION, DOSE, REFIT, LOCUS_CAL;
+  statistics with the same rules as NIH (unit = image).
+- Observation (W_qq / strongest competitor / O_q / random p95 / |sham|): person 0.496 / car / +0.482 / 0.001 / 0.043;
+  dog 0.757 / car / +0.751 / 0.025 / 0.008; car 0.628 / dog / +0.612 / 0.012 / 0.006; chair 0.873 / dog / +0.872 /
+  0.024 / 0.038; bottle 0.561 / bicycle / +0.512 / 0.050 / 0.025; bicycle 0.812 / person / +0.814 / 0.012 / 0.002.
+  Every object concept is OWNED: steering reference met (rank 1/120) and all five simultaneous lower bounds
+  positive for all six questions. Random directions and shams barely move any answer (max random delta <= 0.05).
+  On NIH the same model, projection, readout capacity, dose and controls give zero owned concepts (all six
+  diagonals lose to a clinical competitor). The "decodable but not direction-specific" phenomenon is therefore
+  not a property of the model or of the protocol: it is specific to the report-mined chest-radiograph concepts.
+  Calibration: real probe AUROC 0.90-0.99 but the aspect x area type controls are themselves highly decodable
+  (control mean 0.936), so controlled selectivity is small (0.01-0.05) and no COCO concept is "readable" under the
+  one-sided bound, exactly the cross-domain caveat the package states (control tasks differ across domains;
+  selectivity is not a common capability scale). Answer-capable 5/6 (bicycle has 9 calibration positives:
+  insufficient support). Table 3: dose range 0.787 [0.767, 0.806]; refit O SD 0.078 [0.075, 0.082]; connector
+  median O +0.003 [0.002, 0.004] (again ineffective at the merger output); label gap -7.57 logits (positives are
+  already saturated).
+- Gate decision: valid OBSERVED block; PROMPT and LOCUS shards draining.
