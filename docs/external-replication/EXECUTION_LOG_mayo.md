@@ -166,3 +166,17 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   accepted LLaVA cells (random/sham rung not cleared) and the authors' LLaVA capability findings.
 - Gate decision: valid OBSERVED block. A/B templates remain INELIGIBLE (interface).
 - Next step: remaining llava15-7 NIH modules (GPU 0).
+
+## 2026-09-12 medgemma-4 NIH CORE statistics
+
+- Run: complete 457,200-row CORE block (four local shards on GPU 1, 15.0/s, ~8.5 GPU-hours).
+- Observation: no question meets the steering reference. Effects are large and of both signs: the Atelectasis
+  question falls by 0.358 under its own direction and by 0.568 under the Mass direction; sham effects reach 0.377
+  (Effusion) and 0.551 (Nodule); random p95 ranges 0.13-0.54. Ownership: Effusion +0.0054 [-0.0161, 0.0268]
+  unresolved; Atelectasis -0.5584 [-0.5949, -0.5220] (Pneumothorax stronger); Pneumothorax +0.0052 unresolved;
+  Cardiomegaly -0.0671 [-0.1127, -0.0316]; Mass -0.2726 [-0.3056, -0.2409]; Nodule +0.0943 [0.0653, 0.1232]
+  fixed-family advantage but far below the random/sham references. Baseline P(yes): Effusion 0.14, Atelectasis 0.79,
+  Pneumothorax 0.02, Cardiomegaly 0.32, Mass 0.12, Nodule 0.21.
+- Gate decision: valid OBSERVED block; the relative dose 0.25 is strongly disruptive for this SigLIP-896 tower
+  (a DOSE-module finding to expect; not a reason to change the locked dose).
+- Next step: remaining medgemma-4 NIH modules (GPU 1).
