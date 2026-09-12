@@ -234,3 +234,17 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   owner's independent CPU recomputation.
 - Next step: PROMPT wording/mapping contrasts (fix applied: ownership surface restricted to the two PROMPT
   questions), then the same closure for q3-8, llava15-7, medgemma-4 as their chains finish.
+
+## 2026-09-12 q25-7 NIH PROMPT contrasts (Table 3 wording/mapping)
+
+- Run: PROMPT block complete (762,000 outcomes; Effusion and Mass under WY/IA/IB/WA/WB with the full 127-condition
+  grid); ownership per template on the 600 test patients, paired bootstrap for the contrasts.
+- Observation:
+  Effusion O by template: IY -0.071, WY -0.114, IA -0.077, IB -0.065, WA -0.112, WB -0.116 (Nodule is the strongest
+  competitor under every template); wording IY-WY +0.043 [0.040, 0.047]; mapping IA-IB -0.011 [-0.013, -0.010].
+  Mass O by template: IY -0.169, WY -0.017, IA -0.025, IB -0.046, WA +0.043, WB +0.037 (Effusion strongest
+  competitor); wording IY-WY -0.152 [-0.158, -0.146]; mapping IA-IB +0.021 [0.020, 0.022].
+  Mass gains a positive fixed-family advantage only under the "Does this chest radiograph show" A/B templates and
+  loses it under "Is there", exactly the prompt-conditioned competition the paper reports for Mass (show A/B
+  positive, is negative); Effusion's attribution deficit is wording-independent.
+- Gate decision: valid OBSERVED; both registered PROMPT contrasts filled for q25-7 (45 table cells now filled).
