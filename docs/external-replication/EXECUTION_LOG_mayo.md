@@ -277,3 +277,19 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   Pneumothorax (0.104, 13 positives), Cardiomegaly (0.053), Mass (0.087), Nodule (0.031). Answer-capable = none:
   clean IY AUROC 0.41-0.57 (Effusion 0.405, below chance), matching the authors' LLaVA capability screens.
 - Gate decision: valid OBSERVED; readers exist while answers stay at chance, as in the accepted LLaVA cells.
+
+## 2026-09-12 Credentials and CheXpert source
+
+- Run: user supplied a Hugging Face token and a Redivis API token (stored under 0600 files outside the repo; never
+  logged). HF `whoami` succeeds, but gemma-3-4/12/27B and Llama-3.2-11/90B-Vision return "not in the authorized
+  list": the account has not yet accepted those licences on the Hub. `fetch_models.py` now carries the pinned
+  gated revisions for a rerun once access is granted.
+- Observation: CheXpert is distributed by Stanford AIMI on Redivis as CheXpert Plus (`aimi.chexpert_plus:5yyj`,
+  version v1.0); the user's access level is `data`. Tables: df_chexpert_plus_240401 (223,462 image rows),
+  PNG_train (223,228 files), PNG_valid (234), CheXpert Labels (3 files), DICOM_* and PNG_compressed archives.
+  The Azure/azcopy channel of the old AIMI portal no longer exists.
+- Gate decision: CheXpert data source READY for a targeted download (labels + only the manifest's frontal
+  images) through the Redivis API; dataset_release will be recorded as "CheXpert Plus v1.0 (Redivis
+  aimi.chexpert_plus:5yyj), full-resolution PNG".
+- Next step: inspect the label table, build the frozen CheXpert manifest, download the 21,016 images, enqueue
+  CheXpert CORE + CALIBRATION.

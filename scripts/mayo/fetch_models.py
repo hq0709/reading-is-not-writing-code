@@ -7,7 +7,7 @@ import os, sys, time, json
 os.environ.setdefault("HF_HOME", "/rodata/azradonc_dev/m253405/cache")
 os.environ["HF_HUB_DISABLE_PROGRESS_BARS"] = "1"
 for k in ("HF_TOKEN", "HUGGING_FACE_HUB_TOKEN"):
-    os.environ.pop(k, None)   # stored token is invalid; public repos need none
+    os.environ.pop(k, None)   # use the token stored in HF_HOME/token (gated repos need the accepted licences)
 from huggingface_hub import snapshot_download
 PINNED = [  # (model_key, repo, full revision sha)
     ("q25-3",     "Qwen/Qwen2.5-VL-3B-Instruct",         "66285546d2b821cf421d4f5eb2576359d3770cd3"),
@@ -20,10 +20,20 @@ PINNED = [  # (model_key, repo, full revision sha)
     ("q3-32",     "Qwen/Qwen3-VL-32B-Instruct",          "0cfaf48183f5b6a1c2e0d0b6f3a2f7d5f3a2e7c9"),
     ("iv35-38",   "OpenGVLab/InternVL3_5-38B-HF",        "7c830fc25e87a7b0a1c2d3e4f5a6b7c8d9e0f1a2"),
     ("q25-72",    "Qwen/Qwen2.5-VL-72B-Instruct",        "89c86200743e0d2b3a1c4d5e6f7a8b9c0d1e2f3a"),
+    # gated: require the account to have accepted the Google / Meta licences on the Hub
+    ("gemma3-4",  "google/gemma-3-4b-it",                "093f9f388b31de276ce2de164bdc2081324b9767"),
+    ("gemma3-12", "google/gemma-3-12b-it",               "96b6f1eccf38110c56df3a15bffe176da04bfd80"),
+    ("gemma3-27", "google/gemma-3-27b-it",               "005ad3404e59d6023443cb575daa05336842228a"),
+    ("llama32-11","meta-llama/Llama-3.2-11B-Vision-Instruct", "9eb2daaa8597bf192a8b0e73f848f3a102794df5"),
+    ("llama32-90","meta-llama/Llama-3.2-90B-Vision-Instruct", "e305d2a43a4a5a0d9ee14e19c5c9d61a5f4cd6f7"),
 ]
+import sys
+ONLY = set(sys.argv[1].split(",")) if len(sys.argv) > 1 else None
 PATTERNS = ["*.json", "*.safetensors", "*.txt", "*.py", "*.jinja", "*.model", "*.tiktoken", "merges.txt", "vocab.json"]
 out = {}
 for key, repo, rev in PINNED:
+    if ONLY and key not in ONLY:
+        continue
     t0 = time.time()
     try:
         # resolve the exact sha from the hub first; the 12-char prefixes above are checked against it
