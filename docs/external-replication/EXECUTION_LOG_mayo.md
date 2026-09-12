@@ -193,3 +193,16 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   2 x 4-GPU, 12 h each, self-terminating when the lane is empty); four login-node workers take over each GPU when
   its current module chain finishes.
 - Next step: monitor queue drain; run statistics/tables as blocks complete.
+
+## 2026-09-12 q25-7 NIH: all modules but PROMPT complete; calibration flags
+
+- Run: CALIBRATION, LOCUS_CALIBRATION, REFIT, DOSE (2 shards), LOCUS (4 shards) on login GPU 3; PROMPT 7 shards
+  draining through the task queue (3/7 done).
+- Observation (calibration, 400 patients, 2,000 unit-bootstrap draws, seed 2026090602): readable = Effusion
+  (S 0.102), Pneumothorax (0.152), Cardiomegaly (0.205); not readable at the one-sided bound = Atelectasis (0.062),
+  Mass (0.021), Nodule (-0.041). Answer-capable (clean IY AUROC one-sided lower bound > 0.5) = Cardiomegaly (0.742),
+  Mass (0.678), Nodule (0.642); not capable = Effusion (0.593), Atelectasis (0.566), Pneumothorax (0.508).
+  Readability and answer capability dissociate: Effusion and Pneumothorax are readable but not answer-capable;
+  Mass and Nodule the reverse.
+- Gate decision: flags recorded; all questions stay in CORE as the protocol requires.
+- Next step: Table 3 aggregates (dose range, refit SD, connector O, label gap) for q25-7 and q3-8.

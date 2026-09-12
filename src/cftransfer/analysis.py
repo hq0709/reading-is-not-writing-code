@@ -22,8 +22,8 @@ import pyarrow.parquet as pq
 from sklearn.metrics import roc_auc_score
 
 from .images import DATA_ROOT, load_cohort, load_labels
-from .protocol import (BOOT_CALIBRATION_DRAWS, BOOT_CALIBRATION_SEED, BOOT_CORE_DRAWS, BOOT_CORE_SEED, CONCEPTS, DATASETS,
-                       N_RANDOM)
+from .protocol import (BOOT_CALIBRATION_DRAWS, BOOT_CALIBRATION_SEED, BOOT_CORE_DRAWS, BOOT_CORE_SEED, BOOT_DIAGNOSTIC_SEED,
+                       CONCEPTS, DATASETS, N_RANDOM, PROMPT_CONCEPTS)
 from .runpaths import outcomes_dir, run_dir
 
 DATASET_ORDER = ["nih", "chexpert", "coco"]
@@ -249,7 +249,7 @@ if __name__ == "__main__":
     ap.add_argument("--n-boot", type=int, default=None)
     a = ap.parse_args()
     rd = run_dir(a.model_key, a.dataset)
-    report = {}
+    report = json.loads((rd / "summary.json").read_text()) if (rd / "summary.json").exists() else {}
     for w in a.what.split(","):
         if w == "calibration":
             report["calibration"] = calibration(a.model_key, a.dataset)
@@ -257,12 +257,184 @@ if __name__ == "__main__":
             report["core"] = core(a.model_key, a.dataset, n_boot=a.n_boot)
         elif w == "shifts":
             report["label_shifts"] = label_shifts(a.model_key, a.dataset)
+        elif w == "t3":
+            report["t3"] = t3(a.model_key, a.dataset)
     (rd / "summary.json").write_text(json.dumps(report, indent=1, default=lambda o: float(o) if isinstance(o, np.floating) else str(o)))
     if "calibration" in report:
         for c, cell in report["calibration"].items():
             print(f"CAL {c:14s} auroc={cell['auroc_real']:.4f} ctrl={cell['control_mean']:.4f} S={cell['selectivity']:.4f} "
                   f"readable={cell['readable']} answer_auroc={cell.get('answer_auroc', float('nan')):.4f} capable={cell.get('answer_capable')}")
-    if "core" in report:
+    if "t3" in report:
+        for k, v in report["t3"].items():
+            print(f"T3  {k:40s} {v['estimate']:+.4f} [{v['ci_low']:+.4f}, {v['ci_high']:+.4f}] {v['status']}")
+    if "core" in report and "core" in a.what:
         for q, cell in report["core"]["per_question"].items():
             print(f"CORE {q:14s} W_qq={cell['W_qq']:.4f} O_q={cell['O_q']:.4f} (vs {cell['argmax_other']}) p95rand={cell['random_p95']:.4f} "
                   f"|sham|={cell['abs_sham']:.4f} rank={cell['rank_in_random_family']} ref={cell['steering_reference']} verdict={cell.get('verdict')}")
+
+
+# ------------------------------------------------------------------------------------------------- T3
+def _load_module(model_key, dataset_id, module, cols=("row_id", "concept", "template_id", "fit_seed", "direction_id", "alpha",
+                                                    "p_present", "semantic_margin", "sample_status")):
+    p = outcomes_dir(model_key, dataset_id) / f"{module}.parquet"
+    if not p.exists():
+        return None
+    df = pq.read_table(p, columns=list(cols)).to_pandas()
+    return df[df.sample_status == "OK"]
+
+
+def _matrix(df, concepts, order, alpha, template_id="IY", fit_seed=0, baseline=None, value="p_present"):
+    """per-sample delta[q][d] arrays (n,) for clinical directions at one alpha/template/seed; baseline df separate."""
+    n = len(order)
+    base = baseline if baseline is not None else df[(df.direction_id == "baseline") & (df.template_id == template_id)]
+    P0 = {}
+    for q in concepts:
+        v = np.full(n, np.nan); g = base[(base.concept == q) & (base.fit_seed == 0)]
+        v[[order[r] for r in g.row_id if r in order]] = g[value].values[[i for i, r in enumerate(g.row_id) if r in order]]
+        P0[q] = v
+    st = df[(df.template_id == template_id) & (df.fit_seed == fit_seed) & np.isclose(df.alpha, alpha) & (df.direction_id != "baseline")]
+    delta = {}
+    for (q, d), g in st.groupby(["concept", "direction_id"]):
+        keep = [i for i, r in enumerate(g.row_id) if r in order]
+        v = np.full(n, np.nan); v[[order[r] for r in g.row_id.values[keep]]] = g[value].values[keep]
+        delta[(q, d)] = v - P0[q]
+    return delta
+
+
+def _O_from_delta(delta, concepts, idx=None, sign=1.0):
+    """O_q = sign*W_qq - max_{d != q} sign*W_qd from per-sample deltas (optionally over a bootstrap index)."""
+    out = {}
+    for q in concepts:
+        vals = {}
+        for d in concepts:
+            v = delta.get((q, f"concept:{d}"))
+            if v is None:
+                return None
+            vals[d] = sign * float(np.nanmean(v if idx is None else v[idx]))
+        out[q] = vals[q] - max(vals[d] for d in concepts if d != q)
+    return out
+
+
+def t3(model_key: str, dataset_id: str, draws: int = 2000) -> dict:
+    """Table 3 aggregates with paired unit-bootstrap intervals recomputed inside every draw (seed 2026090603)."""
+    concepts = CONCEPTS[dataset_id]
+    rows = load_cohort(dataset_id, ("test",))
+    order = {r["row_id"]: i for i, r in enumerate(rows)}
+    order200 = {r["row_id"]: i for i, r in enumerate(rows[:200])}
+    core = _load_module(model_key, dataset_id, "CORE")
+    out = {}
+    if core is None:
+        return out
+    base_core = core[core.direction_id == "baseline"]
+    rng = np.random.Generator(np.random.PCG64(BOOT_DIAGNOSTIC_SEED))
+    idx600 = rng.integers(0, 600, size=(draws, 600))
+    idx200 = rng.integers(0, 200, size=(draws, 200))
+
+    def interval(fn, idx):
+        est = fn(None)
+        if est is None:
+            return None
+        boot = [fn(idx[b]) for b in range(idx.shape[0])]
+        boot = [b for b in boot if b is not None and np.isfinite(b)]
+        if len(boot) < 0.95 * idx.shape[0]:
+            return {"estimate": est, "ci_low": np.nan, "ci_high": np.nan, "status": "INSUFFICIENT_DRAWS"}
+        return {"estimate": est, "ci_low": float(np.percentile(boot, 2.5)), "ci_high": float(np.percentile(boot, 97.5)), "status": "COMPLETE"}
+
+    # ---- DOSE: signed O range over six doses, median over concepts (first 200 rows; +0.25 from CORE)
+    dose = _load_module(model_key, dataset_id, "DOSE")
+    if dose is not None and len(dose):
+        deltas = {0.25: _matrix(core, concepts, order200, 0.25, baseline=base_core)}
+        for a in DOSE_ALPHAS_T3:
+            deltas[a] = _matrix(dose, concepts, order200, a, baseline=base_core)
+        def dose_stat(idx):
+            per = []
+            for q in concepts:
+                Os = []
+                for a, dl in deltas.items():
+                    o = _O_from_delta(dl, [q] + [c for c in concepts if c != q], idx, sign=np.sign(a))
+                    if o is None:
+                        return None
+                    Os.append(o[q])
+                per.append(max(Os) - min(Os))
+            return float(np.median(per))
+        r = interval(dose_stat, idx200)
+        if r:
+            out["all|median_signed_dose_O_range"] = r
+    # ---- REFIT: SD of O over seeds 0/1/2, median over concepts
+    refit = _load_module(model_key, dataset_id, "REFIT")
+    if refit is not None and len(refit):
+        d0 = _matrix(core, concepts, order, 0.25, baseline=base_core)
+        d1 = _matrix(refit, concepts, order, 0.25, fit_seed=1, baseline=base_core)
+        d2 = _matrix(refit, concepts, order, 0.25, fit_seed=2, baseline=base_core)
+        def refit_stat(idx):
+            per = []
+            for q in concepts:
+                Os = [_O_from_delta(dl, concepts, idx) for dl in (d0, d1, d2)]
+                if any(o is None for o in Os):
+                    return None
+                per.append(float(np.std([o[q] for o in Os], ddof=1)))
+            return float(np.median(per))
+        r = interval(refit_stat, idx600)
+        if r:
+            out["all|median_refit_O_sd"] = r
+    # ---- LOCUS: median O at the connector locus (its own baseline)
+    locus = _load_module(model_key, dataset_id, "LOCUS")
+    if locus is not None and len(locus):
+        dl = _matrix(locus, concepts, order, 0.25, baseline=locus[locus.direction_id == "baseline"])
+        def locus_stat(idx):
+            o = _O_from_delta(dl, concepts, idx)
+            return None if o is None else float(np.median([o[q] for q in concepts]))
+        r = interval(locus_stat, idx600)
+        if r:
+            out["all|connector_median_O"] = r
+    # ---- label gap: matched direction, positive-minus-negative margin shift, median over concepts
+    labels = load_labels(dataset_id)
+    dm = _matrix(core, concepts, order, 0.25, baseline=base_core, value="semantic_margin")
+    y = {q: np.array([int(labels[(r["row_id"], q)]["label"]) if labels[(r["row_id"], q)]["label_known"] == "true" else -1 for r in rows]) for q in concepts}
+    def gap_stat(idx):
+        per = []
+        for q in concepts:
+            v = dm.get((q, f"concept:{q}"))
+            if v is None:
+                return None
+            vv, yy = (v, y[q]) if idx is None else (v[idx], y[q][idx])
+            pos, neg = vv[yy == 1], vv[yy == 0]
+            if len(pos) == 0 or len(neg) == 0:
+                return None
+            per.append(float(np.nanmean(pos) - np.nanmean(neg)))
+        return float(np.median(per))
+    r = interval(gap_stat, idx600)
+    if r:
+        out["all|median_label_gap"] = r
+    # ---- PROMPT: wording (IY - WY) and mapping (IA - IB) O differences for the two designated concepts
+    prompt = _load_module(model_key, dataset_id, "PROMPT")
+    from .protocol import expected_rows
+    if prompt is not None and len(prompt) and len(prompt) >= 0.999 * expected_rows("PROMPT", dataset_id) - _ineligible_prompt_rows(model_key, dataset_id):
+        for c in PROMPT_CONCEPTS[dataset_id]:
+            fam = [c] + [x for x in concepts if x != c]
+            dIY = _matrix(core, concepts, order, 0.25, baseline=base_core)
+            for name, ta, tb in (("wording_IY_minus_WY_O", "IY", "WY"), ("mapping_IA_minus_IB_O", "IA", "IB")):
+                da = dIY if ta == "IY" else _matrix(prompt, concepts, order, 0.25, template_id=ta, baseline=prompt[prompt.direction_id == "baseline"])
+                db = _matrix(prompt, concepts, order, 0.25, template_id=tb, baseline=prompt[prompt.direction_id == "baseline"])
+                def pstat(idx, da=da, db=db, c=c):
+                    oa = _O_from_delta(da, concepts, idx); ob = _O_from_delta(db, concepts, idx)
+                    if oa is None or ob is None or c not in oa or c not in ob:
+                        return None
+                    return oa[c] - ob[c]
+                r = interval(pstat, idx600)
+                if r:
+                    out[f"{c}|{name}"] = r
+    return out
+
+
+DOSE_ALPHAS_T3 = [-0.5, -0.25, -0.1, 0.1, 0.5]
+
+
+def _ineligible_prompt_rows(model_key, dataset_id) -> int:
+    """Rows the PROMPT block legitimately lacks because templates were INELIGIBLE at preflight."""
+    p = run_dir(model_key, dataset_id) / "template_eligibility.json"
+    if not p.exists():
+        return 0
+    elig = json.loads(p.read_text())
+    bad = [t for t in ("WY", "IA", "IB", "WA", "WB") if not elig.get(t, {}).get("eligible", True)]
+    return len(bad) * len(PROMPT_CONCEPTS[dataset_id]) * 127 * 600
