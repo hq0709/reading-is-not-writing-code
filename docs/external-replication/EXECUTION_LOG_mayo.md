@@ -460,3 +460,10 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   Versus the 7B checkpoint of the same family on the same 600 patients: Effusion loses its steering effect
   entirely at 32B, and ownership moves to Cardiomegaly. Scale trends are checkpoint associations (README 2).
 - Gate decision: valid OBSERVED block.
+
+## 2026-09-12 lingshu-7 COCO gate
+
+- Run: Lingshu-7B (Qwen2.5-VL architecture, medical training) COCO preparation on a Slurm worker.
+- Observation: all reach/determinism/no-op/isolation/fp32/semantic checks pass (504 patches, 126 merged tokens,
+  27.8/s); single-vs-batch 0.30 recorded as a composition deviation. CORE complete; statistics running.
+- Gate decision: READY.
