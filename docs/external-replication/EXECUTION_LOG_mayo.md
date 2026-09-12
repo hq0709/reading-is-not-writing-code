@@ -318,3 +318,11 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
 - Observation: connector median O on the complete LOCUS block -0.020 [-0.023, -0.017]; other Table 3 aggregates
   unchanged (dose range 0.470, refit SD 0.103, label gap -1.093).
 - Gate decision: block ready for packaging once PROMPT lands.
+
+## 2026-09-12 18:55 UTC Slurm workers running
+
+- Run: the resubmitted worker jobs (64 GB per GPU) started on gen-a100.p: 10+ single-GPU workers and 2-GPU workers
+  on rohpcgpu26/28/31/32/34/38/39/40/41; 18 queue tasks in flight (q25-7 COCO LOCUS + PROMPT shards, llava15-7
+  NIH PROMPT, q25-32 NIH/COCO preparation on 2-GPU workers).
+- Gate decision: the campaign is no longer limited to the login node; the file-locked queue serialises work across
+  both pools without duplication.
