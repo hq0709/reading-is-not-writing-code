@@ -27,6 +27,7 @@ from .protocol import (BOOT_CALIBRATION_DRAWS, BOOT_CALIBRATION_SEED, BOOT_CORE_
 from .runpaths import outcomes_dir, run_dir
 
 DATASET_ORDER = ["nih", "chexpert", "coco"]
+MIN_CONTROLS_PER_DRAW = 10      # declared: a draw counts when at least half the 20 control AUROCs are estimable
 
 
 # --------------------------------------------------------------------------------------------- helpers
@@ -100,16 +101,21 @@ def calibration(model_key: str, dataset_id: str, locus_id: str = "vis.last") -> 
         cell["control_min"], cell["control_max"] = (float(np.nanmin(ctrl_auc)), float(np.nanmax(ctrl_auc))) if ctrl_auc else (np.nan, np.nan)
         cell["selectivity"] = cell["auroc_real"] - cell["control_mean"]
         # bootstrap over units (one row per unit in calibration)
-        S, A, valid = [], [], 0
+        # single-class draws are excluded only for the affected AUROC (README 6, computation details): a draw is
+        # valid when the real AUROC is finite and at least MIN_CONTROLS_PER_DRAW control AUROCs are finite
+        S, A, valid, used = [], [], 0, []
         for b in range(idx.shape[0]):
             ii = idx[b]
             kk = known[ii]
             a = auroc_safe(y[ii][kk], s_real[ii][kk])
-            cm = [auroc_safe(t[ii][t[ii] >= 0], v[ii][t[ii] >= 0]) for v, t in cs.values()]
-            if np.isnan(a) or (cs and any(np.isnan(cm))):
+            cm = np.array([auroc_safe(t[ii][t[ii] >= 0], v[ii][t[ii] >= 0]) for v, t in cs.values()], dtype=float)
+            fin = cm[np.isfinite(cm)] if cs else np.array([])
+            if np.isnan(a) or (cs and len(fin) < MIN_CONTROLS_PER_DRAW):
                 continue
-            valid += 1; A.append(a); S.append(a - np.mean(cm) if cs else np.nan)
+            valid += 1; A.append(a); S.append(a - fin.mean() if cs else np.nan); used.append(len(fin))
         cell["bootstrap_valid_draws"] = valid
+        cell["controls_used_per_draw_min"] = int(min(used)) if used else 0
+        cell["controls_used_per_draw_mean"] = float(np.mean(used)) if used else 0.0
         if valid >= 1900:
             cell["selectivity_lower95_one_sided"] = float(np.percentile(S, 5))
             cell["selectivity_ci95"] = [float(np.percentile(S, 2.5)), float(np.percentile(S, 97.5))]
