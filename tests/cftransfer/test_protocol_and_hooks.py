@@ -114,3 +114,27 @@ def test_scorer_margins():
     cands_b = CandidateSet("IB", (9,), (5, 7), (5, 7), (9,), {})
     sb = score_logits(lg, cands_b)
     assert abs(sb.semantic_margin[0] + 1.0) < 1e-6 and abs(sb.raw_ab_margin[0] - 1.0) < 1e-6
+
+
+def test_hook_vectorised_matches_loop():
+    torch.manual_seed(1)
+    lin = torch.nn.Identity()
+    D, T, B = 8, 5, 3
+    h = torch.randn(B * T, D)
+    v = torch.randn(B, D); v = v / v.norm(dim=1, keepdim=True)
+    al = torch.tensor([0.25, -0.1, 0.5])
+    hook = LocusHook(lin, "t")
+    with hook:
+        hook.arm(TokenLayout(True, slices=[(i * T, (i + 1) * T) for i in range(B)]), v, al, capture=True)
+        out = lin(h.clone())
+    exp = h.clone().view(B, T, D)
+    exp = exp + al[:, None, None] * exp.norm(dim=-1, keepdim=True) * v[:, None, :]
+    assert torch.allclose(out, exp.view(B * T, D), atol=1e-6)
+    assert torch.allclose(hook.pooled, h.view(B, T, D).mean(1), atol=1e-6)
+    # unequal counts fall back to the loop and give the same rule
+    h2 = torch.randn(7, D)
+    with hook:
+        hook.arm(TokenLayout(True, slices=[(0, 3), (3, 7)]), v[:2], al[:2])
+        out2 = lin(h2.clone())
+    e2 = h2.clone(); e2[:3] += 0.25 * h2[:3].norm(dim=1, keepdim=True) * v[0]; e2[3:] += -0.1 * h2[3:].norm(dim=1, keepdim=True) * v[1]
+    assert torch.allclose(out2, e2, atol=1e-6)

@@ -42,6 +42,20 @@ class QwenVLAdapter(Adapter):
                                    "language model input embeddings"),
         }
 
+    def expand(self, enc, B: int):
+        """Qwen packs patches of all images into one flat pixel tensor; replicate that block and the grid rows."""
+        out = {}
+        for k, v in enc.items():
+            if k == "pixel_values":
+                out[k] = v.repeat(B, 1)
+            elif k == "image_grid_thw":
+                out[k] = v.repeat(B, 1)
+            elif torch.is_tensor(v) and v.dim() >= 1 and v.shape[0] == 1:
+                out[k] = v.expand(B, *v.shape[1:]).contiguous()
+            else:
+                out[k] = v
+        return out
+
     def _counts(self, enc) -> list[int]:
         thw = enc["image_grid_thw"]
         return [int(t * h * w) for t, h, w in thw.tolist()]

@@ -58,6 +58,9 @@ class FakeAdapter(Adapter):
             feats = torch.full_like(feats, float("nan"))
         return {"feats": feats, "attention_mask": torch.ones(B, 5, dtype=torch.long)}
 
+    def expand(self, enc, B):
+        return {"feats": enc["feats"].repeat(B, 1), "attention_mask": enc["attention_mask"].repeat(B, 1)}
+
     def layouts(self, enc, images):
         B = len(images)
         return {"vis.last": TokenLayout(True, slices=[(i * T, (i + 1) * T) for i in range(B)]),

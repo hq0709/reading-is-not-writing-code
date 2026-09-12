@@ -18,7 +18,6 @@ from pathlib import Path
 
 import torch
 from safetensors import safe_open
-from safetensors.torch import load_file
 
 SRC = Path("/rodata/azradonc_dev/m253405/cache/hub/models--microsoft--llava-med-v1.5-mistral-7b/snapshots/91bb16c122001ddc9cf1fd36ce1dae09448943a2")
 SRC_REVISION = "91bb16c122001ddc9cf1fd36ce1dae09448943a2"
@@ -84,7 +83,7 @@ def main() -> None:
     # (b) native config
     from transformers import CLIPImageProcessor, CLIPVisionConfig, LlavaConfig, LlavaForConditionalGeneration, LlavaProcessor, \
         MistralConfig, AutoTokenizer
-    from transformers.modeling_utils import no_init_weights
+    from transformers.initialization import no_init_weights
     src_cfg = json.loads((SRC / "config.json").read_text())
     assert src_cfg["mm_vision_select_layer"] == -2 and src_cfg["mm_vision_select_feature"] == "patch" \
         and src_cfg["mm_projector_type"] == "mlp2x_gelu" and src_cfg["mm_vision_tower"] == "openai/clip-vit-large-patch14-336"
@@ -163,10 +162,11 @@ def main() -> None:
     processor.save_pretrained(OUT)
     print(f"[{time.time()-t0:.0f}s] saved to {OUT}", flush=True)
 
-    # re-read and compare every tensor with the source
-    saved = {}
-    for p in sorted(OUT.glob("*.safetensors")):
-        saved.update(load_file(p))
+    # re-read through the public loader (transformers 5 stores the legacy on-disk key layout and maps it back on
+    # load, so the runtime state_dict is the faithful comparison) and compare every tensor with the source
+    del model
+    reloaded = LlavaForConditionalGeneration.from_pretrained(OUT, dtype=torch.bfloat16, device_map="cpu")
+    saved = reloaded.state_dict()
     max_diff, checked = 0.0, 0
     for nk, t in state.items():
         s = saved[nk]
@@ -178,8 +178,12 @@ def main() -> None:
         max_diff = max(max_diff, d); checked += 1
     assert checked == 686 and max_diff == 0.0, (checked, max_diff)
     assert saved["model.language_model.embed_tokens.weight"].shape[0] == ORIGINAL_VOCAB + 1
+    assert reloaded.config.image_token_id == IMAGE_TOKEN_ID and reloaded.config.vision_feature_layer == -2
     receipt["steps"]["reload_check"] = {"tensors_compared": checked, "max_abs_diff_vs_source": max_diff,
-                                        "embedding_rows": ORIGINAL_VOCAB + 1, "head_rows": int(saved["lm_head.weight"].shape[0])}
+                                        "embedding_rows": ORIGINAL_VOCAB + 1, "head_rows": int(saved["lm_head.weight"].shape[0]),
+                                        "loader": "LlavaForConditionalGeneration.from_pretrained (runtime keys)",
+                                        "added_rows_all_zero": bool((saved["model.language_model.embed_tokens.weight"][ORIGINAL_VOCAB] == 0).all()
+                                                                     and (saved["lm_head.weight"][ORIGINAL_VOCAB] == 0).all())}
     receipt["output_dir"] = str(OUT)
     receipt["output_files"] = {p.name: {"bytes": p.stat().st_size, "sha256": sha256(p)} for p in sorted(OUT.iterdir()) if p.is_file()}
     receipt["seconds"] = round(time.time() - t0, 1)

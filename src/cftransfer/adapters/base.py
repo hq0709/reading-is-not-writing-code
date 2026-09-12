@@ -145,6 +145,16 @@ class Adapter:
         enc = self.processor(**kwargs)
         return enc
 
+    def expand(self, enc, B: int):
+        """Replicate a single-example encoding B times along the batch axis (identical rows, no padding)."""
+        out = {}
+        for k, v in enc.items():
+            if torch.is_tensor(v) and v.dim() >= 1 and v.shape[0] == 1:
+                out[k] = v.expand(B, *v.shape[1:]).contiguous()
+            else:
+                out[k] = v
+        return out
+
     # ------------------------------------------------------------------ loci (family-specific)
     def loci(self) -> dict[str, LocusInfo]:
         raise NotImplementedError

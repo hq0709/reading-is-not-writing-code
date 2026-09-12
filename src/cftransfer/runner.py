@@ -135,7 +135,7 @@ def run_block(model_key: str, dataset_id: str, module: str, shard: int, n_shards
                 clean = [c for c in conds if c[0] == "baseline"]
                 steered = [c for c in conds if c[0] != "baseline"]
                 groups = ([clean] if clean else []) + [steered[i:i + batch] for i in range(0, len(steered), batch)]
-                enc = ad.encode([image] * batch, [question] * batch)
+                enc = ad.expand(ad.encode([image], [question]), batch)
                 lay = ad.layouts(enc, [image] * batch)[locus_id]
                 for group in groups:
                     B = len(group)

@@ -121,6 +121,10 @@ class LocusHook:
                 if m.shape[0] != h.shape[1]:
                     raise RuntimeError(f"{self.name}: mask length {m.shape[0]} != token axis {h.shape[1]}")
 
+        counts = lay.counts()
+        if len(set(counts)) == 1 and (lay.flat or all(bool(m.all()) for m in lay.masks) or
+                                      all(torch.equal(m, lay.masks[0]) for m in lay.masks)):
+            return self._vectorised(output, h, lay, counts[0])
         tok_mean, tok_med, delta_mean, pooled = [], [], [], []
         new = h if self.vectors is None else h.clone()
         for b in range(lay.batch):
@@ -155,6 +159,36 @@ class LocusHook:
         if self.capture:
             self.pooled = torch.stack(pooled)
         return with_hidden(output, new) if self.vectors is not None else None
+
+
+    def _vectorised(self, output, h, lay: TokenLayout, T: int):
+        """Same arithmetic as the loop, for layouts where every element has the same consumed-token pattern."""
+        B = lay.batch
+        if lay.flat:
+            hb = h.view(B, T, -1)
+        else:
+            idx = lay.masks[0].to(h.device)
+            hb = h[:, idx, :]                                          # (B, T, D)
+        hf = hb.float()
+        norms = hf.norm(dim=-1)                                        # (B, T)
+        self.stats = {"token_norm_mean": norms.mean(dim=1).tolist(),
+                      "token_norm_median": norms.median(dim=1).values.tolist(),
+                      "delta_norm_mean": [0.0] * B}
+        if self.capture:
+            self.pooled = hf.mean(dim=1).cpu()
+        if self.vectors is None:
+            return None
+        v = self.vectors.to(device=h.device, dtype=torch.float32)     # (B, D)
+        a = self.alphas.to(device=h.device, dtype=torch.float32)      # (B,)
+        delta = (a[:, None] * norms)[:, :, None] * v[:, None, :]      # (B, T, D)
+        self.stats["delta_norm_mean"] = delta.norm(dim=-1).mean(dim=1).tolist()
+        steered = (hf + delta).to(h.dtype)
+        if lay.flat:
+            new = steered.reshape(h.shape)
+        else:
+            new = h.clone()
+            new[:, idx, :] = steered
+        return with_hidden(output, new)
 
 
 class CaptureHook:

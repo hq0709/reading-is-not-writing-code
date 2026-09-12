@@ -5,6 +5,7 @@ from ..protocol import MODELS
 from .gemma import Gemma3Adapter
 from .internvl import InternVLAdapter
 from .llava import LlavaAdapter
+from .llavamed import LlavaMedAdapter
 from .qwen import Qwen3VLAdapter, QwenVLAdapter
 
 REVISIONS = {
@@ -35,6 +36,7 @@ FAMILY_ADAPTER = {
     "medgemma-4": Gemma3Adapter, "medgemma-27": Gemma3Adapter,
     "iv35-8": InternVLAdapter, "iv35-14": InternVLAdapter, "iv35-38": InternVLAdapter,
     "llava15-7": LlavaAdapter, "llava15-13": LlavaAdapter,
+    "llavamed-7": LlavaMedAdapter,
 }
 
 
