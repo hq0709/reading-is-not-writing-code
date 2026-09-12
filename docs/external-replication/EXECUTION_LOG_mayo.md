@@ -467,3 +467,14 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
 - Observation: all reach/determinism/no-op/isolation/fp32/semantic checks pass (504 patches, 126 merged tokens,
   27.8/s); single-vs-batch 0.30 recorded as a composition deviation. CORE complete; statistics running.
 - Gate decision: READY.
+
+## 2026-09-12 lingshu-7 COCO CORE statistics
+
+- Observation (W_qq / competitor / O_q / random p95 / |sham|): person 0.476 / chair / +0.388 / 0.042 / 0.021;
+  dog 0.858 / car / +0.744 / 0.058 / 0.007; car 0.716 / dog / +0.695 / 0.057 / 0.011; chair 0.731 / dog / +0.763 /
+  0.031 / 0.042; bottle 0.673 / bicycle / +0.638 / 0.123 / 0.025; bicycle 0.849 / person / +0.854 / 0.028 / 0.012.
+  All six object concepts OWNED (rank 1/120), matching Qwen2.5-VL-7B on the same 600 images: medical fine-tuning
+  (Lingshu) leaves general-object direction specificity intact. Calibration mirrors q25-7 COCO (type controls
+  decode at 0.93, so S is 0.02-0.06; readable person only; answer-capable 5/6). Table 3: dose range 0.769,
+  refit O SD 0.052, connector O +0.004, label gap -6.52.
+- Gate decision: valid OBSERVED block.
