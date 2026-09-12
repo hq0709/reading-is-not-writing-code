@@ -131,3 +131,26 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
 - Gate decision: valid OBSERVED block; no protocol change. Calibration readable/answer-capable flags follow
   once CALIBRATION outcomes land.
 - Next step: remaining q25-7 NIH modules (running), then the same statistics for q3-8, medgemma-4, llava15-7.
+
+## 2026-09-12 q3-8 NIH CORE statistics
+
+- Run: complete 457,200-row CORE block (four local shards, 24.1/s, 5.27 GPU-hours), same statistics as q25-7.
+- Observation (W_qq / strongest competitor / O_q [95% CI] / random p95 / |sham| / verdict):
+  Effusion 0.2319 / Nodule 0.1590 / +0.0729 [0.0492, 0.0973] / 0.3601 / 0.0238 / fixed-family advantage, but
+    the steering reference is NOT met (W below the random p95; rank 12/120)
+  Atelectasis 0.0362 / Cardiomegaly 0.0487 / -0.0125 [-0.0142, -0.0109] / 0.0486 / 0.0481 / stronger competitor
+  Pneumothorax 0.0521 / Mass 0.1187 / -0.0666 [-0.0748, -0.0586] / 0.1683 / 0.0079 / stronger competitor
+  Cardiomegaly 0.1770 / Nodule 0.1767 / +0.0003 [0.0001, 0.0004] / 0.1773 / 0.1751 / unresolved
+    (every direction incl. sham and random moves this question by ~+0.177: direction-agnostic sensitivity)
+  Mass -0.0536 / Nodule 0.0534 / -0.1070 [-0.1272, -0.0866] / 0.2084 / 0.1650 / stronger competitor
+  Nodule -0.0503 / Effusion -0.0851 / +0.0348 [0.0154, 0.0536] / 0.1893 / 0.1034 / fixed-family advantage with a
+    NEGATIVE own effect (all directions lower the Nodule answer; the Nodule direction lowers it least)
+  Compared with Qwen2.5-VL-7B on the same 600 patients, Qwen3-VL-8B is far more sensitive to random directions at the
+  same relative dose (random p95 0.36 vs 0.14 for Effusion) and no question meets the steering reference.
+- Gate decision: valid OBSERVED block; fixed-family advantage and steering reference are reported separately, as the
+  protocol requires; no rule changed after inspection.
+- Next step: q3-8 remaining modules (GPU 2); medgemma-4 and llava15-7 CORE still running.
+- Raw-row check for the q3-8 Cardiomegaly question: baseline P(yes) mean 0.823 (median 0.982); every direction,
+  sham and random push it to 0.99-1.00 (per-patient deltas correlate 0.99-1.00 with the matched direction). This
+  is answer saturation from a high baseline, not a vector mix-up: the six fitted normals have pairwise cosines
+  <= 0.50 and produce distinct effects on the Effusion question (correlations 0.56-0.88).
