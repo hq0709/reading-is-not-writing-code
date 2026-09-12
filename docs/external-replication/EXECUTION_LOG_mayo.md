@@ -154,3 +154,15 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   sham and random push it to 0.99-1.00 (per-patient deltas correlate 0.99-1.00 with the matched direction). This
   is answer saturation from a high baseline, not a vector mix-up: the six fitted normals have pairwise cosines
   <= 0.50 and produce distinct effects on the Effusion question (correlations 0.56-0.88).
+
+## 2026-09-12 llava15-7 NIH CORE statistics
+
+- Run: complete 457,200-row CORE block (four local shards on GPU 0, 18.8-19.0/s, ~6.7 GPU-hours).
+- Observation: every clinical effect is small (|W_qd| < 0.11); no question meets the steering reference
+  (Effusion W=0.038 vs random p95 0.094 and |sham| 0.058; Mass W=0.049 vs 0.056/0.037). Ownership: Effusion
+  -0.0276 [-0.0301, -0.0252] (Mass stronger), Atelectasis -0.0145, Pneumothorax -0.0800, Cardiomegaly -0.1330,
+  Nodule -0.0182 (all "stronger competitor"); Mass +0.0229 [0.0202, 0.0256] fixed-family advantage below the
+  random reference. Baseline P(yes) is 0.50-0.69 on every question (near-chance answering), consistent with the
+  accepted LLaVA cells (random/sham rung not cleared) and the authors' LLaVA capability findings.
+- Gate decision: valid OBSERVED block. A/B templates remain INELIGIBLE (interface).
+- Next step: remaining llava15-7 NIH modules (GPU 0).
