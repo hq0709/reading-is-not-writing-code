@@ -125,10 +125,26 @@ def build(model_key: str, dataset_id: str, status: str = "RUNNING") -> dict:
     except Exception as e:
         env = f"pip list failed: {e}"
     (rd / "environment.txt").write_text(env)
-    # metadata from preflight / feature meta / runner meta
+    # metadata from preflight / feature meta / runner meta; merge per-locus preflight files into preflight.json
     pre = {}
     for p in rd.glob("preflight.*.json"):
-        pre[p.stem.split(".", 1)[1]] = json.loads(p.read_text())
+        if p.name != "preflight.json":
+            pre[p.stem.split(".", 1)[1]] = json.loads(p.read_text())
+    if pre:
+        (rd / "preflight.json").write_text(json.dumps(pre, indent=1))
+    deviations = []
+    for lid, r in pre.items():
+        for k in r.get("tolerance_deviations", []):
+            deviations.append({"kind": "batch_vs_single_tolerance", "locus_id": lid, "check": k,
+                               "value": r["checks"][k].get("max_abs_candidate_logit_diff"), "declared_tolerance": 0.25,
+                               "affected_modules": "none (fixed batch composition per question); recorded for transparency"})
+        if not r.get("pass"):
+            deviations.append({"kind": "preflight_not_passed", "locus_id": lid,
+                               "failed_checks": [k for k, v in r["checks"].items() if isinstance(v, dict) and v.get("pass") is False]})
+    # single probe_scores.parquet from the per-locus files
+    ps = sorted(rd.glob("probe_scores.*.parquet"))
+    if ps:
+        pq.write_table(pa.concat_tables([pq.read_table(x) for x in ps]), rd / "probe_scores.parquet", compression="zstd")
     settings = None
     if (rd / "processing_settings.json").exists():
         settings = json.loads((rd / "processing_settings.json").read_text())
@@ -157,7 +173,7 @@ def build(model_key: str, dataset_id: str, status: str = "RUNNING") -> dict:
         "peak_gpu_memory_bytes": max([m.get("peak_gpu_memory_bytes", 0) for m in metas] or [0]),
         "processing_settings": settings, "loci": feat_meta.get("loci"),
         "fit_seeds": [0, 1, 2], "random_seed": 0, "projection_seed": 0, "cohort_file": "manifests/cohort.csv",
-        "completed_modules": completed, "status": status, "deviations": [],
+        "completed_modules": completed, "status": status, "deviations": deviations,
         "feature_extraction_seconds": feat_meta.get("seconds"),
         "notes": "gpu_hours sums wall time x GPUs over runner shards recorded in outcomes/*/meta-*.json; CPU fitting time is in fits/*/summary.json",
         "merged_outcomes": merged_stats,

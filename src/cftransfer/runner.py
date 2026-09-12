@@ -101,6 +101,8 @@ def run_block(model_key: str, dataset_id: str, module: str, shard: int, n_shards
     hook = LocusHook(ad.module(locus.module_path), locus_id)
     questions = question_list(dataset_id, module)
     run_id = run_id_for(model_key, dataset_id)
+    if spec.directions == "clean":
+        batch = 1          # clean-only modules score one forward per (row, question); no steered composition to match
     t0, n_out, part_idx = time.time(), 0, len(list(part_dir.glob(f"part-{shard_tag}-*.parquet")))
     buffer: list[dict] = []
 
@@ -126,20 +128,24 @@ def run_block(model_key: str, dataset_id: str, module: str, shard: int, n_shards
                             module=module, role=row["role"], row_id=row["row_id"], unit_id=row["unit_id"],
                             concept=concept, template_id=template_id, locus_id=locus_id,
                             positive_token_ids=list(cands.positive_ids), negative_token_ids=list(cands.negative_ids))
-                # baseline conditions first (clean forward, hook passive), then steered conditions in batches
+                # Every forward of a question uses the SAME batch composition: `batch` replicas of one image and one
+                # question. bf16 kernels are shape-dependent, so mixing a B=1 baseline with B=32 steered batches would
+                # put a composition offset into every W_qd. The baseline is a clean replicated batch with the hook
+                # passive (element 0 kept); steered batches are padded to `batch` by repeating conditions (discarded).
                 clean = [c for c in conds if c[0] == "baseline"]
                 steered = [c for c in conds if c[0] != "baseline"]
                 groups = ([clean] if clean else []) + [steered[i:i + batch] for i in range(0, len(steered), batch)]
+                enc = ad.encode([image] * batch, [question] * batch)
+                lay = ad.layouts(enc, [image] * batch)[locus_id]
                 for group in groups:
                     B = len(group)
+                    padded = group + [group[-1]] * (batch - B) if group[0][0] != "baseline" else group
                     try:
-                        enc = ad.encode([image] * B, [question] * B)
-                        lay = ad.layouts(enc, [image] * B)[locus_id]
                         if group[0][0] == "baseline":
                             hook.arm(lay)
                         else:
-                            vecs = torch.from_numpy(np.stack([bank.vector(d, s) for d, _a, s in group]))
-                            alphas = torch.tensor([a for _d, a, _s in group], dtype=torch.float32)
+                            vecs = torch.from_numpy(np.stack([bank.vector(d, s) for d, _a, s in padded]))
+                            alphas = torch.tensor([a for _d, a, _s in padded], dtype=torch.float32)
                             hook.arm(lay, vecs, alphas)
                         logits = ad.forward_last_logits(enc)
                         if hook.calls != 1:
@@ -184,6 +190,7 @@ def run_block(model_key: str, dataset_id: str, module: str, shard: int, n_shards
     meta = {"model_key": model_key, "dataset_id": dataset_id, "module": module, "shard": shard, "n_shards": n_shards,
             "rows": len(rows), "scored_rows": len(todo), "outcomes": n_out, "seconds": round(el, 1),
             "throughput_per_s": round(n_out / max(el, 1e-9), 2), "batch": batch,
+            "batch_policy": "fixed composition per question: clean replicated baseline batch + padded steered batches",
             "peak_gpu_memory_bytes": int(torch.cuda.max_memory_allocated()), "gpu_count": torch.cuda.device_count(),
             "gpu_models": sorted({torch.cuda.get_device_name(i) for i in range(torch.cuda.device_count())}),
             "ended_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())}

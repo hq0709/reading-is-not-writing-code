@@ -18,9 +18,11 @@ class Gemma3Adapter(Adapter):
     default_processor_kwargs = {}
 
     def after_load(self) -> None:
-        vm = self.module("model.vision_tower.vision_model")
+        # transformers 5.x flattens SiglipVisionModel (no `.vision_model` child); accept both spellings
+        prefix = "model.vision_tower" if "model.vision_tower.encoder.layers.0" in self._modules else "model.vision_tower.vision_model"
+        vm = self.module(prefix)
         self.n_layers = len(vm.encoder.layers)
-        self._block_path = f"model.vision_tower.vision_model.encoder.layers.{self.n_layers - 1}"
+        self._block_path = f"{prefix}.encoder.layers.{self.n_layers - 1}"
         self._proj_path = "model.multi_modal_projector"
         vc = self.model.config.vision_config
         self.patches = (int(vc.image_size) // int(vc.patch_size)) ** 2
@@ -29,6 +31,14 @@ class Gemma3Adapter(Adapter):
         self.image_token = getattr(cfg, "image_token_id", None) or getattr(cfg, "image_token_index", None)
         if self.image_token is None:
             raise RuntimeError("gemma3 config exposes neither image_token_id nor image_token_index")
+
+    def encode(self, images, questions):
+        """Gemma3Processor expects one image list per text (nested), not a flat list."""
+        texts = [self.prompt_text(q, with_image=images is not None) for q in questions]
+        kwargs = dict(text=texts, return_tensors="pt", padding=True)
+        if images is not None:
+            kwargs["images"] = [[im] for im in images]
+        return self.processor(**kwargs)
 
     def image_token_mask(self, enc) -> torch.Tensor:
         return enc["input_ids"] == self.image_token

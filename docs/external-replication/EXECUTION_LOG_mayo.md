@@ -27,3 +27,23 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
 | CheXpert train release | licence-gated download from Stanford AIMI | user downloads `CheXpert-v1.0` (or the named release) into `cf-transfer/data/chexpert/`; manifest builder is ready (`cftransfer.manifests chexpert`) |
 | gemma3-4/12/27, llama32-11/90 | gated HF repos; stored token invalid | `hf auth login` with a token whose account accepted both licences, then rerun `scripts/mayo/fetch_models.py` |
 | llavamed-7 | original `llava_mistral` format; needs the conversion the authors validated | conversion adapter (planned after the HF families) |
+
+## 2026-09-12 Family interfaces
+
+- Run: adapters for Qwen2.5-VL/Lingshu, Qwen3-VL, InternVL3.5-HF, LLaVA-1.5, Gemma3/MedGemma; smoke on the 16 NIH
+  preflight images (login-node GPUs through `jobwrap.sh`, Slurm partitions saturated with 12h+ pending queues).
+- Observation: q25-7 (vis.last D=1280, connector D=3584, 144 tokens), q3-8 (1024 patches at 512px cap -> 256 tokens),
+  iv35-8 (1024 patches, CLS excluded -> 256 tokens), llava15-7 (576 tokens, `encoder.layers.22` = hidden_states[-2])
+  all pass determinism, alpha-0 no-op, consumer/logit reach and non-consumed-token isolation.
+  Two measurement defects found and fixed before any scientific run:
+  1. HF returns bf16 logits; at |logit| ~ 25 the answer margins sit on a 0.125 lattice. Answer-position logits are
+     now recomputed in float32 from the final hidden state (hook on `lm_head` input, fp32 head weight), with a
+     preflight check that they agree with the model's logits within two bf16 ulps.
+  2. bf16 kernels are shape-dependent: single-example vs batched candidate logits differ by up to 0.25 (InternVL),
+     0.6 (Qwen3-VL). The runner therefore scores every condition of a question at one fixed batch composition
+     (replicated image; clean replicated baseline batch with the hook passive; steered batches padded), so the
+     composition offset never enters W_qd. Declared single-vs-batch tolerance 0.25; families above it are recorded
+     as tolerance deviations in preflight.json, not silently accepted.
+- Gate decision: interfaces READY for q25-7, q3-8, iv35-8, llava15-7 (medgemma-4 pending its smoke rerun);
+  no scientific outcome collected yet.
+- Next step: q25-7 NIH probe fits + preflight + CORE throughput trial, then fan out CORE shards.
