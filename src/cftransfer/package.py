@@ -119,8 +119,10 @@ def build(model_key: str, dataset_id: str, status: str = "RUNNING") -> dict:
         merged_stats[module] = stats
         rows = coverage_rows(model_key, dataset_id, module, merged)
         cov += rows
-        if rows and all(r["execution_status"] == "COMPLETE" for r in rows if r["execution_status"] != "NOT_REQUESTED") \
-                and any(r["execution_status"] == "COMPLETE" for r in rows):
+        def terminal(r):   # INELIGIBLE template cells are a recorded interface disposition, not pending work
+            return r["execution_status"] in ("COMPLETE", "NOT_REQUESTED") or \
+                (r["execution_status"] == "NOT_STARTED" and r["reason"].startswith("INELIGIBLE"))
+        if rows and all(terminal(r) for r in rows) and any(r["execution_status"] == "COMPLETE" for r in rows):
             completed.append(module)
     with (rd / "coverage.csv").open("w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=COVERAGE_COLS); w.writeheader(); w.writerows(cov)
