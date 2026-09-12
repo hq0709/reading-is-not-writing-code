@@ -270,3 +270,10 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   Pneumothorax 0.824, Cardiomegaly 0.894, Mass 0.834, Nodule 0.666).
 - Gate decision: valid OBSERVED. The medical model answers best and steers least specifically (0/6 steering
   reference, large sham/random effects), the sharpest capability-versus-specificity dissociation so far.
+
+## 2026-09-12 llava15-7 NIH calibration flags
+
+- Observation (400 patients): readable = Effusion (S 0.110), Atelectasis (0.102); not readable at the bound =
+  Pneumothorax (0.104, 13 positives), Cardiomegaly (0.053), Mass (0.087), Nodule (0.031). Answer-capable = none:
+  clean IY AUROC 0.41-0.57 (Effusion 0.405, below chance), matching the authors' LLaVA capability screens.
+- Gate decision: valid OBSERVED; readers exist while answers stay at chance, as in the accepted LLaVA cells.
