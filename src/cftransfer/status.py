@@ -35,9 +35,12 @@ def main():
             pre = "-"
             if (rd / "preflight.vis.last.json").exists():
                 r = json.loads((rd / "preflight.vis.last.json").read_text())
-                pre = "ok" if r.get("pass") else ("dev" if r.get("tolerance_deviations") and all(
-                    r["checks"][k]["pass"] if k not in ("D_batch_vs_single", "D2_replicated_batch_vs_single") else True
-                    for k in r["checks"] if isinstance(r["checks"][k], dict) and "pass" in r["checks"][k]) else "FAIL")
+                c = r["checks"]
+                core_ok = (c["A_determinism_max_abs_diff"] == 0 and c["B_alpha0_max_abs_diff"] == 0
+                           and c["C_reach"]["locus_change_outside_consumed_tokens"] == 0 and c["G_fp32_vs_model_logits"]["pass"]
+                           and c["D2_replicated_batch_vs_single"]["within_batch_spread_pass"]
+                           and all(x["ok"] for x in c["E_semantic_direction"]["cases"]["IY"]))
+                pre = "ok" if r.get("pass") else ("elig" if core_ok else "FAIL")   # elig: some templates ineligible
             print(f"{m:12s} {ds:8s} {'yes' if feat else '-':5s} {'yes' if fit else '-':4s} {pre:4s} "
                   + " ".join(f"{module_progress(rd, mod, ds):>7s}" for mod in MODULES))
 

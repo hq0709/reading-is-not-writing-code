@@ -103,3 +103,31 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
 - Gate decision: COCO data READY; preparation jobs (features -> fits -> preflight) queued on Slurm for 15
   checkpoints.
 - Next step: COCO CORE/PROMPT/DOSE/REFIT/LOCUS after each preparation passes.
+
+## 2026-09-12 q25-7 NIH CORE complete
+
+- Run: four local shards (150 rows each) on login GPU 3, 4,097-4,157 s per shard, 27.5-27.9 outcomes/s, peak 18.4 GiB.
+- Observation: 457,200 outcomes, 0 failed rows; merged block passes the unique-key check.
+- Gate decision: CORE block COMPLETE; CPU statistics (W matrix, O_q, 5,000-draw max-T) running; remaining NIH
+  modules for q25-7 moved from the Slurm queue to GPU 3 (CALIBRATION, LOCUS_CALIBRATION, REFIT, DOSE, LOCUS in
+  reverse shard order so any Slurm LOCUS job that starts later takes the other end).
+- Next step: read the q25-7 NIH CORE statistics; package once all modules complete.
+
+## 2026-09-12 q25-7 NIH CORE statistics (first scientific observation of the campaign)
+
+- Run: CPU statistics on the complete 457,200-row CORE block (600 test patients, alpha +0.25, 119 random, sham),
+  5,000 shared patient-bootstrap draws (seed 2026090601), two-sided max-|Z| over the 30 clinical contrasts.
+- Observation (W_qq / strongest competitor / O_q [percentile 95% CI] / random p95 / |sham|):
+  Effusion 0.1905 / Nodule 0.2615 / -0.0711 [-0.0803, -0.0618] / 0.1371 / 0.0169  (steering reference met; rank 2/120)
+  Atelectasis 0.1011 / Nodule 0.3272 / -0.2260 [-0.2328, -0.2193] / 0.2967 / 0.0961
+  Pneumothorax 0.0887 / Effusion 0.1905 / -0.1018 [-0.1076, -0.0962] / 0.3201 / 0.1128
+  Cardiomegaly 0.0849 / Atelectasis 0.3036 / -0.2187 [-0.2267, -0.2106] / 0.3109 / 0.1581
+  Mass 0.3592 / Effusion 0.5283 / -0.1690 [-0.1780, -0.1601] / 0.3715 / 0.0917
+  Nodule 0.1175 / Effusion 0.1895 / -0.0720 [-0.0812, -0.0625] / 0.1583 / 0.0547
+  All six diagonal ownership contrasts are negative with simultaneous upper bounds below zero
+  (verdict "stronger competitor" for every question). This reproduces the accepted Qwen2.5-VL-7B evidence
+  (Effusion 0.1945 vs Nodule 0.2519, O = -0.0573 [-0.0694, -0.0450] on 400 patients; 0/6 owned in the matrix)
+  on the shared-panel cohort.
+- Gate decision: valid OBSERVED block; no protocol change. Calibration readable/answer-capable flags follow
+  once CALIBRATION outcomes land.
+- Next step: remaining q25-7 NIH modules (running), then the same statistics for q3-8, medgemma-4, llava15-7.
