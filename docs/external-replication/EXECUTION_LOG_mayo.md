@@ -360,3 +360,14 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   median O +0.003 [0.002, 0.004] (again ineffective at the merger output); label gap -7.57 logits (positives are
   already saturated).
 - Gate decision: valid OBSERVED block; PROMPT and LOCUS shards draining.
+
+## 2026-09-12 llava15-7 NIH block COMPLETE (yes/no templates)
+
+- Run: all modules scored for the eligible templates; run.json status COMPLETE; coverage marks the eight A/B
+  CALIBRATION cells and the four A/B PROMPT template blocks NOT_STARTED with reason "INELIGIBLE: semantic mapping
+  failed image-free preflight".
+- Observation (Table 3): median signed-dose O range 0.061 [0.054, 0.069] (small effects at every dose);
+  median refit O SD 0.019 [0.018, 0.020]; connector median O -0.073 [-0.075, -0.071] (the projector-output locus
+  shows more negative ownership than the vision block for LLaVA); median label gap -0.005 [-0.026, +0.016];
+  wording IY-WY: Effusion -0.017 [-0.019, -0.015], Mass +0.011 [0.009, 0.014]; mapping contrasts not measurable.
+- Gate decision: second complete NIH deliverable (with the interface disposition for A/B templates).
