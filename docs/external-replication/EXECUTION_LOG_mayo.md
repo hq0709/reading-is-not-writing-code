@@ -293,3 +293,20 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   aimi.chexpert_plus:5yyj), full-resolution PNG".
 - Next step: inspect the label table, build the frozen CheXpert manifest, download the 21,016 images, enqueue
   CheXpert CORE + CALIBRATION.
+
+## 2026-09-12 CheXpert manifest frozen (CheXpert Plus)
+
+- Run: label table (metadata) and `impression_fixed.json` (CheXpert labeler output, 14 columns, 1/0/-1/null) and the
+  PNG_train file index pulled from Redivis; `cftransfer.manifests chexpert_plus` built the frozen manifest.
+- Observation: 190,869 frontal train rows over 64,510 patients with a labelled PNG; one frontal per patient by
+  SHA-256 of `path_to_image`, patients by SHA-256 of `deid_patient_id`; roles 20,000/16/400/600; 36 recurring
+  types (AP/PA x sex x age-decade). Known-label counts (pos/neg/unknown): calibration Effusion 117/93/190,
+  Atelectasis 67/4/329, Pneumothorax 17/136/247, Cardiomegaly 49/46/305, Consolidation 25/83/292, Edema 70/54/276;
+  test Effusion 158/130/312, Atelectasis 84/2/514, Pneumothorax 32/213/355, Cardiomegaly 71/58/471,
+  Consolidation 25/113/462, Edema 133/59/408. Atelectasis has fewer than 10 known negatives in both evaluation
+  roles (CheXpert's labeler leaves it uncertain/unmentioned), so its label-based metrics will be reported as
+  insufficient support; answer shifts still use all 600 images.
+  dataset_release locked as "CheXpert Plus v1.0 (Redivis aimi.chexpert_plus:5yyj), full-resolution PNG".
+- Gate decision: manifest READY. Image transfer: per-file PNG downloads are throttled (~27 s per file even at
+  8-way parallelism), so the five PNG zip chunks (720 GB) are downloaded instead and only the 21,016 manifest
+  images are extracted.

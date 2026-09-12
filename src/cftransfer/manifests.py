@@ -217,10 +217,77 @@ def summarize(dataset_id: str, cohort_rows: list[dict], label_rows: list[dict]) 
             "type_count_train": len(types["train"])}
 
 
+# ------------------------------------------------------------------------------- CheXpert Plus (Redivis)
+def build_chexpert_plus(data_root: Path, release: str) -> dict:
+    """CheXpert Plus (Stanford AIMI on Redivis, aimi.chexpert_plus:5yyj v1.0): same patients, studies and CheXpert
+    labels as CheXpert-v1.0, full-resolution PNGs. Inputs staged under <data_root>/chexpert/:
+      df_chexpert_plus_240401.parquet  (path_to_image, frontal_lateral, ap_pa, deid_patient_id, age, sex, split)
+      impression_fixed.json            (JSON lines: path_to_image + 14 CheXpert labels, 1.0/0.0/-1.0/null)
+      png_train_index.parquet          (Redivis file index: file_name, file_id, size, md5_hash)
+    Rule (README 4): train split, frontal images; one image per patient by SHA-256 of the original relative path;
+    patients ordered by SHA-256 of the patient id; first 20,000 train, then 16/400/600. Labels never enter the order.
+    """
+    import json
+    import pandas as pd
+    d = data_root / "chexpert"
+    meta = pd.read_parquet(d / "df_chexpert_plus_240401.parquet")
+    labels = {}
+    with (d / "impression_fixed.json").open() as f:
+        for ln in f:
+            r = json.loads(ln); labels[r["path_to_image"]] = r
+    idx = pd.read_parquet(d / "png_train_index.parquet")
+    png_files = set(idx["file_name"])
+    fr = meta[(meta["split"] == "train") & (meta["frontal_lateral"] == "Frontal")].copy()
+    fr["png_rel"] = fr["path_to_image"].str.replace(r"^train/", "", regex=True).str.replace(r"\.jpg$", ".png", regex=True)
+    missing_png = (~fr["png_rel"].isin(png_files)).sum()
+    fr = fr[fr["png_rel"].isin(png_files) & fr["path_to_image"].isin(labels)]
+    per_patient = defaultdict(list)
+    for r in fr.itertuples(index=False):
+        per_patient[r.deid_patient_id].append(r)
+    chosen = {pid: min(v, key=lambda r: sha("cf-transfer-v1-chexpert-row:", r.path_to_image)) for pid, v in per_patient.items()}
+    order = sorted(chosen, key=lambda pid: sha("cf-transfer-v1-chexpert-patient:", pid))
+    if len(order) < 21016:
+        raise SystemExit(f"only {len(order)} patients with a labelled frontal PNG; need 21,016")
+    roles = [("train", p, k) for k, p in enumerate(order[:20000])]
+    roles += [("preflight", p, k) for k, p in enumerate(order[20000:20016])]
+    roles += [("calibration", p, k) for k, p in enumerate(order[20016:20416])]
+    roles += [("test", p, k) for k, p in enumerate(order[20416:21016])]
+    cohort_rows, label_rows = [], []
+    for role, pid, k in roles:
+        r = chosen[pid]
+        row_id = r.png_rel.replace("/", "__").rsplit(".", 1)[0]
+        cohort_rows.append({"dataset_id": "chexpert", "row_id": row_id, "unit_id": pid, "role": role, "order": k,
+                            "relative_image_path": f"train/{r.png_rel}", "original_split": "train"})
+        view = r.ap_pa if isinstance(r.ap_pa, str) else ""
+        sex = r.sex if isinstance(r.sex, str) else ""
+        tid = xray_type_id("1" if view == "AP" else ("0" if view == "PA" else "na"),
+                           "1" if sex == "Male" else ("0" if sex == "Female" else "na"), r.age)
+        lab = labels[r.path_to_image]
+        for raw_name, concept in list(CHEXPERT_RAW_TO_CONCEPT.items()) + [(x, x) for x in CHEXPERT_EXTRA]:
+            raw = lab.get(raw_name)
+            known = raw in (0.0, 1.0)
+            label_rows.append({"dataset_id": "chexpert", "row_id": row_id, "concept": concept,
+                               "label": ("1" if raw == 1.0 else "0") if known else "",
+                               "label_known": "true" if known else "false", "label_raw": "" if raw is None else str(raw),
+                               "view": view, "sex": sex[:1] if sex else "", "age": "" if pd.isna(r.age) else int(r.age),
+                               "width": "", "height": "", "type_id": tid})
+    out = d / "manifests"
+    write_csv(out / "cohort.csv", COHORT_COLS, cohort_rows)
+    write_csv(out / "labels.csv", LABEL_COLS, label_rows)
+    (out / "release.json").write_text(json.dumps({
+        "dataset_release": release, "source": "Redivis aimi.chexpert_plus:5yyj:v1_0 (stanford.redivis.com)",
+        "label_file": "impression_fixed.json (CheXpert labeler output per image; 1/0 known, -1/null unknown)",
+        "image_files": "PNG_train file index (full-resolution PNG, same paths as CheXpert-v1.0 train/*.jpg)",
+        "frontal_train_rows": int(len(fr)), "patients_with_frontal": len(order), "png_missing_for_frontal_rows": int(missing_png),
+        "selection": "one frontal per patient by SHA-256('cf-transfer-v1-chexpert-row:'+path_to_image); patients by "
+                     "SHA-256('cf-transfer-v1-chexpert-patient:'+deid_patient_id); 20000/16/400/600"}, indent=2))
+    return summarize("chexpert", cohort_rows, label_rows)
+
+
 if __name__ == "__main__":
     import argparse
     ap = argparse.ArgumentParser()
-    ap.add_argument("dataset", choices=["nih", "coco", "chexpert"])
+    ap.add_argument("dataset", choices=["nih", "coco", "chexpert", "chexpert_plus"])
     ap.add_argument("--data-root", default="/rodata/azradonc_dev/m253405/cf-transfer/data")
     ap.add_argument("--nih-meta", default="/rodata/azradonc_dev/m253405/cache/nih/Data_Entry_2017_v2020.csv")
     ap.add_argument("--chexpert-train-csv")
@@ -231,7 +298,10 @@ if __name__ == "__main__":
         s = build_nih(root, Path(a.nih_meta))
     elif a.dataset == "coco":
         s = build_coco(root)
+    elif a.dataset == "chexpert_plus":
+        s = build_chexpert_plus(root, a.chexpert_release or "CheXpert Plus v1.0 (Redivis aimi.chexpert_plus:5yyj), full-resolution PNG")
     else:
         s = build_chexpert(root, Path(a.chexpert_train_csv), a.chexpert_release)
     print(json.dumps(s, indent=1))
-    (root / a.dataset / "manifests" / "summary.json").write_text(json.dumps(s, indent=1))
+    (root / "chexpert" / "manifests" / "summary.json").write_text(json.dumps(s, indent=1)) if a.dataset.startswith("chexpert") else \
+        (root / a.dataset / "manifests" / "summary.json").write_text(json.dumps(s, indent=1))
