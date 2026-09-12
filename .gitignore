@@ -33,3 +33,5 @@ runs/int_*/
 *.pt
 models/
 scratch/
+# cf-transfer (Mayo executor) local run state lives outside the repo
+/cf-transfer-local/

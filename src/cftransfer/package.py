@@ -1,0 +1,178 @@
+"""Assemble the return package for one <model_key>/<dataset_id>: run.json, environment.txt, prompts.json,
+coverage.csv, merged outcomes/<MODULE>.parquet, features/ and fits/ (return-format.md)."""
+from __future__ import annotations
+
+import argparse
+import csv
+import json
+import platform
+import shutil
+import subprocess
+import sys
+import time
+from collections import defaultdict
+from pathlib import Path
+
+import numpy as np
+import pyarrow as pa
+import pyarrow.parquet as pq
+
+from .fit import run_id_for
+from .images import DATA_ROOT
+from .protocol import (CONCEPTS, LOCI, MODULES, PROTOCOL_ID, TEMPLATE_ORDER, MODELS, conditions_for, expected_rows,
+                       question_list, render_question)
+from .runner import KEY
+from .runpaths import outcomes_dir, run_dir
+
+COVERAGE_COLS = ["run_id", "model_key", "dataset_id", "module", "locus_id", "fit_seed", "template_id", "concept",
+                 "expected_rows", "actual_unique_rows", "failed_rows", "execution_status", "baseline_module",
+                 "baseline_fit_seed", "reason"]
+
+
+def git_commit() -> str:
+    try:
+        return subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=Path(__file__).resolve().parents[2], text=True).strip()
+    except Exception:
+        return "unknown"
+
+
+def merge_module(model_key: str, dataset_id: str, module: str) -> tuple[Path | None, dict]:
+    part_dir = outcomes_dir(model_key, dataset_id) / module
+    parts = sorted(part_dir.glob("part-*.parquet")) if part_dir.exists() else []
+    if not parts:
+        return None, {}
+    table = pa.concat_tables([pq.read_table(p) for p in parts])
+    # de-duplicate on the unique key (resumed shards can legitimately re-score a chunk; keep the last)
+    df = table.to_pandas()
+    before = len(df)
+    df = df.drop_duplicates(subset=KEY, keep="last")
+    out = outcomes_dir(model_key, dataset_id) / f"{module}.parquet"
+    pq.write_table(pa.Table.from_pandas(df, schema=table.schema, preserve_index=False), out, compression="zstd")
+    stats = {"parts": len(parts), "rows_raw": before, "rows_unique": len(df),
+             "failed": int((df["sample_status"] == "FAILED").sum())}
+    return out, stats
+
+
+def coverage_rows(model_key: str, dataset_id: str, module: str, merged: Path | None) -> list[dict]:
+    spec = MODULES[module]
+    run_id = run_id_for(model_key, dataset_id)
+    rows = []
+    n_role = {"test": 600, "calibration": 400}[spec.role]
+    n_rows = min(n_role, spec.row_limit) if spec.row_limit else n_role
+    if dataset_id not in spec.datasets:
+        return [{"run_id": run_id, "model_key": model_key, "dataset_id": dataset_id, "module": module, "locus_id": LOCI[spec.locus],
+                 "fit_seed": "", "template_id": "", "concept": "", "expected_rows": 0, "actual_unique_rows": 0, "failed_rows": 0,
+                 "execution_status": "NOT_REQUESTED", "baseline_module": spec.baseline_module or "", "baseline_fit_seed": "",
+                 "reason": "module not requested for this dataset by protocol"}]
+    counts = defaultdict(lambda: [0, 0])
+    if merged is not None:
+        t = pq.read_table(merged, columns=["concept", "template_id", "fit_seed", "sample_status"]).to_pandas()
+        for (c, tpl, s, st), n in t.groupby(["concept", "template_id", "fit_seed", "sample_status"]).size().items():
+            counts[(c, tpl, int(s))][0 if st == "OK" else 1] += int(n)
+    for concept, tpl in question_list(dataset_id, module):
+        for seed in spec.fit_seeds:
+            exp = len(conditions_for(module, dataset_id, concept)) * n_rows
+            ok, failed = counts.get((concept, tpl, seed), [0, 0])
+            status = "NOT_STARTED" if ok + failed == 0 else ("COMPLETE" if ok == exp and failed == 0 else ("FAILED" if failed else "RUNNING"))
+            rows.append({"run_id": run_id, "model_key": model_key, "dataset_id": dataset_id, "module": module,
+                         "locus_id": LOCI[spec.locus], "fit_seed": seed, "template_id": tpl, "concept": concept,
+                         "expected_rows": exp, "actual_unique_rows": ok, "failed_rows": failed, "execution_status": status,
+                         "baseline_module": spec.baseline_module or "", "baseline_fit_seed": 0 if spec.baseline_module else "",
+                         "reason": "" if status in ("COMPLETE", "NOT_STARTED") else f"{ok}/{exp} ok, {failed} failed"})
+    return rows
+
+
+def prompts_json(model_key: str, dataset_id: str, settings: dict) -> dict:
+    cands = settings["candidate_tokens"]
+    out = {}
+    for concept in CONCEPTS[dataset_id]:
+        for t in TEMPLATE_ORDER:
+            q = render_question(dataset_id, concept, t)
+            out[f"{dataset_id}|{concept}|{t}"] = {
+                "dataset_id": dataset_id, "concept": concept, "template_id": t, "question": q,
+                "rendered_prompt": settings["example_prompt_IY"].replace("Is there X in this image? Answer yes or no.", q),
+                "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+                "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+                "positive_token_ids": cands[t]["positive_ids"], "negative_token_ids": cands[t]["negative_ids"],
+                "candidate_detail": cands[t]["detail"],
+                "raw_ab": {"A_ids": cands.get("IA", {}).get("positive_ids", []), "B_ids": cands.get("IA", {}).get("negative_ids", [])} if t in ("IA", "IB", "WA", "WB") else None,
+                "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)",
+            }
+    return out
+
+
+def build(model_key: str, dataset_id: str, status: str = "RUNNING") -> dict:
+    rd = run_dir(model_key, dataset_id)
+    rd.mkdir(parents=True, exist_ok=True)
+    cov, merged_stats, completed = [], {}, []
+    for module in MODULES:
+        merged, stats = merge_module(model_key, dataset_id, module)
+        merged_stats[module] = stats
+        rows = coverage_rows(model_key, dataset_id, module, merged)
+        cov += rows
+        if rows and all(r["execution_status"] == "COMPLETE" for r in rows if r["execution_status"] != "NOT_REQUESTED") \
+                and any(r["execution_status"] == "COMPLETE" for r in rows):
+            completed.append(module)
+    with (rd / "coverage.csv").open("w", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=COVERAGE_COLS); w.writeheader(); w.writerows(cov)
+    # manifests copy
+    (rd / "manifests").mkdir(exist_ok=True)
+    for name in ("cohort.csv", "labels.csv"):
+        shutil.copy(DATA_ROOT / dataset_id / "manifests" / name, rd / "manifests" / name)
+    # environment
+    try:
+        env = subprocess.check_output([sys.executable, "-m", "pip", "list", "--format=freeze"], text=True)
+    except Exception as e:
+        env = f"pip list failed: {e}"
+    (rd / "environment.txt").write_text(env)
+    # metadata from preflight / feature meta / runner meta
+    pre = {}
+    for p in rd.glob("preflight.*.json"):
+        pre[p.stem.split(".", 1)[1]] = json.loads(p.read_text())
+    settings = None
+    if (rd / "processing_settings.json").exists():
+        settings = json.loads((rd / "processing_settings.json").read_text())
+    metas = [json.loads(p.read_text()) for p in (rd / "outcomes").glob("*/meta-*.json")] if (rd / "outcomes").exists() else []
+    gpu_seconds = sum(m["seconds"] * m.get("gpu_count", 1) for m in metas)
+    feat_meta = json.loads((rd / "features" / "features_meta.json").read_text()) if (rd / "features" / "features_meta.json").exists() else {}
+    import torch, transformers, sklearn
+    run = {
+        "protocol_id": PROTOCOL_ID, "run_id": run_id_for(model_key, dataset_id), "model_key": model_key,
+        "model_id": MODELS[model_key]["model_id"],
+        "model_revision": (pre.get("vis.last") or {}).get("revision"), "processor_revision": (pre.get("vis.last") or {}).get("revision"),
+        "dataset_id": dataset_id, "dataset_release": {"nih": "ChestX-ray14 (NIH Box release, images_001..012.zip); labels Data_Entry_2017_v2020.csv",
+                                                       "coco": "COCO 2017 train2017/val2017 + instances annotations (2017-09-01)",
+                                                       "chexpert": "see manifests/release.json"}[dataset_id],
+        "source_commit": git_commit(), "adapter_path": "src/cftransfer/adapters/",
+        "python_version": platform.python_version(), "torch_version": torch.__version__,
+        "transformers_version": transformers.__version__, "numpy_version": np.__version__, "sklearn_version": sklearn.__version__,
+        "weight_dtype": "bfloat16", "activation_dtype": "bfloat16 (hook delta computed in float32, cast back)",
+        "logit_dtype": "float32", "attention_backend": (settings or {}).get("attn_implementation", "sdpa"),
+        "device_map": sorted({str(m.get("device_map", "cuda:0")) for m in metas}) or ["cuda:0"],
+        "gpu_models": sorted({g for m in metas for g in m.get("gpu_models", [])}),
+        "gpu_count": max([m.get("gpu_count", 1) for m in metas] or [1]),
+        "batch_size": sorted({m.get("batch") for m in metas if m.get("batch")}),
+        "started_utc": min([m.get("ended_utc", "") for m in metas] or [""]), "ended_utc": max([m.get("ended_utc", "") for m in metas] or [""]),
+        "wall_seconds": round(sum(m["seconds"] for m in metas), 1), "gpu_hours": round(gpu_seconds / 3600, 3),
+        "peak_gpu_memory_bytes": max([m.get("peak_gpu_memory_bytes", 0) for m in metas] or [0]),
+        "processing_settings": settings, "loci": feat_meta.get("loci"),
+        "fit_seeds": [0, 1, 2], "random_seed": 0, "projection_seed": 0, "cohort_file": "manifests/cohort.csv",
+        "completed_modules": completed, "status": status, "deviations": [],
+        "feature_extraction_seconds": feat_meta.get("seconds"),
+        "notes": "gpu_hours sums wall time x GPUs over runner shards recorded in outcomes/*/meta-*.json; CPU fitting time is in fits/*/summary.json",
+        "merged_outcomes": merged_stats,
+    }
+    (rd / "run.json").write_text(json.dumps(run, indent=1))
+    if settings:
+        (rd / "prompts.json").write_text(json.dumps(prompts_json(model_key, dataset_id, settings), indent=1))
+    return run
+
+
+if __name__ == "__main__":
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--model-key", required=True)
+    ap.add_argument("--dataset", required=True)
+    ap.add_argument("--status", default="RUNNING")
+    a = ap.parse_args()
+    r = build(a.model_key, a.dataset, a.status)
+    print(json.dumps({k: r[k] for k in ("run_id", "completed_modules", "gpu_hours", "merged_outcomes")}, indent=1))

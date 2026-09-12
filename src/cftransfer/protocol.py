@@ -1,0 +1,168 @@
+"""Fixed protocol constants, loaded from the machine-readable package so nothing is retyped.
+
+Everything an executor might be tempted to "adjust" lives here and is read from
+docs/external-replication/protocol.json (templates, concepts, finding phrases, image phrases,
+seeds, dose grids, direction counts). Module grids are derived from README section 5.4.
+"""
+from __future__ import annotations
+
+import json
+from dataclasses import dataclass
+from pathlib import Path
+
+REPO = Path(__file__).resolve().parents[2]
+PKG = REPO / "docs" / "external-replication"
+PROTOCOL = json.loads((PKG / "protocol.json").read_text(encoding="utf-8"))
+PROTOCOL_ID = PROTOCOL["protocol_id"]
+
+TEMPLATES: dict[str, str] = PROTOCOL["templates"]                      # IY WY IA IB WA WB
+TEMPLATE_ORDER = ["IY", "WY", "IA", "IB", "WA", "WB"]
+YESNO_TEMPLATES = {"IY", "WY"}
+AB_TEMPLATES = {"IA", "IB", "WA", "WB"}
+B_POSITIVE_TEMPLATES = {"IB", "WB"}          # B means present, A means absent
+
+DATASETS = ["nih", "chexpert", "coco"]
+CONCEPTS = {
+    "nih": PROTOCOL["dataset"]["nih_concepts"],
+    "chexpert": PROTOCOL["dataset"]["chexpert_concepts"],
+    "coco": PROTOCOL["dataset"]["coco_concepts"],
+}
+FINDING_PHRASES = {
+    "nih": dict(zip(PROTOCOL["concepts"], PROTOCOL["finding_phrases"])),
+    "chexpert": dict(zip(PROTOCOL["dataset"]["chexpert_concepts"], PROTOCOL["dataset"]["chexpert_finding_phrases"])),
+    "coco": dict(zip(PROTOCOL["dataset"]["coco_concepts"], PROTOCOL["dataset"]["coco_finding_phrases"])),
+}
+IMAGE_PHRASE = PROTOCOL["dataset"]["templates_image_phrase"]
+PROMPT_CONCEPTS = PROTOCOL["modules"]["PROMPT"]["concepts_by_dataset"]   # nih: Effusion, Mass; coco: person, bottle
+COCO_CATEGORY_IDS = {"person": 1, "dog": 18, "car": 3, "chair": 62, "bottle": 44, "bicycle": 2}
+
+# probe / direction constants
+PROJECTION_DIM = PROTOCOL["probe"]["projection_dim"]          # 512
+PROJECTION_SEED = PROTOCOL["probe"]["projection_seed"]        # 0
+CONTROL_SEEDS = list(PROTOCOL["probe"]["control_seeds"])      # 0..19
+REFIT_SEEDS = list(PROTOCOL["probe"]["refit_seeds"])          # 1, 2
+LOGREG = dict(C=1.0, max_iter=2000, solver="lbfgs", class_weight=None, random_state=0)
+N_RANDOM = PROTOCOL["primary"]["random_directions"]           # 119
+RANDOM_SEED = PROTOCOL["intervention"]["random_seed"]         # 0
+PRIMARY_ALPHA = float(PROTOCOL["primary"]["alpha"])           # 0.25
+DOSE_ALPHAS = [float(a) for a in PROTOCOL["modules"]["DOSE"]["alpha"]]   # -0.5 -0.25 -0.1 0.1 0.5
+DOSE_N_RANDOM = 20
+DOSE_ROWS = 200
+
+# bootstrap seeds (README section 6, computation details)
+BOOT_CORE_SEED = PROTOCOL["primary"]["bootstrap_seed"]        # 2026090601
+BOOT_CALIBRATION_SEED = 2026090602
+BOOT_DIAGNOSTIC_SEED = 2026090603
+BOOT_CORE_DRAWS = PROTOCOL["primary"]["bootstrap_draws"]      # 5000
+BOOT_CALIBRATION_DRAWS = 2000
+
+LOCI = {"primary": "vis.last", "connector": "connector"}     # logical locus ids used in every table
+
+MODELS = {m["model_key"]: m for m in PROTOCOL["planned_models"]}
+MODEL_ORDER = [m["model_key"] for m in PROTOCOL["planned_models"]]
+
+
+def render_question(dataset_id: str, concept: str, template_id: str) -> str:
+    """Exact question text for one (dataset, concept, template); syntax is not the executor's to edit."""
+    return TEMPLATES[template_id].format(
+        finding=FINDING_PHRASES[dataset_id][concept], image_phrase=IMAGE_PHRASE[dataset_id]
+    )
+
+
+def direction_ids(n_random: int = N_RANDOM, sham_question: str | None = None, with_baseline: bool = True,
+                  concepts: list[str] | None = None, dataset_id: str = "nih") -> list[str]:
+    """Canonical direction identifiers in protocol order: baseline, concept:<name>, random:###, sham:<question>."""
+    out = ["baseline"] if with_baseline else []
+    out += [f"concept:{c}" for c in (concepts or CONCEPTS[dataset_id])]
+    out += [f"random:{i:03d}" for i in range(n_random)]
+    if sham_question is not None:
+        out.append(f"sham:{sham_question}")
+    return out
+
+
+def direction_kind(direction_id: str) -> str:
+    return direction_id.split(":", 1)[0]
+
+
+@dataclass(frozen=True)
+class ModuleSpec:
+    module: str
+    role: str                       # cohort role scored
+    row_limit: int | None           # first N rows of the role in cohorts order (DOSE)
+    templates: tuple[str, ...]
+    concepts_rule: str              # "all" | "prompt"
+    alphas: tuple[float, ...]
+    directions: str                 # "core" | "clean" | "dose" | "refit"
+    fit_seeds: tuple[int, ...]
+    locus: str                      # "primary" | "connector"
+    baseline_module: str | None     # module whose clean baseline is reused (DOSE/REFIT)
+    datasets: tuple[str, ...]
+
+
+MODULES: dict[str, ModuleSpec] = {
+    "CORE": ModuleSpec("CORE", "test", None, ("IY",), "all", (PRIMARY_ALPHA,), "core", (0,), "primary", None,
+                       ("nih", "chexpert", "coco")),
+    "CALIBRATION": ModuleSpec("CALIBRATION", "calibration", None, ("IY",), "all", (0.0,), "clean", (0,), "primary", None,
+                              ("nih", "chexpert", "coco")),
+    "PROMPT": ModuleSpec("PROMPT", "test", None, ("WY", "IA", "IB", "WA", "WB"), "prompt", (PRIMARY_ALPHA,), "core", (0,),
+                         "primary", None, ("nih", "coco")),
+    "DOSE": ModuleSpec("DOSE", "test", DOSE_ROWS, ("IY",), "all", tuple(DOSE_ALPHAS), "dose", (0,), "primary", "CORE",
+                       ("nih", "coco")),
+    "REFIT": ModuleSpec("REFIT", "test", None, ("IY",), "all", (PRIMARY_ALPHA,), "refit", tuple(REFIT_SEEDS), "primary",
+                        "CORE", ("nih", "coco")),
+    "LOCUS": ModuleSpec("LOCUS", "test", None, ("IY",), "all", (PRIMARY_ALPHA,), "core", (0,), "connector", None,
+                        ("nih", "coco")),
+    "LOCUS_CALIBRATION": ModuleSpec("LOCUS_CALIBRATION", "calibration", None, ("IY",), "all", (0.0,), "clean", (0,),
+                                    "connector", None, ("nih", "coco")),
+}
+
+
+def question_list(dataset_id: str, module: str) -> list[tuple[str, str]]:
+    """(concept, template_id) pairs a module scores for one dataset, in protocol order."""
+    spec = MODULES[module]
+    concepts = CONCEPTS[dataset_id]
+    if spec.concepts_rule == "prompt":
+        concepts = PROMPT_CONCEPTS[dataset_id]
+    out = [(c, t) for t in spec.templates for c in concepts]
+    if module == "CALIBRATION" and dataset_id in PROMPT_CONCEPTS:
+        # NIH/COCO calibration also scores the two PROMPT concepts under the five other templates (README 5.4)
+        out += [(c, t) for t in ("WY", "IA", "IB", "WA", "WB") for c in PROMPT_CONCEPTS[dataset_id]]
+    return out
+
+
+def conditions_for(module: str, dataset_id: str, concept: str) -> list[tuple[str, float]]:
+    """(direction_id, alpha) list for one question in a module; baseline rows carry alpha 0."""
+    spec = MODULES[module]
+    sham = f"sham:{concept}"
+    if spec.directions == "clean":
+        return [("baseline", 0.0)]
+    if spec.directions == "core":
+        ids = ["baseline"] + [f"concept:{c}" for c in CONCEPTS[dataset_id]] + \
+              [f"random:{i:03d}" for i in range(N_RANDOM)] + [sham]
+        return [(d, 0.0 if d == "baseline" else spec.alphas[0]) for d in ids]
+    if spec.directions == "dose":
+        ids = [f"concept:{c}" for c in CONCEPTS[dataset_id]] + [f"random:{i:03d}" for i in range(DOSE_N_RANDOM)] + [sham]
+        return [(d, a) for a in spec.alphas for d in ids]
+    if spec.directions == "refit":
+        ids = [f"concept:{c}" for c in CONCEPTS[dataset_id]] + [sham]
+        return [(d, spec.alphas[0]) for d in ids]
+    raise ValueError(spec.directions)
+
+
+def expected_rows(module: str, dataset_id: str, n_rows: int | None = None) -> int:
+    spec = MODULES[module]
+    if dataset_id not in spec.datasets:
+        return 0
+    n = n_rows if n_rows is not None else {"test": 600, "calibration": 400}[spec.role]
+    if spec.row_limit:
+        n = min(n, spec.row_limit)
+    total = 0
+    for concept, _t in question_list(dataset_id, module):
+        total += len(conditions_for(module, dataset_id, concept)) * len(spec.fit_seeds)
+    return total * n
+
+
+if __name__ == "__main__":
+    for ds in DATASETS:
+        for m in MODULES:
+            print(f"{ds:9s} {m:18s} {expected_rows(m, ds):>9,d}")
