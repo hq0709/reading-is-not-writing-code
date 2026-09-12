@@ -261,3 +261,12 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   four concepts, but at alpha 0.25 no clinical direction beats the random family (steering reference 0/6) while
   Qwen2.5-VL-7B met it for Effusion; readability/capability do not predict steering specificity across the two
   generations.
+
+## 2026-09-12 medgemma-4 NIH calibration flags
+
+- Observation (400 patients): readable = Atelectasis (S 0.138), Cardiomegaly (0.198), Mass (0.168); not readable at
+  the one-sided bound = Effusion (0.108, 20 positives), Pneumothorax (0.109, 13 positives), Nodule (0.016).
+  Answer-capable = all six, with the highest clean AUROCs of the campaign (Effusion 0.803, Atelectasis 0.784,
+  Pneumothorax 0.824, Cardiomegaly 0.894, Mass 0.834, Nodule 0.666).
+- Gate decision: valid OBSERVED. The medical model answers best and steers least specifically (0/6 steering
+  reference, large sham/random effects), the sharpest capability-versus-specificity dissociation so far.
