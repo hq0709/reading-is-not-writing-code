@@ -326,3 +326,14 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   NIH PROMPT, q25-32 NIH/COCO preparation on 2-GPU workers).
 - Gate decision: the campaign is no longer limited to the login node; the file-locked queue serialises work across
   both pools without duplication.
+
+## 2026-09-12 More interface gates (queue workers on Slurm)
+
+- Run: preparation tasks completed by queue workers: q25-32 NIH and COCO (2 GPUs), q3-32 NIH and COCO (2 GPUs),
+  q25-7 COCO, llava15-7 COCO.
+- Observation: all pass determinism / alpha-0 / reach / isolation / fp32-consistency / semantic-mapping checks
+  (q25-32: 576 NIH tokens, 12.9/s on 2 GPUs; q3-32: 1,024 patches, 9.2/s; COCO images at the 336^2 budget give
+  504 Qwen patches). Composition deviations recorded where single-vs-batch exceeds 0.25 (q25-32 COCO 0.37/0.40,
+  q3-32 0.36-0.39, q25-7 COCO 0.33). llava15-7 COCO fails only the A/B mapping check (same failure as NIH), so
+  IA/IB/WA/WB are INELIGIBLE for llava15-7 on COCO as well.
+- Gate decision: READY for q25-32, q3-32 (both datasets), q25-7 COCO, llava15-7 COCO (yes/no templates).
