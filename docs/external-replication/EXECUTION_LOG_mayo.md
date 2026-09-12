@@ -224,3 +224,13 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   median label gap -0.107 [-0.282, +0.0003]: matched directions shift disease-positive patients less than
   negatives (point estimates negative for the median concept), as in the paper's 35/36 pattern.
 - Gate decision: valid OBSERVED aggregates; PROMPT contrasts pending block completion.
+
+## 2026-09-12 q25-7 NIH block COMPLETE
+
+- Run: all seven modules scored (1,897,600 outcomes; 0 failed rows); package assembled with run.json status
+  COMPLETE, 27.3 GPU-hours (A100-80GB), no deviations; coverage.csv 62/62 question blocks COMPLETE; features,
+  fits (both loci, seeds 0/1/2), probe_scores.parquet, prompts.json, preflight.json, environment.txt in place.
+- Gate decision: first complete <model_key>/<dataset_id> deliverable of the campaign; ready for the project
+  owner's independent CPU recomputation.
+- Next step: PROMPT wording/mapping contrasts (fix applied: ownership surface restricted to the two PROMPT
+  questions), then the same closure for q3-8, llava15-7, medgemma-4 as their chains finish.

@@ -269,10 +269,11 @@ def _matrix(df, concepts, order, alpha, template_id="IY", fit_seed=0, baseline=N
     return delta
 
 
-def _O_from_delta(delta, concepts, idx=None, sign=1.0):
-    """O_q = sign*W_qq - max_{d != q} sign*W_qd from per-sample deltas (optionally over a bootstrap index)."""
+def _O_from_delta(delta, concepts, idx=None, sign=1.0, questions=None):
+    """O_q = sign*W_qq - max_{d != q} sign*W_qd from per-sample deltas (optionally over a bootstrap index).
+    `questions` restricts the rows of the surface (PROMPT scores only two questions); directions span `concepts`."""
     out = {}
-    for q in concepts:
+    for q in (questions or concepts):
         vals = {}
         for d in concepts:
             v = delta.get((q, f"concept:{d}"))
@@ -385,7 +386,7 @@ def t3(model_key: str, dataset_id: str, draws: int = 2000) -> dict:
                 da = dIY if ta == "IY" else _matrix(prompt, concepts, order, 0.25, template_id=ta, baseline=prompt[prompt.direction_id == "baseline"])
                 db = _matrix(prompt, concepts, order, 0.25, template_id=tb, baseline=prompt[prompt.direction_id == "baseline"])
                 def pstat(idx, da=da, db=db, c=c):
-                    oa = _O_from_delta(da, concepts, idx); ob = _O_from_delta(db, concepts, idx)
+                    oa = _O_from_delta(da, concepts, idx, questions=[c]); ob = _O_from_delta(db, concepts, idx, questions=[c])
                     if oa is None or ob is None or c not in oa or c not in ob:
                         return None
                     return oa[c] - ob[c]
