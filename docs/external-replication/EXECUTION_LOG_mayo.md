@@ -389,3 +389,15 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   essentially invariant to wording and answer mapping (O stays 0.4-0.9 under every template), in contrast to the
   wording-conditioned Mass advantage on NIH.
 - Gate decision: q25-7 now has two complete dataset blocks (NIH, COCO); CheXpert pending its preparation.
+
+## 2026-09-12 First CheXpert gate: llavamed-7
+
+- Run: CheXpert preparation for LLaVA-Med v1.5 (converted checkpoint) on a Slurm worker: features, fits, preflight.
+- Observation: reach/determinism/no-op/isolation/fp32 checks pass (576 tokens, 605 input positions, 13.7/s);
+  yes/no mapping passes with strongly signed image-free margins (+6.3/-2.3, +7.6/-3.3); the A/B letter mapping
+  fails (A-present: "absent" gives +2.2; B-present: "present" gives -4.9/-4.6), the same LLaVA-family interface
+  disposition as llava15-7, so IA/IB/WA/WB are INELIGIBLE for llavamed-7 (CheXpert has no PROMPT module; the
+  disposition matters for the two A/B-free modules only through CALIBRATION, which is IY-only on CheXpert).
+  Calibration selectivity (CheXpert, known labels only): Effusion 0.219, Atelectasis 0.303, Pneumothorax 0.032,
+  Cardiomegaly 0.228, Consolidation 0.224, Edema 0.125.
+- Gate decision: READY; CheXpert CORE + CALIBRATION tasks for llavamed-7 are claimable.
