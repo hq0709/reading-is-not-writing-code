@@ -65,3 +65,31 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   PROMPT 7 + LOCUS 4 shards on gen-h100; DOSE 2, REFIT 1, CALIBRATION 1, LOCUS_CALIBRATION 1 on gen-a100.p).
 - Next step: complete q25-7 NIH, package, run the CPU statistics; bring q3-8 / medgemma-4 / llava15-7 /
   iv35-8 / llavamed-7 through the same gate; COCO once train2017 finishes.
+
+## 2026-09-12 q3-8 and medgemma-4 NIH gates
+
+- Run: full preparation (features, fits both loci seeds 0/1/2, preflight both loci) on login GPUs.
+- Observation: q3-8 (512px cap -> 1,024 patches, 256 merged tokens; DeepStack bypasses untouched) and medgemma-4
+  (896px SigLIP, 4,096 patches, 256 soft tokens) pass every reach/determinism/no-op/isolation/semantic check;
+  single-vs-batch differences 0.60 (q3-8) and 0.50 (medgemma-4) exceed the declared 0.25 and are recorded as
+  tolerance deviations (fixed batch composition keeps them out of W_qd). Readouts: q3-8 Effusion S=0.128,
+  medgemma-4 Effusion S=0.108 (control mean 0.704). Throughput at batch 32: q3-8 24/s, medgemma-4 ~15/s
+  (vision tower replicated per condition dominates for SigLIP-896; candidate optimisation: run the tower once
+  per image and replicate after the hooked block, to be validated by the batch-equivalence preflight before use).
+- Gate decision: READY; CORE launched locally (q3-8 GPU 2, medgemma-4 GPU 1), other modules queued on Slurm.
+- Next step: llava15-7 gate (GPU 0), q25-72 4-GPU preparation once staged, COCO preparations after extraction.
+
+## 2026-09-12 llava15-7 NIH gate; q25-72 staged
+
+- Run: llava15-7 preparation on login GPU 0 (features 349 s, fits, preflight both loci).
+- Observation: readout matches the accepted reference (Effusion calibration AUROC 0.7883 vs 0.7788; control mean
+  0.678). All reach/determinism/no-op/isolation checks pass; single-vs-batch 0.11 within tolerance. The image-free
+  semantic-mapping check fails for the four A/B templates (A-present: "absent" statements give +0.28/+0.02;
+  B-present: "present" statements give -0.89/-0.36), i.e. LLaVA-1.5-7B does not follow the letter mapping,
+  matching the authors' own LLaVA A/B preflight failure. Per protocol this is an interface disposition, not a
+  scientific result: IA/IB/WA/WB are INELIGIBLE for llava15-7 (recorded in template_eligibility.json; runner
+  skips them; coverage rows carry the reason). IY and WY pass, so CORE/DOSE/REFIT/LOCUS and the WY PROMPT block
+  proceed.
+- Gate decision: READY for yes/no templates; A/B template cells INELIGIBLE (interface). CORE launched on GPU 0;
+  other modules queued. Qwen2.5-VL-72B staged at 89c86200743e; 4-GPU preparation queued on gen-a100.p.
+- Next step: when Slurm capacity arrives, sweep the queued preparations; COCO after extraction.

@@ -69,11 +69,20 @@ def coverage_rows(model_key: str, dataset_id: str, module: str, merged: Path | N
         t = pq.read_table(merged, columns=["concept", "template_id", "fit_seed", "sample_status"]).to_pandas()
         for (c, tpl, s, st), n in t.groupby(["concept", "template_id", "fit_seed", "sample_status"]).size().items():
             counts[(c, tpl, int(s))][0 if st == "OK" else 1] += int(n)
+    elig_path = run_dir(model_key, dataset_id) / "template_eligibility.json"
+    elig = json.loads(elig_path.read_text()) if elig_path.exists() else {}
     for concept, tpl in question_list(dataset_id, module):
         for seed in spec.fit_seeds:
             exp = len(conditions_for(module, dataset_id, concept)) * n_rows
             ok, failed = counts.get((concept, tpl, seed), [0, 0])
             status = "NOT_STARTED" if ok + failed == 0 else ("COMPLETE" if ok == exp and failed == 0 else ("FAILED" if failed else "RUNNING"))
+            if not elig.get(tpl, {}).get("eligible", True) and ok + failed == 0:
+                rows.append({"run_id": run_id, "model_key": model_key, "dataset_id": dataset_id, "module": module,
+                             "locus_id": LOCI[spec.locus], "fit_seed": seed, "template_id": tpl, "concept": concept,
+                             "expected_rows": exp, "actual_unique_rows": 0, "failed_rows": 0, "execution_status": "NOT_STARTED",
+                             "baseline_module": spec.baseline_module or "", "baseline_fit_seed": 0 if spec.baseline_module else "",
+                             "reason": "INELIGIBLE: " + elig[tpl].get("reason", "template failed interface preflight")})
+                continue
             rows.append({"run_id": run_id, "model_key": model_key, "dataset_id": dataset_id, "module": module,
                          "locus_id": LOCI[spec.locus], "fit_seed": seed, "template_id": tpl, "concept": concept,
                          "expected_rows": exp, "actual_unique_rows": ok, "failed_rows": failed, "execution_status": status,

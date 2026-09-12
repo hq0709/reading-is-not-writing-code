@@ -207,6 +207,12 @@ def run_preflight(model_key: str, dataset_id: str, locus_key: str, device_map: s
                           and report["checks"]["G_fp32_vs_model_logits"]["pass"] and all_ok)
     report["tolerance_deviations"] = [k for k in ("D_batch_vs_single", "D2_replicated_batch_vs_single") if not report["checks"][k]["pass"]]
     (out / f"preflight.{locus_id}.json").write_text(json.dumps(report, indent=1))
+    elig = {t: all(x["ok"] for x in cases) for t, cases in sem.items()}
+    elig_path = out / "template_eligibility.json"
+    prev = json.loads(elig_path.read_text()) if elig_path.exists() else {}
+    prev.update({t: {"eligible": ok, "reason": "" if ok else "semantic mapping failed image-free preflight (check E)",
+                     "source": f"preflight.{locus_id}.json"} for t, ok in elig.items()})
+    elig_path.write_text(json.dumps(prev, indent=1))
     print(json.dumps({k: report["checks"][k] for k in report["checks"] if k != "E_semantic_direction"}, indent=1))
     print("E_semantic_direction pass:", all_ok, "| overall pass:", report["pass"], flush=True)
     return report

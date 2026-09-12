@@ -100,6 +100,16 @@ def run_block(model_key: str, dataset_id: str, module: str, shard: int, n_shards
     bank = DirectionBank(model_key, dataset_id, locus_id, spec.fit_seeds)
     hook = LocusHook(ad.module(locus.module_path), locus_id)
     questions = question_list(dataset_id, module)
+    elig_path = outcomes_dir(model_key, dataset_id).parent / "template_eligibility.json"
+    if elig_path.exists():
+        elig = json.loads(elig_path.read_text())
+        skipped = sorted({t for _c, t in questions if not elig.get(t, {}).get("eligible", True)})
+        if skipped:
+            print(f"[{model_key}/{dataset_id}/{module}] templates INELIGIBLE by preflight, not scored: {skipped}", flush=True)
+        questions = [(c, t) for c, t in questions if elig.get(t, {}).get("eligible", True)]
+    if not questions:
+        print(f"[{model_key}/{dataset_id}/{module}] no eligible questions; nothing to score", flush=True)
+        return {"rows": len(rows), "todo": 0, "ineligible": True}
     run_id = run_id_for(model_key, dataset_id)
     if spec.directions == "clean":
         batch = 1          # clean-only modules score one forward per (row, question); no steered composition to match
