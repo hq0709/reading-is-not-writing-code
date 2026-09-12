@@ -93,3 +93,13 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
 - Gate decision: READY for yes/no templates; A/B template cells INELIGIBLE (interface). CORE launched on GPU 0;
   other modules queued. Qwen2.5-VL-72B staged at 89c86200743e; 4-GPU preparation queued on gen-a100.p.
 - Next step: when Slurm capacity arrives, sweep the queued preparations; COCO after extraction.
+
+## 2026-09-12 COCO staged
+
+- Run: official train2017/val2017 zips and instances annotations downloaded; the 20,416 train + 600 val images named
+  by the frozen manifest extracted (nothing else unpacked).
+- Observation: 0 missing files; manifest already built from the annotations (20,000/16/400 train2017 by
+  SHA-256 order, 600 val2017; 9 recurring types).
+- Gate decision: COCO data READY; preparation jobs (features -> fits -> preflight) queued on Slurm for 15
+  checkpoints.
+- Next step: COCO CORE/PROMPT/DOSE/REFIT/LOCUS after each preparation passes.
