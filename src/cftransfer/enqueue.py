@@ -35,11 +35,12 @@ def enqueue(model_key: str, dataset_id: str, modules: list[str] | None = None, p
     env = {"HF_HOME": "/rodata/azradonc_dev/m253405/cache", "HF_HUB_OFFLINE": "1", "TRANSFORMERS_OFFLINE": "1",
            "TOKENIZERS_PARALLELISM": "false", "OMP_NUM_THREADS": "8", "MKL_NUM_THREADS": "8"}
     prep_out = [str(rd / "preflight.vis.last.json"), str(rd / "preflight.connector.json"), str(rd / "fits" / "connector" / "seed2.npz")]
+    data_ready = ["/rodata/azradonc_dev/m253405/cf-transfer/data/chexpert/images/.complete"] if dataset_id == "chexpert" else []
     if prep:
         name = f"{prio_m:02d}{prio_d}-00-prep-{model_key}-{dataset_id}"
         (QUEUE / "pending" / f"{name}.json").write_text(json.dumps({
             "name": name, "lane": lane, "cmd": ["bash", PREP, model_key, dataset_id, str(BATCH[lane]), dm],
-            "requires": [], "produces": prep_out, "env": env}, indent=1))
+            "requires": data_ready, "produces": prep_out, "env": env}, indent=1))
         names.append(name)
     for mi, mod in enumerate(modules or MODULE_ORDER):
         spec = MODULES[mod]
