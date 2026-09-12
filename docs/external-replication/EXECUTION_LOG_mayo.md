@@ -380,3 +380,12 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
 - Gate decision: CheXpert data READY; the 102 queued CheXpert tasks (preparation, CORE, CALIBRATION for 17
   checkpoints) are now claimable by the workers. The zip chunks are kept for now (re-downloadable) and can be
   deleted once the CheXpert blocks are accepted.
+
+## 2026-09-12 q25-7 COCO block COMPLETE
+
+- Run: all seven modules scored (1,897,600 outcomes) by queue workers; package status COMPLETE, coverage 62/62.
+- Observation (PROMPT contrasts): wording IY-WY person -0.021 [-0.029, -0.013], bottle +0.064 [0.057, 0.070];
+  mapping IA-IB person +0.003 [-0.004, +0.008], bottle -0.011 [-0.016, -0.007]. Ownership of object concepts is
+  essentially invariant to wording and answer mapping (O stays 0.4-0.9 under every template), in contrast to the
+  wording-conditioned Mass advantage on NIH.
+- Gate decision: q25-7 now has two complete dataset blocks (NIH, COCO); CheXpert pending its preparation.
