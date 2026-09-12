@@ -442,3 +442,21 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   Packaging now counts INELIGIBLE template cells as terminal so completed_modules reflects the disposition.
 - Observation: PROMPT wording contrasts negligible (person +0.003 [-0.001, +0.008], bottle -0.003 [-0.004, -0.001]).
 - Gate decision: complete deliverables so far: q25-7 (NIH, COCO), llava15-7 (NIH, COCO), q3-8 (NIH).
+
+## 2026-09-12 q25-32 NIH CORE statistics (first owned clinical concept)
+
+- Run: Qwen2.5-VL-32B (2-GPU workers, 12.9/s): CORE, CALIBRATION, DOSE, REFIT complete; LOCUS/PROMPT draining.
+- Observation (W_qq / strongest competitor / O_q / random p95 / |sham| / verdict):
+  Effusion -0.041 / Nodule / -0.218 / 0.076 / 0.040 / stronger competitor (own effect negative; rank 106/120)
+  Atelectasis 0.034 / Mass / -0.059 / 0.049 / 0.097 / stronger competitor
+  Pneumothorax 0.032 / Cardiomegaly / -0.056 / 0.054 / 0.075 / stronger competitor
+  Cardiomegaly 0.192 / Nodule 0.086 / +0.106 / 0.082 / 0.043 / OWNED (fixed-family advantage AND steering reference,
+    rank 3/120): the first clinical concept in the campaign that meets both registered criteria
+  Mass 0.165 / Cardiomegaly / -0.077 / 0.232 / 0.047 / stronger competitor
+  Nodule 0.010 / Mass / -0.051 / 0.132 / 0.002 / stronger competitor
+  Calibration: readable Atelectasis (S 0.080), Pneumothorax (0.140), Cardiomegaly (0.171); answer-capable
+  Atelectasis, Cardiomegaly, Mass, Nodule (Effusion clean AUROC 0.470). Table 3: dose range 0.305, refit O SD 0.062,
+  label gap -0.204 [-0.339, -0.050].
+  Versus the 7B checkpoint of the same family on the same 600 patients: Effusion loses its steering effect
+  entirely at 32B, and ownership moves to Cardiomegaly. Scale trends are checkpoint associations (README 2).
+- Gate decision: valid OBSERVED block.
