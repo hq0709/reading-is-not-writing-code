@@ -11,7 +11,8 @@ while [ $# -gt 0 ]; do
 done
 LOGS=/rodata/azradonc_dev/m253405/cf-transfer/logs/slurm
 GRES="gpu:a100:$GPUS"; [ "$PART" = "gen-h100" ] && GRES="gpu:h100:$GPUS"
-MEMOPT=""; [ -n "$MEM" ] && MEMOPT="--mem=$MEM"
+[ -z "$MEM" ] && MEM="$((64 * GPUS))G"   # never the partition default (= whole node)
+MEMOPT="--mem=$MEM"
 sbatch -p "$PART" --gres="$GRES" -t "$TIME" -J "$NAME" -o "$LOGS/$NAME.%j.out" -e "$LOGS/$NAME.%j.err" \
   --cpus-per-task=$((8 * GPUS)) $MEMOPT --wrap "
 set -euo pipefail

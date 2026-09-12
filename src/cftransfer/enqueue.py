@@ -1,0 +1,73 @@
+"""Generate queue tasks for (model, dataset): preparation, then every module shard, with file-based dependencies."""
+from __future__ import annotations
+
+import argparse
+import json
+from pathlib import Path
+
+from .protocol import MODULES, expected_rows
+from .runpaths import run_dir
+from .worker import QUEUE
+
+SRC = "/rodata/azradonc_dev/m253405/concept-flow/src"
+PREP = "/rodata/azradonc_dev/m253405/concept-flow/scripts/mayo/prep_model.sh"
+LANE = {"q25-3": "gpu1", "q25-7": "gpu1", "q3-4": "gpu1", "q3-8": "gpu1", "iv35-8": "gpu1", "iv35-14": "gpu1",
+        "gemma3-4": "gpu1", "gemma3-12": "gpu1", "medgemma-4": "gpu1", "llama32-11": "gpu1", "llava15-7": "gpu1",
+        "llava15-13": "gpu1", "lingshu-7": "gpu1", "llavamed-7": "gpu1",
+        "q25-32": "gpu2", "q3-32": "gpu2", "iv35-38": "gpu2", "gemma3-27": "gpu2", "medgemma-27": "gpu2", "lingshu-32": "gpu2",
+        "q25-72": "gpu4", "llama32-90": "gpu4"}
+BATCH = {"gpu1": 32, "gpu2": 16, "gpu4": 8}
+# shards per module for a 600-row test block (row budget relative to CORE); calibration modules are single tasks
+SHARDS = {"CORE": 4, "LOCUS": 4, "PROMPT": 7, "DOSE": 2, "REFIT": 1, "CALIBRATION": 1, "LOCUS_CALIBRATION": 1}
+MODULE_ORDER = ["CALIBRATION", "CORE", "LOCUS_CALIBRATION", "DOSE", "REFIT", "LOCUS", "PROMPT"]
+MODEL_PRIORITY = ["q25-7", "llava15-7", "lingshu-7", "llavamed-7", "q3-8", "iv35-8", "medgemma-4", "q25-3", "q3-4", "iv35-14",
+                  "llava15-13", "gemma3-4", "gemma3-12", "llama32-11", "q25-32", "q3-32", "lingshu-32", "medgemma-27",
+                  "gemma3-27", "iv35-38", "q25-72", "llama32-90"]
+
+
+def enqueue(model_key: str, dataset_id: str, modules: list[str] | None = None, prep: bool = True) -> list[str]:
+    rd = run_dir(model_key, dataset_id)
+    lane = LANE[model_key]
+    dm = "cuda:0" if lane == "gpu1" else "auto"
+    prio_m = MODEL_PRIORITY.index(model_key) if model_key in MODEL_PRIORITY else 99
+    prio_d = {"nih": 0, "coco": 1, "chexpert": 2}[dataset_id]
+    names = []
+    env = {"HF_HOME": "/rodata/azradonc_dev/m253405/cache", "HF_HUB_OFFLINE": "1", "TRANSFORMERS_OFFLINE": "1",
+           "TOKENIZERS_PARALLELISM": "false", "OMP_NUM_THREADS": "8", "MKL_NUM_THREADS": "8"}
+    prep_out = [str(rd / "preflight.vis.last.json"), str(rd / "preflight.connector.json"), str(rd / "fits" / "connector" / "seed2.npz")]
+    if prep:
+        name = f"{prio_m:02d}{prio_d}-00-prep-{model_key}-{dataset_id}"
+        (QUEUE / "pending" / f"{name}.json").write_text(json.dumps({
+            "name": name, "lane": lane, "cmd": ["bash", PREP, model_key, dataset_id, str(BATCH[lane]), dm],
+            "requires": [], "produces": prep_out, "env": env}, indent=1))
+        names.append(name)
+    for mi, mod in enumerate(modules or MODULE_ORDER):
+        spec = MODULES[mod]
+        if dataset_id not in spec.datasets or expected_rows(mod, dataset_id) == 0:
+            continue
+        n = SHARDS[mod]
+        for s in range(n):
+            tag = f"{s:03d}of{n:03d}"
+            name = f"{prio_m:02d}{prio_d}-{mi + 1:02d}-{mod}-{model_key}-{dataset_id}-{tag}"
+            (QUEUE / "pending" / f"{name}.json").write_text(json.dumps({
+                "name": name, "lane": lane,
+                "cmd": ["python", "-m", "cftransfer.runner", "--model-key", model_key, "--dataset", dataset_id, "--module", mod,
+                        "--shard", str(s), "--n-shards", str(n), "--batch", str(BATCH[lane]), "--device-map", dm],
+                "requires": prep_out, "produces": [str(rd / "outcomes" / mod / f"meta-{tag}-*.json")], "env": env}, indent=1))
+            names.append(name)
+    return names
+
+
+if __name__ == "__main__":
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--models", required=True, help="comma list or 'all'")
+    ap.add_argument("--datasets", default="nih,coco")
+    ap.add_argument("--modules", default=None)
+    ap.add_argument("--no-prep", action="store_true")
+    a = ap.parse_args()
+    models = MODEL_PRIORITY if a.models == "all" else a.models.split(",")
+    total = 0
+    for m in models:
+        for d in a.datasets.split(","):
+            total += len(enqueue(m, d, a.modules.split(",") if a.modules else None, prep=not a.no_prep))
+    print("enqueued", total, "tasks; pending now", len(list((QUEUE / "pending").glob("*.json"))))

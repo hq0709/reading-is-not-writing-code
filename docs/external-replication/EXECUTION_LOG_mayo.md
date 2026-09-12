@@ -180,3 +180,16 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
 - Gate decision: valid OBSERVED block; the relative dose 0.25 is strongly disruptive for this SigLIP-896 tower
   (a DOSE-module finding to expect; not a reason to change the locked dose).
 - Next step: remaining medgemma-4 NIH modules (GPU 1).
+
+## 2026-09-12 Scheduling: shared task queue
+
+- Run: diagnosed the stalled Slurm queue: jobs inherited the partition's default memory (the whole node, 1 TB), so
+  they could only start on an empty node. Replaced per-shard jobs with a file-locked task queue
+  (`cf-transfer/queue/`; `cftransfer.worker` claims tasks by atomic rename, checks `requires`/`produces` so
+  finished shards are never rerun and no shard runs twice) and generated 658 tasks: NIH PROMPT + all COCO modules
+  for the four gated models, and full NIH + COCO pipelines (prep -> modules) for 13 further checkpoints. Lanes:
+  gpu1 (<= 14B), gpu2 (27-38B), gpu4 (72B).
+- Gate decision: 32 Slurm worker jobs submitted with 64 GB per GPU (24 x 1-GPU across both partitions, 6 x 2-GPU,
+  2 x 4-GPU, 12 h each, self-terminating when the lane is empty); four login-node workers take over each GPU when
+  its current module chain finishes.
+- Next step: monitor queue drain; run statistics/tables as blocks complete.
