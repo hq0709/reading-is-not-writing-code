@@ -401,3 +401,14 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   Calibration selectivity (CheXpert, known labels only): Effusion 0.219, Atelectasis 0.303, Pneumothorax 0.032,
   Cardiomegaly 0.228, Consolidation 0.224, Edema 0.125.
 - Gate decision: READY; CheXpert CORE + CALIBRATION tasks for llavamed-7 are claimable.
+
+## 2026-09-12 q3-8 NIH block COMPLETE
+
+- Run: PROMPT (7 shards on Slurm workers) closed the block; package status COMPLETE, coverage 62/62.
+- Observation (PROMPT): Effusion O by template IY +0.073, WY +0.173, IA -0.018, IB -0.059, WA +0.129, WB +0.037
+  (Nodule the strongest competitor throughout); wording IY-WY -0.100 [-0.112, -0.088], mapping IA-IB +0.041
+  [0.030, 0.052]. Mass O is negative under every template (IY -0.107, WY -0.058, IA -0.174, IB -0.335, WA -0.010,
+  WB -0.105); wording -0.049 [-0.071, -0.027], mapping +0.161 [0.148, 0.174]. For Qwen3-VL-8B the Mass advantage
+  seen in Qwen2.5-VL-7B under the show A/B templates does not appear, while the Effusion advantage is
+  template-dependent in sign.
+- Gate decision: third complete NIH deliverable (q25-7, llava15-7, q3-8).
