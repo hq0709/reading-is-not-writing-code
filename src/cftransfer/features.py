@@ -58,7 +58,10 @@ def extract(model_key: str, dataset_id: str, roles: tuple[str, ...], batch_size:
     for lid in loci:
         x = np.concatenate(acc[lid])
         suffix = "" if n_shards == 1 else f".shard{shard:03d}of{n_shards:03d}"
-        np.savez(out_dir / f"{lid}{suffix}.npz", row_id=np.array(ids, dtype="U32"), x=x,
+        width = max(len(i) for i in ids) + 1
+        if width > 96:
+            raise RuntimeError(f"row_id longer than expected ({width} chars)")
+        np.savez(out_dir / f"{lid}{suffix}.npz", row_id=np.array(ids, dtype=f"U{max(width, 32)}"), x=x,
                  valid_token_count=np.array(counts[lid], dtype=np.int32), fit_role=np.array(fit_role, dtype="U12"))
         meta[f"shape_{lid}"] = list(x.shape)
     (out_dir / f"features_meta{'' if n_shards == 1 else f'.shard{shard:03d}'}.json").write_text(json.dumps(meta, indent=1))
