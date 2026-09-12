@@ -16,7 +16,7 @@ REVISIONS = {
     "q3-4": "ebb281ec70b05090aa6165b016eac8ec08e71b17",
     "q3-8": "0c351dd01ed87e9c1b53cbc748cba10e6187ff3b",
     "q3-32": "0cfaf48183f594c314753d30a4c4974bc75f3ccb",
-    "iv35-8": "741a7d03020411e666c6109218ab71e08151ef86", "iv35-14": "226b96d5912e69159abc0384cefcbd51487fdce0", "iv35-38": None,
+    "iv35-8": "741a7d03020411e666c6109218ab71e08151ef86", "iv35-14": "226b96d5912e69159abc0384cefcbd51487fdce0", "iv35-38": "7c830fc25e874f9a861087e3c70587f2b9b555f3",
     "gemma3-4": None, "gemma3-12": None, "gemma3-27": None,
     "medgemma-4": "290cda5eeccbee130f987c4ad74a59ae6f196408",
     "medgemma-27": "2d3e00ea38b50018bf5dd3aa1009457cd2d5a48f",

@@ -47,3 +47,21 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
 - Gate decision: interfaces READY for q25-7, q3-8, iv35-8, llava15-7 (medgemma-4 pending its smoke rerun);
   no scientific outcome collected yet.
 - Next step: q25-7 NIH probe fits + preflight + CORE throughput trial, then fan out CORE shards.
+
+## 2026-09-12 q25-7 NIH: fits, preflight, throughput, launch
+
+- Run: features for all 19,228 rows (vis.last D=1280, connector D=3584); fits for both loci, seeds 0/1/2; preflight
+  on both loci; two 3-row CORE trials (shards 0 and 1 of 200).
+- Observation: calibration readout reproduces the accepted reference cell (Effusion AUROC 0.7741, control mean
+  0.6717, S=0.1023; readable: Effusion, Pneumothorax, Cardiomegaly; not readable at the one-sided bound:
+  Atelectasis, Mass, Nodule). Preflight passes on both loci (determinism 0, alpha-0 no-op 0, merger change 9.8,
+  answer-logit change 3.8, single-vs-batch 0.22 within 0.25, replicated-batch 0.07, fp32-vs-model 0.05 logits,
+  24/24 semantic-mapping cases). Trial rows: 576 consumed tokens, delta norm = 0.25 x token norm exactly,
+  baseline P(yes) ~0.02, Effusion direction 0.3-0.44, Nodule similar, sham at baseline.
+  Throughput 27 image-conditions/s at batch 32 on one A100-80GB (GPU-bound: 32 x 183 tokens through 7B per
+  forward); LLM cost dominates, so per 7B model the three datasets need ~44 A100-hours; the 22-checkpoint plan
+  is ~3,000-4,000 A100-hours before H100 speedups.
+- Gate decision: measurement READY for q25-7/NIH; campaign launched (CORE 4 shards on the login GPU;
+  PROMPT 7 + LOCUS 4 shards on gen-h100; DOSE 2, REFIT 1, CALIBRATION 1, LOCUS_CALIBRATION 1 on gen-a100.p).
+- Next step: complete q25-7 NIH, package, run the CPU statistics; bring q3-8 / medgemma-4 / llava15-7 /
+  iv35-8 / llavamed-7 through the same gate; COCO once train2017 finishes.
