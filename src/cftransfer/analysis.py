@@ -241,38 +241,6 @@ def label_shifts(model_key: str, dataset_id: str, module: str = "CORE", alpha: f
     return out
 
 
-if __name__ == "__main__":
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--model-key", required=True)
-    ap.add_argument("--dataset", required=True)
-    ap.add_argument("--what", default="calibration,core", help="comma list of calibration,core,shifts")
-    ap.add_argument("--n-boot", type=int, default=None)
-    a = ap.parse_args()
-    rd = run_dir(a.model_key, a.dataset)
-    report = json.loads((rd / "summary.json").read_text()) if (rd / "summary.json").exists() else {}
-    for w in a.what.split(","):
-        if w == "calibration":
-            report["calibration"] = calibration(a.model_key, a.dataset)
-        elif w == "core":
-            report["core"] = core(a.model_key, a.dataset, n_boot=a.n_boot)
-        elif w == "shifts":
-            report["label_shifts"] = label_shifts(a.model_key, a.dataset)
-        elif w == "t3":
-            report["t3"] = t3(a.model_key, a.dataset)
-    (rd / "summary.json").write_text(json.dumps(report, indent=1, default=lambda o: float(o) if isinstance(o, np.floating) else str(o)))
-    if "calibration" in report:
-        for c, cell in report["calibration"].items():
-            print(f"CAL {c:14s} auroc={cell['auroc_real']:.4f} ctrl={cell['control_mean']:.4f} S={cell['selectivity']:.4f} "
-                  f"readable={cell['readable']} answer_auroc={cell.get('answer_auroc', float('nan')):.4f} capable={cell.get('answer_capable')}")
-    if "t3" in report:
-        for k, v in report["t3"].items():
-            print(f"T3  {k:40s} {v['estimate']:+.4f} [{v['ci_low']:+.4f}, {v['ci_high']:+.4f}] {v['status']}")
-    if "core" in report and "core" in a.what:
-        for q, cell in report["core"]["per_question"].items():
-            print(f"CORE {q:14s} W_qq={cell['W_qq']:.4f} O_q={cell['O_q']:.4f} (vs {cell['argmax_other']}) p95rand={cell['random_p95']:.4f} "
-                  f"|sham|={cell['abs_sham']:.4f} rank={cell['rank_in_random_family']} ref={cell['steering_reference']} verdict={cell.get('verdict')}")
-
-
 # ------------------------------------------------------------------------------------------------- T3
 def _load_module(model_key, dataset_id, module, cols=("row_id", "concept", "template_id", "fit_seed", "direction_id", "alpha",
                                                     "p_present", "semantic_margin", "sample_status")):
@@ -438,3 +406,35 @@ def _ineligible_prompt_rows(model_key, dataset_id) -> int:
     elig = json.loads(p.read_text())
     bad = [t for t in ("WY", "IA", "IB", "WA", "WB") if not elig.get(t, {}).get("eligible", True)]
     return len(bad) * len(PROMPT_CONCEPTS[dataset_id]) * 127 * 600
+
+
+if __name__ == "__main__":
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--model-key", required=True)
+    ap.add_argument("--dataset", required=True)
+    ap.add_argument("--what", default="calibration,core", help="comma list of calibration,core,shifts")
+    ap.add_argument("--n-boot", type=int, default=None)
+    a = ap.parse_args()
+    rd = run_dir(a.model_key, a.dataset)
+    report = json.loads((rd / "summary.json").read_text()) if (rd / "summary.json").exists() else {}
+    for w in a.what.split(","):
+        if w == "calibration":
+            report["calibration"] = calibration(a.model_key, a.dataset)
+        elif w == "core":
+            report["core"] = core(a.model_key, a.dataset, n_boot=a.n_boot)
+        elif w == "shifts":
+            report["label_shifts"] = label_shifts(a.model_key, a.dataset)
+        elif w == "t3":
+            report["t3"] = t3(a.model_key, a.dataset)
+    (rd / "summary.json").write_text(json.dumps(report, indent=1, default=lambda o: float(o) if isinstance(o, np.floating) else str(o)))
+    if "calibration" in report:
+        for c, cell in report["calibration"].items():
+            print(f"CAL {c:14s} auroc={cell['auroc_real']:.4f} ctrl={cell['control_mean']:.4f} S={cell['selectivity']:.4f} "
+                  f"readable={cell['readable']} answer_auroc={cell.get('answer_auroc', float('nan')):.4f} capable={cell.get('answer_capable')}")
+    if "t3" in report:
+        for k, v in report["t3"].items():
+            print(f"T3  {k:40s} {v['estimate']:+.4f} [{v['ci_low']:+.4f}, {v['ci_high']:+.4f}] {v['status']}")
+    if "core" in report and "core" in a.what:
+        for q, cell in report["core"]["per_question"].items():
+            print(f"CORE {q:14s} W_qq={cell['W_qq']:.4f} O_q={cell['O_q']:.4f} (vs {cell['argmax_other']}) p95rand={cell['random_p95']:.4f} "
+                  f"|sham|={cell['abs_sham']:.4f} rank={cell['rank_in_random_family']} ref={cell['steering_reference']} verdict={cell.get('verdict')}")
