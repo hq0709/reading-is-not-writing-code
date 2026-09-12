@@ -435,3 +435,10 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   Calibration selectivity: Effusion 0.119, Atelectasis 0.105, Pneumothorax 0.110, Cardiomegaly 0.061, Mass 0.085,
   Nodule 0.019.
 - Gate decision: READY for yes/no templates; CORE/DOSE/REFIT/LOCUS and the WY PROMPT block are claimable.
+
+## 2026-09-12 llava15-7 COCO block COMPLETE
+
+- Run: all seven modules (yes/no templates; A/B cells INELIGIBLE by interface) packaged COMPLETE, 19.6 GPU-hours.
+  Packaging now counts INELIGIBLE template cells as terminal so completed_modules reflects the disposition.
+- Observation: PROMPT wording contrasts negligible (person +0.003 [-0.001, +0.008], bottle -0.003 [-0.004, -0.001]).
+- Gate decision: complete deliverables so far: q25-7 (NIH, COCO), llava15-7 (NIH, COCO), q3-8 (NIH).
