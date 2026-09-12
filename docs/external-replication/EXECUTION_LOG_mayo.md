@@ -310,3 +310,11 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
 - Gate decision: manifest READY. Image transfer: per-file PNG downloads are throttled (~27 s per file even at
   8-way parallelism), so the five PNG zip chunks (720 GB) are downloaded instead and only the 21,016 manifest
   images are extracted.
+
+## 2026-09-12 q3-8 NIH: all modules but PROMPT complete
+
+- Run: CALIBRATION, LOCUS_CALIBRATION, REFIT, DOSE, LOCUS finished on login GPU 2 (LOCUS shards shared the GPU with a
+  queue worker for part of the run, 12.4-24/s); PROMPT shards queued.
+- Observation: connector median O on the complete LOCUS block -0.020 [-0.023, -0.017]; other Table 3 aggregates
+  unchanged (dose range 0.470, refit SD 0.103, label gap -1.093).
+- Gate decision: block ready for packaging once PROMPT lands.
