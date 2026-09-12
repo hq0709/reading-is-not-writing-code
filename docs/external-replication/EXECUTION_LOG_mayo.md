@@ -412,3 +412,17 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   seen in Qwen2.5-VL-7B under the show A/B templates does not appear, while the Effusion advantage is
   template-dependent in sign.
 - Gate decision: third complete NIH deliverable (q25-7, llava15-7, q3-8).
+
+## 2026-09-12 COCO calibration rule and llava15-7 COCO statistics
+
+- Run: the calibration bootstrap initially invalidated every COCO draw because one of 20 type-controls was
+  single-class in each draw (COCO has 9 recurring types, some rare). README 6 excludes single-class draws only for
+  the affected AUROC, so the rule now drops the affected control within a draw and keeps the draw when at least
+  10 of 20 controls are estimable (observed: 18-20 per draw; NIH draws were never affected, 2,000/2,000 valid).
+- Observation: llava15-7 COCO readable 5/6 (S 0.25-0.32; bicycle has 9 calibration positives), answer-capable 5/6
+  (clean AUROC 0.92-0.999); q25-7 COCO readable 1/6 (person; type controls decode at 0.936 so S is 0.01-0.05),
+  answer-capable 5/6. llava15-7 COCO CORE: all six object concepts have a positive fixed-family advantage
+  (O person +0.059, chair +0.069, car +0.012, bottle +0.008, bicycle +0.004, dog +0.003) and 5/6 meet the
+  steering reference (bottle rank 10/120), but effects are small (W_qq 0.01-0.07) because LLaVA already answers
+  object questions near ceiling. Table 3: dose range 0.031, refit SD 0.004, connector O +0.001, label gap -0.20.
+- Gate decision: valid OBSERVED; llava15-7 COCO block packaged COMPLETE (yes/no templates).
