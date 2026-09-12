@@ -206,3 +206,21 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   Mass and Nodule the reverse.
 - Gate decision: flags recorded; all questions stay in CORE as the protocol requires.
 - Next step: Table 3 aggregates (dose range, refit SD, connector O, label gap) for q25-7 and q3-8.
+
+## 2026-09-12 q25-7 NIH Table 3 aggregates (DOSE, REFIT, LOCUS, label gap)
+
+- Run: paired unit-bootstrap (2,000 draws, seed 2026090603) recomputing every aggregate inside each draw.
+- Observation:
+  median signed-dose O range 0.419 [0.413, 0.425]: signed O is near zero at negative doses and collapses at +0.5
+  (Effusion -0.425, Pneumothorax -0.556, Mass -0.518) as answers saturate; +0.25 sits between.
+  median refit O SD 0.082 [0.080, 0.085]: per concept O over seeds 0/1/2 = Effusion -0.071/-0.061/-0.021
+  (W_qq 0.190/0.040/0.121), Atelectasis -0.226/-0.098/-0.060, Pneumothorax -0.102/-0.068/-0.134,
+  Cardiomegaly -0.219/-0.107/-0.255, Mass -0.169/+0.013/-0.114, Nodule -0.072/-0.112/+0.068. The negative
+  Effusion ownership holds under every refit while its raw effect varies three-fold; Mass and Nodule change sign
+  under refit, so their competitor verdicts are direction-bundle dependent (the reviewers' open question).
+  connector median O -0.013 [-0.014, -0.012]: at the merger output the same relative dose barely changes any
+  answer (W_qq: Effusion 0.007, Atelectasis -0.031, others |W| < 0.01), so the connector locus is an
+  ineffective write site for Qwen2.5-VL-7B at alpha 0.25.
+  median label gap -0.107 [-0.282, +0.0003]: matched directions shift disease-positive patients less than
+  negatives (point estimates negative for the median concept), as in the paper's 35/36 pattern.
+- Gate decision: valid OBSERVED aggregates; PROMPT contrasts pending block completion.
