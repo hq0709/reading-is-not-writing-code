@@ -1067,3 +1067,16 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   would have started into an empty lane and exited. Running workers are untouched and exit on their own when
   the lane empties, after which the 2-GPU and 3-GPU jobs are placed. Queue 300 pending / 64 running / 542
   done / 0 failed.
+
+## 2026-09-13 llava15-13 CheXpert statistics; llava15-13 complete on all three datasets
+
+- Run: preflight passed apart from the IB/WB mapping gate (batch-vs-single 0.28 declared). CORE + CALIBRATION
+  COMPLETE, 10.1 GPU-hours.
+- Observation (known labels): readable Effusion (S 0.248), Cardiomegaly (0.221), Consolidation (0.197), Edema
+  (0.154); Atelectasis `insufficient_support`; Pneumothorax 0.032. Answer AUROC 0.40-0.60 (Cardiomegaly and
+  Consolidation below chance): the 13B LLaVA reads four CheXpert concepts and answers none.
+- Observation (CORE): |W_qq| <= 0.030, nothing at the reference; Consolidation O +0.014 below its random p95;
+  Cardiomegaly unresolved; the rest lose to a competitor. No steering, as on NIH.
+- Gate decision: valid OBSERVED block. llava15-13 is the tenth checkpoint complete on all three datasets; the
+  whole LLaVA family (7B, 13B, LLaVA-Med) now shows the same dissociation on both chest sets: readable, not
+  answerable, not steerable. 460 table cells filled.
