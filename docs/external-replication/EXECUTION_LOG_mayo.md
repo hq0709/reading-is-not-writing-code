@@ -1441,3 +1441,13 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   (O -0.036); Consolidation O -0.124; Cardiomegaly and Pneumothorax not owned.
 - Gate decision: valid OBSERVED block; q3-32 is the fourteenth checkpoint complete on all three datasets.
   636 table cells filled.
+
+## 2026-09-13 llama32-11 COCO and CheXpert preflight: same template disposition as NIH
+
+- Observation: on both datasets checks A-D and G pass (determinism 0, alpha-0 0, reach 11.5-12.5 at the
+  projector, nothing outside consumed rows, batch-vs-single 0.41 / 0.27 declared, fp32-vs-model 0.06,
+  3.8-4.2 rows/s) and the image-free mapping check E gives the NIH result: IY, WY, IA and WA INELIGIBLE, IB
+  and WB eligible. The generic statement cases of check E are dataset-independent by construction, so the
+  disposition is a property of the checkpoint.
+- Gate decision: llama32-11 keeps CALIBRATION and the IB/WB PROMPT cells on all three datasets; the IY-based
+  modules close as `ineligible_modules`. COCO CORE metas are terminal and the block is being packaged.
