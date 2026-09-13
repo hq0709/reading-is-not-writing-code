@@ -1093,3 +1093,18 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   question shape-matched, so these deviations affect no reported contrast.
 - Gate decision: gemma3-4 accepted on all three datasets; COCO CORE and all modules are already scored and
   being packaged, NIH and CheXpert follow in the lane.
+
+## 2026-09-13 gemma3-4 COCO: all seven modules packaged; statistics
+
+- Run: all seven modules COMPLETE, 33.7 GPU-hours (the 4096-token block makes Gemma the costliest 4B).
+- Observation (known labels): all six readable (S 0.04-0.11 over a control mean of 0.89; bicycle
+  `insufficient_support`); answers 0.90-1.00.
+- Observation (CORE): five objects owned at the reference: person O +0.161 (rank 1), dog +0.539 (rank 3),
+  car +0.243 (rank 5), chair +0.343 (rank 1), bottle +0.437 (rank 6); bicycle anti-owned (W 0.124, O -0.270
+  vs bottle). Random p95 0.14-0.34 and sham up to 0.31: like MedGemma, the base Gemma 3 responds to any
+  0.25 write, yet five of six concept writes are still the most specific direction.
+- T3: signed dose range +0.612 [+0.571, +0.677]; refit SD 0.171 [0.152, 0.187] (the largest seed variance of
+  the campaign); connector median O +0.013; label gap -17.2 [-19.6, -15.5]; person wording -0.081, mapping
+  +0.051; bottle wording +0.089, mapping -0.519 [-0.565, -0.471] (the B-mapped template flips the bottle
+  answer: the strongest prompt dependence recorded).
+- Gate decision: valid OBSERVED block; first Gemma 3 base block complete. 472 table cells filled.
