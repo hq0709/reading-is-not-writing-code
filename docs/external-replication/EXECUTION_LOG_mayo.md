@@ -560,3 +560,15 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   owns nothing; Lingshu-7 (medical) loses the Effusion steering effect and owns Cardiomegaly. Medical training
   changes which concept the probe normal controls, not whether attribution holds in general.
 - Gate decision: valid OBSERVED block.
+
+## 2026-09-13 q25-7 CheXpert statistics
+
+- Run: CORE + CALIBRATION packaged COMPLETE, 4.8 GPU-hours.
+- Observation (known labels only): readable Effusion (S 0.234), Cardiomegaly (0.243), Consolidation (0.203),
+  Edema (0.178); Atelectasis S 0.351 but insufficient support (4 known negatives); Pneumothorax -0.028.
+  Answer-capable Effusion (0.676) and Cardiomegaly (0.693) only. CORE: no question meets the steering reference;
+  random p95 is large on CheXpert images (0.11-0.37); Effusion W 0.076 with O +0.008 (fixed-family advantage below
+  the random reference, rank 13); Atelectasis -0.049 (Edema stronger), Pneumothorax -0.099, Cardiomegaly -0.004
+  unresolved, Consolidation -0.149, Edema -0.177 (sham 0.31). The Effusion steering effect seen on NIH (0.19,
+  above random/sham) does not transfer to CheXpert for the same model, projection and dose.
+- Gate decision: valid OBSERVED block; cross-dataset boundary of the NIH Effusion effect.
