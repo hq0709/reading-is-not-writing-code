@@ -1150,3 +1150,21 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   logits; 9-11 rows/s). Batch-vs-single 0.89 (COCO), 1.84 (NIH, the campaign maximum), 1.40 (CheXpert),
   replicated in D2 and recorded as declared deviations; covered by the fixed-composition design.
 - Gate decision: gemma3-12 accepted on all three datasets; COCO CORE is scored and being packaged.
+
+## 2026-09-13 gemma3-12 COCO CORE statistics; Gemma 3 sizes share the primary-locus reading
+
+- Observation (design fact, verified by file hashes): the pooled `vis.last` features of gemma3-4 and gemma3-12
+  are byte-identical on NIH, COCO and CheXpert (same md5), and so are the fitted probes and concept directions
+  (`fits/vis.last/seed*.npz` identical). Gemma 3 4B/12B/27B ship the same SigLIP-So400m tower (1152-d, 27
+  layers, 896 px, 256 tokens after pooling), so the "reading" at the consumed block and the write vector v_c
+  are the same object for every size; only the connector (2560/3840/5376-d) and the language model differ.
+  MedGemma's tower is different (its features and fits differ from gemma3-4). Consequently, within the Gemma 3
+  base family the CORE/DOSE/LOCUS comparison across sizes isolates the consumer: same locus, same write,
+  different reader. The calibration rows (known-label AUROC 0.93-0.99, control mean 0.89) are identical for
+  gemma3-4 and gemma3-12 by construction; only the answer columns differ.
+- gemma3-12 COCO: CORE, CALIBRATION, DOSE, REFIT, LOCUS, LOCUS_CALIBRATION packaged (49.1 GPU-hours so far);
+  PROMPT pending. Answers 0.91-1.00. CORE: all six objects owned at rank 1 with larger and cleaner effects
+  than the 4B reading the identical write: person O +0.194, dog +0.761, car +0.476, chair +0.447, bottle
+  +0.179, bicycle +0.605 (the 4B anti-owned bicycle at -0.270); random p95 0.02-0.22, |sham| 0.01-0.22.
+- Gate decision: valid OBSERVED block; 484 table cells filled. gemma3-27 is expected to share the same
+  features and fits; to be verified by hash when its prep completes.
