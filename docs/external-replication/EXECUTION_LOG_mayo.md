@@ -1460,3 +1460,12 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   mean of 0.84; bicycle `insufficient_support`); answer AUROC undefined (IY template ineligible), to be read
   from the IB/WB PROMPT rows.
 - Gate decision: valid block with the interface disposition recorded. 638 table cells filled.
+
+## 2026-09-13 lingshu-32 COCO: all seven modules packaged; T3
+
+- Run: PROMPT and LOCUS landed; block COMPLETE with all seven modules, 75.8 GPU-hours.
+- Observation (T3): signed dose range +0.538 [+0.509, +0.563]; refit SD 0.059; connector median O +0.006;
+  label gap -3.15 [-3.62, -2.61]; person wording -0.005 (null), mapping +0.153 [+0.141, +0.165]; bottle
+  wording +0.055, mapping +0.122.
+- Gate decision: valid OBSERVED block; lingshu-32 complete on NIH and COCO (CheXpert in the 2-GPU lane).
+  646 table cells filled.
