@@ -1009,3 +1009,13 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   (cfw4-g1-a / cfw4-g2-a), then 12 more gpu2 workers (cfw4-g2-b), 2 gpu3 workers on gen-a100.p and 2 on
   gen-h100 (3x H100-80GB also holds the 72B in bf16). All with `--max-hours 10 --exit-when-empty`; placement
   is left to the scheduler.
+
+## 2026-09-13 q25-32 COCO: all seven modules packaged; T3
+
+- Run: PROMPT (including the requeued shard 5), DOSE and LOCUS landed; block COMPLETE with all seven modules,
+  75.0 GPU-hours (2-GPU lane).
+- Observation (T3): signed dose range +0.684 [+0.650, +0.715] (the largest dose response so far); refit SD
+  0.079; connector median O +0.003 (inert connector, as in every block); label gap -8.82 [-9.28, -8.04];
+  person wording +0.061, mapping +0.036; bottle wording +0.111 [+0.098, +0.123], mapping +0.077.
+- Gate decision: valid OBSERVED block; q25-32 is complete on NIH and COCO (CheXpert CORE at 30%).
+  424 table cells filled.
