@@ -1142,3 +1142,11 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   does not transfer to CheXpert.
 - Gate decision: two valid OBSERVED blocks; q25-32 is the eleventh checkpoint complete on all three datasets.
   480 table cells filled.
+
+## 2026-09-13 gemma3-12 preflight on NIH, COCO and CheXpert
+
+- Observation: all three preflights pass on both loci (determinism 0, alpha-0 0, nothing outside consumed
+  tokens, fp32-vs-model 0.10-0.12, all six templates eligible; reach 23.6-25.8 at the consumer, 8-14 answer
+  logits; 9-11 rows/s). Batch-vs-single 0.89 (COCO), 1.84 (NIH, the campaign maximum), 1.40 (CheXpert),
+  replicated in D2 and recorded as declared deviations; covered by the fixed-composition design.
+- Gate decision: gemma3-12 accepted on all three datasets; COCO CORE is scored and being packaged.
