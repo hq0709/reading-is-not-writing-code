@@ -109,7 +109,14 @@ def run_block(model_key: str, dataset_id: str, module: str, shard: int, n_shards
         questions = [(c, t) for c, t in questions if elig.get(t, {}).get("eligible", True)]
     if not questions:
         print(f"[{model_key}/{dataset_id}/{module}] no eligible questions; nothing to score", flush=True)
-        return {"rows": len(rows), "todo": 0, "ineligible": True}
+        meta = {"model_key": model_key, "dataset_id": dataset_id, "module": module, "shard": shard, "n_shards": n_shards,
+                "rows": len(rows), "scored_rows": 0, "outcomes": 0, "seconds": 0.0, "throughput_per_s": 0.0, "batch": batch,
+                "ineligible_templates": skipped, "note": "every template of this module is INELIGIBLE by preflight check E; "
+                "the shard is terminal with no outcomes (coverage records the disposition)",
+                "ended_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())}
+        part_dir.mkdir(parents=True, exist_ok=True)
+        (part_dir / f"meta-{shard_tag}-{int(time.time())}.json").write_text(json.dumps(meta, indent=1))
+        return meta
     run_id = run_id_for(model_key, dataset_id)
     if spec.directions == "clean":
         batch = 1          # clean-only modules score one forward per (row, question); no steered composition to match

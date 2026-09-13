@@ -113,7 +113,7 @@ def prompts_json(model_key: str, dataset_id: str, settings: dict) -> dict:
 def build(model_key: str, dataset_id: str, status: str = "RUNNING") -> dict:
     rd = run_dir(model_key, dataset_id)
     rd.mkdir(parents=True, exist_ok=True)
-    cov, merged_stats, completed = [], {}, []
+    cov, merged_stats, completed, ineligible = [], {}, [], []
     for module in MODULES:
         merged, stats = merge_module(model_key, dataset_id, module)
         merged_stats[module] = stats
@@ -124,8 +124,10 @@ def build(model_key: str, dataset_id: str, status: str = "RUNNING") -> dict:
                 (r["execution_status"] == "NOT_STARTED" and r["reason"].startswith("INELIGIBLE"))
         if rows and all(terminal(r) for r in rows) and any(r["execution_status"] == "COMPLETE" for r in rows):
             completed.append(module)
+        elif rows and all(terminal(r) for r in rows) and any(r["reason"].startswith("INELIGIBLE") for r in rows):
+            ineligible.append(module)      # every requested cell of the module is an INELIGIBLE template: terminal, no outcomes
     requested = [m for m in MODULES if dataset_id in MODULES[m].datasets and expected_rows(m, dataset_id) > 0]
-    if status == "RUNNING" and requested and all(m in completed for m in requested):
+    if status == "RUNNING" and requested and all(m in completed or m in ineligible for m in requested):
         status = "COMPLETE"      # derived from coverage, so a block never stays RUNNING once every cell is terminal
     with (rd / "coverage.csv").open("w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=COVERAGE_COLS); w.writeheader(); w.writerows(cov)
@@ -187,7 +189,7 @@ def build(model_key: str, dataset_id: str, status: str = "RUNNING") -> dict:
         "peak_gpu_memory_bytes": max([m.get("peak_gpu_memory_bytes", 0) for m in metas] or [0]),
         "processing_settings": settings, "loci": feat_meta.get("loci"),
         "fit_seeds": [0, 1, 2], "random_seed": 0, "projection_seed": 0, "cohort_file": "manifests/cohort.csv",
-        "completed_modules": completed, "status": status, "deviations": deviations,
+        "completed_modules": completed, "ineligible_modules": ineligible, "status": status, "deviations": deviations,
         "feature_extraction_seconds": feat_meta.get("seconds"),
         "notes": "gpu_hours sums wall time x GPUs over runner shards recorded in outcomes/*/meta-*.json; CPU fitting time is in fits/*/summary.json",
         "merged_outcomes": merged_stats,
