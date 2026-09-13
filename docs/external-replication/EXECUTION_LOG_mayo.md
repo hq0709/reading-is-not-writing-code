@@ -824,3 +824,15 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
 - Gate decision: valid OBSERVED block. The medical Gemma reads and answers NIH concepts well and is highly
   writable, but the writes are unspecific: the strongest counter-example to "capable model => owned concept".
   280 table cells filled.
+
+## 2026-09-13 q3-4 COCO CORE statistics
+
+- Run: preflight passed on both loci (batch-vs-single 0.69 declared and replicated, the Qwen3-VL pattern;
+  reach 3.97 / 0.50; fp32-vs-model 0.12). CORE, CALIBRATION, DOSE, REFIT, LOCUS_CALIBRATION packaged
+  (5.9 GPU-hours so far); PROMPT and LOCUS pending.
+- Observation (known labels): control mean 0.93 as for q25-32; readable person (S 0.068), car, chair, bottle
+  (0.03); dog 0.016; bicycle 0.064 but `insufficient_support` (9 positives). Answers near-perfect (0.99).
+- Observation (CORE): Qwen3-VL-4B owns all six objects at rank 1: person O +0.465, dog +0.127, car +0.331,
+  chair +0.714, bottle +0.335, bicycle +0.072; random p95 <= 0.014, |sham| <= 0.037.
+- Gate decision: valid OBSERVED block. Sixth checkpoint owning all six COCO objects (q25-7, q25-32, q3-4, q3-8,
+  lingshu-7, iv35-8); the 4B Qwen3 is as specific on objects as the 32B Qwen2.5. 284 table cells filled.
