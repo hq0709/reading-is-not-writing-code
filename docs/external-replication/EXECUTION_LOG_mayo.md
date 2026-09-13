@@ -784,3 +784,11 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
 - Gate decision: adapter accepted for the Gemma 3 base checkpoints (same `Gemma3Adapter` as MedGemma).
   gemma3-4 enqueued for NIH, COCO and CheXpert (48 tasks: prep + all modules per dataset); gemma3-12 (gpu1) and
   gemma3-27 (gpu2) will be enqueued when their downloads finish. Queue: 439 pending, 63 running, 308 done, 0 failed.
+
+## 2026-09-13 gemma3-12 and gemma3-27 downloaded and enqueued
+
+- Run: pinned snapshots landed (12B in 238 s, 27B in 478 s; 38 GB and 86 GB on disk). Same `Gemma3Adapter`
+  as gemma3-4 and MedGemma; the per-checkpoint preflight in each prep task is the acceptance gate.
+- Gate decision: gemma3-12 (gpu1 lane) and gemma3-27 (gpu2 lane) enqueued for NIH, COCO and CheXpert (96 tasks).
+  All 20 non-Llama checkpoints of the cf-transfer-v1 grid are now downloaded and queued; llama32-11/90 wait
+  on Meta's licence approval.
