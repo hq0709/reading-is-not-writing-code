@@ -792,3 +792,17 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
 - Gate decision: gemma3-12 (gpu1 lane) and gemma3-27 (gpu2 lane) enqueued for NIH, COCO and CheXpert (96 tasks).
   All 20 non-Llama checkpoints of the cf-transfer-v1 grid are now downloaded and queued; llama32-11/90 wait
   on Meta's licence approval.
+
+## 2026-09-13 iv35-8 CheXpert statistics; iv35-8 complete on all three datasets
+
+- Run: preflight passed on both loci with no deviations (batch-vs-single 0.18; reach 0.44 / 0.28; fp32-vs-model
+  0.05). CORE + CALIBRATION packaged COMPLETE, 4.3 GPU-hours.
+- Observation (known labels): readable Effusion (S 0.253), Cardiomegaly (0.217), Consolidation (0.256), Edema
+  (0.175); Atelectasis 0.211 but `insufficient_support`; Pneumothorax at the control level (-0.001).
+  Answer-capable on five (AUROC 0.83-0.95; Pneumothorax 0.63); InternVL answers CheXpert far better than NIH.
+- Observation (CORE): writes stay at the InternVL noise floor (|W_qq| <= 0.038). Pneumothorax technically meets
+  the reference (W 0.0040 vs random p95 0.0037) with O +0.004; Consolidation O +0.013 but W below its random p95;
+  Edema unresolved; Effusion, Atelectasis, Cardiomegaly lose to a competitor. No owned clinical concept.
+- Gate decision: valid OBSERVED block. InternVL3.5-8B is the fourth checkpoint complete on all three datasets
+  (with q25-7, lingshu-7, llavamed-7): reads five CheXpert concepts, answers them well, and cannot be steered
+  on any of them at alpha 0.25, while owning all six COCO objects.
