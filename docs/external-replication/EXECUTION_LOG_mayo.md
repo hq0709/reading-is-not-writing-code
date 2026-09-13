@@ -973,3 +973,16 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   all six templates eligible, 7.2 rows/s.
 - Gate decision: adapter accepted for the 72B checkpoint; CORE (4 shards) and the remaining modules follow in
   the gpu3 lane. Two more gpu3 workers are pending placement.
+
+## 2026-09-13 iv35-14 CheXpert statistics and COCO close; iv35-14 complete on all three datasets
+
+- iv35-14 CheXpert (preflight passed; batch-vs-single 0.44 declared): CORE + CALIBRATION COMPLETE,
+  4.7 GPU-hours. Readable Effusion (S 0.262), Cardiomegaly (0.272), Consolidation (0.295), Edema (0.217);
+  Atelectasis -0.092 (the known-label probe is below its controls; `insufficient_support`); Pneumothorax
+  -0.007. Answer-capable on five (AUROC 0.70-0.94). CORE: Effusion meets the reference (W 0.041 vs random
+  p95 0.023, |sham| 0.014, rank 2) with O +0.012; Consolidation O +0.009 below sham; the rest at the noise
+  floor (|W| <= 0.010). As for 8B, the 14B InternVL reads and answers CheXpert but is not steerable at 0.25.
+- iv35-14 COCO: all seven modules COMPLETE, 28.3 GPU-hours. T3: signed dose range +0.039 [+0.031, +0.051];
+  refit SD 0.003; connector median O +0.007; label gap -0.44 [-0.51, -0.30]; PROMPT contrasts within +-0.008.
+- Gate decision: two valid OBSERVED blocks; iv35-14 is the ninth checkpoint complete on all three datasets.
+  416 table cells filled.
