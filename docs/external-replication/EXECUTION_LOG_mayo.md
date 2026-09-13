@@ -1333,3 +1333,25 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
 - Gate decision: valid OBSERVED block; 588 table cells filled. The Qwen2.5-VL NIH ladder now reads 3B none,
   7B none (Effusion anti-owned), 32B Cardiomegaly, 72B Atelectasis + Cardiomegaly + Mass: ownership appears
   with scale within this family, while Effusion never becomes owned and its anti-ownership persists at 72B.
+
+## 2026-09-13 llama32-11 NIH preflight: yes/no templates INELIGIBLE; all-ineligible modules now close as terminal
+
+- Run: the batch-16 prep finished (features 19,228 rows at ~4 rows/s on a shared login GPU, fits, preflight).
+- Observation: preflight checks A-D, G pass on both loci (determinism 0, alpha-0 0, reach 14.0 at the projector /
+  0.98 answer logits, nothing outside consumed rows, batch-vs-single 0.18 within tolerance, fp32-vs-model
+  0.06, 4.1 rows/s). The image-free semantic-mapping check E fails the yes/no templates: with "The finding is
+  present. Is the finding present? Answer yes or no." Llama-3.2-11B-Vision answers "no" by 0.70 logits (the
+  "explicitly reported as present/absent" statements map correctly, +3.3 / -10.1), and the A-mapped A/B
+  templates answer "A" for an absent finding (+4.35). Only the B-mapped templates (IB, WB) pass. Under the
+  standing rule the eligibility file marks IY/WY/IA/WA INELIGIBLE, the mirror image of the LLaVA family
+  (where the A/B templates fail).
+- Consequence: CORE, DOSE, REFIT, LOCUS and LOCUS_CALIBRATION are built on the IY template, so every cell of
+  those modules is INELIGIBLE for this block; CALIBRATION (probe on features, no template) and the IB/WB
+  cells of PROMPT are scored. The runner previously exited without a meta file when a module had no eligible
+  question, so twelve module tasks were marked FAILED by the queue; the runner now writes a terminal meta
+  (`ineligible_templates`) and the packager records `ineligible_modules` and derives COMPLETE when every
+  requested module is either complete or ineligible (commit 6487901). The twelve tasks were moved back to
+  `pending/` and close immediately.
+- Gate decision: the block is a valid INELIGIBLE-by-interface disposition for the yes/no modules, recorded in
+  coverage rather than dropped; the checkpoint stays in the grid with its CALIBRATION and IB/WB PROMPT rows.
+  COCO and CheXpert preps for llama32-11 will apply the same check; llama32-90 follows on the 3-GPU lane.
