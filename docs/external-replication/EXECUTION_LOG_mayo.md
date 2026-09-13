@@ -591,3 +591,14 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   consistent with the CORE picture (no direction-specific steering for LLaVA-Med).
 - Gate decision: complete deliverables: q25-7 (NIH, CheXpert, COCO), llava15-7 (NIH, CheXpert, COCO), q3-8 (NIH),
   lingshu-7 (COCO), llavamed-7 (NIH).
+
+## 2026-09-13 llavamed-7 COCO CORE statistics
+
+- Observation: readable person (S 0.094), car (0.046), chair (0.073), bottle (0.077); not readable dog, bicycle
+  (bicycle insufficient support). Answer-capable 5/6 (clean AUROC 0.65-0.90). CORE: effects are tiny (W_qq <= 0.055);
+  dog alone meets the steering reference (W 0.021 vs random p95 0.018, O +0.012); person +0.019, car +0.005 are
+  fixed-family advantages below the random reference; chair -0.022 and bicycle -0.014 lose to a competitor;
+  bottle unresolved. Table 3: dose range 0.024, refit O SD 0.011, connector O -0.007, label gap -0.025.
+  LLaVA-Med steers general objects far less than LLaVA-1.5 (which owned all six with small effects) and much
+  less than the Qwen family (which owned all six with large effects).
+- Gate decision: valid OBSERVED block.
