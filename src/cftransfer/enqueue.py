@@ -17,6 +17,12 @@ LANE = {"q25-3": "gpu1", "q25-7": "gpu1", "q3-4": "gpu1", "q3-8": "gpu1", "iv35-
         "q25-32": "gpu2", "q3-32": "gpu2", "iv35-38": "gpu2", "gemma3-27": "gpu2", "medgemma-27": "gpu2", "lingshu-32": "gpu2",
         "q25-72": "gpu3", "llama32-90": "gpu3"}
 BATCH = {"gpu1": 32, "gpu2": 16, "gpu3": 8, "gpu4": 8}
+# per-model overrides: Mllama computes all 4 tile slots per image (3 zero tiles), so its vision cost is ~4x
+BATCH_MODEL = {"llama32-11": 16, "llama32-90": 4}
+
+
+def batch_for(model_key: str, lane: str) -> int:
+    return BATCH_MODEL.get(model_key, BATCH[lane])
 # shards per module for a 600-row test block (row budget relative to CORE); calibration modules are single tasks
 SHARDS = {"CORE": 4, "LOCUS": 4, "PROMPT": 7, "DOSE": 2, "REFIT": 1, "CALIBRATION": 1, "LOCUS_CALIBRATION": 1}
 MODULE_ORDER = ["CALIBRATION", "CORE", "LOCUS_CALIBRATION", "DOSE", "REFIT", "LOCUS", "PROMPT"]
@@ -39,7 +45,7 @@ def enqueue(model_key: str, dataset_id: str, modules: list[str] | None = None, p
     if prep:
         name = f"{prio_m:02d}{prio_d}-00-prep-{model_key}-{dataset_id}"
         (QUEUE / "pending" / f"{name}.json").write_text(json.dumps({
-            "name": name, "lane": lane, "cmd": ["bash", PREP, model_key, dataset_id, str(BATCH[lane]), dm],
+            "name": name, "lane": lane, "cmd": ["bash", PREP, model_key, dataset_id, str(batch_for(model_key, lane)), dm],
             "requires": data_ready, "produces": prep_out, "env": env}, indent=1))
         names.append(name)
     for mi, mod in enumerate(modules or MODULE_ORDER):
@@ -53,7 +59,7 @@ def enqueue(model_key: str, dataset_id: str, modules: list[str] | None = None, p
             (QUEUE / "pending" / f"{name}.json").write_text(json.dumps({
                 "name": name, "lane": lane,
                 "cmd": ["python", "-m", "cftransfer.runner", "--model-key", model_key, "--dataset", dataset_id, "--module", mod,
-                        "--shard", str(s), "--n-shards", str(n), "--batch", str(BATCH[lane]), "--device-map", dm],
+                        "--shard", str(s), "--n-shards", str(n), "--batch", str(batch_for(model_key, lane)), "--device-map", dm],
                 "requires": prep_out, "produces": [str(rd / "outcomes" / mod / f"meta-{tag}-*.json")], "env": env}, indent=1))
             names.append(name)
     return names
