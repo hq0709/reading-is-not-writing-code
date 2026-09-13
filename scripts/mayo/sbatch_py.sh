@@ -9,6 +9,10 @@ while [ $# -gt 0 ]; do
     --) shift; break;; *) echo "unknown arg $1"; exit 2;;
   esac
 done
+case "${1:-}" in
+  python|python3|bash) ;;
+  *) echo "sbatch_py.sh: payload must start with python/bash, got: '${1:-}' (empty \$W?)" >&2; exit 2;;
+esac
 LOGS=/rodata/azradonc_dev/m253405/cf-transfer/logs/slurm
 GRES="gpu:a100:$GPUS"; [ "$PART" = "gen-h100" ] && GRES="gpu:h100:$GPUS"
 [ -z "$MEM" ] && MEM="$((64 * GPUS))G"   # never the partition default (= whole node)

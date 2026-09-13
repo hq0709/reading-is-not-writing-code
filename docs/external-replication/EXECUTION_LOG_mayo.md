@@ -1397,3 +1397,11 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   only; 32B Cardiomegaly + Pneumothorax. Owned NIH concepts across the grid are now Cardiomegaly (q25-32,
   q25-72, lingshu-7, lingshu-32), Nodule (q3-32, gemma3-12), Atelectasis and Mass (q25-72), Pneumothorax
   (lingshu-32); Effusion is owned by no checkpoint.
+
+## 2026-09-13 Twelve single-GPU worker jobs failed at launch (empty payload); resubmitted
+
+- Run: the `cfw6-g1-a` batch was submitted from a shell command whose earlier step had failed, so the worker
+  command variable was empty and each job's script line read `--lane gpu1` ("command not found", exit 127,
+  1 s each). No task was claimed by them and no data was touched.
+- Fix: `sbatch_py.sh` now refuses a payload that does not start with `python`/`bash`, and 12 single-GPU workers
+  were resubmitted as `cfw7-g1-a` with the worker command verified in the generated script.
