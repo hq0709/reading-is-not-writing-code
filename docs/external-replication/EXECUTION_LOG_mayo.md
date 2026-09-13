@@ -890,3 +890,23 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   person wording -0.009, mapping +0.014; bottle wording +0.114 [+0.098, +0.130], mapping -0.034.
 - Gate decision: two valid OBSERVED blocks; 322 table cells filled. Both small Qwen checkpoints show the
   natural-object pattern in full: ownership of all six objects, clean dose response, connector writes inert.
+
+## 2026-09-13 medgemma-4 CheXpert and q25-3 NIH statistics; medgemma-4 complete on all three datasets
+
+- medgemma-4 CheXpert: preflight passed (batch-vs-single 0.56 declared). CORE + CALIBRATION COMPLETE,
+  8.6 GPU-hours. Readable Effusion (S 0.256), Cardiomegaly (0.271), Consolidation (0.256), Edema (0.183);
+  Atelectasis 0.259 `insufficient_support`; Pneumothorax 0.007. Answer-capable on five (AUROC 0.70-0.96).
+  CORE: Edema owned (W 0.352, O +0.101 vs Atelectasis, random p95 0.232, |sham| 0.088, rank 1) and
+  Cardiomegaly meets the reference at rank 5 (W 0.221, O +0.045; sham 0.184 close behind); Pneumothorax
+  strongly anti-owned (O -0.602: the Pneumothorax write raises Edema far more than Pneumothorax); Effusion and
+  Consolidation O -0.20; Atelectasis -0.08. First owned clinical concept for the Gemma family, and the model
+  that owns nothing on NIH owns one CheXpert concept.
+- q25-3 NIH (Qwen2.5-VL-3B, IB/WB INELIGIBLE): all seven modules COMPLETE, 12.6 GPU-hours. Readable Effusion
+  (S 0.137) and Cardiomegaly (0.137); answer-capable only Mass (0.68) and Nodule (0.61), the three others
+  below or near chance (Pneumothorax 0.43). CORE: no concept meets the reference; Effusion W -0.040 (O -0.094),
+  Pneumothorax O -0.176, Cardiomegaly O -0.109, Mass and Nodule write +0.15 / +0.14 but below random p95 and
+  lose to Atelectasis. T3: dose range +0.116; refit SD 0.039; connector median O -0.021; label gap -0.014
+  [-0.062, +0.031] (null); Effusion wording +0.102 [+0.100, +0.104], Mass wording +0.076.
+- Gate decision: two valid OBSERVED blocks. medgemma-4 is the sixth checkpoint complete on all three datasets
+  (with q25-7, lingshu-7, llavamed-7, iv35-8, q3-8). The Qwen2.5-VL size ladder on NIH is now 3B (nothing
+  owned), 7B (nothing; Effusion anti-owned), 32B (Cardiomegaly); 72B pending on the gpu3 lane.
