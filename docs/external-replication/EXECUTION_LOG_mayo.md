@@ -732,3 +732,27 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
 - Third Slurm batch submitted (24 gpu1 + 4 gpu2 workers, `--max-hours 10`) so the drain continues past the
   first batch's expiry; already-running workers keep the old code, and the new workers' sweep recovers any
   task they drop.
+
+## 2026-09-13 iv35-8 NIH and q25-32 NIH: all seven modules packaged; statistics
+
+- Run: both blocks now carry CORE, CALIBRATION, PROMPT, DOSE, REFIT, LOCUS, LOCUS_CALIBRATION with every cell
+  COMPLETE (457,200 unique CORE rows each); iv35-8 19.5 GPU-hours, q25-32 82.7 GPU-hours. Run status is now
+  derived from coverage by the packager (commit 279b801), so the three blocks that were fully scored but still
+  marked RUNNING (iv35-8 COCO/NIH, q25-32 NIH) flipped to COMPLETE without a manual flag.
+- iv35-8 NIH (InternVL3.5-8B): readable Cardiomegaly (S 0.135) and Mass (0.109) only; answer-capable on all
+  six (AUROC 0.66-0.78). CORE: no concept meets the steering reference; |W_qq| <= 0.035 with random p95 up to
+  0.062; Effusion O +0.003 (fixed-family advantage at noise level), Pneumothorax and Cardiomegaly unresolved,
+  the rest lose to a competitor. T3: signed dose range +0.017 [+0.013, +0.020]; refit SD 0.004; connector
+  median O -0.000; label gap -0.004 [-0.019, +0.020]; PROMPT contrasts within +-0.011. Together with its COCO
+  block (owns all six objects, W 0.02-0.05) this fixes the InternVL reading: a weak writer at this locus in
+  both domains, specific on objects, unspecific on clinical concepts.
+- q25-32 NIH (Qwen2.5-VL-32B): readable Atelectasis (0.080), Pneumothorax (0.140), Cardiomegaly (0.171);
+  answer-capable Atelectasis, Cardiomegaly, Mass, Nodule (Effusion answer AUROC 0.47). CORE: Cardiomegaly owned
+  (W 0.192, O +0.106 vs Nodule, random p95 0.082, |sham| 0.043, rank 3, meets reference); Effusion strongly
+  anti-owned (W -0.041, O -0.218 vs Nodule); Mass writes 0.165 but below its random p95 0.232; the other three
+  lose to a competitor. T3: signed dose range +0.303 [+0.291, +0.316] (the model responds to dose, unlike
+  iv35-8); refit SD 0.065; connector median O -0.036; label gap -0.204 [-0.339, -0.050]; Mass wording +0.043,
+  Mass mapping -0.125 [-0.136, -0.117] (the "show" A/B templates flip Mass, as in q25-7).
+- Gate decision: both valid OBSERVED blocks; 264 table cells filled. The q25-7 -> q25-32 comparison on NIH is
+  now complete on all modules: scaling Qwen2.5-VL from 7B to 32B replaces the Effusion effect with a
+  Cardiomegaly effect rather than adding ownership.
