@@ -629,3 +629,22 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   Calibration selectivity (known labels): Effusion 0.268, Atelectasis 0.288, Pneumothorax -0.037, Cardiomegaly 0.261,
   Consolidation 0.280, Edema 0.192.
 - Gate decision: READY.
+
+## 2026-09-13 lingshu-7 CheXpert statistics (three owned clinical concepts)
+
+- Run: CORE + CALIBRATION packaged COMPLETE, 4.8 GPU-hours.
+- Observation (W_qq / competitor / O_q / random p95 / |sham| / verdict):
+  Effusion 0.297 / Pneumothorax / +0.097 / 0.084 / 0.144 / OWNED (rank 1/120)
+  Atelectasis -0.017 / Edema / -0.088 / 0.056 / 0.096 / stronger competitor
+  Pneumothorax 0.364 / Effusion / +0.092 / 0.133 / 0.159 / OWNED (rank 1/120)
+  Cardiomegaly 0.270 / Edema / +0.009 / 0.168 / 0.030 / steering reference met (rank 2), ownership unresolved
+  Consolidation 0.124 / Effusion / -0.054 / 0.133 / 0.076 / stronger competitor
+  Edema 0.477 / Effusion / +0.211 / 0.210 / 0.009 / OWNED (rank 1/120)
+  Calibration (known labels): readable Effusion (S 0.268), Cardiomegaly (0.261), Consolidation (0.280), Edema
+  (0.192); Atelectasis S 0.288 insufficient support; Pneumothorax -0.037. Answer-capable 5/6 (clean AUROC
+  Effusion 0.928, Atelectasis 0.922, Cardiomegaly 0.922, Consolidation 0.931, Edema 0.824, Pneumothorax 0.645).
+  This is the strongest clinical ownership in the campaign: the medical Qwen2.5-VL on CheXpert images owns three
+  of six concepts with large effects, whereas the same model on NIH owns only Cardiomegaly and its general twin
+  owns nothing. CheXpert is a public benchmark that may appear in Lingshu's training data (README 4: report as
+  benchmark replication, not as contamination-free evidence).
+- Gate decision: valid OBSERVED block.
