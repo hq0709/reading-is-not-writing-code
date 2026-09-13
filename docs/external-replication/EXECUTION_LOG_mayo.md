@@ -700,3 +700,21 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   as on NIH.
 - Gate decision: valid OBSERVED block. LLaVA-Med v1.5 is the third checkpoint complete on all three datasets
   (after q25-7 and lingshu-7); 247 table cells filled.
+
+## 2026-09-13 iv35-8 COCO: all seven modules packaged; statistics
+
+- Run: preflight passed on both loci (only the declared batch-vs-single deviation, 0.42 logits; reach
+  cons 0.69 / connector 0.94, no change outside consumed tokens, fp32-vs-model 0.06). CORE, CALIBRATION,
+  PROMPT, DOSE, REFIT, LOCUS, LOCUS_CALIBRATION packaged COMPLETE; 18.0 GPU-hours.
+- Observation (known labels): all six object concepts readable with S 0.10-0.14 over a shared control mean
+  of 0.85; bicycle has 9 positives in the 400-row evaluation and stays `insufficient_support` under the
+  standing >=10-positive rule. Answer-capable 5/6 (AUROC 0.97-1.00).
+- Observation (CORE): InternVL3.5-8B owns all six COCO objects (rank 1, O +0.012..+0.044, random p95
+  <= 0.013, |sham| <= 0.010). The write magnitudes are small (W 0.019-0.052), matching the NIH pattern
+  where the same 0.25 relative write barely moved the model (|W| <= 0.035): InternVL responds weakly to
+  writes at this locus regardless of domain, but on natural objects the response is still specific.
+- T3: signed dose range +0.113 [+0.095, +0.122]; refit SD 0.003; connector median O +0.006 (connector
+  writes near zero, primary locus carries the effect); label gap -0.52 [-0.73, -0.46]; PROMPT contrasts
+  small (person wording +0.008, mapping -0.027; bottle +0.005 / -0.007).
+- Gate decision: valid OBSERVED block. The natural-object control now holds for four families
+  (Qwen2.5-VL, Qwen3-VL, Lingshu, InternVL3.5) plus LLaVA-1.5 with small effects; 259 table cells filled.
