@@ -648,3 +648,8 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   owns nothing. CheXpert is a public benchmark that may appear in Lingshu's training data (README 4: report as
   benchmark replication, not as contamination-free evidence).
 - Gate decision: valid OBSERVED block.
+
+## 2026-09-13 02:00 UTC Milestone: lingshu-7 complete on all three datasets
+
+- Observation: Lingshu-7B now has NIH, CheXpert and COCO packages COMPLETE (second full-deliverable checkpoint
+  after q25-7). Queue: 200 tasks done, 61 running, 0 failed; 207 table cells filled.
