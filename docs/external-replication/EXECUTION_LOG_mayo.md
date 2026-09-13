@@ -1080,3 +1080,16 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
 - Gate decision: valid OBSERVED block. llava15-13 is the tenth checkpoint complete on all three datasets; the
   whole LLaVA family (7B, 13B, LLaVA-Med) now shows the same dissociation on both chest sets: readable, not
   answerable, not steerable. 460 table cells filled.
+
+## 2026-09-13 gemma3-4 preflight on NIH, COCO and CheXpert
+
+- Run: the three gemma3-4 prep tasks ran in the gpu1 lane (features, fits, preflight); 4096 SigLIP tokens at
+  the block and 256 after the connector, 10-15 rows/s.
+- Observation: all three preflights pass on both loci: determinism 0, alpha-0 0, nothing outside consumed
+  tokens, fp32-vs-model 0.12, semantic mapping passes all six templates. Reach is large at both loci (block:
+  27.7-29.8 at the consumer, 9-24 answer logits; connector: 3.0-17.8), the Gemma pattern seen on MedGemma.
+  Batch-vs-single is the largest of the campaign: 1.28 (NIH), 1.48 (COCO), 0.84 (CheXpert), replicated in
+  D2; recorded as declared deviations. The fixed-composition runner design makes every contrast within a
+  question shape-matched, so these deviations affect no reported contrast.
+- Gate decision: gemma3-4 accepted on all three datasets; COCO CORE and all modules are already scored and
+  being packaged, NIH and CheXpert follow in the lane.
