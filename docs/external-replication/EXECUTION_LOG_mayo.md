@@ -523,3 +523,12 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   connector O -0.018, label gap -0.005. The medical LLaVA behaves like LLaVA-1.5: clinical directions are readable,
   answers sit at chance, and a 0.25 relative-norm write barely moves the answer in any direction.
 - Gate decision: valid OBSERVED block.
+
+## 2026-09-13 00:50 UTC Scheduling note
+
+- Observation: 30 workers running on gen-a100.p (all 1-GPU except one 2-GPU); the two 4-GPU workers and the
+  gen-h100 workers have never been scheduled (a 4-GPU job needs an entirely free node), so the q25-72 lane
+  (48 tasks) has not started and the 32B/38B lane runs on a single 2-GPU worker. The first worker batch expires
+  at its 12-hour limit around 07:00 UTC.
+- Gate decision: 30 replacement workers submitted (24 x 1-GPU, 4 x 2-GPU, 2 x 4-GPU, 12 h) so the queue keeps
+  draining across the expiry; the multi-GPU lanes depend on node-level availability.
