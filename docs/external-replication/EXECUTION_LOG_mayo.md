@@ -806,3 +806,21 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
 - Gate decision: valid OBSERVED block. InternVL3.5-8B is the fourth checkpoint complete on all three datasets
   (with q25-7, lingshu-7, llavamed-7): reads five CheXpert concepts, answers them well, and cannot be steered
   on any of them at alpha 0.25, while owning all six COCO objects.
+
+## 2026-09-13 medgemma-4 NIH: all seven modules packaged; statistics
+
+- Run: CORE, CALIBRATION, PROMPT, DOSE, REFIT, LOCUS, LOCUS_CALIBRATION all COMPLETE; 43.8 GPU-hours (the
+  4096-token SigLIP block makes MedGemma the most expensive 4B checkpoint).
+- Observation (known labels): readable Atelectasis (S 0.138), Cardiomegaly (0.198), Mass (0.168); Effusion and
+  Pneumothorax 0.108 just under the margin; Nodule 0.016. Answer-capable on all six (AUROC 0.67-0.89), the
+  strongest NIH answerer so far.
+- Observation (CORE): MedGemma-4B is the most perturbation-sensitive checkpoint: random-direction p95 reaches
+  0.54 and the coordinate-permutation sham 0.55 (Nodule), so a 0.25 relative write moves the answer regardless
+  of direction. Against those references no concept is owned: Atelectasis O -0.558 and Mass O -0.273 are
+  strongly anti-owned, Cardiomegaly writes +0.19 but below its random p95 0.37, Effusion/Pneumothorax
+  unresolved, Nodule O +0.094 below sham. T3: signed dose range +0.617 [+0.578, +0.649] (largest so far);
+  refit SD 0.080; connector median O -0.004; label gap -3.49 [-4.80, -2.06] (label-shift controls move the
+  answer far more than the concept write); Mass wording -0.213 [-0.243, -0.180], Effusion wording -0.071.
+- Gate decision: valid OBSERVED block. The medical Gemma reads and answers NIH concepts well and is highly
+  writable, but the writes are unspecific: the strongest counter-example to "capable model => owned concept".
+  280 table cells filled.
