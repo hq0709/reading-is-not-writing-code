@@ -1033,3 +1033,12 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   Mass O +0.008 below its random p95 0.033. No steering.
 - Gate decision: valid OBSERVED block. Scaling LLaVA-1.5 from 7B to 13B changes template eligibility but not
   the answer or steering picture. 440 table cells filled.
+
+## 2026-09-13 llava15-13 NIH: all seven modules packaged; T3
+
+- Run: LOCUS landed; block COMPLETE with all seven modules, 34.2 GPU-hours.
+- Observation (T3): signed dose range +0.061 [+0.057, +0.064]; refit SD 0.010; connector median O -0.012;
+  label gap -0.014 [-0.030, +0.009] (null: label-shift controls do not move the answer either); Effusion and
+  Mass wording contrasts within +-0.003; no mapping contrast (IB INELIGIBLE).
+- Gate decision: valid OBSERVED block; llava15-13 complete on NIH (COCO and CheXpert in progress).
+  446 table cells filled.
