@@ -688,3 +688,15 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   and Qwen3 LLM of InternVL3.5 are insensitive to vision-block perturbations of this relative size, unlike the
   Qwen-VL merger path.
 - Gate decision: valid OBSERVED block.
+
+## 2026-09-13 llavamed-7 CheXpert statistics; llavamed-7 complete on all three datasets
+
+- Run: CORE + CALIBRATION packaged COMPLETE, 7.0 GPU-hours.
+- Observation (known labels): readable Effusion (S 0.219), Cardiomegaly (0.228), Consolidation (0.224), Edema
+  (0.125); Atelectasis 0.303 insufficient support; Pneumothorax 0.032. Answer-capable Effusion (0.584) and Edema
+  (0.628) only. CORE: effects are negligible (|W_qq| <= 0.021, random p95 <= 0.038); Effusion technically meets the
+  steering reference (0.0115 vs random p95 0.0098 and sham 0.005) with O +0.003, Consolidation meets it but loses to
+  Effusion; the remaining four lose to a competitor. The LLaVA-Med write effect stays at the noise floor on CheXpert
+  as on NIH.
+- Gate decision: valid OBSERVED block. LLaVA-Med v1.5 is the third checkpoint complete on all three datasets
+  (after q25-7 and lingshu-7); 247 table cells filled.
