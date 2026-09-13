@@ -478,3 +478,10 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   decode at 0.93, so S is 0.02-0.06; readable person only; answer-capable 5/6). Table 3: dose range 0.769,
   refit O SD 0.052, connector O +0.004, label gap -6.52.
 - Gate decision: valid OBSERVED block.
+
+## 2026-09-12 lingshu-7 COCO block COMPLETE
+
+- Run: all seven modules by queue workers; package COMPLETE, 20.0 GPU-hours.
+- Observation (PROMPT): wording IY-WY person -0.056 [-0.069, -0.044], bottle +0.076 [0.062, 0.091]; mapping IA-IB
+  person +0.018 [0.008, 0.029], bottle +0.103 [0.097, 0.110]. Object ownership stays large under every template.
+- Gate decision: complete deliverables so far: q25-7 (NIH, COCO), llava15-7 (NIH, COCO), q3-8 (NIH), lingshu-7 (COCO).
