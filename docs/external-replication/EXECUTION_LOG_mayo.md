@@ -1423,3 +1423,9 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   dog +0.228, car +0.081, chair +0.533, bottle +0.342, bicycle +0.219; random p95 <= 0.068, |sham| <= 0.104).
 - Gate decision: valid OBSERVED block; the natural-object control holds for 14 of 15 checkpoints with a COCO
   block. 632 table cells filled.
+
+## 2026-09-13 Seventh batch: eight more two-GPU workers
+
+- Gate decision: 8 gpu2 workers (cfw7-g2-a, `--max-hours 10`) submitted at 20:20Z so the two-GPU lane stays
+  above 20 workers when the third and fourth batches reach their budgets (~22:00-00:00Z). Queue 240 pending
+  (138 gpu2, 83 gpu3, 28 gpu1 incl. requeues) / 33 running / 729 done / 0 failed.
