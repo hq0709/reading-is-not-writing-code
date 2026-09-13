@@ -8,6 +8,9 @@ for d in sorted(glob.glob(f"{R}/*/*/outcomes/CORE")):
         continue
     run = os.path.dirname(os.path.dirname(d)); m, ds = run.split("/")[-2:]
     s = f"{run}/summary.json"
+    rj = f"{run}/run.json"
+    if os.path.exists(rj) and "CORE" in json.load(open(rj)).get("ineligible_modules", []):
+        continue      # every CORE template INELIGIBLE: nothing to analyse
     if os.path.exists(s) and "core" in json.load(open(s)):
         continue
     out.append(f"{m} {ds}")
