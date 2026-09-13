@@ -5,6 +5,12 @@ rename, so concurrent workers never run the same task. Task JSON: {"name", "lane
 "requires": [paths that must exist], "produces": [paths or globs; if all exist the task is marked done unrun],
 "env": {...}}. Workers exit when nothing in their lane is claimable and `--exit-when-empty`, or when the time
 budget is exhausted (they finish the current task first).
+
+Termination: Slurm sends SIGTERM before the wall-clock kill; the worker then stops the child, moves the task back
+to pending/ (never failed/) and exits. If a worker is SIGKILLed instead, its task would stay in running/ forever,
+so every claim first sweeps running/ for tasks whose Slurm job is no longer in the queue and requeues them
+(worker ids are "<node>-<SLURM_JOB_ID>" on Slurm; other ids are left alone). Requeued shards recompute from
+scratch; the packager dedups any partial part files by key.
 """
 from __future__ import annotations
 
@@ -12,6 +18,8 @@ import argparse
 import glob
 import json
 import os
+import re
+import signal
 import subprocess
 import sys
 import time
@@ -50,6 +58,56 @@ def claim(lane: str) -> tuple[Path, dict] | None:
     return None
 
 
+SLURM_WORKER = re.compile(r"^(?P<node>.+)-(?P<job>\d+)$")
+STALE_GRACE_S = 600
+
+
+def live_slurm_jobs() -> set[str] | None:
+    """Job ids of this user's jobs still in the Slurm queue (any state); None if squeue is unavailable."""
+    try:
+        out = subprocess.check_output(["squeue", "-h", "-o", "%i", "-u", os.environ.get("USER", "")],
+                                      text=True, timeout=60)
+    except Exception:
+        return None
+    return {x.strip().split("_")[0] for x in out.split() if x.strip()}
+
+
+def reclaim_stale(live: set[str] | None = None, now: float | None = None) -> list[str]:
+    """Move running/ tasks whose Slurm worker job has left the queue back to pending/. Returns the names moved."""
+    moved = []
+    running = sorted((QUEUE / "running").glob("*.json"))
+    if not running:
+        return moved
+    if live is None:
+        live = live_slurm_jobs()
+    if live is None:
+        return moved
+    now = time.time() if now is None else now
+    for p in running:
+        try:
+            t = json.loads(p.read_text())
+        except Exception:
+            continue
+        m = SLURM_WORKER.match(str(t.get("worker", "")))
+        if not m or m.group("job") in live:
+            continue
+        try:
+            if now - p.stat().st_mtime < STALE_GRACE_S:      # freshly claimed, worker id not yet written/visible
+                continue
+        except OSError:
+            continue
+        for k in ("worker", "started_utc"):
+            t.pop(k, None)
+        t.setdefault("requeued", []).append({"from": m.group(0), "utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(now))})
+        try:
+            p.write_text(json.dumps(t, indent=1))
+            p.rename(QUEUE / "pending" / p.name)
+        except OSError:
+            continue
+        moved.append(p.stem)
+    return moved
+
+
 def gpu_free(min_free_mib: int = 70000) -> bool:
     """Only the GPUs visible to this worker (nvidia-smi ignores CUDA_VISIBLE_DEVICES, so pass -i explicitly)."""
     vis = os.environ.get("CUDA_VISIBLE_DEVICES")
@@ -75,7 +133,30 @@ def main():
         while not gpu_free():
             time.sleep(60)
     print(f"[worker {a.worker_id}] lane={a.lane} start", flush=True)
+    state: dict = {"path": None, "task": None, "proc": None}
+
+    def on_term(signum, frame):
+        path, t, proc = state["path"], state["task"], state["proc"]
+        if proc is not None and proc.poll() is None:
+            proc.terminate()
+            try:
+                proc.wait(timeout=20)
+            except subprocess.TimeoutExpired:
+                proc.kill()
+        if path is not None and path.exists():
+            for k in ("worker", "started_utc"):
+                t.pop(k, None)
+            t.setdefault("requeued", []).append({"from": a.worker_id, "signal": int(signum),
+                                                 "utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())})
+            path.write_text(json.dumps(t, indent=1)); path.rename(QUEUE / "pending" / path.name)
+            print(f"[worker {a.worker_id}] signal {signum}: requeued {path.stem}", flush=True)
+        sys.exit(143)
+
+    signal.signal(signal.SIGTERM, on_term)
+    signal.signal(signal.SIGINT, on_term)
     while time.time() - t0 < a.max_hours * 3600:
+        for name in reclaim_stale():
+            print(f"[worker {a.worker_id}] requeued stale {name}", flush=True)
         got = claim(a.lane)
         if got is None:
             if a.exit_when_empty and not any(json.loads(p.read_text()).get("lane", "gpu1") == a.lane
@@ -88,8 +169,12 @@ def main():
         env = {**os.environ, **t.get("env", {}), "PYTHONUNBUFFERED": "1"}
         t["worker"] = a.worker_id; t["started_utc"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()); path.write_text(json.dumps(t, indent=1))
         print(f"[worker {a.worker_id}] running {path.stem} -> {log}", flush=True)
+        state.update(path=path, task=t)
         with log.open("a") as f:
-            rc = subprocess.call(t["cmd"], cwd=t.get("cwd", "/rodata/azradonc_dev/m253405/concept-flow/src"), env=env, stdout=f, stderr=subprocess.STDOUT)
+            proc = subprocess.Popen(t["cmd"], cwd=t.get("cwd", "/rodata/azradonc_dev/m253405/concept-flow/src"), env=env, stdout=f, stderr=subprocess.STDOUT)
+            state["proc"] = proc
+            rc = proc.wait()
+        state.update(path=None, task=None, proc=None)
         t["returncode"] = rc; t["ended_utc"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()); t["log"] = str(log)
         dest = QUEUE / ("done" if rc == 0 and (not t.get("produces") or satisfied(t["produces"])) else "failed") / path.name
         path.write_text(json.dumps(t, indent=1)); path.rename(dest)

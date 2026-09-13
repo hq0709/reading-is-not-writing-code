@@ -718,3 +718,17 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   small (person wording +0.008, mapping -0.027; bottle +0.005 / -0.007).
 - Gate decision: valid OBSERVED block. The natural-object control now holds for four families
   (Qwen2.5-VL, Qwen3-VL, Lingshu, InternVL3.5) plus LLaVA-1.5 with small effects; 259 table cells filled.
+
+## 2026-09-13 Worker termination handling (infrastructure)
+
+- Run: inspection of the queue worker before the first 12 h Slurm batch expires. The worker had no handling for
+  the wall-clock kill: a task claimed before `--max-hours` and still running at the limit would stay in
+  `running/` forever and the block would never complete.
+- Fix: the worker now traps SIGTERM/SIGINT (Slurm sends SIGTERM before the kill), stops the child and moves the
+  task back to `pending/` (never `failed/`); and every claim first sweeps `running/` for tasks whose Slurm worker
+  job has left the queue (worker id `<node>-<jobid>` not in `squeue`), requeueing them after a 10 min grace.
+  Login-node workers (ids without a job number) are left alone. Requeued shards recompute from scratch; the
+  packager dedups partial part files by key. Unit test added (`tests/cftransfer/test_worker_queue.py`, 12/12 pass).
+- Third Slurm batch submitted (24 gpu1 + 4 gpu2 workers, `--max-hours 10`) so the drain continues past the
+  first batch's expiry; already-running workers keep the old code, and the new workers' sweep recovers any
+  task they drop.
