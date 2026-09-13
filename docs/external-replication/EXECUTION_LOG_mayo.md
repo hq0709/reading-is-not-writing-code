@@ -511,3 +511,15 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
 
 - Observation: q3-8 coco vis.last  pass=True dev=['D_batch_vs_single'] A=0.0 B=0.0 cons=2.37 logit=17.89 out=0.0 D=1.41 G=0.12 E=True rate=25.94 tok=988/270; q3-8 coco connector pass=True dev=['D_batch_vs_single'] A=0.0 B=0.0 cons=1.25 logit=1.22 out=0.0 D=1.41 G=0.12 E=True rate=25.85 tok=247/270
 - Gate decision: READY.
+
+## 2026-09-13 llavamed-7 NIH CORE statistics
+
+- Run: LLaVA-Med v1.5 (converted) NIH CORE (4 shards, Slurm workers), CALIBRATION, DOSE, REFIT, LOCUS complete;
+  PROMPT (WY) draining.
+- Observation: readable Effusion (S 0.119), Atelectasis (0.105), Pneumothorax (0.110); not readable Cardiomegaly
+  (0.061), Mass (0.086), Nodule (0.019). Answer-capable 0/6 (clean IY AUROC 0.48-0.58). CORE: effects are tiny
+  (|W_qq| <= 0.024, random p95 <= 0.034); no steering reference; all six ownership contrasts slightly negative
+  (Effusion -0.001 vs Mass; Pneumothorax -0.038 vs Cardiomegaly). Table 3: dose range 0.031, refit O SD 0.006,
+  connector O -0.018, label gap -0.005. The medical LLaVA behaves like LLaVA-1.5: clinical directions are readable,
+  answers sit at chance, and a 0.25 relative-norm write barely moves the answer in any direction.
+- Gate decision: valid OBSERVED block.
