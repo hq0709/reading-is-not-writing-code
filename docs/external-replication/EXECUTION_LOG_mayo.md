@@ -494,3 +494,15 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   a composition deviation. Calibration selectivity on CheXpert known labels: Effusion 0.248, Atelectasis 0.149,
   Pneumothorax 0.032, Cardiomegaly 0.221, Consolidation 0.197, Edema 0.154.
 - Gate decision: READY; block packaged COMPLETE (CheXpert requests CORE + CALIBRATION only); statistics running.
+
+## 2026-09-13 llava15-7 CheXpert statistics (first CheXpert block)
+
+- Run: CORE (457,200 outcomes) + CALIBRATION (2,400) packaged COMPLETE, 6.8 GPU-hours; DOSE/REFIT/LOCUS/PROMPT
+  NOT_REQUESTED for CheXpert by protocol.
+- Observation (known labels only): readable Effusion (S 0.248, AUROC 0.925), Cardiomegaly (0.221), Consolidation
+  (0.197), Edema (0.154); not readable Atelectasis (0.149; only 4 known negatives), Pneumothorax (0.032).
+  Answer-capable 0/6 (clean IY AUROC 0.42-0.57). CORE: no question meets the steering reference; W_qq range
+  -0.03 to +0.07; Cardiomegaly fixed-family advantage +0.027 (below random p95 0.097); Effusion +0.002 unresolved;
+  Atelectasis, Pneumothorax, Consolidation, Edema lose to a competitor (Edema or Effusion). Same LLaVA pattern as
+  on NIH: readable clinical directions, chance-level answers, no direction-specific steering.
+- Gate decision: valid OBSERVED block; cross-dataset replication of the LLaVA NIH result.
