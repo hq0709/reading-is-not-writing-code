@@ -602,3 +602,10 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   LLaVA-Med steers general objects far less than LLaVA-1.5 (which owned all six with small effects) and much
   less than the Qwen family (which owned all six with large effects).
 - Gate decision: valid OBSERVED block.
+
+## 2026-09-13 llavamed-7 COCO block COMPLETE
+
+- Run: all seven modules (yes/no templates; A/B INELIGIBLE); package COMPLETE, 21.9 GPU-hours.
+- Observation (PROMPT wording): person IY-WY -0.005 [-0.007, -0.002], bottle +0.015 [0.013, 0.016].
+- Gate decision: complete deliverables: q25-7 (NIH, CheXpert, COCO), llava15-7 (NIH, CheXpert, COCO),
+  llavamed-7 (NIH, COCO), q3-8 (NIH), lingshu-7 (COCO); 199 table cells filled.
