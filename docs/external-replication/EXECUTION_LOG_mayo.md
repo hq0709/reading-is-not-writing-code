@@ -542,3 +542,21 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   Calibration selectivity (known labels): Effusion 0.234, Atelectasis 0.351, Pneumothorax -0.028, Cardiomegaly 0.243,
   Consolidation 0.203, Edema 0.178.
 - Gate decision: READY.
+
+## 2026-09-13 lingshu-7 NIH CORE statistics (second owned clinical concept)
+
+- Run: Lingshu-7B NIH CORE (Slurm workers), CALIBRATION, DOSE, REFIT, LOCUS complete; PROMPT draining.
+- Observation (W_qq / competitor / O_q / random p95 / |sham| / verdict):
+  Effusion 0.066 / Cardiomegaly / +0.018 / 0.078 / 0.064 / fixed-family advantage below the random reference (rank 10)
+  Atelectasis 0.099 / Nodule / +0.014 / 0.117 / 0.052 / fixed-family advantage below reference
+  Pneumothorax 0.070 / Nodule / +0.010 / 0.101 / 0.032 / unresolved
+  Cardiomegaly 0.222 / Nodule / +0.171 / 0.117 / 0.040 / OWNED (steering reference met, rank 1/120)
+  Mass 0.029 / Nodule / -0.086 / 0.135 / 0.041 / stronger competitor
+  Nodule 0.066 / Cardiomegaly / +0.017 / 0.103 / 0.131 / fixed-family advantage below reference
+  Calibration: readable Effusion (0.120), Atelectasis (0.102), Cardiomegaly (0.234); answer-capable 6/6 (clean AUROC
+  0.66-0.81; the medical fine-tune answers where q25-7 did not). Table 3: dose range 0.141, refit O SD 0.051,
+  connector O -0.006, label gap -0.44.
+  Architecture-matched pair on the same 600 patients: q25-7 (general) steers Effusion above random/sham but
+  owns nothing; Lingshu-7 (medical) loses the Effusion steering effect and owns Cardiomegaly. Medical training
+  changes which concept the probe normal controls, not whether attribution holds in general.
+- Gate decision: valid OBSERVED block.
