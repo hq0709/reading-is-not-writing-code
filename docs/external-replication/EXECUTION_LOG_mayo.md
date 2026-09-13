@@ -1429,3 +1429,15 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
 - Gate decision: 8 gpu2 workers (cfw7-g2-a, `--max-hours 10`) submitted at 20:20Z so the two-GPU lane stays
   above 20 workers when the third and fourth batches reach their budgets (~22:00-00:00Z). Queue 240 pending
   (138 gpu2, 83 gpu3, 28 gpu1 incl. requeues) / 33 running / 729 done / 0 failed.
+
+## 2026-09-13 q3-32 CheXpert statistics; q3-32 complete on all three datasets
+
+- Run: preflight passed (batch-vs-single 0.59 declared). CORE + CALIBRATION COMPLETE, 28.2 GPU-hours.
+- Observation (known labels): readable Effusion (S 0.237), Pneumothorax (0.130), Cardiomegaly (0.243),
+  Consolidation (0.191), Edema (0.161); Atelectasis `insufficient_support`. Answer-capable on five (AUROC
+  0.61-0.90).
+- Observation (CORE): Edema owned (W 0.237, O +0.046 vs Effusion, random p95 0.187, |sham| 0.091, rank 4);
+  Atelectasis at the reference with O +0.001 (unresolved); Effusion W 0.083 below its random p95 0.151
+  (O -0.036); Consolidation O -0.124; Cardiomegaly and Pneumothorax not owned.
+- Gate decision: valid OBSERVED block; q3-32 is the fourteenth checkpoint complete on all three datasets.
+  636 table cells filled.
