@@ -1382,3 +1382,18 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   nothing outside consumed tokens, batch-vs-single 0.09-0.16, fp32-vs-model 0.04-0.06, all six templates
   eligible; reach 12.6-19.0 at the consumer, 0.5-4.4 answer logits; 11-14 rows/s on the 2-GPU lane).
 - Gate decision: lingshu-32 accepted on all three datasets; NIH CORE is scored and being packaged.
+
+## 2026-09-13 lingshu-32 NIH CORE statistics
+
+- Run: CORE, CALIBRATION, DOSE, REFIT, LOCUS_CALIBRATION packaged (31.2 GPU-hours); PROMPT and LOCUS pending.
+- Observation (known labels): readable Effusion (S 0.111), Atelectasis (0.096), Pneumothorax (0.137); Mass
+  0.102 and Cardiomegaly 0.073 under the margin; Nodule -0.066. Answer-capable on all six (AUROC 0.64-0.86,
+  the strongest NIH answerer with medgemma-4).
+- Observation (CORE): Lingshu-32B owns Pneumothorax (W 0.202, O +0.144 vs Mass, random p95 0.065, |sham|
+  0.051, rank 1), the first Pneumothorax ownership on NIH, and Cardiomegaly (W 0.105, O +0.051, random p95
+  0.086, rank 3); Effusion unresolved (W 0.060 at the random p95, O -0.007); Nodule anti-owned (O -0.178);
+  Atelectasis and Mass lose to Pneumothorax.
+- Gate decision: valid OBSERVED block; 620 table cells filled. The Lingshu ladder on NIH: 7B Cardiomegaly
+  only; 32B Cardiomegaly + Pneumothorax. Owned NIH concepts across the grid are now Cardiomegaly (q25-32,
+  q25-72, lingshu-7, lingshu-32), Nodule (q3-32, gemma3-12), Atelectasis and Mass (q25-72), Pneumothorax
+  (lingshu-32); Effusion is owned by no checkpoint.
