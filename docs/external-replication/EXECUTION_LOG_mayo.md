@@ -609,3 +609,14 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
 - Observation (PROMPT wording): person IY-WY -0.005 [-0.007, -0.002], bottle +0.015 [0.013, 0.016].
 - Gate decision: complete deliverables: q25-7 (NIH, CheXpert, COCO), llava15-7 (NIH, CheXpert, COCO),
   llavamed-7 (NIH, COCO), q3-8 (NIH), lingshu-7 (COCO); 199 table cells filled.
+
+## 2026-09-13 lingshu-7 NIH block COMPLETE
+
+- Run: all seven modules; package COMPLETE, 19.6 GPU-hours.
+- Observation (PROMPT): Effusion O by template IY +0.018, WY +0.026, IA -0.019, IB -0.054, WA -0.026, WB -0.034
+  (Nodule strongest under the A/B templates); wording IY-WY -0.008 [-0.014, -0.001], mapping IA-IB +0.034
+  [0.031, 0.038]. Mass O negative under every template (-0.086 to -0.253; Nodule strongest); wording +0.040,
+  mapping +0.079 [0.075, 0.083]. The Mass show-A/B advantage of Qwen2.5-VL-7B does not appear in its medical
+  twin either.
+- Gate decision: complete deliverables: q25-7 (3), llava15-7 (3), llavamed-7 (NIH, COCO), lingshu-7 (NIH, COCO),
+  q3-8 (NIH); 203 table cells filled.
