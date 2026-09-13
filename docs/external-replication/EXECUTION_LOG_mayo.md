@@ -620,3 +620,12 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   twin either.
 - Gate decision: complete deliverables: q25-7 (3), llava15-7 (3), llavamed-7 (NIH, COCO), lingshu-7 (NIH, COCO),
   q3-8 (NIH); 203 table cells filled.
+
+## 2026-09-13 lingshu-7 CheXpert gate
+
+- Run: CheXpert preparation (requeued after the row-id fix), CORE + CALIBRATION scored; packaging + statistics
+  running.
+- Observation: all checks pass with no tolerance deviation (520 patches / 130 tokens, 17.5/s; single-vs-batch 0.17).
+  Calibration selectivity (known labels): Effusion 0.268, Atelectasis 0.288, Pneumothorax -0.037, Cardiomegaly 0.261,
+  Consolidation 0.280, Edema 0.192.
+- Gate decision: READY.
