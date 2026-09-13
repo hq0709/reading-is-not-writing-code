@@ -836,3 +836,34 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   chair +0.714, bottle +0.335, bicycle +0.072; random p95 <= 0.014, |sham| <= 0.037.
 - Gate decision: valid OBSERVED block. Sixth checkpoint owning all six COCO objects (q25-7, q25-32, q3-4, q3-8,
   lingshu-7, iv35-8); the 4B Qwen3 is as specific on objects as the 32B Qwen2.5. 284 table cells filled.
+
+## 2026-09-13 Four CORE blocks: iv35-14 COCO, q25-3 COCO, medgemma-4 COCO, q3-8 CheXpert
+
+- q25-3 template gate (NIH and COCO): the image-free semantic-mapping check E fails for the two B-mapped A/B
+  templates (IB, WB) on both datasets while IY/WY/IA/WA pass, so IB/WB are INELIGIBLE by the standing rule
+  (8 INELIGIBLE coverage cells per dataset), the runner skipped them and the other checks pass (determinism 0,
+  alpha-0 0, reach 26.8 / 0.88, nothing outside consumed tokens; batch-vs-single 0.37 declared). Same
+  disposition as the LLaVA family, narrower (only the B mapping).
+- iv35-14 COCO (InternVL3.5-14B): preflight passed (batch-vs-single 0.48 declared). Readable person, car,
+  chair, bottle (S 0.11-0.14; dog 0.076; bicycle `insufficient_support`). CORE: owns five objects at rank 1
+  with the InternVL-typical small writes (O +0.013..+0.040, W <= 0.048, random p95 <= 0.013); bicycle rank 1
+  but O +0.002 -> unresolved. 8.9 GPU-hours so far (CORE, CALIBRATION, DOSE, LOCUS_CALIBRATION).
+- q25-3 COCO (Qwen2.5-VL-3B): owns all six at rank 1 with the largest effects yet (person O +0.455, dog +0.424,
+  car +0.529, chair +0.677, bottle +0.615, bicycle +0.391; random p95 <= 0.047, |sham| <= 0.029). 5.6 GPU-hours
+  so far (CORE, CALIBRATION, DOSE, REFIT, LOCUS_CALIBRATION); PROMPT/LOCUS pending.
+- medgemma-4 COCO: preflight passed (batch-vs-single 0.42 declared). Readable person, car, chair, bottle
+  (S 0.05-0.09). CORE: owns all six (person O +0.345, dog +0.033 rank 3, car +0.435, chair +0.194,
+  bottle +0.203, bicycle +0.144) despite random p95 up to 0.22 and sham up to 0.21: the model that is
+  unspecific on NIH is specific on objects even with its high perturbation sensitivity. 27.8 GPU-hours
+  (all but PROMPT).
+- q3-8 CheXpert (Qwen3-VL-8B): preflight passed (batch-vs-single 0.93 declared, replicated). Readable
+  Effusion (S 0.226), Cardiomegaly (0.218), Consolidation (0.213), Edema (0.162); Atelectasis
+  `insufficient_support`; Pneumothorax 0.062. Answer-capable Effusion, Cardiomegaly, Consolidation, Edema.
+  CORE: Effusion, Consolidation and Atelectasis meet the steering reference (W 0.370 / 0.352 / 0.009) but
+  every concept loses to a competitor (Effusion O -0.069 vs Pneumothorax; Pneumothorax itself writes 0.203
+  with answer AUROC 0.47). No owned concept. COMPLETE, 5.1 GPU-hours; q3-8 is the fifth checkpoint complete
+  on all three datasets.
+- Gate decision: four valid OBSERVED blocks; 296 table cells filled. COCO ownership now holds for eight
+  checkpoints across five families (q25-3/7/32, q3-4/8, lingshu-7, iv35-8/14, medgemma-4) plus LLaVA-1.5
+  with small effects and LLaVA-Med at 1/6; clinical ownership remains at Cardiomegaly (q25-32, lingshu-7 NIH)
+  and Lingshu's three CheXpert concepts.
