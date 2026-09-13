@@ -1296,3 +1296,14 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   the fixed-composition batch is consistent across CORE/DOSE/REFIT/LOCUS). Twelve single-GPU Slurm workers
   submitted for the new lane work; the four login-node workers also serve it.
 - Gate decision: no data affected (the stopped prep had written no features). 0 tasks in `failed/`.
+
+## 2026-09-13 q3-32 NIH: all seven modules packaged; T3
+
+- Run: PROMPT, DOSE, REFIT and LOCUS landed (two CORE shards had been re-run after the first batch
+  turnover); block COMPLETE with all seven modules, 106.2 GPU-hours (2-GPU lane; the most expensive NIH block
+  so far).
+- Observation (T3): signed dose range +0.266 [+0.234, +0.294]; refit SD 0.025; connector median O -0.008;
+  label gap -0.74 [-1.01, -0.47]; Effusion wording +0.020, mapping +0.044; Mass wording +0.009, mapping
+  +0.042. The Nodule ownership from CORE (O +0.171) stands with a clean dose response and stable refits.
+- Gate decision: valid OBSERVED block; q3-32 complete on NIH (COCO all-but-PROMPT/LOCUS, CheXpert in the
+  lane). 572 table cells filled.
