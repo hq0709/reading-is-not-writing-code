@@ -577,6 +577,7 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
 
 - Observation: Qwen2.5-VL-7B now has NIH, CheXpert and COCO packages COMPLETE (the first checkpoint with the full
   three-dataset deliverable). Summary of its Table 2 row: NIH readable 3/6, answer-capable 3/6, steering reference
-  1/6, competitor wins among readable 3/3; CheXpert readable 4/6, answer-capable 2/6, steering reference 0/6;
+  1/6, competitor wins among readable 3/3; CheXpert readable 4/6, answer-capable 2/6, steering reference 0/6,
+  competitor wins among readable 2/4;
   COCO readable 1/6 (type controls saturate), answer-capable 5/6, steering reference 6/6, competitor wins 0/1.
   Queue: 170 tasks done, 60 running, 0 failed; 54 Slurm workers active.
