@@ -1230,3 +1230,15 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
 - Gate decision: 8 gpu2 workers (cfw5-g2-a, `--max-hours 10`) submitted at 13:40Z so the two-GPU lane keeps
   20+ workers when the third-batch gpu2 workers reach their budget (~17:00-18:00Z). No single-GPU workers:
   that lane is empty and its remaining three tasks are in flight.
+
+## 2026-09-13 gemma3-4 NIH: all seven modules packaged; gemma3-4 complete on all three datasets
+
+- Run: PROMPT and LOCUS landed (two shards re-run after the batch turnover); block COMPLETE with all seven
+  modules, 21.8 GPU-hours.
+- Observation (T3): signed dose range +0.879 [+0.848, +0.908], the largest of the campaign, read against the
+  answer ceiling: negative doses pull the saturated "yes" down by a large amount while positive doses have no
+  headroom, so the range is one-sided. Refit SD 0.061; connector median O -0.009; label gap +0.04
+  [-0.99, +0.62] (null and wide); Effusion wording -0.017, mapping -0.279 [-0.317, -0.241]; Mass wording
+  -0.058, mapping -0.085.
+- Gate decision: valid OBSERVED block; gemma3-4 is the twelfth checkpoint complete on all three datasets.
+  552 table cells filled.
