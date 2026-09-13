@@ -1451,3 +1451,12 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   disposition is a property of the checkpoint.
 - Gate decision: llama32-11 keeps CALIBRATION and the IB/WB PROMPT cells on all three datasets; the IY-based
   modules close as `ineligible_modules`. COCO CORE metas are terminal and the block is being packaged.
+
+## 2026-09-13 llama32-11 COCO packaged: calibration only
+
+- Run: CALIBRATION COMPLETE; CORE, DOSE, REFIT, LOCUS, LOCUS_CALIBRATION recorded as `ineligible_modules`;
+  PROMPT IB/WB shards pending.
+- Observation (known labels, template-free): all five supported objects readable (S 0.10-0.15 over a control
+  mean of 0.84; bicycle `insufficient_support`); answer AUROC undefined (IY template ineligible), to be read
+  from the IB/WB PROMPT rows.
+- Gate decision: valid block with the interface disposition recorded. 638 table cells filled.
