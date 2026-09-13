@@ -1224,3 +1224,9 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   two-GPU lane rose to 22 running workers (5 pending) and the three-GPU lane holds 3 (4 pending). Queue 246
   pending (207 gpu2, 39 gpu3) / 28 running / 632 done.
 - Gate decision: no action; the remaining campaign is the 27-38B checkpoints and the 72B.
+
+## 2026-09-13 Fifth batch: eight more two-GPU workers
+
+- Gate decision: 8 gpu2 workers (cfw5-g2-a, `--max-hours 10`) submitted at 13:40Z so the two-GPU lane keeps
+  20+ workers when the third-batch gpu2 workers reach their budget (~17:00-18:00Z). No single-GPU workers:
+  that lane is empty and its remaining three tasks are in flight.
