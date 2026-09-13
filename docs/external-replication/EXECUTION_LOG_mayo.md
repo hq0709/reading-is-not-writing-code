@@ -1168,3 +1168,13 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   +0.179, bicycle +0.605 (the 4B anti-owned bicycle at -0.270); random p95 0.02-0.22, |sham| 0.01-0.22.
 - Gate decision: valid OBSERVED block; 484 table cells filled. gemma3-27 is expected to share the same
   features and fits; to be verified by hash when its prep completes.
+
+## 2026-09-13 gemma3-12 COCO: all seven modules packaged; T3
+
+- Run: PROMPT landed; block COMPLETE with all seven modules, 52.0 GPU-hours.
+- Observation (T3): signed dose range +0.531 [+0.502, +0.585]; refit SD 0.122 (the 4B: 0.171); connector
+  median O +0.017; label gap -18.3 [-20.6, -16.9]; person wording -0.071, mapping +0.066; bottle wording
+  +0.031 (null), mapping -0.042 (the 4B's bottle mapping contrast was -0.519: the same write, read by the
+  12B consumer, loses most of its template dependence).
+- Gate decision: valid OBSERVED block; gemma3-12 complete on COCO (NIH and CheXpert modules in the lane).
+  492 table cells filled.
