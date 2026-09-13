@@ -485,3 +485,12 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
 - Observation (PROMPT): wording IY-WY person -0.056 [-0.069, -0.044], bottle +0.076 [0.062, 0.091]; mapping IA-IB
   person +0.018 [0.008, 0.029], bottle +0.103 [0.097, 0.110]. Object ownership stays large under every template.
 - Gate decision: complete deliverables so far: q25-7 (NIH, COCO), llava15-7 (NIH, COCO), q3-8 (NIH), lingshu-7 (COCO).
+
+## 2026-09-13 llava15-7 CheXpert gate and block
+
+- Run: CheXpert preparation (Slurm worker) after the row-id fix; CORE (4 shards) and CALIBRATION scored.
+- Observation: reach/determinism/no-op/isolation/fp32 checks pass (576 tokens, 607 positions, 14.9/s); yes/no mapping
+  passes, A/B fails (eligibility {'IY': True, 'WY': True, 'IA': False, 'IB': False, 'WA': False, 'WB': False}); single-vs-batch 0.13 logits but one near-zero margin flips sign, recorded as
+  a composition deviation. Calibration selectivity on CheXpert known labels: Effusion 0.248, Atelectasis 0.149,
+  Pneumothorax 0.032, Cardiomegaly 0.221, Consolidation 0.197, Edema 0.154.
+- Gate decision: READY; block packaged COMPLETE (CheXpert requests CORE + CALIBRATION only); statistics running.
