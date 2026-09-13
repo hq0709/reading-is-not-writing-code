@@ -867,3 +867,13 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   checkpoints across five families (q25-3/7/32, q3-4/8, lingshu-7, iv35-8/14, medgemma-4) plus LLaVA-1.5
   with small effects and LLaVA-Med at 1/6; clinical ownership remains at Cardiomegaly (q25-32, lingshu-7 NIH)
   and Lingshu's three CheXpert concepts.
+
+## 2026-09-13 medgemma-4 COCO: all seven modules packaged; T3
+
+- Run: PROMPT landed; block COMPLETE with all seven modules, 36.0 GPU-hours.
+- Observation (T3): signed dose range +0.337 [+0.289, +0.376]; refit SD 0.105 (the largest seed variance so
+  far, consistent with the model's perturbation sensitivity); connector median O +0.001 (the connector write
+  does nothing, as on NIH); label gap -5.71 [-6.82, -4.88]; person wording +0.011 [-0.012, +0.045] and mapping
+  -0.003 (both null); bottle wording -0.045, mapping +0.019.
+- Gate decision: valid OBSERVED block; medgemma-4 is complete on NIH and COCO (CheXpert CORE in progress).
+  308 table cells filled.
