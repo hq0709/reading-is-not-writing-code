@@ -581,3 +581,13 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   competitor wins among readable 2/4;
   COCO readable 1/6 (type controls saturate), answer-capable 5/6, steering reference 6/6, competitor wins 0/1.
   Queue: 170 tasks done, 60 running, 0 failed; 54 Slurm workers active.
+
+## 2026-09-13 llavamed-7 NIH block COMPLETE
+
+- Run: all seven modules (yes/no templates; A/B INELIGIBLE); package COMPLETE, 19.9 GPU-hours. A first packaging
+  pass caught the last PROMPT part before it was visible over NFS (75,565/76,200 rows); the repackage sees the
+  full block. Block watchers now wait three minutes after the last shard meta.
+- Observation (PROMPT wording): Effusion IY-WY +0.075 [0.074, 0.076], Mass -0.019 [-0.020, -0.018]; tiny effects,
+  consistent with the CORE picture (no direction-specific steering for LLaVA-Med).
+- Gate decision: complete deliverables: q25-7 (NIH, CheXpert, COCO), llava15-7 (NIH, CheXpert, COCO), q3-8 (NIH),
+  lingshu-7 (COCO), llavamed-7 (NIH).
