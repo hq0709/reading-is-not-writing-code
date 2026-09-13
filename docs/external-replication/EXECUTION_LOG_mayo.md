@@ -1242,3 +1242,16 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   -0.058, mapping -0.085.
 - Gate decision: valid OBSERVED block; gemma3-4 is the twelfth checkpoint complete on all three datasets.
   552 table cells filled.
+
+## 2026-09-13 gemma3-12 NIH: all seven modules packaged; gemma3-12 complete on all three datasets
+
+- Run: PROMPT landed; block COMPLETE with all seven modules, 40.2 GPU-hours.
+- Observation (T3): signed dose range +0.553 [+0.521, +0.611]; refit SD 0.180 [0.166, 0.191], the largest seed
+  variance of the campaign (the three seeds' directions are identical to gemma3-4's, so the variance is in
+  how the 12B consumer reads them); connector median O -0.066 [-0.081, -0.054], the first block where the
+  connector write has a non-trivial (negative) effect; label gap -2.17 [-2.93, -0.69]; Effusion wording
+  -0.414 [-0.442, -0.386] (the largest wording contrast recorded: the "Is there" phrasing and the "Does the
+  radiograph show" phrasing give opposite ownership for Effusion), mapping +0.075; Mass wording -0.087,
+  mapping -0.122.
+- Gate decision: valid OBSERVED block; gemma3-12 is the thirteenth checkpoint complete on all three datasets.
+  560 table cells filled.
