@@ -1118,3 +1118,27 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
 - Gate decision: no manual action; later batches use `--max-hours 10` so most workers finish their last
   shard before the limit, and the sweep covers the rest. The second batch (old code, 11.5 h budget) expires
   at 12:50Z and is covered the same way.
+
+## 2026-09-13 gemma3-4 CheXpert and q25-32 CheXpert statistics; q25-32 complete on all three datasets
+
+- gemma3-4 CheXpert: CORE + CALIBRATION COMPLETE, 8.6 GPU-hours. Readable Effusion (S 0.252), Cardiomegaly
+  (0.228), Consolidation (0.208), Edema (0.221); Atelectasis `insufficient_support`; Pneumothorax 0.038.
+  Answer AUROC 0.41-0.61: the base Gemma 3 4B answers "yes" to almost every CheXpert question (clean
+  p_present > 0.99 on 97% of rows, median margin +15.6 logits), and the same on NIH (94% of clean rows >
+  0.99; only Mass is partly unsaturated), while on COCO it answers mostly "no" (77% < 0.01) with person
+  balanced. CORE on CheXpert is therefore read at a probability ceiling: random and sham writes cannot raise
+  p_present (random p95 as low as 0.0001) while writes that lower it are large (Pneumothorax W -0.651,
+  Edema -0.534, Consolidation -0.312; Cardiomegaly sham 0.93). Verdicts are formally
+  stronger_competitor/unresolved for all six, but the informative statement is the ceiling itself: the write
+  reaches the answer (random-direction margin deltas median 6.7, p95 24.6 logits) yet the model has no
+  concept-specific "yes" to give. The logit-scale outcomes (`semantic_margin`, `lse_margin`) are in the
+  package for a secondary reading; the reported W/O follow the protocol's p-scale definition unchanged.
+- q25-32 CheXpert (preflight passed, no deviations): CORE + CALIBRATION COMPLETE, 16.3 GPU-hours. Readable
+  Effusion (S 0.240), Cardiomegaly (0.220), Consolidation (0.198), Edema (0.187); Atelectasis 0.065;
+  Pneumothorax 0.061. Answer-capable Effusion (0.68), Cardiomegaly (0.73), Consolidation (0.70), Edema (0.65);
+  Atelectasis answer AUROC 0.93 but `insufficient_support` for the probe. CORE: nothing owned; Atelectasis
+  O -0.187 and Cardiomegaly O -0.186 anti-owned (the Cardiomegaly the 32B owns on NIH loses to Edema on
+  CheXpert, W -0.159); Effusion W -0.069. The 32B is the second checkpoint (after q25-7) whose NIH result
+  does not transfer to CheXpert.
+- Gate decision: two valid OBSERVED blocks; q25-32 is the eleventh checkpoint complete on all three datasets.
+  480 table cells filled.
