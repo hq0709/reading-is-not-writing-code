@@ -1019,3 +1019,17 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   person wording +0.061, mapping +0.036; bottle wording +0.111 [+0.098, +0.123], mapping +0.077.
 - Gate decision: valid OBSERVED block; q25-32 is complete on NIH and COCO (CheXpert CORE at 30%).
   424 table cells filled.
+
+## 2026-09-13 llava15-13 NIH CORE statistics; template gate
+
+- Template gate: the image-free mapping check passes IY/WY/IA/WA and fails IB/WB for LLaVA-1.5-13B on NIH, so
+  only the two B-mapped templates are INELIGIBLE (the 7B LLaVA and LLaVA-Med fail all four A/B templates).
+  Other preflight checks clean with no deviations (batch-vs-single 0.17; reach 3.69 / 0.69; fp32-vs-model 0.06).
+- Run: CORE, CALIBRATION, PROMPT, DOSE, REFIT, LOCUS_CALIBRATION packaged (25.4 GPU-hours); LOCUS pending.
+- Observation (known labels): readable Effusion (S 0.110) and Atelectasis (0.102); Pneumothorax 0.104 and
+  Mass 0.087 below the margin; Cardiomegaly 0.053; Nodule 0.031. Answer AUROC 0.49-0.56 on all six: the 13B
+  LLaVA reads two concepts and answers none, exactly the 7B pattern.
+- Observation (CORE): nothing meets the reference; |W_qq| <= 0.045 with Atelectasis anti-owned (O -0.047);
+  Mass O +0.008 below its random p95 0.033. No steering.
+- Gate decision: valid OBSERVED block. Scaling LLaVA-1.5 from 7B to 13B changes template eligibility but not
+  the answer or steering picture. 440 table cells filled.
