@@ -1042,3 +1042,18 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   Mass wording contrasts within +-0.003; no mapping contrast (IB INELIGIBLE).
 - Gate decision: valid OBSERVED block; llava15-13 complete on NIH (COCO and CheXpert in progress).
   446 table cells filled.
+
+## 2026-09-13 llava15-13 COCO: all seven modules packaged; statistics
+
+- Run: preflight passed apart from the IB/WB mapping gate (batch-vs-single 0.31 declared; reach 5.50 / 0.44;
+  fp32-vs-model 0.06). All seven modules COMPLETE, 37.9 GPU-hours.
+- Observation (known labels): all six readable with the largest margins of any COCO block (S 0.25-0.32 over a
+  control mean of 0.67; bicycle `insufficient_support`); answers 0.91-0.99.
+- Observation (CORE): person (W 0.068, O +0.054, rank 1) and chair (W 0.102, O +0.081, rank 1) owned at the
+  reference; car O +0.020 and bottle O +0.019 positive but below sham / random p95; dog rank 6 unresolved
+  (O +0.005); bicycle O -0.031. The LLaVA-1.5 pattern at 13B as at 7B: reads objects strongly, answers them,
+  and writes only small, partly specific effects (2 of 6 at reference; |W| <= 0.10 versus 0.1-0.8 for Qwen).
+- T3: signed dose range +0.069 [+0.061, +0.077]; refit SD 0.005; connector median O -0.001; label gap -0.22
+  [-0.27, -0.16]; person wording +0.013, bottle wording -0.007; no mapping contrast (IB INELIGIBLE).
+- Gate decision: valid OBSERVED block; llava15-13 complete on NIH and COCO (CheXpert CORE in progress).
+  456 table cells filled.
