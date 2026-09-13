@@ -770,3 +770,17 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
 - Gate decision: valid OBSERVED block. The natural-object control now holds for five checkpoints across four
   families (q25-7, q25-32, q3-8, lingshu-7, iv35-8) plus LLaVA-1.5 with small effects; on NIH the same 32B
   model owns one concept (Cardiomegaly) and anti-owns Effusion. 268 table cells filled.
+
+## 2026-09-13 Gemma 3 licences accepted: gemma3-4 smoke and enqueue
+
+- Run: the user accepted the gemma-3 licences on the Hub; `fetch_models.py gemma3-4,gemma3-12,gemma3-27`
+  pulls the pinned revisions (093f9f38 / 96b6f1ec / 005ad340, registered in `adapters/__init__.py`, commit
+  9b0951a). Llama-3.2-Vision access is still pending with Meta; llama32-11/90 stay parked.
+- Observation (gemma3-4 smoke on NIH, cuda:3, 46 s): determinism 0, alpha-0 identity 0, reach connector 37.1 /
+  answer logit 39.5, no change outside consumed tokens, fp32-vs-model 0.12; 4096 SigLIP tokens at the block,
+  256 after the connector. Batch-vs-single 1.28 (replicated 1.04) exceeds the 0.25 tolerance, the same bf16
+  shape dependence seen on medgemma-4 (0.50 / 0.30) and Qwen3-VL (0.60 / 1.41); the fixed-composition runner
+  design covers it and preflight will record it as a declared deviation.
+- Gate decision: adapter accepted for the Gemma 3 base checkpoints (same `Gemma3Adapter` as MedGemma).
+  gemma3-4 enqueued for NIH, COCO and CheXpert (48 tasks: prep + all modules per dataset); gemma3-12 (gpu1) and
+  gemma3-27 (gpu2) will be enqueued when their downloads finish. Queue: 439 pending, 63 running, 308 done, 0 failed.
