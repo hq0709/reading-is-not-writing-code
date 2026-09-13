@@ -1196,3 +1196,22 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
 - Gate decision: two valid OBSERVED blocks; 528 table cells filled. Owned NIH concepts are now Cardiomegaly
   (q25-32, lingshu-7) and Nodule (q3-32): different checkpoints own different single concepts, none owns
   the paper's Effusion.
+
+## 2026-09-13 gemma3-12 CheXpert and NIH CORE statistics: same write, different reader
+
+- Both blocks use the write vectors that are byte-identical to gemma3-4's (shared SigLIP tower); only the
+  connector and language model differ.
+- gemma3-12 CheXpert: CORE + CALIBRATION COMPLETE, 10.6 GPU-hours. Calibration rows identical to gemma3-4 by
+  construction (readable Effusion, Cardiomegaly, Consolidation, Edema); answer AUROC 0.45-0.61 (not
+  answer-capable on any concept). CORE: Edema owned (W 0.499, O +0.149 vs Atelectasis, random p95 0.469,
+  |sham| 0.283, rank 1); every other concept strongly anti-owned by Edema (Effusion O -0.831, Pneumothorax
+  -0.712, Cardiomegaly -0.473). Random p95 0.28-0.77: the 12B is at least as perturbation-sensitive as the 4B
+  but not at the 4B's answer ceiling, so writes move it in both directions.
+- gemma3-12 NIH: CORE, CALIBRATION, DOSE, REFIT, LOCUS, LOCUS_CALIBRATION packaged (35.7 GPU-hours); PROMPT
+  pending. Answer-capable Effusion, Atelectasis, Pneumothorax, Mass, Nodule (0.63-0.66). CORE: Nodule owned
+  (W 0.385, O +0.167 vs Pneumothorax, random p95 0.369, |sham| 0.151, rank 6); Effusion O -0.834, Mass -0.647,
+  Atelectasis -0.569 anti-owned (Nodule moves most under their writes); Cardiomegaly writes 0.329 below its
+  random p95 0.738.
+- Gate decision: two valid OBSERVED blocks. The identical write that produces nothing but "no" pressure in
+  the 4B consumer yields one owned concept per chest dataset in the 12B consumer (Edema on CheXpert, Nodule on
+  NIH). Nodule is now owned by two unrelated 32B/12B checkpoints (q3-32, gemma3-12) and anti-owned by q25-7.
