@@ -572,3 +572,11 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   unresolved, Consolidation -0.149, Edema -0.177 (sham 0.31). The Effusion steering effect seen on NIH (0.19,
   above random/sham) does not transfer to CheXpert for the same model, projection and dose.
 - Gate decision: valid OBSERVED block; cross-dataset boundary of the NIH Effusion effect.
+
+## 2026-09-13 01:00 UTC Milestone: q25-7 complete on all three datasets
+
+- Observation: Qwen2.5-VL-7B now has NIH, CheXpert and COCO packages COMPLETE (the first checkpoint with the full
+  three-dataset deliverable). Summary of its Table 2 row: NIH readable 3/6, answer-capable 3/6, steering reference
+  1/6, competitor wins among readable 3/3; CheXpert readable 4/6, answer-capable 2/6, steering reference 0/6;
+  COCO readable 1/6 (type controls saturate), answer-capable 5/6, steering reference 6/6, competitor wins 0/1.
+  Queue: 170 tasks done, 60 running, 0 failed; 54 Slurm workers active.
