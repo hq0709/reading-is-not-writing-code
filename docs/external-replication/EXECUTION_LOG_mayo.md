@@ -532,3 +532,13 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   at its 12-hour limit around 07:00 UTC.
 - Gate decision: 30 replacement workers submitted (24 x 1-GPU, 4 x 2-GPU, 2 x 4-GPU, 12 h) so the queue keeps
   draining across the expiry; the multi-GPU lanes depend on node-level availability.
+
+## 2026-09-13 q25-7 CheXpert gate
+
+- Run: CheXpert preparation after the row-id fix (Slurm worker); CORE + CALIBRATION scored; packaging + statistics
+  running.
+- Observation: all checks pass (CheXpert PNGs are 2828x2320, so the 336^2 pixel budget yields 520 Qwen patches /
+  130 merged tokens, 169 input positions; 17.9/s); single-vs-batch 0.36 recorded as a composition deviation.
+  Calibration selectivity (known labels): Effusion 0.234, Atelectasis 0.351, Pneumothorax -0.028, Cardiomegaly 0.243,
+  Consolidation 0.203, Edema 0.178.
+- Gate decision: READY.
