@@ -1366,3 +1366,12 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   INELIGIBLE for this checkpoint; answer capability will be read from the IB/WB PROMPT rows when they land.
 - Gate decision: valid block with the interface disposition recorded; the packager derives COMPLETE once the
   PROMPT module closes.
+
+## 2026-09-13 q3-32 COCO: all seven modules packaged; T3
+
+- Run: PROMPT and LOCUS landed; block COMPLETE with all seven modules, 98.4 GPU-hours.
+- Observation (T3): signed dose range +0.418 [+0.378, +0.460]; refit SD 0.016; connector median O +0.002;
+  label gap -11.5 [-12.2, -10.9]; person wording +0.027, mapping -0.033; bottle wording +0.030, mapping
+  -0.038 (all template contrasts small: the 32B Qwen3 is the least prompt-dependent COCO block).
+- Gate decision: valid OBSERVED block; q3-32 complete on NIH and COCO (CheXpert in the 2-GPU lane).
+  604 table cells filled.
