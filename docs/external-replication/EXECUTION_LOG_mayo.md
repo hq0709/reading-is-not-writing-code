@@ -930,3 +930,19 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   Cardiomegaly (q25-32 NIH, lingshu-7 NIH), Effusion/Pneumothorax/Edema (lingshu-7 CheXpert), Edema
   (medgemma-4 CheXpert), Consolidation/Edema (q3-4 CheXpert). CheXpert yields ownership more often than NIH
   for the same checkpoints (q3-8 and iv35-8 excepted), consistent with cleaner labels or training exposure.
+
+## 2026-09-13 q3-4 NIH: all seven modules packaged; q3-4 complete on all three datasets
+
+- Run: preflight passed (batch-vs-single 0.74 declared; reach 2.95 / 2.25; fp32-vs-model 0.12). All seven
+  modules COMPLETE, 14.6 GPU-hours.
+- Observation (known labels): readable Effusion (S 0.098), Atelectasis (0.102), Cardiomegaly (0.139); Mass
+  0.112 and Pneumothorax 0.062 below the margin; Nodule -0.050. Answer-capable on all six (AUROC 0.64-0.79).
+- Observation (CORE): Effusion meets the steering reference (W 0.386, random p95 0.290, |sham| 0.099, rank 3)
+  but Atelectasis moves more under it (O -0.026); Cardiomegaly writes 0.269 below its random p95 0.397; the
+  other four are anti-owned (Pneumothorax O -0.287, Mass -0.135). No owned concept on NIH, in contrast to the
+  same checkpoint's Consolidation and Edema on CheXpert.
+- T3: signed dose range +0.359 [+0.323, +0.387]; refit SD 0.040; connector median O -0.000; label gap -0.58
+  [-0.99, -0.12]; Effusion wording -0.094 [-0.103, -0.086], mapping -0.008; Mass wording +0.079, mapping +0.069
+  (Mass answers again depend on the template, as in q25-7 and q25-32).
+- Gate decision: valid OBSERVED block; q3-4 is the eighth checkpoint complete on all three datasets (with
+  q25-7, q25-3, q3-8, lingshu-7, llavamed-7, iv35-8, medgemma-4). 380 table cells filled.
