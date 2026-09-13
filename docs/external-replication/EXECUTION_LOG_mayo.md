@@ -1108,3 +1108,13 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   +0.051; bottle wording +0.089, mapping -0.519 [-0.565, -0.471] (the B-mapped template flips the bottle
   answer: the strongest prompt dependence recorded).
 - Gate decision: valid OBSERVED block; first Gemma 3 base block complete. 472 table cells filled.
+
+## 2026-09-13 First-batch turnover, final tally
+
+- Observation: the remaining first-batch workers (jobs placed 19:52-20:06Z on 2026-09-12) hit the 12 h limit
+  at 07:53-08:06Z (`sacct` TIMEOUT); with `--max-hours 11.5` a worker can still claim a >30 min shard at
+  11.4 h, so 11 more tasks were killed mid-run. All 15 killed tasks were swept back to `pending/` by
+  new-code workers and re-run: 13 done with rc 0, 2 (q3-32 NIH CORE shards) running. 0 failed.
+- Gate decision: no manual action; later batches use `--max-hours 10` so most workers finish their last
+  shard before the limit, and the sweep covers the rest. The second batch (old code, 11.5 h budget) expires
+  at 12:50Z and is covered the same way.
