@@ -1355,3 +1355,14 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
 - Gate decision: the block is a valid INELIGIBLE-by-interface disposition for the yes/no modules, recorded in
   coverage rather than dropped; the checkpoint stays in the grid with its CALIBRATION and IB/WB PROMPT rows.
   COCO and CheXpert preps for llama32-11 will apply the same check; llama32-90 follows on the 3-GPU lane.
+
+## 2026-09-13 llama32-11 NIH packaged: calibration only
+
+- Run: CALIBRATION COMPLETE; CORE, DOSE, REFIT, LOCUS, LOCUS_CALIBRATION recorded as `ineligible_modules`
+  (54 INELIGIBLE coverage cells); PROMPT IB/WB shards pending. 0.12 GPU-hours of scoring so far.
+- Observation (known labels, template-free): readable Effusion (S 0.128) and Pneumothorax (0.150);
+  Cardiomegaly 0.118 just under the margin; Atelectasis 0.054; Mass and Nodule at the control level. The
+  answer AUROC column is undefined (nan) because the CALIBRATION answer rows use the IY template, which is
+  INELIGIBLE for this checkpoint; answer capability will be read from the IB/WB PROMPT rows when they land.
+- Gate decision: valid block with the interface disposition recorded; the packager derives COMPLETE once the
+  PROMPT module closes.
