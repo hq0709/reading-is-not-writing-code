@@ -1375,3 +1375,10 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   -0.038 (all template contrasts small: the 32B Qwen3 is the least prompt-dependent COCO block).
 - Gate decision: valid OBSERVED block; q3-32 complete on NIH and COCO (CheXpert in the 2-GPU lane).
   604 table cells filled.
+
+## 2026-09-13 lingshu-32 preflight on NIH, COCO and CheXpert
+
+- Observation: all three preflights pass on both loci with no tolerance deviations (determinism 0, alpha-0 0,
+  nothing outside consumed tokens, batch-vs-single 0.09-0.16, fp32-vs-model 0.04-0.06, all six templates
+  eligible; reach 12.6-19.0 at the consumer, 0.5-4.4 answer logits; 11-14 rows/s on the 2-GPU lane).
+- Gate decision: lingshu-32 accepted on all three datasets; NIH CORE is scored and being packaged.
