@@ -961,3 +961,15 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
 - Gate decision: valid OBSERVED block. InternVL3.5 at 8B and 14B behave identically: a 0.25 relative write at
   the consumed block barely reaches the answer on chest radiographs while the same write is specific on COCO
   objects; the 38B checkpoint (gpu2 lane) will close the family. 404 table cells filled.
+
+## 2026-09-13 q25-72 NIH preflight (gpu3 lane placed)
+
+- Run: the first 3-GPU Slurm worker (gpu3 lane) was placed on rohpcgpu42; the q25-72 NIH prep extracted
+  19,228 rows in 636 s (batch 8, device_map auto across 3 A100-80GB), fitted both loci (3 seeds each) and ran
+  preflight; the worker moved on to CALIBRATION.
+- Observation: preflight passed on both loci with no tolerance deviations: determinism 0, alpha-0 0, reach
+  17.9 at the consumer / 3.25 answer logits (connector 0.38 / 0.39), nothing outside consumed tokens,
+  batch-vs-single 0.22 (within 0.25, the first Qwen2.5-VL checkpoint inside tolerance), fp32-vs-model 0.06,
+  all six templates eligible, 7.2 rows/s.
+- Gate decision: adapter accepted for the 72B checkpoint; CORE (4 shards) and the remaining modules follow in
+  the gpu3 lane. Two more gpu3 workers are pending placement.
