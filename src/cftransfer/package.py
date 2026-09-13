@@ -124,6 +124,9 @@ def build(model_key: str, dataset_id: str, status: str = "RUNNING") -> dict:
                 (r["execution_status"] == "NOT_STARTED" and r["reason"].startswith("INELIGIBLE"))
         if rows and all(terminal(r) for r in rows) and any(r["execution_status"] == "COMPLETE" for r in rows):
             completed.append(module)
+    requested = [m for m in MODULES if dataset_id in MODULES[m].datasets and expected_rows(m, dataset_id) > 0]
+    if status == "RUNNING" and requested and all(m in completed for m in requested):
+        status = "COMPLETE"      # derived from coverage, so a block never stays RUNNING once every cell is terminal
     with (rd / "coverage.csv").open("w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=COVERAGE_COLS); w.writeheader(); w.writerows(cov)
     # manifests copy
