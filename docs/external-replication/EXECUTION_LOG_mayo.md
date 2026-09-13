@@ -1414,3 +1414,12 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   mapping +0.008.
 - Gate decision: valid OBSERVED block; lingshu-32 complete on NIH (COCO and CheXpert in the 2-GPU lane).
   628 table cells filled.
+
+## 2026-09-13 lingshu-32 COCO CORE statistics
+
+- Run: CORE, CALIBRATION, DOSE, REFIT, LOCUS_CALIBRATION packaged (29.3 GPU-hours); PROMPT and LOCUS pending.
+- Observation: control mean 0.93; readable person (S 0.063); bicycle 0.053 `insufficient_support`; the rest
+  within 0.02 of the controls; answers 0.91-0.99. CORE: all six objects owned at rank 1 (person O +0.288,
+  dog +0.228, car +0.081, chair +0.533, bottle +0.342, bicycle +0.219; random p95 <= 0.068, |sham| <= 0.104).
+- Gate decision: valid OBSERVED block; the natural-object control holds for 14 of 15 checkpoints with a COCO
+  block. 632 table cells filled.
