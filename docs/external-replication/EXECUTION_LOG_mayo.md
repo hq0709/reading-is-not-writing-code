@@ -506,3 +506,8 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   Atelectasis, Pneumothorax, Consolidation, Edema lose to a competitor (Edema or Effusion). Same LLaVA pattern as
   on NIH: readable clinical directions, chance-level answers, no direction-specific steering.
 - Gate decision: valid OBSERVED block; cross-dataset replication of the LLaVA NIH result.
+
+## 2026-09-13 q3-8 COCO gate
+
+- Observation: q3-8 coco vis.last  pass=True dev=['D_batch_vs_single'] A=0.0 B=0.0 cons=2.37 logit=17.89 out=0.0 D=1.41 G=0.12 E=True rate=25.94 tok=988/270; q3-8 coco connector pass=True dev=['D_batch_vs_single'] A=0.0 B=0.0 cons=1.25 logit=1.22 out=0.0 D=1.41 G=0.12 E=True rate=25.85 tok=247/270
+- Gate decision: READY.
