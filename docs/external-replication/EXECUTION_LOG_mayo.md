@@ -1469,3 +1469,18 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   wording +0.055, mapping +0.122.
 - Gate decision: valid OBSERVED block; lingshu-32 complete on NIH and COCO (CheXpert in the 2-GPU lane).
   646 table cells filled.
+
+## 2026-09-13 lingshu-32 CheXpert statistics; lingshu-32 complete on all three datasets
+
+- Run: CORE + CALIBRATION COMPLETE, 19.1 GPU-hours.
+- Observation (known labels): readable Effusion (S 0.271), Cardiomegaly (0.246), Consolidation (0.249), Edema
+  (0.195); Atelectasis 0.238 `insufficient_support`; Pneumothorax 0.029. Answer-capable on five (AUROC
+  0.68-0.94).
+- Observation (CORE): five concepts meet the reference with positive ownership: Edema (W 0.237, O +0.115,
+  rank 1), Cardiomegaly (W 0.169, O +0.110, rank 1), Effusion (W 0.165, O +0.027, rank 1), Consolidation
+  (W 0.130, O +0.028, rank 2), Pneumothorax (W 0.117, O +0.024, rank 4); Atelectasis meets the reference but
+  loses to Consolidation (O -0.036). This is the first block in which Effusion is owned, and the largest
+  number of owned clinical concepts in one block.
+- Gate decision: valid OBSERVED block; lingshu-32 is the fifteenth checkpoint complete on all three datasets.
+  The Lingshu ladder on CheXpert: 7B Effusion/Pneumothorax/Edema; 32B those three plus Cardiomegaly and
+  Consolidation. 650 table cells filled.
