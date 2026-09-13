@@ -1255,3 +1255,14 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   mapping -0.122.
 - Gate decision: valid OBSERVED block; gemma3-12 is the thirteenth checkpoint complete on all three datasets.
   560 table cells filled.
+
+## 2026-09-13 q3-32 COCO CORE statistics
+
+- Run: preflight passed (batch-vs-single 0.36 declared). CORE, CALIBRATION, DOSE, REFIT, LOCUS_CALIBRATION
+  packaged (39.7 GPU-hours, 2-GPU lane); PROMPT and LOCUS pending.
+- Observation: readable person, car, chair, bottle (S 0.05-0.08; dog below its controls; bicycle
+  `insufficient_support`); answers 0.99. CORE: Qwen3-VL-32B owns all six objects at rank 1 (person O +0.130,
+  dog +0.117, car +0.113, chair +0.235, bottle +0.238, bicycle +0.069; random p95 <= 0.015, |sham| <= 0.011).
+  Effects are smaller than the 4B/8B Qwen3 (0.1-0.8) but cleanly separated from the references.
+- Gate decision: valid OBSERVED block; the natural-object control now holds for 13 of 14 checkpoints with a
+  COCO block (LLaVA-Med the exception). 564 table cells filled.
