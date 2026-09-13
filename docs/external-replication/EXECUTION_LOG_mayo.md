@@ -1484,3 +1484,12 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
 - Gate decision: valid OBSERVED block; lingshu-32 is the fifteenth checkpoint complete on all three datasets.
   The Lingshu ladder on CheXpert: 7B Effusion/Pneumothorax/Edema; 32B those three plus Cardiomegaly and
   Consolidation. 650 table cells filled.
+
+## 2026-09-13 medgemma-27 preflight on NIH, COCO and CheXpert
+
+- Observation: all three preflights pass on both loci (determinism 0, alpha-0 0, nothing outside consumed
+  tokens, fp32-vs-model 0.07-0.08, all six templates eligible; reach 1.7-2.4 at the consumer, 3.0-9.9 answer
+  logits; batch-vs-single 0.25-0.27, declared on NIH and COCO; 6.7-7.8 rows/s on the 2-GPU lane). Its
+  pooled `vis.last` features differ from both medgemma-4 and gemma3-4 on every dataset (distinct md5), so
+  MedGemma-27B carries its own vision tower.
+- Gate decision: medgemma-27 accepted on all three datasets; NIH CORE is scored and being packaged.
