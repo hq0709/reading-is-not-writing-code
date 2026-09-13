@@ -999,3 +999,13 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   sweeper found nothing (the Slurm worker was first). 0 tasks in `failed/`.
 - Gate decision: the requeue path works end to end; no manual intervention needed at batch boundaries. The
   third batch is being placed (14 of 24 gpu1 workers running); queue 372 pending / 52 running / 482 done.
+
+## 2026-09-13 Lane rebalancing for the 27-38B backlog
+
+- Run: pending tasks by lane at 07:50Z were gpu2 237 (q25-32/q3-32/iv35-38/lingshu-32/medgemma-27/gemma3-27
+  CheXpert, COCO and NIH modules), gpu1 90, gpu3 45 (q25-72), against 44 / 6 / 2 running workers. The gpu1
+  lane drains within hours and its workers exit when their lane is empty, freeing GPUs for 2-GPU jobs.
+- Gate decision: fourth batch submitted before the second batch's 12 h expiry: 24 gpu1 + 8 gpu2 workers
+  (cfw4-g1-a / cfw4-g2-a), then 12 more gpu2 workers (cfw4-g2-b), 2 gpu3 workers on gen-a100.p and 2 on
+  gen-h100 (3x H100-80GB also holds the 72B in bf16). All with `--max-hours 10 --exit-when-empty`; placement
+  is left to the scheduler.
