@@ -653,3 +653,17 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
 
 - Observation: Lingshu-7B now has NIH, CheXpert and COCO packages COMPLETE (second full-deliverable checkpoint
   after q25-7). Queue: 200 tasks done, 61 running, 0 failed; 207 table cells filled.
+
+## 2026-09-13 q3-8 COCO block COMPLETE
+
+- Run: all seven modules by queue workers; package COMPLETE, 20.2 GPU-hours.
+- Observation (W_qq / competitor / O_q / random p95 / |sham|): person 0.444 / bottle / +0.424 / 0.020 / 0.017;
+  dog 0.508 / bicycle / +0.506 / 0.014 / 0.001; car 0.752 / bottle / +0.743 / 0.016 / 0.022; chair 0.791 / dog /
+  +0.785 / 0.026 / 0.009; bottle 0.588 / bicycle / +0.590 / 0.017 / 0.009; bicycle 0.432 / bottle / +0.432 / 0.006 /
+  0.000. All six object concepts OWNED (rank 1/120) for Qwen3-VL-8B as well, although on NIH this model was the
+  most random-sensitive of the Qwen checkpoints (random p95 up to 0.36). Calibration: readable person, car,
+  bottle (type controls at 0.93); answer-capable 5/6 (clean AUROC 0.99). Table 3: dose range 0.855, refit O SD
+  0.027, connector O +0.003, label gap -16.6 logits; PROMPT contrasts small (person wording -0.006, mapping
+  +0.018; bottle wording +0.089, mapping +0.028).
+- Gate decision: complete deliverables: q25-7 (3), lingshu-7 (3), llava15-7 (3), llavamed-7 (NIH, COCO),
+  q3-8 (NIH, COCO); 219 table cells filled.
