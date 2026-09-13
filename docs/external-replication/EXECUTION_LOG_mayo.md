@@ -877,3 +877,16 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   -0.003 (both null); bottle wording -0.045, mapping +0.019.
 - Gate decision: valid OBSERVED block; medgemma-4 is complete on NIH and COCO (CheXpert CORE in progress).
   308 table cells filled.
+
+## 2026-09-13 q25-3 COCO and q3-4 COCO: all seven modules packaged; T3
+
+- q25-3 COCO: COMPLETE, 12.8 GPU-hours. Signed dose range +0.563 [+0.548, +0.578]; refit SD 0.061; connector
+  median O +0.009; label gap -4.35 [-4.94, -4.01]; person wording -0.058 [-0.066, -0.051], bottle wording
+  +0.004 (null). No mapping contrast: IB is INELIGIBLE for this checkpoint, so IA-minus-IB is not defined
+  (the coverage table records the disposition).
+- q3-4 COCO: COMPLETE, 13.7 GPU-hours. Signed dose range +0.613 [+0.581, +0.651]; refit SD 0.039; connector
+  median O +0.002; label gap -15.9 [-16.7, -14.9] (the largest label-shift response of any block: the 4B Qwen3
+  answer moves by orders of magnitude more under the label-shift controls than under the concept write);
+  person wording -0.009, mapping +0.014; bottle wording +0.114 [+0.098, +0.130], mapping -0.034.
+- Gate decision: two valid OBSERVED blocks; 322 table cells filled. Both small Qwen checkpoints show the
+  natural-object pattern in full: ownership of all six objects, clean dose response, connector writes inert.
