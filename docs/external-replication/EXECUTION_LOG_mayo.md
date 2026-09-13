@@ -910,3 +910,23 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
 - Gate decision: two valid OBSERVED blocks. medgemma-4 is the sixth checkpoint complete on all three datasets
   (with q25-7, lingshu-7, llavamed-7, iv35-8, q3-8). The Qwen2.5-VL size ladder on NIH is now 3B (nothing
   owned), 7B (nothing; Effusion anti-owned), 32B (Cardiomegaly); 72B pending on the gpu3 lane.
+
+## 2026-09-13 q25-3 CheXpert and q3-4 CheXpert statistics; q25-3 complete on all three datasets
+
+- q25-3 CheXpert (IB/WB INELIGIBLE, batch-vs-single 0.18 declared): CORE + CALIBRATION COMPLETE, 3.5 GPU-hours.
+  Readable Effusion (S 0.228), Cardiomegaly (0.256), Consolidation (0.180), Edema (0.185); Atelectasis
+  `insufficient_support`; Pneumothorax 0.005. Answer-capable only Effusion (0.66) and Cardiomegaly (0.63);
+  Edema 0.51, Pneumothorax 0.45. CORE: nothing owned; Effusion anti-owned (W -0.191, O -0.178, rank 120 of
+  the random family), all others negative. The 3B Qwen2.5 reads CheXpert concepts but cannot answer or be
+  steered on them. q25-3 is the seventh checkpoint complete on all three datasets.
+- q3-4 CheXpert (preflight passed; batch-vs-single 0.54 declared, replicated): CORE + CALIBRATION COMPLETE,
+  3.5 GPU-hours. Readable Effusion (0.230), Cardiomegaly (0.246), Consolidation (0.245), Edema (0.176);
+  Atelectasis 0.278 `insufficient_support`; Pneumothorax 0.050. Answer-capable Effusion (0.90), Cardiomegaly
+  (0.85), Consolidation (0.79), Edema (0.82). CORE: Consolidation owned (W 0.807, O +0.094 vs Edema, random
+  p95 0.429, |sham| 0.001, rank 1) and Edema owned (W 0.593, O +0.092 vs Consolidation, random p95 0.426,
+  |sham| 0.150, rank 1); Effusion writes 0.398 at rank 1 but Consolidation moves more under it (O -0.015);
+  Pneumothorax O -0.231. First owned clinical concepts for Qwen3-VL, both on CheXpert.
+- Gate decision: two valid OBSERVED blocks; 356 table cells filled. Owned clinical concepts so far:
+  Cardiomegaly (q25-32 NIH, lingshu-7 NIH), Effusion/Pneumothorax/Edema (lingshu-7 CheXpert), Edema
+  (medgemma-4 CheXpert), Consolidation/Edema (q3-4 CheXpert). CheXpert yields ownership more often than NIH
+  for the same checkpoints (q3-8 and iv35-8 excepted), consistent with cleaner labels or training exposure.
