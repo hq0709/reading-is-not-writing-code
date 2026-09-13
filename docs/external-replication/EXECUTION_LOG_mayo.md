@@ -1405,3 +1405,12 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   1 s each). No task was claimed by them and no data was touched.
 - Fix: `sbatch_py.sh` now refuses a payload that does not start with `python`/`bash`, and 12 single-GPU workers
   were resubmitted as `cfw7-g1-a` with the worker command verified in the generated script.
+
+## 2026-09-13 lingshu-32 NIH: all seven modules packaged; T3
+
+- Run: PROMPT and LOCUS landed; block COMPLETE with all seven modules, 73.9 GPU-hours.
+- Observation (T3): signed dose range +0.085 [+0.078, +0.098]; refit SD 0.027; connector median O -0.014;
+  label gap -0.137 [-0.234, -0.077]; Effusion wording -0.001 (null), mapping +0.026; Mass wording +0.012,
+  mapping +0.008.
+- Gate decision: valid OBSERVED block; lingshu-32 complete on NIH (COCO and CheXpert in the 2-GPU lane).
+  628 table cells filled.
