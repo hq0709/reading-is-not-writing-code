@@ -1057,3 +1057,13 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   [-0.27, -0.16]; person wording +0.013, bottle wording -0.007; no mapping contrast (IB INELIGIBLE).
 - Gate decision: valid OBSERVED block; llava15-13 complete on NIH and COCO (CheXpert CORE in progress).
   456 table cells filled.
+
+## 2026-09-13 Single-GPU worker surplus cancelled to let 2-GPU jobs place
+
+- Run: at 10:03Z the gpu1 lane had 25 pending tasks against 57 running single-GPU workers, while the gpu2 lane
+  had 232 pending tasks against 4 workers and every pending 2-GPU job (28) was unplaced behind single-GPU
+  jobs in the scheduler queue.
+- Gate decision: the 31 still-pending single-GPU worker jobs (22 cfw4-g1-a, 9 cfw-g1-h) were cancelled; they
+  would have started into an empty lane and exited. Running workers are untouched and exit on their own when
+  the lane empties, after which the 2-GPU and 3-GPU jobs are placed. Queue 300 pending / 64 running / 542
+  done / 0 failed.
