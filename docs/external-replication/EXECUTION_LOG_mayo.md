@@ -1307,3 +1307,13 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   +0.042. The Nodule ownership from CORE (O +0.171) stands with a clean dose response and stable refits.
 - Gate decision: valid OBSERVED block; q3-32 complete on NIH (COCO all-but-PROMPT/LOCUS, CheXpert in the
   lane). 572 table cells filled.
+
+## 2026-09-13 llama32-90 downloaded; revision pin corrected; enqueued on the 3-GPU lane
+
+- Run: the 90B snapshot landed (37 shards, 276 GB on disk including the `original/` consolidated weights). The
+  Hub resolved the pinned revision by prefix: the pin `e305d2a4...4cd6f7` recorded in `fetch_models.py` and the
+  adapter registry had a wrong tail, the downloaded commit is `e305d2a43a4adc6987308fe7d896fb8ec5f1a5d8`.
+  Both files now carry the real commit (the 11B pin `9eb2daaa...94df5` matched its snapshot).
+- Gate decision: llama32-90 enqueued for NIH, COCO and CheXpert (48 tasks, gpu3 lane, batch 4, device_map
+  auto over 3 x 80 GB); its preflight in the prep task is the acceptance gate, and an out-of-memory failure
+  there would move it to a 4-GPU lane. All 22 checkpoints of the grid are now downloaded and queued.

@@ -25,7 +25,7 @@ PINNED = [  # (model_key, repo, full revision sha)
     ("gemma3-12", "google/gemma-3-12b-it",               "96b6f1eccf38110c56df3a15bffe176da04bfd80"),
     ("gemma3-27", "google/gemma-3-27b-it",               "005ad3404e59d6023443cb575daa05336842228a"),
     ("llama32-11","meta-llama/Llama-3.2-11B-Vision-Instruct", "9eb2daaa8597bf192a8b0e73f848f3a102794df5"),
-    ("llama32-90","meta-llama/Llama-3.2-90B-Vision-Instruct", "e305d2a43a4a5a0d9ee14e19c5c9d61a5f4cd6f7"),
+    ("llama32-90","meta-llama/Llama-3.2-90B-Vision-Instruct", "e305d2a43a4adc6987308fe7d896fb8ec5f1a5d8"),
 ]
 import sys
 ONLY = set(sys.argv[1].split(",")) if len(sys.argv) > 1 else None
