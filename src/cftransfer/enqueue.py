@@ -15,8 +15,8 @@ LANE = {"q25-3": "gpu1", "q25-7": "gpu1", "q3-4": "gpu1", "q3-8": "gpu1", "iv35-
         "gemma3-4": "gpu1", "gemma3-12": "gpu1", "medgemma-4": "gpu1", "llama32-11": "gpu1", "llava15-7": "gpu1",
         "llava15-13": "gpu1", "lingshu-7": "gpu1", "llavamed-7": "gpu1",
         "q25-32": "gpu2", "q3-32": "gpu2", "iv35-38": "gpu2", "gemma3-27": "gpu2", "medgemma-27": "gpu2", "lingshu-32": "gpu2",
-        "q25-72": "gpu4", "llama32-90": "gpu4"}
-BATCH = {"gpu1": 32, "gpu2": 16, "gpu4": 8}
+        "q25-72": "gpu3", "llama32-90": "gpu3"}
+BATCH = {"gpu1": 32, "gpu2": 16, "gpu3": 8, "gpu4": 8}
 # shards per module for a 600-row test block (row budget relative to CORE); calibration modules are single tasks
 SHARDS = {"CORE": 4, "LOCUS": 4, "PROMPT": 7, "DOSE": 2, "REFIT": 1, "CALIBRATION": 1, "LOCUS_CALIBRATION": 1}
 MODULE_ORDER = ["CALIBRATION", "CORE", "LOCUS_CALIBRATION", "DOSE", "REFIT", "LOCUS", "PROMPT"]
