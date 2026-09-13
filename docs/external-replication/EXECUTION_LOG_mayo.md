@@ -667,3 +667,12 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   +0.018; bottle wording +0.089, mapping +0.028).
 - Gate decision: complete deliverables: q25-7 (3), lingshu-7 (3), llava15-7 (3), llavamed-7 (NIH, COCO),
   q3-8 (NIH, COCO); 219 table cells filled.
+
+## 2026-09-13 Gates: iv35-8 NIH, medgemma-4 COCO
+
+- iv35-8 NIH (InternVL3.5-8B-HF, single 448 tile, 1,024 patches / 256 tokens, 27.3/s): all checks pass with no
+  tolerance deviation (single-vs-batch 0.20). Calibration selectivity: Effusion 0.074, Atelectasis 0.045,
+  Pneumothorax 0.062, Cardiomegaly 0.135, Mass 0.109, Nodule -0.057. CORE complete; statistics running.
+- medgemma-4 COCO (SigLIP-896, 4,096 patches / 256 soft tokens, 14.8/s): all checks pass; single-vs-batch 0.42
+  recorded as a composition deviation.
+- Gate decision: both READY.
