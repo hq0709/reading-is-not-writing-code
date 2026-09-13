@@ -1266,3 +1266,22 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   Effects are smaller than the 4B/8B Qwen3 (0.1-0.8) but cleanly separated from the references.
 - Gate decision: valid OBSERVED block; the natural-object control now holds for 13 of 14 checkpoints with a
   COCO block (LLaVA-Med the exception). 564 table cells filled.
+
+## 2026-09-13 Llama 3.2 Vision: licence granted, adapter written, 11B smoke accepted
+
+- Run: the user's Meta licence was approved; `fetch_models.py llama32-11,llama32-90` pulls the pinned revisions
+  (9eb2daaa / e305d2a4). A new `MllamaAdapter` (`adapters/mllama.py`) covers the cross-attention architecture:
+  the language model consumes `multi_modal_projector(cat([global-transformer output, local layers 3/7/15/23/30]))`
+  as keys/values of eight cross-attention layers, so the primary locus `vis.last` is the last global-transformer
+  block (dims [0:1280) of the 7680-d projector input; the five local-layer streams bypass it and are recorded
+  as `bypasses`), and the connector locus is the projector output. One 560x560 tile per image (longer side
+  resized to 560, canvas (1,1)); consumed rows per image 1601 (CLS + 1600 patches) at both loci; padding rows
+  and padding tiles are excluded from steering and pooling. `LocusHook`/`CaptureHook` gained a view for
+  tensors with more than three dims (the projector output is 5-D); 2-D/3-D families are untouched (unit test
+  added, 13/13 pass).
+- Observation (llama32-11 smoke on NIH, 40 s): determinism 0, alpha-0 identity 0, reach 13.4 at the projector
+  and 0.86 answer logits, locus change confined to consumed rows (0 outside), fp32-vs-model 0.06,
+  batch-vs-single 0.18 (replicated 0.12), within the 0.25 tolerance; prompt is the checkpoint chat template
+  with one BOS and one `<|image|>`; 1601 valid tokens at both loci.
+- Gate decision: adapter accepted. llama32-11 goes to the single-GPU lane, llama32-90 to the 3-GPU lane once
+  its download completes.

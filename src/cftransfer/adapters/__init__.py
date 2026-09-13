@@ -6,6 +6,7 @@ from .gemma import Gemma3Adapter
 from .internvl import InternVLAdapter
 from .llava import LlavaAdapter
 from .llavamed import LlavaMedAdapter
+from .mllama import MllamaAdapter
 from .qwen import Qwen3VLAdapter, QwenVLAdapter
 
 REVISIONS = {
@@ -21,7 +22,7 @@ REVISIONS = {
     "gemma3-27": "005ad3404e59d6023443cb575daa05336842228a",
     "medgemma-4": "290cda5eeccbee130f987c4ad74a59ae6f196408",
     "medgemma-27": "2d3e00ea38b50018bf5dd3aa1009457cd2d5a48f",
-    "llama32-11": None, "llama32-90": None,
+    "llama32-11": "9eb2daaa8597bf192a8b0e73f848f3a102794df5", "llama32-90": "e305d2a43a4a5a0d9ee14e19c5c9d61a5f4cd6f7",
     "llava15-7": "b234b804b114d9e37bb655e11cbbb5f5e971b7a9",
     "llava15-13": "5dda2880bda009266dda7c4baff660b95ca64540",
     "lingshu-7": "b98aecd41dfd9d7545a6b8e2f4743ae8471bd7a9",
@@ -38,6 +39,7 @@ FAMILY_ADAPTER = {
     "iv35-8": InternVLAdapter, "iv35-14": InternVLAdapter, "iv35-38": InternVLAdapter,
     "llava15-7": LlavaAdapter, "llava15-13": LlavaAdapter,
     "llavamed-7": LlavaMedAdapter,
+    "llama32-11": MllamaAdapter, "llama32-90": MllamaAdapter,
 }
 
 

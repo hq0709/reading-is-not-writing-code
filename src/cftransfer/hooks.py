@@ -108,6 +108,15 @@ class LocusHook:
         if self.calls > 1:
             raise RuntimeError(f"{self.name}: hooked module fired {self.calls} times in one forward; layout is ambiguous")
         lay = self.layout
+        restore = None
+        if not lay.flat and h.dim() > 3:
+            # (B, ..., D) tensors (e.g. Mllama's (B, images, tiles, rows, D)) are steered as (B, T, D) with
+            # T = product of the middle axes, in the tensor's own row order; the original shape is restored
+            if h.shape[0] != lay.batch:
+                raise RuntimeError(f"{self.name}: batched layout expects leading axis {lay.batch}, got {tuple(h.shape)}")
+            orig_shape = h.shape
+            h = h.reshape(h.shape[0], -1, h.shape[-1])
+            restore = lambda t: t.reshape(orig_shape)
         if lay.flat:
             if h.dim() != 2:
                 raise RuntimeError(f"{self.name}: flat layout expects (N, D), got {tuple(h.shape)}")
@@ -124,7 +133,7 @@ class LocusHook:
         counts = lay.counts()
         if len(set(counts)) == 1 and (lay.flat or all(bool(m.all()) for m in lay.masks) or
                                       all(torch.equal(m, lay.masks[0]) for m in lay.masks)):
-            return self._vectorised(output, h, lay, counts[0])
+            return self._vectorised(output, h, lay, counts[0], restore)
         tok_mean, tok_med, delta_mean, pooled = [], [], [], []
         new = h if self.vectors is None else h.clone()
         for b in range(lay.batch):
@@ -158,10 +167,12 @@ class LocusHook:
         self.stats = {"token_norm_mean": tok_mean, "token_norm_median": tok_med, "delta_norm_mean": delta_mean}
         if self.capture:
             self.pooled = torch.stack(pooled)
-        return with_hidden(output, new) if self.vectors is not None else None
+        if self.vectors is None:
+            return None
+        return with_hidden(output, restore(new) if restore else new)
 
 
-    def _vectorised(self, output, h, lay: TokenLayout, T: int):
+    def _vectorised(self, output, h, lay: TokenLayout, T: int, restore=None):
         """Same arithmetic as the loop, for layouts where every element has the same consumed-token pattern."""
         B = lay.batch
         if lay.flat:
@@ -188,7 +199,7 @@ class LocusHook:
         else:
             new = h.clone()
             new[:, idx, :] = steered
-        return with_hidden(output, new)
+        return with_hidden(output, restore(new) if restore else new)
 
 
 class CaptureHook:
@@ -210,5 +221,7 @@ class CaptureHook:
 
     def _hook(self, _m, _i, output):
         h = as_hidden(output)
+        if h is not None and h.dim() > 3:
+            h = h.reshape(h.shape[0], -1, h.shape[-1])      # same (B, T, D) view the steering hook uses
         self.value = None if h is None else h.detach().float().cpu()
         return None
