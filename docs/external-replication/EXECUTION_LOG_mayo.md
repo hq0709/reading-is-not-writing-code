@@ -676,3 +676,15 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
 - medgemma-4 COCO (SigLIP-896, 4,096 patches / 256 soft tokens, 14.8/s): all checks pass; single-vs-batch 0.42
   recorded as a composition deviation.
 - Gate decision: both READY.
+
+## 2026-09-13 iv35-8 NIH statistics
+
+- Observation: readable Cardiomegaly (S 0.135), Mass (0.109); not readable Effusion (0.074), Atelectasis (0.045),
+  Pneumothorax (0.062), Nodule (-0.057). Answer-capable 6/6 (clean AUROC 0.66-0.78). CORE: InternVL3.5-8B barely
+  responds to the 0.25 relative-norm write at its last InternViT block (|W_qq| <= 0.035; random p95 <= 0.06; sham
+  <= 0.03); no steering reference; Effusion +0.003 fixed-family advantage below reference, Cardiomegaly +0.002 and
+  Pneumothorax unresolved, Atelectasis/Mass/Nodule lose to a competitor. Table 3: dose range 0.017, refit O SD
+  0.004, connector O -0.000, label gap -0.004; PROMPT contrasts |<= 0.011|. The pixel-shuffle + MLP connector
+  and Qwen3 LLM of InternVL3.5 are insensitive to vision-block perturbations of this relative size, unlike the
+  Qwen-VL merger path.
+- Gate decision: valid OBSERVED block.
