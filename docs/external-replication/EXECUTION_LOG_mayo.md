@@ -1285,3 +1285,14 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   with one BOS and one `<|image|>`; 1601 valid tokens at both loci.
 - Gate decision: adapter accepted. llama32-11 goes to the single-GPU lane, llama32-90 to the 3-GPU lane once
   its download completes.
+
+## 2026-09-13 llama32-11 enqueued at batch 16; one batch-32 prep retired
+
+- Run: the first enqueue used the single-GPU lane default (batch 32) and its NIH prep was claimed by a login
+  worker before the per-model override landed. Because Mllama computes all four tile slots per image (three
+  zero tiles), the vision cost per row is about 4x that of the other families, so the prep was stopped
+  (rc -15, retired as a dotfile in `failed/`), `enqueue.py` gained `BATCH_MODEL` (llama32-11: 16, llama32-90: 4),
+  and llama32-11 was re-enqueued on NIH, COCO and CheXpert (48 tasks, batch 16 for prep and every module, so
+  the fixed-composition batch is consistent across CORE/DOSE/REFIT/LOCUS). Twelve single-GPU Slurm workers
+  submitted for the new lane work; the four login-node workers also serve it.
+- Gate decision: no data affected (the stopped prep had written no features). 0 tasks in `failed/`.
