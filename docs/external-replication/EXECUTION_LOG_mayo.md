@@ -1178,3 +1178,21 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   12B consumer, loses most of its template dependence).
 - Gate decision: valid OBSERVED block; gemma3-12 complete on COCO (NIH and CheXpert modules in the lane).
   492 table cells filled.
+
+## 2026-09-13 gemma3-4 NIH and q3-32 NIH CORE statistics
+
+- gemma3-4 NIH: CORE, CALIBRATION, DOSE, REFIT, LOCUS_CALIBRATION packaged (19.3 GPU-hours); PROMPT/LOCUS
+  pending. Readable Atelectasis (S 0.107) and Nodule (0.141) only; answer AUROC 0.41-0.64 (Cardiomegaly and
+  Mass barely capable). The answer ceiling seen on CheXpert holds on NIH (94% of clean rows p_present > 0.99):
+  random p95 collapses to 0.0001-0.0005 for four concepts, while writes that lower the answer are large
+  (Mass W -0.344, Cardiomegaly -0.252, Nodule -0.146). No owned concept; the base Gemma 3 4B says "yes" to
+  every chest question and its concept writes only push it toward "no".
+- q3-32 NIH (Qwen3-VL-32B, preflight passed, batch-vs-single 0.39 declared): CORE, CALIBRATION,
+  LOCUS_CALIBRATION packaged (29.8 GPU-hours); PROMPT/DOSE/REFIT/LOCUS pending. Readable Atelectasis (0.125)
+  and Cardiomegaly (0.190); answer-capable on all six (0.61-0.78). CORE: Nodule owned (W 0.243, O +0.171 vs
+  Mass, random p95 0.116, |sham| 0.038, rank 2), the first Nodule ownership in the campaign (Nodule was the
+  most strongly anti-owned concept for q25-7); Pneumothorax at the reference but O +0.003; Cardiomegaly
+  writes 0.136 below its random p95 0.238; Effusion O -0.140, Mass O -0.106.
+- Gate decision: two valid OBSERVED blocks; 528 table cells filled. Owned NIH concepts are now Cardiomegaly
+  (q25-32, lingshu-7) and Nodule (q3-32): different checkpoints own different single concepts, none owns
+  the paper's Effusion.
