@@ -946,3 +946,18 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   (Mass answers again depend on the template, as in q25-7 and q25-32).
 - Gate decision: valid OBSERVED block; q3-4 is the eighth checkpoint complete on all three datasets (with
   q25-7, q25-3, q3-8, lingshu-7, llavamed-7, iv35-8, medgemma-4). 380 table cells filled.
+
+## 2026-09-13 iv35-14 NIH: all seven modules packaged; statistics
+
+- Run: preflight passed (batch-vs-single 0.38 declared, replicated; reach 0.60 / 0.59; fp32-vs-model 0.12).
+  All seven modules COMPLETE, 29.3 GPU-hours.
+- Observation (known labels): readable Effusion (S 0.125), Atelectasis (0.086), Pneumothorax (0.094),
+  Cardiomegaly (0.182); Mass 0.031; Nodule -0.076. Answer-capable on all six (AUROC 0.65-0.79).
+- Observation (CORE): the InternVL noise floor again (|W_qq| <= 0.021). Effusion formally meets the reference
+  (W 0.0122 vs random p95 0.0090, |sham| 0.0081) with O +0.009, and Mass O +0.005 below its random p95; these
+  are two-hundredths of a logit and not scientifically distinguishable from zero. Cardiomegaly writes 0.021
+  below its random p95 0.037; Pneumothorax W 0.0000. T3: signed dose range +0.011 [+0.008, +0.017]; refit SD
+  0.003; connector median O -0.000; label gap -0.007 (null); every PROMPT contrast within +-0.005.
+- Gate decision: valid OBSERVED block. InternVL3.5 at 8B and 14B behave identically: a 0.25 relative write at
+  the consumed block barely reaches the answer on chest radiographs while the same write is specific on COCO
+  objects; the 38B checkpoint (gpu2 lane) will close the family. 404 table cells filled.
