@@ -1317,3 +1317,19 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
 - Gate decision: llama32-90 enqueued for NIH, COCO and CheXpert (48 tasks, gpu3 lane, batch 4, device_map
   auto over 3 x 80 GB); its preflight in the prep task is the acceptance gate, and an out-of-memory failure
   there would move it to a 4-GPU lane. All 22 checkpoints of the grid are now downloaded and queued.
+
+## 2026-09-13 q25-72 NIH CORE statistics: three owned concepts at 72B
+
+- Run: CORE, CALIBRATION, DOSE, LOCUS_CALIBRATION packaged (72.9 GPU-hours on the 3-GPU lane); PROMPT, REFIT,
+  LOCUS pending.
+- Observation (known labels): readable Pneumothorax (S 0.136) and Cardiomegaly (0.192); Atelectasis 0.072,
+  Effusion 0.041, Mass 0.032, Nodule -0.025. Answer-capable Effusion (0.62), Cardiomegaly (0.66), Mass (0.69),
+  Nodule (0.68); Pneumothorax answer AUROC 0.48.
+- Observation (CORE): Qwen2.5-VL-72B owns three NIH concepts: Atelectasis (W 0.531, O +0.537 vs Cardiomegaly,
+  random p95 0.213, |sham| 0.015, rank 1), Cardiomegaly (W 0.462, O +0.256, random p95 0.408, rank 6) and Mass
+  (W 0.328, O +0.066, random p95 0.292, rank 6); Effusion (O -0.322), Pneumothorax (-0.499) and Nodule (-0.230)
+  remain anti-owned. The Atelectasis effect is the largest clinical ownership of the campaign, and the first
+  block in which more than one NIH concept is owned.
+- Gate decision: valid OBSERVED block; 588 table cells filled. The Qwen2.5-VL NIH ladder now reads 3B none,
+  7B none (Effusion anti-owned), 32B Cardiomegaly, 72B Atelectasis + Cardiomegaly + Mass: ownership appears
+  with scale within this family, while Effusion never becomes owned and its anti-ownership persists at 72B.
