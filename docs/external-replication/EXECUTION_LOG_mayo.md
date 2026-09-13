@@ -756,3 +756,17 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
 - Gate decision: both valid OBSERVED blocks; 264 table cells filled. The q25-7 -> q25-32 comparison on NIH is
   now complete on all modules: scaling Qwen2.5-VL from 7B to 32B replaces the Effusion effect with a
   Cardiomegaly effect rather than adding ownership.
+
+## 2026-09-13 q25-32 COCO CORE statistics
+
+- Run: preflight passed on both loci (batch-vs-single deviation 0.37 declared, replicated; reach at vis.last
+  13.8 / connector 0.38, nothing outside consumed tokens; fp32-vs-model 0.07). CORE, CALIBRATION, REFIT,
+  LOCUS_CALIBRATION packaged (21.1 GPU-hours so far); PROMPT, DOSE, LOCUS still in the queue.
+- Observation (known labels): the type->random-label controls are strong on this model (control mean 0.93), so
+  only person clears the readability margin (S 0.056); the other five sit within 0.04 of the controls. Answers
+  are near-perfect (AUROC 0.98-0.99; bicycle 0.99 but `insufficient_support`, 9 positives).
+- Observation (CORE): Qwen2.5-VL-32B owns all six objects at rank 1 with large effects: person O +0.444,
+  dog +0.125, car +0.273, chair +0.834, bottle +0.410, bicycle +0.187; random p95 <= 0.015, |sham| <= 0.011.
+- Gate decision: valid OBSERVED block. The natural-object control now holds for five checkpoints across four
+  families (q25-7, q25-32, q3-8, lingshu-7, iv35-8) plus LLaVA-1.5 with small effects; on NIH the same 32B
+  model owns one concept (Cardiomegaly) and anti-owns Effusion. 268 table cells filled.
