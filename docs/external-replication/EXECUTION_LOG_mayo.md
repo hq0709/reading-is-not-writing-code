@@ -986,3 +986,16 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   refit SD 0.003; connector median O +0.007; label gap -0.44 [-0.51, -0.30]; PROMPT contrasts within +-0.008.
 - Gate decision: two valid OBSERVED blocks; iv35-14 is the ninth checkpoint complete on all three datasets.
   416 table cells filled.
+
+## 2026-09-13 First Slurm batch turnover: stale-task sweep verified in production
+
+- Run: the first 12 h worker batch (30 jobs, old worker code without SIGTERM handling) reached its wall clock
+  between 06:55Z and 07:01Z; most workers had already exited at their 11.5 h budget, but four were killed
+  mid-task (iv35-14 CheXpert CORE shard 2, q25-32 COCO PROMPT shard 5, q3-32 NIH CORE shards 0 and 2).
+- Observation: a new-code worker (job 4345808) swept `running/`, found the four tasks whose Slurm jobs had
+  left the queue and moved them back to `pending/` with a `requeued` record within 1-5 minutes of the kill;
+  the iv35-14 shard was re-run from scratch by job 4345809 (rc 0), and its block packaged COMPLETE with the
+  partial parts of the killed run deduplicated by key. The other three are pending in their lanes. The login
+  sweeper found nothing (the Slurm worker was first). 0 tasks in `failed/`.
+- Gate decision: the requeue path works end to end; no manual intervention needed at batch boundaries. The
+  third batch is being placed (14 of 24 gpu1 workers running); queue 372 pending / 52 running / 482 done.
