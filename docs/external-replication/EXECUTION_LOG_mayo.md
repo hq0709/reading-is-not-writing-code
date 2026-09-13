@@ -1215,3 +1215,12 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
 - Gate decision: two valid OBSERVED blocks. The identical write that produces nothing but "no" pressure in
   the 4B consumer yields one owned concept per chest dataset in the 12B consumer (Edema on CheXpert, Nodule on
   NIH). Nodule is now owned by two unrelated 32B/12B checkpoints (q3-32, gemma3-12) and anti-owned by q25-7.
+
+## 2026-09-13 Second Slurm batch turnover confirmed
+
+- Observation (13:22Z): the second batch expired at 12:51-12:56Z; 11 tasks killed mid-run were swept back to
+  `pending/` within the minute and re-run (8 done by 13:15Z with rc 0, 3 running). Campaign total: 26
+  requeue events, 23 recovered as done, 3 in progress, 0 in `failed/`. After the single-GPU lane drained, the
+  two-GPU lane rose to 22 running workers (5 pending) and the three-GPU lane holds 3 (4 pending). Queue 246
+  pending (207 gpu2, 39 gpu3) / 28 running / 632 done.
+- Gate decision: no action; the remaining campaign is the 27-38B checkpoints and the 72B.
