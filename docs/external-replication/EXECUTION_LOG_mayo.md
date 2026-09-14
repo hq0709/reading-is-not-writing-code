@@ -1801,3 +1801,14 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   Atelectasis, Pneumothorax, Cardiomegaly stronger competitor (O -0.018, -0.003, -0.030); Nodule unresolved.
   Owns nothing on NIH, as at 8B and 14B.
 - Gate decision: valid OBSERVED block; 755 table cells filled, leaderboard 59 blocks. Watcher re-armed.
+
+## 2026-09-14 iv35-38 NIH: all seven modules packaged; T3
+
+- Run: PROMPT and LOCUS landed; block COMPLETE with all seven modules, 105.9 GPU-hours (2-GPU lane plus the
+  login node).
+- Observation (T3): signed dose range +0.028 [+0.024, +0.033]; refit SD 0.007 [0.006, 0.007]; connector median
+  O -0.004 [-0.004, -0.003]; label gap -0.023 [-0.059, -0.008]; Effusion wording +0.010, mapping +0.005; Mass
+  wording +0.004, mapping +0.043 [+0.041, +0.045]. Every control is as small as the writes themselves: the
+  38B reader, like 8B and 14B, answers the questions but is barely moved by any direction at this locus.
+- Gate decision: valid OBSERVED block; iv35-38 complete on NIH (COCO and CheXpert running). Tables and
+  leaderboard regenerated; fully-scored watcher re-armed.
