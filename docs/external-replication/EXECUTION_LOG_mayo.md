@@ -1659,3 +1659,14 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   procedure, preflight gate, decision rules, controls, outputs, and how to add a checkpoint.
 - Gate decision: the leaderboard is regenerated with the tables whenever a block is packaged; the campaign
   tables are unchanged.
+
+## 2026-09-14 q25-72 NIH: all seven modules packaged; T3
+
+- Run: PROMPT, REFIT and LOCUS landed; block COMPLETE with all seven modules, 214.3 GPU-hours on the 3-GPU
+  lane. The 3-GPU lane is now empty (COCO/CheXpert held).
+- Observation (T3): signed dose range +0.360 [+0.344, +0.373]; refit SD 0.130 [0.126, 0.133]; connector
+  median O -0.013; label gap -0.50 [-0.65, -0.29]; Effusion wording -0.113 [-0.118, -0.109], mapping +0.040;
+  Mass wording +0.185 [+0.175, +0.192], mapping +0.043. The three CORE ownerships (Atelectasis, Cardiomegaly,
+  Mass) stand with a clean dose response.
+- Gate decision: valid OBSERVED block; q25-72 complete on NIH. 727 table cells filled; leaderboard
+  regenerated (57 blocks).
