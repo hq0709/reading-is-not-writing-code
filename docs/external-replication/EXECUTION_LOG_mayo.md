@@ -1812,3 +1812,16 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   38B reader, like 8B and 14B, answers the questions but is barely moved by any direction at this locus.
 - Gate decision: valid OBSERVED block; iv35-38 complete on NIH (COCO and CheXpert running). Tables and
   leaderboard regenerated; fully-scored watcher re-armed.
+
+## 2026-09-14 iv35-38 COCO CORE statistics
+
+- Run: CORE, CALIBRATION, REFIT, LOCUS_CALIBRATION packaged (34.0 GPU-hours); DOSE, LOCUS, PROMPT running.
+  Preflight passed with batch-vs-single declared (candidate logits 0.62, margins 0.34; reach 0.84 at the
+  connector, 1.11 answer logits; 6.2 rows/s at batch 16).
+- Observation (known labels): readable person, car, chair, bottle (S 0.057-0.094); dog S 0.063 and bicycle
+  S 0.088 not readable at the lower bound; answers 0.976-0.998 AUROC (bicycle not answer-capable by the support
+  rule).
+- Observation (CORE): owns all six objects at rank 1 with the InternVL-typical small writes: person O +0.013,
+  dog +0.003, car +0.008, chair +0.016, bottle +0.010, bicycle +0.005 (W_qq 0.009-0.028, random p95 <= 0.009,
+  |sham| <= 0.010). The family's third size repeats 8B and 14B: specific on objects, inert on chest findings.
+- Gate decision: valid OBSERVED block; tables and leaderboard regenerated.
