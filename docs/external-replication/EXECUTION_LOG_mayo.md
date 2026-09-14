@@ -1608,3 +1608,13 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   0.208 below 0.271; Mass O -0.078, Atelectasis -0.028, Nodule -0.016.
 - Gate decision: valid OBSERVED block; 707 table cells filled. With byte-identical write vectors, the Gemma 3
   ladder on NIH reads 4B none (answer ceiling), 12B Nodule, 27B none.
+
+## 2026-09-14 gemma3-27 NIH: all seven modules packaged; T3
+
+- Run: PROMPT and LOCUS landed; block COMPLETE with all seven modules, 129.1 GPU-hours (the most expensive
+  block of the campaign).
+- Observation (T3): signed dose range +0.470 [+0.429, +0.520]; refit SD 0.019; connector median O -0.025;
+  label gap -1.22 [-1.96, -0.29]; Effusion wording -0.003 (null), mapping +0.050; Mass wording -0.037,
+  mapping -0.118 [-0.137, -0.098].
+- Gate decision: valid OBSERVED block; gemma3-27 complete on NIH (COCO and CheXpert in the 2-GPU lane).
+  715 table cells filled.
