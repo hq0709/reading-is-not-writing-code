@@ -1527,3 +1527,13 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   Cardiomegaly (0.233), Consolidation (0.209), Edema (0.132); Atelectasis 0.071; Pneumothorax 0.076.
 - Gate decision: both valid blocks with the interface disposition recorded; llama32-11 COCO closes the same
   way when its IB/WB PROMPT shards land. 667 table cells filled.
+
+## 2026-09-14 medgemma-27 NIH: all seven modules packaged; T3
+
+- Run: PROMPT and LOCUS landed; block COMPLETE with all seven modules, 118.2 GPU-hours (2-GPU lane; the most
+  expensive block of the campaign, driven by the 4096-token SigLIP block).
+- Observation (T3): signed dose range +0.360 [+0.321, +0.398]; refit SD 0.040; connector median O -0.016;
+  label gap -3.08 [-3.74, -2.29]; Effusion wording -0.052 [-0.067, -0.039], mapping +0.003 (null); Mass
+  wording -0.029, mapping +0.003 (null).
+- Gate decision: valid OBSERVED block; medgemma-27 complete on NIH (COCO and CheXpert in the 2-GPU lane).
+  675 table cells filled.
