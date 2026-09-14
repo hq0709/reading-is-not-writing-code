@@ -1564,3 +1564,9 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   +0.046, mapping -0.007 (null).
 - Gate decision: valid OBSERVED block; medgemma-27 complete on NIH and COCO (CheXpert CORE in progress).
   687 table cells filled.
+
+## 2026-09-14 Ninth batch: eight two-GPU and two three-GPU workers
+
+- Gate decision: at 04:10Z the two-GPU lane had 24 workers on 64 pending tasks with the fifth batch's budget
+  ending in ~3 h, and the three-GPU lane 4 workers on 77 tasks with two reaching their budget in ~3 h; 8 gpu2
+  (cfw9-g2-a) and 2 gpu3 (cfw9-g3-a) workers submitted, `--max-hours 10`. 0 failed.
