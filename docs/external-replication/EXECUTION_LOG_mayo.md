@@ -1684,3 +1684,19 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
 - Gate decision: figures are derived views of the delivered tables; no statistic was recomputed differently.
   Regenerate with `python -m cftransfer.figures` (delete `runs/figures/dose_curves.json` to refresh the dose
   cache after new DOSE blocks land).
+
+## 2026-09-14 gemma3-27 CheXpert statistics and COCO close; gemma3-27 complete on all three datasets
+
+- gemma3-27 CheXpert: CORE + CALIBRATION COMPLETE, 28.6 GPU-hours (preflight: declared batch deviation with one
+  sign flip, see above). Readable Effusion (S 0.252), Cardiomegaly (0.228), Consolidation (0.211), Edema
+  (0.221); Atelectasis `insufficient_support`; Pneumothorax 0.037. Answer-capable Effusion (0.61) and
+  Cardiomegaly (0.61) only. CORE: no concept owned; Edema meets the reference (W 0.068 vs random p95 0.068 and
+  sham 0.065) with O 0.000 (unresolved); Effusion W 0.226 below random p95 0.251; Consolidation O -0.029;
+  the remaining three unresolved at the noise floor.
+- gemma3-27 COCO: PROMPT and LOCUS landed; COMPLETE with all seven modules, 118.9 GPU-hours. T3: signed dose
+  range +0.379 [+0.330, +0.431]; refit SD 0.063; connector median O +0.009; label gap -23.1 [-24.3, -21.7]
+  (the largest of the campaign); person wording -0.144, mapping +0.036; bottle wording -0.034 (null),
+  mapping -0.046.
+- Gate decision: two valid OBSERVED blocks; gemma3-27 is the nineteenth checkpoint complete on all three
+  datasets. With byte-identical writes the Gemma 3 ladder on CheXpert reads 4B none, 12B Edema, 27B none.
+  739 table cells filled; leaderboard 58 blocks.
