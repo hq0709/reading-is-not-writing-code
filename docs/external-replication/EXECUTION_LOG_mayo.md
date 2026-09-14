@@ -1493,3 +1493,19 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   pooled `vis.last` features differ from both medgemma-4 and gemma3-4 on every dataset (distinct md5), so
   MedGemma-27B carries its own vision tower.
 - Gate decision: medgemma-27 accepted on all three datasets; NIH CORE is scored and being packaged.
+
+## 2026-09-13 medgemma-27 NIH CORE statistics; MedGemma sizes share the MedSigLIP tower
+
+- Correction to the preflight entry above: the medgemma-27 and medgemma-4 `vis.last` features differ only at
+  bf16 rounding (mean |diff| 1e-8 to 8e-8, a few elements one ulp apart, every row cosine 1.000000), so the
+  md5 difference is numerical, not a different tower: both MedGemma sizes carry the same MedSigLIP encoder,
+  as the Gemma 3 sizes carry the same SigLIP. The fitted concept directions are correspondingly near-identical
+  (nih min cosine 0.999764; coco min cosine 0.999489; chexpert min cosine 0.999956). Within each Gemma family, size comparisons again isolate the consumer.
+- Run: CORE, CALIBRATION, DOSE, REFIT, LOCUS_CALIBRATION packaged (43.9 GPU-hours); PROMPT and LOCUS pending.
+- Observation (known labels): readable Atelectasis (S 0.138), Cardiomegaly (0.197), Mass (0.168); Effusion
+  0.107 and Pneumothorax 0.109 just under the margin; Nodule 0.016 (the same probe as medgemma-4 up to
+  rounding). Answer-capable on all six (AUROC 0.66-0.87).
+- Observation (CORE): no concept meets the reference. Cardiomegaly writes 0.645 but its random p95 is 0.646
+  and sham 0.583 (O +0.002); Atelectasis O -0.446, Nodule -0.203, Mass -0.132, Effusion -0.064 anti-owned;
+  Pneumothorax unresolved. As for the 4B MedGemma on NIH, writes move the answer but not specifically.
+- Gate decision: valid OBSERVED block; 666 table cells filled.
