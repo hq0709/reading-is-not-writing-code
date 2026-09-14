@@ -1670,3 +1670,17 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   Mass) stand with a clean dose response.
 - Gate decision: valid OBSERVED block; q25-72 complete on NIH. 727 table cells filled; leaderboard
   regenerated (57 blocks).
+
+## 2026-09-14 Figure pack from the packaged statistics
+
+- Run: `cftransfer.figures` (new) draws ten figures into `runs/figures/` (PNG + SVG) from summary.json,
+  run.json, leaderboard.csv and the DOSE/CORE outcomes: F1 leaderboard heatmap, F2 readability-vs-ownership
+  scatter over every concept cell, F3 Effusion ownership with intervals across all chest blocks, F4 the
+  shared-tower comparison (Gemma 3 4/12/27B, MedGemma 4/27B), F5 the reference family (119 random writes,
+  sham, concept write) for four blocks, F6 dose-response curves (DOSE alphas plus the CORE alpha, baseline
+  taken from CORE because the DOSE module reuses it), F7 size ladders, F8 capability fractions per dataset,
+  F9 T3 controls per block, F10 prompt-template contrasts. Each figure was inspected; the dose figure was
+  empty on the first pass (no baseline rows in DOSE.parquet) and is correct after taking the CORE baseline.
+- Gate decision: figures are derived views of the delivered tables; no statistic was recomputed differently.
+  Regenerate with `python -m cftransfer.figures` (delete `runs/figures/dose_curves.json` to refresh the dose
+  cache after new DOSE blocks land).
