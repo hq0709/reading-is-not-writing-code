@@ -1570,3 +1570,15 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
 - Gate decision: at 04:10Z the two-GPU lane had 24 workers on 64 pending tasks with the fifth batch's budget
   ending in ~3 h, and the three-GPU lane 4 workers on 77 tasks with two reaching their budget in ~3 h; 8 gpu2
   (cfw9-g2-a) and 2 gpu3 (cfw9-g3-a) workers submitted, `--max-hours 10`. 0 failed.
+
+## 2026-09-14 medgemma-27 CheXpert statistics; medgemma-27 complete on all three datasets
+
+- Run: CORE + CALIBRATION COMPLETE, 33.2 GPU-hours (preflight passed with no deviations).
+- Observation (known labels): readable Effusion (S 0.257), Cardiomegaly (0.271), Consolidation (0.256), Edema
+  (0.184); Atelectasis 0.259 `insufficient_support`; Pneumothorax 0.007. Answer-capable on five (AUROC
+  0.69-0.96).
+- Observation (CORE): no concept meets the reference. Cardiomegaly writes 0.382 against a random p95 of 0.390
+  and sham 0.368 (O +0.033, rank 12); Effusion W 0.095 above its random p95 but below sham 0.142 (O -0.007);
+  Edema O -0.283 and Pneumothorax O -0.065 anti-owned; Atelectasis and Consolidation unresolved.
+- Gate decision: valid OBSERVED block; medgemma-27 is the eighteenth checkpoint complete on all three
+  datasets. 691 table cells filled.
