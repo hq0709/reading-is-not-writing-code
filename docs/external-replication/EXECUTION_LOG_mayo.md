@@ -1627,3 +1627,13 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
 - Gate decision: the 8 still-pending two-GPU workers (cfw9-g2-a) were cancelled and 4 more three-GPU workers
   (cfw10-g3-a) submitted, so the GPUs freed as the two-GPU lane drains go to 3-GPU jobs. Running workers are
   untouched. Queue 115 pending / 26 running / 861 done / 0 failed.
+
+## 2026-09-14 gemma3-27 COCO CORE statistics
+
+- Run: CORE, CALIBRATION, DOSE, REFIT, LOCUS_CALIBRATION packaged (51.9 GPU-hours); PROMPT and LOCUS pending.
+- Observation (known labels): probe rows equal the 4B/12B (readable five; bicycle `insufficient_support`);
+  answers 0.93-1.00.
+- Observation (CORE): all six objects owned at rank 1 with the identical write vectors: person O +0.235,
+  dog +0.363, car +0.091, chair +0.284, bottle +0.148, bicycle +0.751; random p95 0.02-0.19, |sham| <= 0.13.
+- Gate decision: valid OBSERVED block; 719 table cells filled. The Gemma 3 ladder on COCO with one write:
+  4B 5/6, 12B 6/6, 27B 6/6.
