@@ -1597,3 +1597,14 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   2-GPU placement (mean |diff| 5e-7, every row cosine 1.000000; fitted direction cosines >= 0.9987), so all
   three Gemma 3 sizes read the same representation and receive the same write.
 - Gate decision: gemma3-27 accepted on all three datasets; NIH CORE is scored and being packaged.
+
+## 2026-09-14 gemma3-27 NIH CORE statistics
+
+- Run: CORE, CALIBRATION, DOSE, REFIT, LOCUS_CALIBRATION packaged (55.5 GPU-hours); PROMPT and LOCUS pending.
+- Observation (known labels): the probe rows equal gemma3-4/12's up to rounding (readable Atelectasis 0.110,
+  Nodule 0.141); answer AUROC 0.58-0.65 (answer-capable Atelectasis, Mass, Nodule at the margin).
+- Observation (CORE): no concept meets the reference with positive ownership. Cardiomegaly W 0.045 equals its
+  random p95 and sham (O +0.002, unresolved); Pneumothorax writes 0.375 below its random p95 0.397; Effusion
+  0.208 below 0.271; Mass O -0.078, Atelectasis -0.028, Nodule -0.016.
+- Gate decision: valid OBSERVED block; 707 table cells filled. With byte-identical write vectors, the Gemma 3
+  ladder on NIH reads 4B none (answer ceiling), 12B Nodule, 27B none.
