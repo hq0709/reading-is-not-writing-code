@@ -1515,3 +1515,15 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
 - Gate decision: 8 gpu2 workers (cfw8-g2-a, `--max-hours 10`) submitted at 00:05Z ahead of the fourth batch's
   wall clock (~01:10Z); the two-GPU lane then keeps 24+ workers on its 96 pending tasks. Queue 183 pending /
   37 running / 782 done / 0 failed; 42 requeue events campaign-wide, all recovered.
+
+## 2026-09-14 llama32-11 NIH closed; CheXpert packaged (probe calibration only)
+
+- llama32-11 NIH: the IB/WB PROMPT shards landed; block COMPLETE with CALIBRATION and PROMPT complete and
+  CORE, DOSE, REFIT, LOCUS, LOCUS_CALIBRATION as `ineligible_modules` (22.1 GPU-hours). The PROMPT contrasts
+  are undefined without a CORE reference, so the IB/WB outcome rows are delivered in the package without a
+  T3 row.
+- llama32-11 CheXpert: CORE INELIGIBLE and the CALIBRATION module's answer rows (IY template) INELIGIBLE, so
+  the block closes COMPLETE with the template-free probe calibration only: readable Effusion (S 0.256),
+  Cardiomegaly (0.233), Consolidation (0.209), Edema (0.132); Atelectasis 0.071; Pneumothorax 0.076.
+- Gate decision: both valid blocks with the interface disposition recorded; llama32-11 COCO closes the same
+  way when its IB/WB PROMPT shards land. 667 table cells filled.
