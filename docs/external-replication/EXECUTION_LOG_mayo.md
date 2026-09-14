@@ -1649,3 +1649,13 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   DEFERRED (held, resumable by moving the files back to `pending/` and submitting 3-GPU workers). The user
   also asked for the tests to be organised into a complete evaluation method: a leaderboard generator and a
   method document follow.
+
+## 2026-09-14 Evaluation method consolidated: leaderboard generator and method document
+
+- Run: `cftransfer.leaderboard` (new) grades every packaged block with the protocol's own rules (readable:
+  selectivity lower bound > 0; answer-capable: clean-answer AUROC lower bound > 0.5; owned: steering reference
+  and max-T `fixed_family_advantage`) and writes `runs/leaderboard.{csv,md}`; 57 blocks graded, unit-tested
+  (15/15 pass). `docs/external-replication/EVALUATION_METHOD.md` (new) states the method end to end: loci,
+  procedure, preflight gate, decision rules, controls, outputs, and how to add a checkpoint.
+- Gate decision: the leaderboard is regenerated with the tables whenever a block is packaged; the campaign
+  tables are unchanged.
