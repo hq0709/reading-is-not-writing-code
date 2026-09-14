@@ -1775,3 +1775,29 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   (the killed runners had not written a shard).
 - Gate decision: login-node workers are launched only through jobwrap and only on the current worker code; the
   old workers are retired when their current task ends.
+
+## 2026-09-14 Scheduler saturation; H100 single-GPU workers added
+
+- Run: at 13:50Z Slurm estimated the start of all 36 queued A100 workers as 2026-09-17 (partition held by
+  long jobs of other users; 48 pending jobs, 74/76 GPUs allocated). Eight single-GPU workers were submitted to
+  gen-h100 (cfw15-g1-h; estimated start 2026-09-15 09:22 local); the four 2-GPU H100 workers were cancelled
+  (estimated 2026-09-22). Running capacity: 3 A100 2-GPU Slurm workers (cfw8) plus the login node (one 2-GPU
+  worker on iv35-38, two single-GPU workers on llama32-11).
+- Gate decision: H100 shards are acceptable: every contrast is within-row and within-shard, batch composition
+  is fixed per question, and the runner records gpu_models per shard, so hardware is traceable in run.json.
+
+## 2026-09-14 iv35-38 NIH CORE statistics
+
+- Run: CORE, CALIBRATION, DOSE, REFIT, LOCUS_CALIBRATION packaged (72.4 GPU-hours on the 2-GPU lane, the
+  last CORE shard on the login node); PROMPT and LOCUS pending. Preflight passed with batch-vs-single declared
+  (candidate logits 0.39, margins 0.064, sign agreement; fp32-vs-model 0.056; reach 0.79 at the connector,
+  1.35 answer logits; 6.1 rows/s at batch 16 on 2 x A100-80GB).
+- Observation (known labels): readable five (Effusion S 0.143, Atelectasis 0.106, Pneumothorax 0.158,
+  Cardiomegaly 0.115, Mass 0.135; Nodule -0.061 not readable); clean answers AUROC 0.67-0.87, all six above
+  chance.
+- Observation (CORE): the InternVL pattern at 38B: writes within 0.03 of zero. Effusion W_qq +0.031, rank 3,
+  meets the steering reference, O +0.002 [+0.000, +0.005] against Mass (+0.029) -> unresolved; Mass W +0.023,
+  O +0.016 against Atelectasis, rank 13, reference not met -> fixed_family_advantage without ownership;
+  Atelectasis, Pneumothorax, Cardiomegaly stronger competitor (O -0.018, -0.003, -0.030); Nodule unresolved.
+  Owns nothing on NIH, as at 8B and 14B.
+- Gate decision: valid OBSERVED block; 755 table cells filled, leaderboard 59 blocks. Watcher re-armed.
