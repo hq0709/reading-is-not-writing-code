@@ -1555,3 +1555,12 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
 - Gate decision: llama32-11 is the seventeenth checkpoint complete on all three datasets, with the interface
   disposition (yes/no and A-mapped templates INELIGIBLE by check E) recorded in every coverage table.
   679 table cells filled.
+
+## 2026-09-14 medgemma-27 COCO: all seven modules packaged; T3
+
+- Run: PROMPT and LOCUS landed; block COMPLETE with all seven modules, 74.0 GPU-hours.
+- Observation (T3): signed dose range +0.246 [+0.227, +0.287]; refit SD 0.048; connector median O -0.002;
+  label gap -4.89 [-5.61, -4.22]; person wording -0.122 [-0.146, -0.096], mapping -0.051; bottle wording
+  +0.046, mapping -0.007 (null).
+- Gate decision: valid OBSERVED block; medgemma-27 complete on NIH and COCO (CheXpert CORE in progress).
+  687 table cells filled.
