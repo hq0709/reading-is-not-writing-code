@@ -1582,3 +1582,18 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   Edema O -0.283 and Pneumothorax O -0.065 anti-owned; Atelectasis and Consolidation unresolved.
 - Gate decision: valid OBSERVED block; medgemma-27 is the eighteenth checkpoint complete on all three
   datasets. 691 table cells filled.
+
+## 2026-09-14 gemma3-27 preflight on NIH, COCO and CheXpert; shared tower confirmed for the third size
+
+- Observation: checks A-C, E and G pass on all three datasets and both loci (determinism 0, alpha-0 0, reach
+  20.6-23.6 at the consumer / 6.3-15.6 answer logits, nothing outside consumed tokens, fp32-vs-model
+  0.10-0.12, all six templates eligible; 6.5-7.8 rows/s on the 2-GPU lane). Batch-vs-single is 1.09 (NIH),
+  0.67 (COCO) and 0.81 (CheXpert), replicated in D2, recorded as declared deviations; on CheXpert one
+  preflight example also flips its margin sign between batch and single (margin diff 0.59), so that file's
+  `pass` flag is false while every other check passes. The fixed-composition runner scores every contrast of
+  a question in one batch shape, so the declared deviation affects no reported contrast; the block proceeds
+  as OBSERVED with the deviation carried into run.json.
+- Shared tower: gemma3-27's `vis.last` features equal gemma3-4's and gemma3-12's up to bf16 rounding on the
+  2-GPU placement (mean |diff| 5e-7, every row cosine 1.000000; fitted direction cosines >= 0.9987), so all
+  three Gemma 3 sizes read the same representation and receive the same write.
+- Gate decision: gemma3-27 accepted on all three datasets; NIH CORE is scored and being packaged.
