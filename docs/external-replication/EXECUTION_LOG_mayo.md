@@ -1547,3 +1547,11 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   rank 1), bottle (W 0.371, O +0.208, rank 1), car (W 0.181, O +0.081, rank 2); dog (W 0.038, O -0.044) and
   bicycle (W -0.008, O -0.042) not owned. Random p95 0.07-0.20, |sham| up to 0.16.
 - Gate decision: valid OBSERVED block; 679 table cells filled.
+
+## 2026-09-14 llama32-11 COCO closed; llama32-11 complete on all three datasets
+
+- Run: the IB/WB PROMPT shards landed; block COMPLETE with CALIBRATION and PROMPT complete and the IY-based
+  modules as `ineligible_modules` (22.3 GPU-hours).
+- Gate decision: llama32-11 is the seventeenth checkpoint complete on all three datasets, with the interface
+  disposition (yes/no and A-mapped templates INELIGIBLE by check E) recorded in every coverage table.
+  679 table cells filled.
