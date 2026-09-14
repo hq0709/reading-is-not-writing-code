@@ -1509,3 +1509,9 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   and sham 0.583 (O +0.002); Atelectasis O -0.446, Nodule -0.203, Mass -0.132, Effusion -0.064 anti-owned;
   Pneumothorax unresolved. As for the 4B MedGemma on NIH, writes move the answer but not specifically.
 - Gate decision: valid OBSERVED block; 666 table cells filled.
+
+## 2026-09-14 Eighth batch: eight more two-GPU workers
+
+- Gate decision: 8 gpu2 workers (cfw8-g2-a, `--max-hours 10`) submitted at 00:05Z ahead of the fourth batch's
+  wall clock (~01:10Z); the two-GPU lane then keeps 24+ workers on its 96 pending tasks. Queue 183 pending /
+  37 running / 782 done / 0 failed; 42 requeue events campaign-wide, all recovered.
