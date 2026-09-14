@@ -1618,3 +1618,12 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   mapping -0.118 [-0.137, -0.098].
 - Gate decision: valid OBSERVED block; gemma3-27 complete on NIH (COCO and CheXpert in the 2-GPU lane).
   715 table cells filled.
+
+## 2026-09-14 Three-GPU lane prioritised
+
+- Run: at 07:20Z the two-GPU lane had 40 tasks left for 24 running workers, while the three-GPU lane
+  (q25-72 COCO/CheXpert and llama32-90, 75 tasks) had 2 running workers and 6 unplaced 3-GPU jobs behind
+  pending 2-GPU jobs in the scheduler queue.
+- Gate decision: the 8 still-pending two-GPU workers (cfw9-g2-a) were cancelled and 4 more three-GPU workers
+  (cfw10-g3-a) submitted, so the GPUs freed as the two-GPU lane drains go to 3-GPU jobs. Running workers are
+  untouched. Queue 115 pending / 26 running / 861 done / 0 failed.
