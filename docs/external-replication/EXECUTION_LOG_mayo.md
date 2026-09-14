@@ -1537,3 +1537,13 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   wording -0.029, mapping +0.003 (null).
 - Gate decision: valid OBSERVED block; medgemma-27 complete on NIH (COCO and CheXpert in the 2-GPU lane).
   675 table cells filled.
+
+## 2026-09-14 medgemma-27 COCO CORE statistics
+
+- Run: CORE, CALIBRATION, DOSE, REFIT, LOCUS_CALIBRATION packaged (31.7 GPU-hours); PROMPT and LOCUS pending.
+- Observation (known labels): readable person, car, chair, bottle (S 0.05-0.09 over a control mean of 0.90;
+  dog 0.054 below the margin; bicycle `insufficient_support`); answers 0.94-1.00.
+- Observation (CORE): four objects owned: person (W 0.471, O +0.335, rank 1), chair (W 0.487, O +0.177,
+  rank 1), bottle (W 0.371, O +0.208, rank 1), car (W 0.181, O +0.081, rank 2); dog (W 0.038, O -0.044) and
+  bicycle (W -0.008, O -0.042) not owned. Random p95 0.07-0.20, |sham| up to 0.16.
+- Gate decision: valid OBSERVED block; 679 table cells filled.
