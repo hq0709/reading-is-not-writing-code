@@ -1637,3 +1637,15 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   dog +0.363, car +0.091, chair +0.284, bottle +0.148, bicycle +0.751; random p95 0.02-0.19, |sham| <= 0.13.
 - Gate decision: valid OBSERVED block; 719 table cells filled. The Gemma 3 ladder on COCO with one write:
   4B 5/6, 12B 6/6, 27B 6/6.
+
+## 2026-09-14 Checkpoints above 40B parked; small models first (user decision)
+
+- Run: at 08:50Z the user asked to finish the smaller checkpoints first and defer the >40B ones. The 75 pending
+  q25-72 (COCO, CheXpert) and llama32-90 (all datasets) tasks were moved to `queue/hold/` (not deleted; the
+  task files and priorities are intact), the ten pending 3-GPU Slurm jobs cancelled, and 8 more two-GPU
+  workers submitted for the remaining iv35-38 and gemma3-27 blocks. The two running q25-72 NIH PROMPT shards
+  finish their block. The two running 3-GPU workers exit when their lane is empty.
+- Gate decision: q25-72 NIH stays in the tables as delivered; q25-72 COCO/CheXpert and llama32-90 are
+  DEFERRED (held, resumable by moving the files back to `pending/` and submitting 3-GPU workers). The user
+  also asked for the tests to be organised into a complete evaluation method: a leaderboard generator and a
+  method document follow.
