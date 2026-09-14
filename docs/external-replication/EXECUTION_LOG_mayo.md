@@ -1700,3 +1700,13 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
 - Gate decision: two valid OBSERVED blocks; gemma3-27 is the nineteenth checkpoint complete on all three
   datasets. With byte-identical writes the Gemma 3 ladder on CheXpert reads 4B none, 12B Edema, 27B none.
   739 table cells filled; leaderboard 58 blocks.
+
+## 2026-09-14 Figure pack restyled: MedVIGIL house style, Morandi palette
+
+- Run: `cftransfer/figstyle.py` (new) reproduces the MedVIGIL journal house style (serif body face, 8.5 pt base,
+  full frame with light grid, boxed legends, (a)/(b) panel titles, 7.2 in / 3.5 in column widths, PDF with
+  Type 42 fonts + 300 dpi PNG + SVG) with a Morandi palette (rose / oat / slate for NIH / CheXpert / COCO;
+  sage, lilac, mustard, terracotta, haze for series; warm greys for references). `figures.py` rebuilt on it;
+  data logic unchanged; every figure re-inspected. Tests 15/15.
+- Gate decision: the paper figures are the PDFs in `runs/figures/`; copied into the paper repository as
+  `figures/cf_F*.pdf`.
