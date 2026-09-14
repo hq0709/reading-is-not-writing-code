@@ -84,6 +84,9 @@ With 2,000 bootstrap draws over test rows (seeds 2026090601-03):
 - Leaderboard: `runs/leaderboard.{csv,md}` (`python -m cftransfer.leaderboard`), one row per block with
   readable / answer-capable / owned counts and the owned concepts; blocks whose IY template is INELIGIBLE show
   the disposition instead of an ownership count.
+- Figures: `runs/figures/F1..F10` (`python -m cftransfer.figures`): leaderboard heatmap, readability-vs-
+  ownership scatter, Effusion across blocks, shared-tower comparison, reference family, dose response,
+  size ladders, capability fractions, T3 controls, prompt dependence.
 - Log: `docs/external-replication/EXECUTION_LOG_mayo.md` (run, observation, gate decision for every step).
 
 ## 6. Adding a checkpoint
