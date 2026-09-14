@@ -231,11 +231,12 @@ def dose_curves(blocks, cache=FIG / "dose_curves.json") -> dict:
         fd, fc = RUN_ROOT / mk / ds / "outcomes" / "DOSE.parquet", RUN_ROOT / mk / ds / "outcomes" / "CORE.parquet"
         if not fd.exists() or not fc.exists():
             continue
+        tpl = b["summary"].get("primary_template") or b["run"].get("primary_template") or "IY"    # block's primary template
         core = pq.read_table(fc, columns=cols).to_pandas()
-        core = core[(core.sample_status == "OK") & (core.template_id == "IY") & (core.fit_seed == 0)]
+        core = core[(core.sample_status == "OK") & (core.template_id == tpl) & (core.fit_seed == 0)]
         base = core[core.direction_kind == "baseline"].set_index(["row_id", "concept"])["p_present"]
         dose = pq.read_table(fd, columns=cols).to_pandas()
-        dose = dose[(dose.sample_status == "OK") & (dose.template_id == "IY") & (dose.fit_seed == 0)]
+        dose = dose[(dose.sample_status == "OK") & (dose.template_id == tpl) & (dose.fit_seed == 0)]
         df = pd.concat([dose[dose.direction_kind == "concept"], core[core.direction_kind == "concept"]], ignore_index=True)
         curves = {}
         for a, g in df.groupby("alpha"):
@@ -345,9 +346,14 @@ def f9_controls(blocks):
     save(fig, "F9_controls")
 
 
+def _has_prompt_contrast(s: dict) -> bool:
+    """A block contributes to F10 when at least one wording/mapping contrast has a number (INELIGIBLE cells carry None)."""
+    return any(isinstance(v, dict) and v.get("estimate") is not None and ("|wording" in k or "|mapping" in k)
+               for k, v in s.get("t3", {}).items())
+
+
 def f10_prompt(blocks):
-    keys = sorted([k for k in blocks if any(kk.endswith("wording_IY_minus_WY_O") for kk in blocks[k]["summary"].get("t3", {}))],
-                  key=lambda k: (DATASETS.index(k[1]), k[0]))
+    keys = sorted([k for k in blocks if _has_prompt_contrast(blocks[k]["summary"])], key=lambda k: (DATASETS.index(k[1]), k[0]))
     fig, ax = plt.subplots(figsize=(H.SINGLE, 0.14 * len(keys) + 0.8))
     ax.grid(False, axis="y")
     for i, k in enumerate(keys):

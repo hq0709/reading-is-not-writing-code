@@ -18,6 +18,20 @@ def test_grade_block_rules():
                                   {"IY": {"eligible": True}, "IB": {"eligible": False}})
     assert (row["readable"], row["answer_capable"], row["owned"]) == (2, 1, 1)
     assert row["owned_concepts"] == "A" and row["eligible_templates"] == "IY"
+    assert row["primary_template"] == "IY"
+
+
+def test_primary_template_column():
+    ib = leaderboard.grade_block({**_summary({"A"}, {"A"}, {"A"}), "primary_template": "IB"},
+                                 {"status": "COMPLETE", "completed_modules": ["CORE"]}, None)
+    assert ib["primary_template"] == "IB" and ib["owned"] == 1
+    iy = leaderboard.grade_block(_summary({"A"}, {"A"}, {"A"}), {"status": "COMPLETE", "primary_template": "IY"}, None)
+    rows = [{"model_key": "llama32-11", "dataset_id": "nih", **ib}, {"model_key": "q25-7", "dataset_id": "nih", **iy}]
+    md = leaderboard.render_markdown(rows)
+    assert md.splitlines()[0].endswith("| owned clinical concepts | primary template |")
+    assert any(l.startswith("| llama32-11 |") and l.endswith("| nih: IB |") for l in md.splitlines())
+    assert any(l.startswith("| q25-7 |") and l.endswith("|  |") for l in md.splitlines())
+    assert "primary template" not in leaderboard.render_markdown(rows[1:])      # column only when some block is not IY
 
 
 def test_ineligible_core_block(tmp_path):

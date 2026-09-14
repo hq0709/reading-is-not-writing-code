@@ -4,13 +4,15 @@ capabilities the protocol measures, computed from the packaged statistics with t
   readable        known-label probe AUROC exceeds the type->random-label controls: one-sided 95% lower bound of the
                   selectivity S = AUROC_real - mean(AUROC_control) is > 0, with >= 10 positives and negatives and
                   >= 1900 valid bootstrap draws (analysis.calibration).
-  answer-capable  the model's clean yes/no answer (IY template) separates positives from negatives: one-sided 95%
+  answer-capable  the model's clean answer on the block's primary template (IY, or IB when IY failed the image-free
+                  preflight; summary.json "primary_template") separates positives from negatives: one-sided 95%
                   lower bound of the answer AUROC > 0.5 (analysis.calibration).
   owned           the concept write is specific: W_qq > 0, above the 95th percentile of the 119 random-direction
                   writes and above |sham| (steering reference), and every max-T simultaneous lower bound of
                   W_qq - W_qd over the five competitors is > 0 (verdict "fixed_family_advantage"; analysis.core).
 
-Blocks whose templates are INELIGIBLE by preflight check E are reported with the disposition instead of a count.
+Blocks whose templates are INELIGIBLE by preflight check E are reported with the disposition instead of a count; a
+block scored on a non-IY primary template is graded on that template and the template is shown in an extra column.
 Outputs runs/leaderboard.csv and runs/leaderboard.md.
 """
 from __future__ import annotations
@@ -25,7 +27,7 @@ from .runpaths import RUN_ROOT as RUNS_ROOT
 DATASETS = ("nih", "chexpert", "coco")
 COLUMNS = ["model_key", "dataset_id", "status", "modules_complete", "modules_ineligible", "n_concepts",
            "readable", "answer_capable", "owned", "owned_concepts", "readable_concepts", "capable_concepts",
-           "eligible_templates", "gpu_hours"]
+           "eligible_templates", "primary_template", "gpu_hours"]
 
 
 def grade_block(summary: dict, run: dict | None, eligibility: dict | None) -> dict:
@@ -38,6 +40,7 @@ def grade_block(summary: dict, run: dict | None, eligibility: dict | None) -> di
                    if v.get("steering_reference") and v.get("verdict") == "fixed_family_advantage")
     elig = "" if not eligibility else "".join(t for t, v in eligibility.items() if v.get("eligible"))
     ineligible = (run or {}).get("ineligible_modules") or []
+    primary = summary.get("primary_template") or (run or {}).get("primary_template") or "IY"
     row = {
         "status": (run or {}).get("status", "?"),
         "modules_complete": "+".join((run or {}).get("completed_modules") or []),
@@ -46,7 +49,7 @@ def grade_block(summary: dict, run: dict | None, eligibility: dict | None) -> di
         "readable": len(readable), "answer_capable": len(capable) if any("answer_capable" in v for v in cal.values()) else None,
         "owned": None if "CORE" in ineligible else len(owned),
         "owned_concepts": ", ".join(owned), "readable_concepts": ", ".join(readable), "capable_concepts": ", ".join(capable),
-        "eligible_templates": elig, "gpu_hours": (run or {}).get("gpu_hours"),
+        "eligible_templates": elig, "primary_template": primary, "gpu_hours": (run or {}).get("gpu_hours"),
     }
     return row
 
@@ -78,21 +81,30 @@ def _cell(r: dict) -> str:
 def render_markdown(rows: list[dict]) -> str:
     by = {(r["model_key"], r["dataset_id"]): r for r in rows}
     models = [m for m in MODELS if any((m, ds) in by for ds in DATASETS)]
-    out = ["| checkpoint | NIH read/answer/own | CheXpert read/answer/own | COCO read/answer/own | owned clinical concepts |",
-           "|---|---|---|---|---|"]
+    # the primary-template column appears only when some block was scored on a template other than IY
+    show_tpl = any(r.get("primary_template", "IY") != "IY" for r in rows)
+    out = ["| checkpoint | NIH read/answer/own | CheXpert read/answer/own | COCO read/answer/own | owned clinical concepts |"
+           + (" primary template |" if show_tpl else ""),
+           "|---|---|---|---|---|" + ("---|" if show_tpl else "")]
     for m in models:
-        cells, owned = [], []
+        cells, owned, tpl = [], [], []
         for ds in DATASETS:
             r = by.get((m, ds))
             cells.append(_cell(r) if r else "-")
             if r and ds != "coco" and r["owned_concepts"]:
                 owned.append(f"{ds}: {r['owned_concepts']}")
-        out.append(f"| {m} | {cells[0]} | {cells[1]} | {cells[2]} | {'; '.join(owned)} |")
+            if r and r.get("primary_template", "IY") != "IY":
+                tpl.append(f"{ds}: {r['primary_template']}")
+        out.append(f"| {m} | {cells[0]} | {cells[1]} | {cells[2]} | {'; '.join(owned)} |"
+                   + (f" {'; '.join(tpl)} |" if show_tpl else ""))
     out.append("")
     out.append(f"Cells are counts over the {len(CONCEPTS['nih'])} concepts of a dataset: readable at the consumed visual block / "
                "answer-capable on the clean yes/no question / owned by the concept write (protocol rules in "
                "`cftransfer.leaderboard`). INELIGIBLE marks blocks whose yes/no template fails the image-free "
-               "semantic-mapping preflight, where ownership is not defined.")
+               "semantic-mapping preflight, where ownership is not defined."
+               + (" The primary-template column lists blocks whose IY template failed that preflight and which were "
+                  "scored on the eligible B-positive A/B template instead (IB); answer capability and ownership "
+                  "there refer to that template." if show_tpl else ""))
     return "\n".join(out)
 
 

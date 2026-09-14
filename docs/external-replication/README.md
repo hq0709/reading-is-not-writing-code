@@ -37,7 +37,7 @@ NIH 与 CheXpert 检验胸片数据来源迁移；COCO 检验通用物体概念�
 
 ### 表 3：结论对测量选择的稳定性
 
-22 行，NIH/COCO 两个面板；各自显示：措辞变化的配对优势差、A/B 映射变化、负/正剂量曲线、3 次训练样本重拟合的方向/结论一致性、视觉连接器位置的结果、阳性减阴性位移差。分别展示 Effusion/Mass 和 person/bottle 的 prompt 结果；完整六概念剂量与位置结果可在附录展开。
+22 行，NIH/CheXpert/COCO 三个面板；各自显示：措辞变化的配对优势差、A/B 映射变化、负/正剂量曲线、3 次训练样本重拟合的方向/结论一致性、视觉连接器位置的结果、阳性减阴性位移差。分别展示 Effusion/Mass、Effusion/Edema 和 person/bottle 的 prompt 结果；完整六概念剂量与位置结果可在附录展开。
 
 这张表回答：观察是稳定的概念竞争现象，还是依赖一个 prompt、一次探针拟合或一个 hook？显著/不显著翻转不等同于两个条件之间有显著差异；配对差区间必须另外计算。后续排版允许宽表或分面，不以不可读的小字塞满一页。
 
@@ -152,10 +152,10 @@ REFIT seed1/2改变的是训练独立单元的bootstrap重抽样（胸片患者�
 | CORE | 三数据集各6概念，IY，alpha+.25；baseline+6概念+119random+问题sham=127，600图 | 每数据集457,200 |
 | CALIBRATION | NIH/COCO：6概念IY，加两个指定概念另5模板；400图clean | 每数据集6,400 |
 | CALIBRATION | CheXpert：6概念IY；400图clean | 2,400 |
-| PROMPT | NIH Effusion/Mass；COCO person/bottle；IY之外5模板，各完整127配置，600图 | 每数据集762,000 |
-| DOSE | NIH/COCO全部6概念，前200test图；-.5/-.25/-.1/+.1/+.5；6概念+前20random+sham | 每数据集162,000 |
-| REFIT | NIH/COCO全部6概念，seed1/2各6概念方向+问题sham，+.25，600图 | 每数据集50,400 |
-| LOCUS | NIH/COCO第二位置完整CORE，另400图×6概念clean校准 | 每数据集459,600 |
+| PROMPT | NIH Effusion/Mass；CheXpert Effusion/Edema；COCO person/bottle；IY之外5模板，各完整127配置，600图 | 每数据集762,000 |
+| DOSE | 三数据集全部6概念，前200test图；-.5/-.25/-.1/+.1/+.5；6概念+前20random+sham | 每数据集162,000 |
+| REFIT | 三数据集全部6概念，seed1/2各6概念方向+问题sham，+.25，600图 | 每数据集50,400 |
+| LOCUS | 三数据集第二位置完整CORE，另400图×6概念clean校准 | 每数据集459,600 |
 
 训练/测试pooled features不包含在以上计数。正向+.25全随机主比较和其他剂量20random敏感性是不同证据规格，不能拼起来声称整个dose sweep均做过119随机校正。
 

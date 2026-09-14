@@ -23,8 +23,9 @@ from .adapters import get_adapter
 from .fit import load_fit, run_id_for
 from .hooks import LocusHook
 from .images import image_path, load_cohort, open_rgb
-from .protocol import CONCEPTS, LOCI, MODULES, PROTOCOL_ID, conditions_for, direction_kind, question_list, render_question
-from .runpaths import outcomes_dir
+from .protocol import (CONCEPTS, LOCI, MODULES, PROTOCOL_ID, conditions_for, direction_kind, primary_template, question_list,
+                       render_question)
+from .runpaths import outcomes_dir, run_dir
 from .scoring import score_logits
 
 SCHEMA = pa.schema([
@@ -95,12 +96,16 @@ def run_block(model_key: str, dataset_id: str, module: str, shard: int, n_shards
     if not todo:
         return {"rows": len(rows), "todo": 0}
 
-    ad = get_adapter(model_key, revision).load(device_map=device_map)
-    locus = ad.loci()[locus_id]
-    bank = DirectionBank(model_key, dataset_id, locus_id, spec.fit_seeds)
-    hook = LocusHook(ad.module(locus.module_path), locus_id)
-    questions = question_list(dataset_id, module)
-    elig_path = outcomes_dir(model_key, dataset_id).parent / "template_eligibility.json"
+    # Questions: the block's primary template stands in for IY (protocol.primary_template: IB when preflight check E
+    # marked IY INELIGIBLE). Templates still INELIGIBLE are dropped; a module left with no question closes as terminal
+    # before the model is loaded.
+    rd = run_dir(model_key, dataset_id)
+    primary = primary_template(rd)
+    questions = question_list(dataset_id, module, primary)
+    if primary != "IY":
+        print(f"[{model_key}/{dataset_id}/{module}] primary template {primary} (IY INELIGIBLE by preflight check E)", flush=True)
+    skipped: list[str] = []
+    elig_path = rd / "template_eligibility.json"
     if elig_path.exists():
         elig = json.loads(elig_path.read_text())
         skipped = sorted({t for _c, t in questions if not elig.get(t, {}).get("eligible", True)})
@@ -111,12 +116,17 @@ def run_block(model_key: str, dataset_id: str, module: str, shard: int, n_shards
         print(f"[{model_key}/{dataset_id}/{module}] no eligible questions; nothing to score", flush=True)
         meta = {"model_key": model_key, "dataset_id": dataset_id, "module": module, "shard": shard, "n_shards": n_shards,
                 "rows": len(rows), "scored_rows": 0, "outcomes": 0, "seconds": 0.0, "throughput_per_s": 0.0, "batch": batch,
-                "ineligible_templates": skipped, "note": "every template of this module is INELIGIBLE by preflight check E; "
+                "primary_template": primary, "ineligible_templates": skipped,
+                "note": "every template of this module is INELIGIBLE by preflight check E; "
                 "the shard is terminal with no outcomes (coverage records the disposition)",
                 "ended_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())}
         part_dir.mkdir(parents=True, exist_ok=True)
         (part_dir / f"meta-{shard_tag}-{int(time.time())}.json").write_text(json.dumps(meta, indent=1))
         return meta
+    ad = get_adapter(model_key, revision).load(device_map=device_map)
+    locus = ad.loci()[locus_id]
+    bank = DirectionBank(model_key, dataset_id, locus_id, spec.fit_seeds)
+    hook = LocusHook(ad.module(locus.module_path), locus_id)
     run_id = run_id_for(model_key, dataset_id)
     if spec.directions == "clean":
         batch = 1          # clean-only modules score one forward per (row, question); no steered composition to match
@@ -206,7 +216,7 @@ def run_block(model_key: str, dataset_id: str, module: str, shard: int, n_shards
     el = time.time() - t0
     meta = {"model_key": model_key, "dataset_id": dataset_id, "module": module, "shard": shard, "n_shards": n_shards,
             "rows": len(rows), "scored_rows": len(todo), "outcomes": n_out, "seconds": round(el, 1),
-            "throughput_per_s": round(n_out / max(el, 1e-9), 2), "batch": batch,
+            "throughput_per_s": round(n_out / max(el, 1e-9), 2), "batch": batch, "primary_template": primary,
             "batch_policy": "fixed composition per question: clean replicated baseline batch + padded steered batches",
             "peak_gpu_memory_bytes": int(torch.cuda.max_memory_allocated()), "gpu_count": torch.cuda.device_count(),
             "gpu_models": sorted({torch.cuda.get_device_name(i) for i in range(torch.cuda.device_count())}),

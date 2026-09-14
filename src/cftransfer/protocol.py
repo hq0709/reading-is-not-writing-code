@@ -20,6 +20,11 @@ TEMPLATE_ORDER = ["IY", "WY", "IA", "IB", "WA", "WB"]
 YESNO_TEMPLATES = {"IY", "WY"}
 AB_TEMPLATES = {"IA", "IB", "WA", "WB"}
 B_POSITIVE_TEMPLATES = {"IB", "WB"}          # B means present, A means absent
+# Primary template: the one yes/no-style template that CORE, CALIBRATION, DOSE, REFIT, LOCUS and LOCUS_CALIBRATION
+# score. It is IY unless the block's image-free preflight (check E) marked IY INELIGIBLE, in which case the first
+# eligible template in this order takes its place (IB: A/B mapping with B = present), so the block is scored on an
+# eligible interface instead of being closed as ineligible. Resolved per block by primary_template(run_dir).
+PRIMARY_TEMPLATE_FALLBACK = ("IY", "IB")
 
 DATASETS = ["nih", "chexpert", "coco"]
 CONCEPTS = {
@@ -33,7 +38,14 @@ FINDING_PHRASES = {
     "coco": dict(zip(PROTOCOL["dataset"]["coco_concepts"], PROTOCOL["dataset"]["coco_finding_phrases"])),
 }
 IMAGE_PHRASE = PROTOCOL["dataset"]["templates_image_phrase"]
-PROMPT_CONCEPTS = PROTOCOL["modules"]["PROMPT"]["concepts_by_dataset"]   # nih: Effusion, Mass; coco: person, bottle
+PROMPT_CONCEPTS = PROTOCOL["modules"]["PROMPT"]["concepts_by_dataset"]   # nih: Effusion, Mass; coco: person, bottle; chexpert: Effusion, Edema
+# CALIBRATION additionally scores the PROMPT concepts under the five other templates on these datasets only (README 5.4).
+# CheXpert is deliberately excluded: every CheXpert CALIBRATION block ran IY-only before PROMPT was extended to it.
+CALIBRATION_PROMPT_DATASETS = ("nih", "coco")
+# Modules added to CheXpert after the first campaign wave (CORE + CALIBRATION). A CheXpert block packaged before one of
+# them is started is judged on the modules it has: package.build counts such a module as requested only once its
+# outcomes directory exists (the runner creates it when the module starts).
+MODULES_ADDED_LATER = {"chexpert": ("PROMPT", "DOSE", "REFIT", "LOCUS", "LOCUS_CALIBRATION")}
 COCO_CATEGORY_IDS = {"person": 1, "dog": 18, "car": 3, "chair": 62, "bottle": 44, "bicycle": 2}
 
 # probe / direction constants
@@ -67,6 +79,20 @@ def render_question(dataset_id: str, concept: str, template_id: str) -> str:
     return TEMPLATES[template_id].format(
         finding=FINDING_PHRASES[dataset_id][concept], image_phrase=IMAGE_PHRASE[dataset_id]
     )
+
+
+def primary_template(run_dir: Path | str) -> str:
+    """The block's primary template: IY when it is eligible (or no template_eligibility.json exists yet), else the
+    first eligible template in PRIMARY_TEMPLATE_FALLBACK order, else IY (the runner's eligibility filter then closes
+    the module as ineligible)."""
+    path = Path(run_dir) / "template_eligibility.json"
+    if not path.exists():
+        return "IY"
+    elig = json.loads(path.read_text(encoding="utf-8"))
+    for t in PRIMARY_TEMPLATE_FALLBACK:
+        if elig.get(t, {}).get("eligible", True):
+            return t
+    return "IY"
 
 
 def direction_ids(n_random: int = N_RANDOM, sham_question: str | None = None, with_baseline: bool = True,
@@ -105,26 +131,29 @@ MODULES: dict[str, ModuleSpec] = {
     "CALIBRATION": ModuleSpec("CALIBRATION", "calibration", None, ("IY",), "all", (0.0,), "clean", (0,), "primary", None,
                               ("nih", "chexpert", "coco")),
     "PROMPT": ModuleSpec("PROMPT", "test", None, ("WY", "IA", "IB", "WA", "WB"), "prompt", (PRIMARY_ALPHA,), "core", (0,),
-                         "primary", None, ("nih", "coco")),
+                         "primary", None, ("nih", "chexpert", "coco")),
     "DOSE": ModuleSpec("DOSE", "test", DOSE_ROWS, ("IY",), "all", tuple(DOSE_ALPHAS), "dose", (0,), "primary", "CORE",
-                       ("nih", "coco")),
+                       ("nih", "chexpert", "coco")),
     "REFIT": ModuleSpec("REFIT", "test", None, ("IY",), "all", (PRIMARY_ALPHA,), "refit", tuple(REFIT_SEEDS), "primary",
-                        "CORE", ("nih", "coco")),
+                        "CORE", ("nih", "chexpert", "coco")),
     "LOCUS": ModuleSpec("LOCUS", "test", None, ("IY",), "all", (PRIMARY_ALPHA,), "core", (0,), "connector", None,
-                        ("nih", "coco")),
+                        ("nih", "chexpert", "coco")),
     "LOCUS_CALIBRATION": ModuleSpec("LOCUS_CALIBRATION", "calibration", None, ("IY",), "all", (0.0,), "clean", (0,),
-                                    "connector", None, ("nih", "coco")),
+                                    "connector", None, ("nih", "chexpert", "coco")),
 }
 
 
-def question_list(dataset_id: str, module: str) -> list[tuple[str, str]]:
-    """(concept, template_id) pairs a module scores for one dataset, in protocol order."""
+def question_list(dataset_id: str, module: str, primary: str = "IY") -> list[tuple[str, str]]:
+    """(concept, template_id) pairs a module scores for one dataset, in protocol order. `primary` is the block's
+    primary template (primary_template(run_dir)); it replaces the "IY" placeholder of the single-template modules.
+    PROMPT's five templates and CALIBRATION's extra prompt-concept templates are never substituted, so a block whose
+    primary is IB scores IB twice for the prompt concepts in CALIBRATION (deduplicated on merge)."""
     spec = MODULES[module]
     concepts = CONCEPTS[dataset_id]
     if spec.concepts_rule == "prompt":
         concepts = PROMPT_CONCEPTS[dataset_id]
-    out = [(c, t) for t in spec.templates for c in concepts]
-    if module == "CALIBRATION" and dataset_id in PROMPT_CONCEPTS:
+    out = [(c, primary if t == "IY" else t) for t in spec.templates for c in concepts]
+    if module == "CALIBRATION" and dataset_id in CALIBRATION_PROMPT_DATASETS:
         # NIH/COCO calibration also scores the two PROMPT concepts under the five other templates (README 5.4)
         out += [(c, t) for t in ("WY", "IA", "IB", "WA", "WB") for c in PROMPT_CONCEPTS[dataset_id]]
     return out

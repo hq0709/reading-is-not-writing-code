@@ -1710,3 +1710,68 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   data logic unchanged; every figure re-inspected. Tests 15/15.
 - Gate decision: the paper figures are the PDFs in `runs/figures/`; copied into the paper repository as
   `figures/cf_F*.pdf`.
+
+## 2026-09-14 Deferred checkpoints released; every table cell to be filled (user decision)
+
+- Run: at 12:55Z the user asked for the remaining tasks to be finished and every table filled. The 27 held
+  q25-72 COCO/CheXpert tasks were moved back to `pending/` and four 3-GPU workers (cfw12-g3-a, `--max-hours 10`)
+  submitted; the three llama32-90 preparation tasks were released as well, while its 45 module tasks stay held
+  until the primary-template change below is deployed (otherwise its yes/no modules would close as ineligible
+  like the 11B's). The A100 partition is saturated by other users (74 of 76 GPUs allocated); 9 two-GPU workers
+  are running on iv35-38, 8 two-GPU and 4 three-GPU workers are queued behind them. Queue 55 pending /
+  10 running / 892 done / 0 failed / 45 held.
+- Gate decision: three additions follow, in this priority order: (1) a per-block primary template so that a
+  checkpoint whose IY template fails check E is scored on its eligible B-positive template IB (Llama 3.2 11B
+  re-run; 90B first run); (2) the four remaining llama32-90 datasets/modules; (3) the five modules the protocol
+  did not schedule on CheXpert (DOSE, REFIT, LOCUS, LOCUS_CALIBRATION, PROMPT) for every checkpoint, enqueued at
+  the lowest priority so they fill in as GPUs free up. Each is logged as a protocol amendment when deployed.
+
+## 2026-09-14 Correction: checkpoints above 40B cancelled (user decision)
+
+- Run: at 13:05Z the user restated that every checkpoint above 40B is cancelled, not deferred. The four 3-GPU
+  workers (cfw12-g3-a, still pending) were cancelled before claiming anything, and all 75 q25-72 COCO/CheXpert
+  and llama32-90 tasks (including the three preparation tasks released minutes earlier; none had started) were
+  moved to `queue/cancelled/`. No outcome of these blocks exists; q25-72 NIH stays as delivered.
+- Gate decision: the grid is 21 checkpoints with Qwen2.5-VL-72B on NIH only; the campaign tables and the paper
+  report the 72B COCO/CheXpert blocks and the 90B as not run. The remaining additions are limited to
+  checkpoints at or below 40B: the Llama 3.2 11B primary-template re-run, InternVL3.5-38B completion, and the
+  CheXpert module extension.
+
+## 2026-09-14 Protocol amendment A1: per-block primary template (Llama 3.2 11B re-run)
+
+- Run: `protocol.primary_template(run_dir)` resolves the template the single-template modules (CORE, CALIBRATION,
+  DOSE, REFIT, LOCUS, LOCUS_CALIBRATION) score: IY when eligible, else the first eligible template in
+  (IY, IB). The runner substitutes it before the eligibility filter and closes the module as ineligible only if
+  the substitute is ineligible too; the packager, analysis, leaderboard, tables and figures read the block's
+  primary template from template_eligibility.json / summary.json instead of assuming IY; the PROMPT contrasts
+  (IY-WY wording, IA-IB mapping) are reported as INELIGIBLE cells with a reason when the primary is not IY or a
+  template failed check E. Tests 24/24. Blocks whose primary is IY are unaffected (recomputation check logged
+  below).
+- Gate decision: llama32-11's terminal ineligible outputs were set aside as `outcomes/<MODULE>.ineligible-IY`
+  (nothing deleted) and its CALIBRATION, CORE, LOCUS_CALIBRATION, DOSE, REFIT, LOCUS re-enqueued on all three
+  datasets (39 tasks, prefix 2, single-GPU lane); PROMPT (WY/IA/IB/WA/WB) stays as delivered. The leaderboard
+  shows the primary template in its own column for such blocks.
+
+## 2026-09-14 Protocol amendment A2: CheXpert gets the five remaining modules
+
+- Run: DOSE, REFIT, LOCUS, LOCUS_CALIBRATION and PROMPT now list CheXpert; PROMPT concepts on CheXpert are
+  Effusion and Edema (Effusion shared with NIH; Edema the most-owned CheXpert concept). CheXpert CALIBRATION keeps
+  its IY-only question list (`CALIBRATION_PROMPT_DATASETS = ("nih", "coco")`), so the 19 packaged CheXpert blocks
+  keep their expected rows; a module added later counts towards COMPLETE only once its outcomes directory exists
+  (`MODULES_ADDED_LATER`), so no packaged block is downgraded. protocol.json, README and main-tables.csv (T3 rows
+  for CheXpert) updated. 300 tasks enqueued (prefix 3, after every current task) for the 20 checkpoints at or
+  below 40B including iv35-38 and llama32-11; 12 more single-GPU workers submitted (24 queued in total) and the
+  two login-node 2-GPU workers keep serving the 2-GPU lane. Queue 365 pending / 9 running / 0 failed.
+
+## 2026-09-14 Login-node workers: four A100-80GB in use; stale single-GPU workers reconciled
+
+- Run: the login node's four GPUs (A100-SXM4-80GB, idle) were put on the 2-GPU lane at 12:52Z through
+  `jobwrap.sh` (two workers, GPUs 0+1 and 2+3); they took iv35-38 NIH CORE and LOCUS shards at once. Four
+  single-GPU login workers started on 2026-09-13 (pre-signal-handler code, `--wait-for-free-gpu`) were found still
+  polling and claimed the first llama32-11 tasks onto GPUs already full. Resolution: the 2+3 two-GPU worker and two
+  of the old workers were stopped; two orphaned llama32-11 runners (parents died without requeueing) were killed
+  and their shards requeued by hand with a `requeued` note. Layout now: GPUs 0+1 one 2-GPU worker (iv35-38), GPUs 2
+  and 3 one single-GPU worker each (llama32-11 CALIBRATION and CORE). No outcome file was lost or duplicated
+  (the killed runners had not written a shard).
+- Gate decision: login-node workers are launched only through jobwrap and only on the current worker code; the
+  old workers are retired when their current task ends.

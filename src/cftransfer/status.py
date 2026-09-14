@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pyarrow.parquet as pq
 
-from .protocol import DATASETS, MODEL_ORDER, MODULES, expected_rows
+from .protocol import DATASETS, MODEL_ORDER, MODULES, expected_rows, primary_template
 from .runpaths import RUN_ROOT
 
 
@@ -36,10 +36,12 @@ def main():
             if (rd / "preflight.vis.last.json").exists():
                 r = json.loads((rd / "preflight.vis.last.json").read_text())
                 c = r["checks"]
+                cases = c["E_semantic_direction"]["cases"]
+                tpl = primary_template(rd) if primary_template(rd) in cases else "IY"    # the template the block is scored on
                 core_ok = (c["A_determinism_max_abs_diff"] == 0 and c["B_alpha0_max_abs_diff"] == 0
                            and c["C_reach"]["locus_change_outside_consumed_tokens"] == 0 and c["G_fp32_vs_model_logits"]["pass"]
                            and c["D2_replicated_batch_vs_single"]["within_batch_spread_pass"]
-                           and all(x["ok"] for x in c["E_semantic_direction"]["cases"]["IY"]))
+                           and all(x["ok"] for x in cases[tpl]))
                 pre = "ok" if r.get("pass") else ("elig" if core_ok else "FAIL")   # elig: some templates ineligible
             print(f"{m:12s} {ds:8s} {'yes' if feat else '-':5s} {'yes' if fit else '-':4s} {pre:4s} "
                   + " ".join(f"{module_progress(rd, mod, ds):>7s}" for mod in MODULES))

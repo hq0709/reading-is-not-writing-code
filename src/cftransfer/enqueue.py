@@ -31,7 +31,7 @@ MODEL_PRIORITY = ["q25-7", "llava15-7", "lingshu-7", "llavamed-7", "q3-8", "iv35
                   "gemma3-27", "iv35-38", "q25-72", "llama32-90"]
 
 
-def enqueue(model_key: str, dataset_id: str, modules: list[str] | None = None, prep: bool = True) -> list[str]:
+def enqueue(model_key: str, dataset_id: str, modules: list[str] | None = None, prep: bool = True, prefix: str = "") -> list[str]:
     rd = run_dir(model_key, dataset_id)
     lane = LANE[model_key]
     dm = "cuda:0" if lane == "gpu1" else "auto"
@@ -43,7 +43,7 @@ def enqueue(model_key: str, dataset_id: str, modules: list[str] | None = None, p
     prep_out = [str(rd / "preflight.vis.last.json"), str(rd / "preflight.connector.json"), str(rd / "fits" / "connector" / "seed2.npz")]
     data_ready = ["/rodata/azradonc_dev/m253405/cf-transfer/data/chexpert/images/.complete"] if dataset_id == "chexpert" else []
     if prep:
-        name = f"{prio_m:02d}{prio_d}-00-prep-{model_key}-{dataset_id}"
+        name = f"{prefix}{prio_m:02d}{prio_d}-00-prep-{model_key}-{dataset_id}"
         (QUEUE / "pending" / f"{name}.json").write_text(json.dumps({
             "name": name, "lane": lane, "cmd": ["bash", PREP, model_key, dataset_id, str(batch_for(model_key, lane)), dm],
             "requires": data_ready, "produces": prep_out, "env": env}, indent=1))
@@ -55,7 +55,7 @@ def enqueue(model_key: str, dataset_id: str, modules: list[str] | None = None, p
         n = SHARDS[mod]
         for s in range(n):
             tag = f"{s:03d}of{n:03d}"
-            name = f"{prio_m:02d}{prio_d}-{mi + 1:02d}-{mod}-{model_key}-{dataset_id}-{tag}"
+            name = f"{prefix}{prio_m:02d}{prio_d}-{mi + 1:02d}-{mod}-{model_key}-{dataset_id}-{tag}"
             (QUEUE / "pending" / f"{name}.json").write_text(json.dumps({
                 "name": name, "lane": lane,
                 "cmd": ["python", "-m", "cftransfer.runner", "--model-key", model_key, "--dataset", dataset_id, "--module", mod,
@@ -71,10 +71,11 @@ if __name__ == "__main__":
     ap.add_argument("--datasets", default="nih,coco")
     ap.add_argument("--modules", default=None)
     ap.add_argument("--no-prep", action="store_true")
+    ap.add_argument("--prefix", default="", help="task-name prefix; names sort as priorities, so '3' runs after every current task")
     a = ap.parse_args()
     models = MODEL_PRIORITY if a.models == "all" else a.models.split(",")
     total = 0
     for m in models:
         for d in a.datasets.split(","):
-            total += len(enqueue(m, d, a.modules.split(",") if a.modules else None, prep=not a.no_prep))
+            total += len(enqueue(m, d, a.modules.split(",") if a.modules else None, prep=not a.no_prep, prefix=a.prefix))
     print("enqueued", total, "tasks; pending now", len(list((QUEUE / "pending").glob("*.json"))))

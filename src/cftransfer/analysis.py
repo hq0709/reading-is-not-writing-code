@@ -23,11 +23,35 @@ from sklearn.metrics import roc_auc_score
 
 from .images import DATA_ROOT, load_cohort, load_labels
 from .protocol import (BOOT_CALIBRATION_DRAWS, BOOT_CALIBRATION_SEED, BOOT_CORE_DRAWS, BOOT_CORE_SEED, BOOT_DIAGNOSTIC_SEED,
-                       CONCEPTS, DATASETS, N_RANDOM, PROMPT_CONCEPTS)
+                       CONCEPTS, DATASETS, N_RANDOM, PROMPT_CONCEPTS, expected_rows, primary_template)
 from .runpaths import outcomes_dir, run_dir
 
 DATASET_ORDER = ["nih", "chexpert", "coco"]
 MIN_CONTROLS_PER_DRAW = 10      # declared: a draw counts when at least half the 20 control AUROCs are estimable
+PROMPT_CONTRASTS = (("wording_IY_minus_WY_O", "IY", "WY"), ("mapping_IA_minus_IB_O", "IA", "IB"))
+
+
+def _primary(model_key: str, dataset_id: str, template_id: str | None = None) -> str:
+    """Template the block's single-template modules were scored with: the caller's choice, else the block's primary
+    template (protocol.primary_template: IY, or IB when IY failed preflight check E)."""
+    return template_id or primary_template(run_dir(model_key, dataset_id))
+
+
+def _eligibility(model_key: str, dataset_id: str) -> dict:
+    p = run_dir(model_key, dataset_id) / "template_eligibility.json"
+    return json.loads(p.read_text()) if p.exists() else {}
+
+
+def prompt_contrast_ineligible(primary: str, elig: dict, ta: str, tb: str) -> str | None:
+    """Why the PROMPT contrast O(ta) - O(tb) is not defined for a block (None when it is). Both contrasts are defined
+    against the protocol's IY reference, so a block whose primary template is not IY, or whose ta/tb template is
+    INELIGIBLE by preflight check E, gets an explicit INELIGIBLE cell instead of a number."""
+    if primary != "IY":
+        return f"primary template is {primary}, not IY"
+    bad = [t for t in (ta, tb) if not elig.get(t, {}).get("eligible", True)]
+    if bad:
+        return "INELIGIBLE template(s): " + ", ".join(bad)
+    return None
 
 
 # --------------------------------------------------------------------------------------------- helpers
@@ -66,14 +90,15 @@ def max_t(estimates: np.ndarray, draws: np.ndarray, level: float = 0.95) -> dict
 
 
 # ----------------------------------------------------------------------------------------- calibration
-def calibration(model_key: str, dataset_id: str, locus_id: str = "vis.last") -> dict:
+def calibration(model_key: str, dataset_id: str, locus_id: str = "vis.last", template_id: str | None = None) -> dict:
+    template_id = _primary(model_key, dataset_id, template_id)
     ps = pq.read_table(run_dir(model_key, dataset_id) / f"probe_scores.{locus_id}.parquet").to_pandas()
     ps = ps[(ps.role == "calibration") & (ps.fit_seed == 0)]
     cal_rows = load_cohort(dataset_id, ("calibration",))
     order = {r["row_id"]: i for i, r in enumerate(cal_rows)}
     n = len(cal_rows)
     idx = bootstrap_indices(dataset_id, n, BOOT_CALIBRATION_SEED, BOOT_CALIBRATION_DRAWS)
-    # answers (clean CALIBRATION IY margins)
+    # answers (clean CALIBRATION margins of the block's primary template)
     cal_path = outcomes_dir(model_key, dataset_id) / "CALIBRATION.parquet"
     ans = pq.read_table(cal_path).to_pandas() if cal_path.exists() else None
     labels = load_labels(dataset_id)
@@ -125,9 +150,9 @@ def calibration(model_key: str, dataset_id: str, locus_id: str = "vis.last") -> 
         cell["readable_status"] = "readable" if cell["readable"] else (
             "insufficient_support" if cell["n_pos"] < 10 or cell["n_neg"] < 10 else
             ("controls_ineligible" if not cs else ("insufficient_draws" if valid < 1900 else "not_readable")))
-        # answer capability from clean IY margins
+        # answer capability from the clean margins of the primary template
         if ans is not None:
-            a_c = ans[(ans.concept == c) & (ans.template_id == "IY") & (ans.sample_status == "OK")]
+            a_c = ans[(ans.concept == c) & (ans.template_id == template_id) & (ans.sample_status == "OK")]
             m = np.full(n, np.nan); m[[order[r] for r in a_c.row_id]] = a_c.semantic_margin.values
             p = 1 / (1 + np.exp(-m))
             cell["answer_auroc"] = auroc_safe(y[known & ~np.isnan(m)], m[known & ~np.isnan(m)])
@@ -148,10 +173,12 @@ def calibration(model_key: str, dataset_id: str, locus_id: str = "vis.last") -> 
 
 
 # ------------------------------------------------------------------------------------------------- CORE
-def core(model_key: str, dataset_id: str, module: str = "CORE", template_id: str = "IY", fit_seed: int = 0,
+def core(model_key: str, dataset_id: str, module: str = "CORE", template_id: str | None = None, fit_seed: int = 0,
          alpha: float = 0.25, n_boot: int | None = None) -> dict:
     """W_qd = mean_i [p_i(q,d) - p_i(q,baseline)], O_q = W_qq - max_{d != q} W_qd, references, ranks, and the
-    per-contrast bootstrap C_qd = W_qq - W_qd with max-T simultaneous intervals over the 6x5 family."""
+    per-contrast bootstrap C_qd = W_qq - W_qd with max-T simultaneous intervals over the 6x5 family.
+    template_id defaults to the block's primary template."""
+    template_id = _primary(model_key, dataset_id, template_id)
     df = pq.read_table(outcomes_dir(model_key, dataset_id) / f"{module}.parquet",
                        columns=["row_id", "concept", "template_id", "fit_seed", "direction_id", "direction_kind", "alpha",
                                 "p_present", "semantic_margin", "sample_status"]).to_pandas()
@@ -225,11 +252,13 @@ def core(model_key: str, dataset_id: str, module: str = "CORE", template_id: str
     return res
 
 
-def label_shifts(model_key: str, dataset_id: str, module: str = "CORE", alpha: float = 0.25) -> dict:
-    """Positive-minus-negative difference in mean semantic-margin shift, per (question, clinical direction)."""
+def label_shifts(model_key: str, dataset_id: str, module: str = "CORE", alpha: float = 0.25, template_id: str | None = None) -> dict:
+    """Positive-minus-negative difference in mean semantic-margin shift, per (question, clinical direction), on the
+    block's primary template unless template_id is given."""
+    template_id = _primary(model_key, dataset_id, template_id)
     df = pq.read_table(outcomes_dir(model_key, dataset_id) / f"{module}.parquet",
                        columns=["row_id", "concept", "template_id", "fit_seed", "direction_id", "alpha", "semantic_margin", "sample_status"]).to_pandas()
-    df = df[(df.template_id == "IY") & (df.fit_seed == 0) & (df.sample_status == "OK")]
+    df = df[(df.template_id == template_id) & (df.fit_seed == 0) & (df.sample_status == "OK")]
     labels = load_labels(dataset_id)
     concepts = CONCEPTS[dataset_id]
     base = df[df.direction_id == "baseline"].set_index(["concept", "row_id"]).semantic_margin
@@ -257,8 +286,9 @@ def _load_module(model_key, dataset_id, module, cols=("row_id", "concept", "temp
     return df[df.sample_status == "OK"]
 
 
-def _matrix(df, concepts, order, alpha, template_id="IY", fit_seed=0, baseline=None, value="p_present"):
-    """per-sample delta[q][d] arrays (n,) for clinical directions at one alpha/template/seed; baseline df separate."""
+def _matrix(df, concepts, order, alpha, *, template_id, fit_seed=0, baseline=None, value="p_present"):
+    """per-sample delta[q][d] arrays (n,) for clinical directions at one alpha/template/seed; baseline df separate.
+    template_id is explicit: the block's primary template for CORE/DOSE/REFIT/LOCUS, a PROMPT template otherwise."""
     n = len(order)
     base = baseline if baseline is not None else df[(df.direction_id == "baseline") & (df.template_id == template_id)]
     P0 = {}
@@ -290,8 +320,10 @@ def _O_from_delta(delta, concepts, idx=None, sign=1.0, questions=None):
     return out
 
 
-def t3(model_key: str, dataset_id: str, draws: int = 2000) -> dict:
-    """Table 3 aggregates with paired unit-bootstrap intervals recomputed inside every draw (seed 2026090603)."""
+def t3(model_key: str, dataset_id: str, draws: int = 2000, template_id: str | None = None) -> dict:
+    """Table 3 aggregates with paired unit-bootstrap intervals recomputed inside every draw (seed 2026090603).
+    CORE/DOSE/REFIT/LOCUS deltas are taken on the block's primary template; the PROMPT contrasts need IY."""
+    primary = _primary(model_key, dataset_id, template_id)
     concepts = CONCEPTS[dataset_id]
     rows = load_cohort(dataset_id, ("test",))
     order = {r["row_id"]: i for i, r in enumerate(rows)}
@@ -318,9 +350,9 @@ def t3(model_key: str, dataset_id: str, draws: int = 2000) -> dict:
     # ---- DOSE: signed O range over six doses, median over concepts (first 200 rows; +0.25 from CORE)
     dose = _load_module(model_key, dataset_id, "DOSE")
     if dose is not None and len(dose):
-        deltas = {0.25: _matrix(core, concepts, order200, 0.25, baseline=base_core)}
+        deltas = {0.25: _matrix(core, concepts, order200, 0.25, template_id=primary, baseline=base_core)}
         for a in DOSE_ALPHAS_T3:
-            deltas[a] = _matrix(dose, concepts, order200, a, baseline=base_core)
+            deltas[a] = _matrix(dose, concepts, order200, a, template_id=primary, baseline=base_core)
         def dose_stat(idx):
             per = []
             for q in concepts:
@@ -338,9 +370,9 @@ def t3(model_key: str, dataset_id: str, draws: int = 2000) -> dict:
     # ---- REFIT: SD of O over seeds 0/1/2, median over concepts
     refit = _load_module(model_key, dataset_id, "REFIT")
     if refit is not None and len(refit):
-        d0 = _matrix(core, concepts, order, 0.25, baseline=base_core)
-        d1 = _matrix(refit, concepts, order, 0.25, fit_seed=1, baseline=base_core)
-        d2 = _matrix(refit, concepts, order, 0.25, fit_seed=2, baseline=base_core)
+        d0 = _matrix(core, concepts, order, 0.25, template_id=primary, baseline=base_core)
+        d1 = _matrix(refit, concepts, order, 0.25, template_id=primary, fit_seed=1, baseline=base_core)
+        d2 = _matrix(refit, concepts, order, 0.25, template_id=primary, fit_seed=2, baseline=base_core)
         def refit_stat(idx):
             per = []
             for q in concepts:
@@ -355,7 +387,7 @@ def t3(model_key: str, dataset_id: str, draws: int = 2000) -> dict:
     # ---- LOCUS: median O at the connector locus (its own baseline)
     locus = _load_module(model_key, dataset_id, "LOCUS")
     if locus is not None and len(locus):
-        dl = _matrix(locus, concepts, order, 0.25, baseline=locus[locus.direction_id == "baseline"])
+        dl = _matrix(locus, concepts, order, 0.25, template_id=primary, baseline=locus[locus.direction_id == "baseline"])
         def locus_stat(idx):
             o = _O_from_delta(dl, concepts, idx)
             return None if o is None else float(np.median([o[q] for q in concepts]))
@@ -364,7 +396,8 @@ def t3(model_key: str, dataset_id: str, draws: int = 2000) -> dict:
             out["all|connector_median_O"] = r
     # ---- label gap: matched direction, positive-minus-negative margin shift, median over concepts
     labels = load_labels(dataset_id)
-    dm = _matrix(core, concepts, order, 0.25, baseline=base_core, value="semantic_margin")
+    dm = _matrix(core, concepts, order, 0.25, template_id=primary, baseline=base_core, value="semantic_margin")
+    dm_p = _matrix(core, concepts, order, 0.25, template_id=primary, baseline=base_core)      # p_present deltas (PROMPT wording)
     y = {q: np.array([int(labels[(r["row_id"], q)]["label"]) if labels[(r["row_id"], q)]["label_known"] == "true" else -1 for r in rows]) for q in concepts}
     def gap_stat(idx):
         per = []
@@ -381,24 +414,32 @@ def t3(model_key: str, dataset_id: str, draws: int = 2000) -> dict:
     r = interval(gap_stat, idx600)
     if r:
         out["all|median_label_gap"] = r
-    # ---- PROMPT: wording (IY - WY) and mapping (IA - IB) O differences for the two designated concepts
+    # ---- PROMPT: wording (IY - WY) and mapping (IA - IB) O differences for the two designated concepts. Both are
+    # defined against the IY reference: a block whose primary template is not IY, or whose IY/WY (IA/IB) template is
+    # INELIGIBLE, gets an explicit INELIGIBLE cell (no number, no exception) so the table cell is filled either way.
     prompt = _load_module(model_key, dataset_id, "PROMPT")
-    from .protocol import expected_rows
-    if prompt is not None and len(prompt) and len(prompt) >= 0.999 * expected_rows("PROMPT", dataset_id) - _ineligible_prompt_rows(model_key, dataset_id):
-        for c in PROMPT_CONCEPTS[dataset_id]:
-            fam = [c] + [x for x in concepts if x != c]
-            dIY = _matrix(core, concepts, order, 0.25, baseline=base_core)
-            for name, ta, tb in (("wording_IY_minus_WY_O", "IY", "WY"), ("mapping_IA_minus_IB_O", "IA", "IB")):
-                da = dIY if ta == "IY" else _matrix(prompt, concepts, order, 0.25, template_id=ta, baseline=prompt[prompt.direction_id == "baseline"])
-                db = _matrix(prompt, concepts, order, 0.25, template_id=tb, baseline=prompt[prompt.direction_id == "baseline"])
-                def pstat(idx, da=da, db=db, c=c):
-                    oa = _O_from_delta(da, concepts, idx, questions=[c]); ob = _O_from_delta(db, concepts, idx, questions=[c])
-                    if oa is None or ob is None or c not in oa or c not in ob:
-                        return None
-                    return oa[c] - ob[c]
-                r = interval(pstat, idx600)
-                if r:
-                    out[f"{c}|{name}"] = r
+    elig = _eligibility(model_key, dataset_id)
+    complete = prompt is not None and len(prompt) > 0 and \
+        len(prompt) >= 0.999 * expected_rows("PROMPT", dataset_id) - _ineligible_prompt_rows(model_key, dataset_id)
+    base_prompt = prompt[prompt.direction_id == "baseline"] if complete else None
+    for c in PROMPT_CONCEPTS[dataset_id]:
+        for name, ta, tb in PROMPT_CONTRASTS:
+            why = prompt_contrast_ineligible(primary, elig, ta, tb)
+            if why:
+                out[f"{c}|{name}"] = {"estimate": None, "ci_low": None, "ci_high": None, "status": "INELIGIBLE", "reason": why}
+                continue
+            if not complete:
+                continue
+            da = dm_p if ta == "IY" else _matrix(prompt, concepts, order, 0.25, template_id=ta, baseline=base_prompt)
+            db = _matrix(prompt, concepts, order, 0.25, template_id=tb, baseline=base_prompt)
+            def pstat(idx, da=da, db=db, c=c):
+                oa = _O_from_delta(da, concepts, idx, questions=[c]); ob = _O_from_delta(db, concepts, idx, questions=[c])
+                if oa is None or ob is None or c not in oa or c not in ob:
+                    return None
+                return oa[c] - ob[c]
+            r = interval(pstat, idx600)
+            if r:
+                out[f"{c}|{name}"] = r
     return out
 
 
@@ -407,10 +448,7 @@ DOSE_ALPHAS_T3 = [-0.5, -0.25, -0.1, 0.1, 0.5]
 
 def _ineligible_prompt_rows(model_key, dataset_id) -> int:
     """Rows the PROMPT block legitimately lacks because templates were INELIGIBLE at preflight."""
-    p = run_dir(model_key, dataset_id) / "template_eligibility.json"
-    if not p.exists():
-        return 0
-    elig = json.loads(p.read_text())
+    elig = _eligibility(model_key, dataset_id)
     bad = [t for t in ("WY", "IA", "IB", "WA", "WB") if not elig.get(t, {}).get("eligible", True)]
     return len(bad) * len(PROMPT_CONCEPTS[dataset_id]) * 127 * 600
 
@@ -433,6 +471,7 @@ if __name__ == "__main__":
             report["label_shifts"] = label_shifts(a.model_key, a.dataset)
         elif w == "t3":
             report["t3"] = t3(a.model_key, a.dataset)
+    report["primary_template"] = primary_template(rd)       # template the single-template statistics above refer to
     (rd / "summary.json").write_text(json.dumps(report, indent=1, default=lambda o: float(o) if isinstance(o, np.floating) else str(o)))
     if "calibration" in report:
         for c, cell in report["calibration"].items():

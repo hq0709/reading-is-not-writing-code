@@ -163,7 +163,8 @@
     "CALIBRATION": {
       "NIH_COCO_rows_each": 6400,
       "CheXpert_rows": 2400,
-      "LOCUS_rows_each_NIH_COCO": 2400
+      "LOCUS_rows_each_NIH_COCO": 2400,
+      "LOCUS_rows_CheXpert": 2400
     },
     "CORE": {
       "cohort": "test",
@@ -198,12 +199,17 @@
       "expected_rows": 762000,
       "datasets": [
         "nih",
+        "chexpert",
         "coco"
       ],
       "concepts_by_dataset": {
         "nih": [
           "Effusion",
           "Mass"
+        ],
+        "chexpert": [
+          "Effusion",
+          "Edema"
         ],
         "coco": [
           "person",
@@ -229,6 +235,7 @@
       "baseline": "reuse CORE",
       "datasets": [
         "nih",
+        "chexpert",
         "coco"
       ]
     },
@@ -250,12 +257,14 @@
       "baseline": "reuse CORE",
       "datasets": [
         "nih",
+        "chexpert",
         "coco"
       ]
     },
     "LOCUS": {
       "datasets": [
         "nih",
+        "chexpert",
         "coco"
       ],
       "status": "required_for_full_package",
@@ -493,7 +502,7 @@
     "primary_concept_cells": 396,
     "core_clinical_matrix_cells": 2376,
     "primary_CORE_rows": 30175200,
-    "all_test_and_calibration_rows": 93605600,
+    "all_test_and_calibration_rows": 125153600,
     "excludes": "feature extraction, interface preflight and retries"
   }
 }

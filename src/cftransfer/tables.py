@@ -34,6 +34,7 @@ def fill() -> Path:
         m, d, c, metric = r["model_key"], r["dataset_id"], r["concept"], r["metric"]
         s = summary(m, d)
         cal, core = s.get("calibration"), s.get("core")
+        primary = s.get("primary_template", "IY")        # template the block's single-template statistics refer to
         if r["table_id"] == "T1":
             if metric == "calibration_selectivity" and cal and c in cal:
                 cell = cal[c]
@@ -71,6 +72,9 @@ def fill() -> Path:
                 r["estimate"] = fmt(cell.get("estimate"))
                 r["ci_low"], r["ci_high"] = fmt(cell.get("ci_low")), fmt(cell.get("ci_high"))
                 r["execution_status"] = cell.get("status", "COMPLETE")
+            elif metric in ("wording_IY_minus_WY_O", "mapping_IA_minus_IB_O") and primary != "IY" and (cal or core):
+                # the PROMPT contrasts are defined against IY; a block scored on another primary template has no such cell
+                r["execution_status"] = "INELIGIBLE"
     out = RUN_ROOT / "main-tables.filled.csv"
     with out.open("w", newline="", encoding="utf-8") as f:
         w = csv.DictWriter(f, fieldnames=list(rows[0].keys()))

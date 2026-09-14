@@ -19,8 +19,8 @@ import pyarrow.parquet as pq
 
 from .fit import run_id_for
 from .images import DATA_ROOT
-from .protocol import (CONCEPTS, LOCI, MODULES, PROTOCOL_ID, TEMPLATE_ORDER, MODELS, conditions_for, expected_rows,
-                       question_list, render_question)
+from .protocol import (CONCEPTS, LOCI, MODULES, MODULES_ADDED_LATER, PROTOCOL_ID, TEMPLATE_ORDER, MODELS, conditions_for,
+                       expected_rows, primary_template, question_list, render_question)
 from .runner import KEY
 from .runpaths import outcomes_dir, run_dir
 
@@ -53,9 +53,20 @@ def merge_module(model_key: str, dataset_id: str, module: str) -> tuple[Path | N
     return out, stats
 
 
-def coverage_rows(model_key: str, dataset_id: str, module: str, merged: Path | None) -> list[dict]:
+def requested_modules(dataset_id: str, rd: Path) -> list[str]:
+    """Modules a block must cover to be COMPLETE: every module the protocol requests for the dataset, except that a
+    module added to the dataset after the first wave (protocol.MODULES_ADDED_LATER) counts only once it has started
+    (its outcomes directory exists), so blocks packaged before the extension keep their COMPLETE status."""
+    return [m for m in MODULES if dataset_id in MODULES[m].datasets and expected_rows(m, dataset_id) > 0
+            and (m not in MODULES_ADDED_LATER.get(dataset_id, ()) or (rd / "outcomes" / m).exists())]
+
+
+def coverage_rows(model_key: str, dataset_id: str, module: str, merged: Path | None, primary: str | None = None) -> list[dict]:
+    """One row per (question, fit seed) of the module; `primary` is the block's primary template (default: resolved
+    from template_eligibility.json), so the expected cells of the single-template modules are the ones actually scored."""
     spec = MODULES[module]
     run_id = run_id_for(model_key, dataset_id)
+    primary = primary or primary_template(run_dir(model_key, dataset_id))
     rows = []
     n_role = {"test": 600, "calibration": 400}[spec.role]
     n_rows = min(n_role, spec.row_limit) if spec.row_limit else n_role
@@ -71,7 +82,7 @@ def coverage_rows(model_key: str, dataset_id: str, module: str, merged: Path | N
             counts[(c, tpl, int(s))][0 if st == "OK" else 1] += int(n)
     elig_path = run_dir(model_key, dataset_id) / "template_eligibility.json"
     elig = json.loads(elig_path.read_text()) if elig_path.exists() else {}
-    for concept, tpl in question_list(dataset_id, module):
+    for concept, tpl in question_list(dataset_id, module, primary):
         for seed in spec.fit_seeds:
             exp = len(conditions_for(module, dataset_id, concept)) * n_rows
             ok, failed = counts.get((concept, tpl, seed), [0, 0])
@@ -91,14 +102,17 @@ def coverage_rows(model_key: str, dataset_id: str, module: str, merged: Path | N
     return rows
 
 
-def prompts_json(model_key: str, dataset_id: str, settings: dict) -> dict:
+def prompts_json(model_key: str, dataset_id: str, settings: dict, primary: str = "IY") -> dict:
+    """Every (concept, template) question with its rendered prompt: the model's chat template around the question text
+    of that template (example_prompt_IY is the wrapper rendered around the placeholder question). `is_primary` marks the
+    block's primary template, the one CORE/CALIBRATION/DOSE/REFIT/LOCUS/LOCUS_CALIBRATION scored."""
     cands = settings["candidate_tokens"]
     out = {}
     for concept in CONCEPTS[dataset_id]:
         for t in TEMPLATE_ORDER:
             q = render_question(dataset_id, concept, t)
             out[f"{dataset_id}|{concept}|{t}"] = {
-                "dataset_id": dataset_id, "concept": concept, "template_id": t, "question": q,
+                "dataset_id": dataset_id, "concept": concept, "template_id": t, "is_primary": t == primary, "question": q,
                 "rendered_prompt": settings["example_prompt_IY"].replace("Is there X in this image? Answer yes or no.", q),
                 "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
                 "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
@@ -113,11 +127,12 @@ def prompts_json(model_key: str, dataset_id: str, settings: dict) -> dict:
 def build(model_key: str, dataset_id: str, status: str = "RUNNING") -> dict:
     rd = run_dir(model_key, dataset_id)
     rd.mkdir(parents=True, exist_ok=True)
+    primary = primary_template(rd)
     cov, merged_stats, completed, ineligible = [], {}, [], []
     for module in MODULES:
         merged, stats = merge_module(model_key, dataset_id, module)
         merged_stats[module] = stats
-        rows = coverage_rows(model_key, dataset_id, module, merged)
+        rows = coverage_rows(model_key, dataset_id, module, merged, primary)
         cov += rows
         def terminal(r):   # INELIGIBLE template cells are a recorded interface disposition, not pending work
             return r["execution_status"] in ("COMPLETE", "NOT_REQUESTED") or \
@@ -126,7 +141,7 @@ def build(model_key: str, dataset_id: str, status: str = "RUNNING") -> dict:
             completed.append(module)
         elif rows and all(terminal(r) for r in rows) and any(r["reason"].startswith("INELIGIBLE") for r in rows):
             ineligible.append(module)      # every requested cell of the module is an INELIGIBLE template: terminal, no outcomes
-    requested = [m for m in MODULES if dataset_id in MODULES[m].datasets and expected_rows(m, dataset_id) > 0]
+    requested = requested_modules(dataset_id, rd)
     if status == "RUNNING" and requested and all(m in completed or m in ineligible for m in requested):
         status = "COMPLETE"      # derived from coverage, so a block never stays RUNNING once every cell is terminal
     with (rd / "coverage.csv").open("w", newline="") as f:
@@ -189,14 +204,22 @@ def build(model_key: str, dataset_id: str, status: str = "RUNNING") -> dict:
         "peak_gpu_memory_bytes": max([m.get("peak_gpu_memory_bytes", 0) for m in metas] or [0]),
         "processing_settings": settings, "loci": feat_meta.get("loci"),
         "fit_seeds": [0, 1, 2], "random_seed": 0, "projection_seed": 0, "cohort_file": "manifests/cohort.csv",
+        "primary_template": primary, "requested_modules": requested,
         "completed_modules": completed, "ineligible_modules": ineligible, "status": status, "deviations": deviations,
         "feature_extraction_seconds": feat_meta.get("seconds"),
         "notes": "gpu_hours sums wall time x GPUs over runner shards recorded in outcomes/*/meta-*.json; CPU fitting time is in fits/*/summary.json",
         "merged_outcomes": merged_stats,
     }
     (rd / "run.json").write_text(json.dumps(run, indent=1))
+    # summary.json (written by cftransfer.analysis) carries the same top-level primary_template for the table/figure code
+    sp = rd / "summary.json"
+    if sp.exists():
+        summary = json.loads(sp.read_text())
+        if summary.get("primary_template") != primary:
+            summary["primary_template"] = primary
+            sp.write_text(json.dumps(summary, indent=1))
     if settings:
-        (rd / "prompts.json").write_text(json.dumps(prompts_json(model_key, dataset_id, settings), indent=1))
+        (rd / "prompts.json").write_text(json.dumps(prompts_json(model_key, dataset_id, settings, primary), indent=1))
     return run
 
 
