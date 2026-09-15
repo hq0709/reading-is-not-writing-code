@@ -164,6 +164,7 @@ REFIT seed1/2改变的是训练独立单元的bootstrap重抽样（胸片患者�
 | ALTDIRD | 三数据集全部6概念，IY，+.25，600图；dom/pattern两族按位移规则映射（标准化空间位移u的最小范数原像 R(RᵀR)⁻¹diag(s)u，而非系数规则 R diag(1/s)β），各6概念共12条件；baseline复用CORE；后加模块，仅显式入队 | 每数据集43,200 |
 | ATTR | NIH/CheXpert，IY，+.25，600图；3个非临床属性问题（AP投照、女性、年龄≥60，协议模板+属性短语）加6个临床问题；方向=3属性方向（按协议normal同法拟合）+6临床normal+该问题sham；属性问题自带baseline（11条件），临床问题复用CORE baseline（10条件）；无random族；后加模块，仅显式入队 | 每数据集55,800 |
 | ANSDIRT | 三数据集全部6概念，IY之外5模板，+.25，600图；IY上拟合的回答方向a_d（6个）加a_q的sham，另带每（问题,模板）自身baseline，共8条件；不合格模板同PROMPT规则跳过；后加模块，仅显式入队 | 每数据集144,000 |
+| VALID | 仅CheXpert，全部6概念，IY，+.25，官方valid集200例患者各一张正位片（`valid`角色；标签为CheXpert-v1.0 valid.csv放射科医生共识标签，非labeler输出）；完整CORE网格127配置（自带baseline），方向沿用该块seed0拟合，不另拟合；按CORE规则评分（n=200配对bootstrap 2,000次），并与该块600张labeler标签test图的CORE评分逐概念配对比较；后加模块，仅显式入队 | 152,400 |
 
 训练/测试pooled features不包含在以上计数。正向+.25全随机主比较和其他剂量20random敏感性是不同证据规格，不能拼起来声称整个dose sweep均做过119随机校正。
 

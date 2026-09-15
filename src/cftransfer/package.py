@@ -20,7 +20,7 @@ import pyarrow.parquet as pq
 from .fit import run_id_for
 from .images import DATA_ROOT
 from .protocol import (CONCEPTS, LOCI, MODULE_SETTINGS, MODULES, MODULES_ADDED_LATER, NUMERICS_DEFAULT, PROTOCOL_ID, TEMPLATE_ORDER,
-                       MODELS, conditions_for, expected_rows, primary_template, question_list, render_question)
+                       MODELS, VALID_ROWS, conditions_for, expected_rows, primary_template, question_list, render_question)
 from .runner import KEY, SCHEMA
 from .runpaths import outcomes_dir, run_dir
 
@@ -74,7 +74,7 @@ def coverage_rows(model_key: str, dataset_id: str, module: str, merged: Path | N
     run_id = run_id_for(model_key, dataset_id)
     primary = primary or primary_template(run_dir(model_key, dataset_id))
     rows = []
-    n_role = {"test": 600, "calibration": 400}[spec.role]
+    n_role = {"test": 600, "calibration": 400, "valid": VALID_ROWS}[spec.role]
     n_rows = min(n_role, spec.row_limit) if spec.row_limit else n_role
     if dataset_id not in spec.datasets:
         return [{"run_id": run_id, "model_key": model_key, "dataset_id": dataset_id, "module": module, "locus_id": LOCI[spec.locus],

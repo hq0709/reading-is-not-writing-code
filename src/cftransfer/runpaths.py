@@ -12,6 +12,11 @@ def features_dir(model_key: str, dataset_id: str) -> Path:
     return run_dir(model_key, dataset_id) / "features"
 
 
+def valid_features_dir(model_key: str, dataset_id: str) -> Path:
+    """Features of the `valid` role (VALID module), extracted separately so features/<locus>.npz stays the campaign file."""
+    return features_dir(model_key, dataset_id) / "valid"
+
+
 def fits_dir(model_key: str, dataset_id: str, locus_id: str) -> Path:
     return run_dir(model_key, dataset_id) / "fits" / locus_id
 

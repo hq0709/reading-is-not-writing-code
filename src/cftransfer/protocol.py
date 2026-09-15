@@ -54,7 +54,7 @@ CALIBRATION_PROMPT_DATASETS = ("nih", "coco")
 MODULES_ADDED_LATER = {"nih": ("ALTDIR", "EXTCOMP", "TOKENW", "PRECISION", "ANSDIR", "ALTDIRD", "ATTR", "ANSDIRT"),
                        "coco": ("ALTDIR", "TOKENW", "PRECISION", "ANSDIR", "ALTDIRD", "ANSDIRT"),
                        "chexpert": ("PROMPT", "DOSE", "REFIT", "LOCUS", "LOCUS_CALIBRATION", "ALTDIR", "EXTCOMP", "TOKENW", "ANSDIR",
-                                    "ALTDIRD", "ATTR", "ANSDIRT")}
+                                    "ALTDIRD", "ATTR", "ANSDIRT", "VALID")}
 # ALTDIR direction families, in condition order: difference of means, Haufe pattern, orthogonalised logistic normal,
 # logistic normal refitted on label-residualised features (altdir.py); every family is lifted with the logistic rule.
 ALTDIR_FAMILIES = ("dom", "pattern", "orth", "resid")
@@ -72,6 +72,11 @@ ATTR_MIN_CLASS_ROWS = 100
 ATTR_SHAM_SEED = 1                 # PCG64(1): one coordinate permutation per attribute, in ATTR_CONCEPTS order
 # ANSDIRT: the IY-fitted answer directions written under the five other templates (own clean baseline per template)
 ANSDIRT_TEMPLATES = ("WY", "IA", "IB", "WA", "WB")
+# VALID: the CORE grid (primary template, PRIMARY_ALPHA, the 127-direction core family of the seed-0 fit) on the `valid`
+# role of CheXpert: one frontal per patient of the official CheXpert validation split (200 rows, manifests.build_chexpert_valid),
+# whose labels are the radiologist consensus rather than the labeler output of every other role. Graded with the CORE rules
+# on those rows and compared with the block's CORE grade on the labeler-labelled test rows (analysis.valid).
+VALID_ROWS = 200
 # EXTCOMP: extra dataset labels fitted like the protocol normals (extcomp.py) and added to the competitor family. The
 # frozen lists are the manifest labels with at least EXTCOMP_MIN_SUPPORT known positives AND negatives in the training
 # rows (counts checked again by the prep); the excluded labels and the reason are recorded next to them.
@@ -96,7 +101,7 @@ MODULE_SETTINGS = {"PRECISION": PRECISION_SETTINGS}       # modules scored once 
 # The seven modules of the planned campaign (protocol.json total_planned_outcomes) and the modules added afterwards as
 # addenda (each enqueued explicitly, each counted in total_planned_outcomes.addenda, each in MODULES_ADDED_LATER).
 PLANNED_MODULES = ("CORE", "CALIBRATION", "PROMPT", "DOSE", "REFIT", "LOCUS", "LOCUS_CALIBRATION")
-ADDENDUM_MODULES = ("ALTDIR", "EXTCOMP", "TOKENW", "PRECISION", "ANSDIR", "ALTDIRD", "ATTR", "ANSDIRT")
+ADDENDUM_MODULES = ("ALTDIR", "EXTCOMP", "TOKENW", "PRECISION", "ANSDIR", "ALTDIRD", "ATTR", "ANSDIRT", "VALID")
 # ANSDIR (answer-direction oracle, ansdir.py): per question q a ridge regression of the clean answer margin on the
 # projected, train-scaled features of the first ANSDIR_N_TRAIN training rows (alpha by 5-fold CV over ANSDIR_ALPHAS),
 # lifted like the logistic normals; written with the six a_d plus the coordinate-permutation sham of a_q.
@@ -221,6 +226,8 @@ MODULES: dict[str, ModuleSpec] = {
     # answer directions under the five other templates, own baseline per (question, template)
     "ANSDIRT": ModuleSpec("ANSDIRT", "test", None, ANSDIRT_TEMPLATES, "all", (PRIMARY_ALPHA,), "ansdirt", (0,), "primary", None,
                           ("nih", "chexpert", "coco")),
+    # the CORE grid (own baseline) on the radiologist-labelled valid rows of CheXpert
+    "VALID": ModuleSpec("VALID", "valid", None, ("IY",), "all", (PRIMARY_ALPHA,), "core", (0,), "primary", None, ("chexpert",)),
 }
 
 
@@ -285,7 +292,7 @@ def expected_rows(module: str, dataset_id: str, n_rows: int | None = None) -> in
     spec = MODULES[module]
     if dataset_id not in spec.datasets:
         return 0
-    n = n_rows if n_rows is not None else {"test": 600, "calibration": 400}[spec.role]
+    n = n_rows if n_rows is not None else {"test": 600, "calibration": 400, "valid": VALID_ROWS}[spec.role]
     if spec.row_limit:
         n = min(n, spec.row_limit)
     total = 0
