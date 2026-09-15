@@ -1970,3 +1970,21 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   the probe scores highest does not create a clinical handle and leaves the natural-object handles intact.
 - Gate decision: enters Section 5.7 and Table cf-tokenw; remaining TOKENW blocks (lingshu-32, gemma3-12, q3-8)
   are queued.
+
+## 2026-09-15 GPT-6-Astra review round 1 (fresh thread, xhigh)
+
+- Run: the manuscript (main text 10 pages after three GPT-6-Astra paragraph passes) was reviewed by GPT-6-Astra
+  through `codex154 exec` on a fresh thread; review saved as concept-flow-paper/review-artifacts/gpt6_reviews/
+  round1_20260915_0322.md. Scores: soundness 2, presentation 2, contribution 3, overall 4/10, confidence 4.
+- Observation (weaknesses): W1 counts differ between prose, Table 1, Figure 2, and appendix tables (denominators
+  126 vs 120; CheXpert owned 19/114 vs 17/108; ALTDIR 42/84 vs 46/90); W2 label support (CheXpert Atelectasis 2
+  negatives), NIH training rows 18,212 vs "20,000"; W3 ownership is row dominance, not column selectivity;
+  "attribution rather than efficacy" contradicts 41/228 reference-met; W4 answer direction needs label AUROC,
+  score correlation, whitened alignment, template transfer; W5 reader claim needs representation-varied control;
+  W6 lift of dom/pattern unspecified, token-weight norm not matched; W7 "every owned cell stays owned" false (124
+  of 127), campaign inference unspecified; W8 batch effects need a stable-numerics rerun (PRECISION running).
+- Gate decision: fixed in text now: two-part deficit sentence, label-gap description, logit-scale claim, NIH
+  training count, D.1 rows/columns, primary-template rule, lift specification, token-weight norms, campaign
+  inference note. In progress: authoritative manifest + macro-generated numbers (one inclusion rule for tables,
+  figures, prose); answer-direction validation (label AUROC, score correlation, whitened cosine), column
+  selectivity, known-label ownership (robustness_validation.py); PRECISION results when they land.
