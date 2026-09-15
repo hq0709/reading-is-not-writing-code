@@ -81,12 +81,19 @@ class DirectionBank:
         raise KeyError(direction_id)
 
 
-def completed_rows(part_dir: Path, shard_tag: str) -> set[str]:
-    done = set()
+def completed_rows(part_dir: Path, shard_tag: str, expected_per_row: int | None = None) -> set[str]:
+    """Row ids of this shard that are fully scored: when expected_per_row is given, a row counts only if it has that many
+    OK outcomes across the shard's part files (a row whose failed outcomes were dropped is re-scored in full; the merge
+    keeps the last copy of every KEY). Without it, any presence counts (legacy behaviour)."""
+    counts: dict[str, int] = {}
     for p in part_dir.glob(f"part-{shard_tag}-*.parquet"):
-        t = pq.read_table(p, columns=["row_id"])
-        done.update(t.column("row_id").to_pylist())
-    return done
+        t = pq.read_table(p, columns=["row_id", "sample_status"])
+        for rid, st in zip(t.column("row_id").to_pylist(), t.column("sample_status").to_pylist()):
+            if expected_per_row is None or st == "OK":
+                counts[rid] = counts.get(rid, 0) + 1
+    if expected_per_row is None:
+        return set(counts)
+    return {rid for rid, n in counts.items() if n >= expected_per_row}
 
 
 def run_block(model_key: str, dataset_id: str, module: str, shard: int, n_shards: int, batch: int, device_map: str,
@@ -106,12 +113,6 @@ def run_block(model_key: str, dataset_id: str, module: str, shard: int, n_shards
     part_dir = outcomes_dir(model_key, dataset_id) / module
     part_dir.mkdir(parents=True, exist_ok=True)
     shard_tag = f"{shard:03d}of{n_shards:03d}"
-    done = completed_rows(part_dir, shard_tag)
-    todo = [r for r in rows if r["row_id"] not in done]
-    print(f"[{model_key}/{dataset_id}/{module} shard {shard_tag}] {len(rows)} rows, {len(done)} done, {len(todo)} todo", flush=True)
-    if not todo:
-        return {"rows": len(rows), "todo": 0}
-
     # Questions: the block's primary template stands in for IY (protocol.primary_template: IB when preflight check E
     # marked IY INELIGIBLE). Templates still INELIGIBLE are dropped; a module left with no question closes as terminal
     # before the model is loaded.
@@ -139,6 +140,19 @@ def run_block(model_key: str, dataset_id: str, module: str, shard: int, n_shards
         part_dir.mkdir(parents=True, exist_ok=True)
         (part_dir / f"meta-{shard_tag}-{int(time.time())}.json").write_text(json.dumps(meta, indent=1))
         return meta
+    expected_per_row = sum(len(conditions_for(module, dataset_id, c)) for c, _t in questions) * len(spec.fit_seeds)
+    done = completed_rows(part_dir, shard_tag, expected_per_row)
+    todo = [r for r in rows if r["row_id"] not in done]
+    print(f"[{model_key}/{dataset_id}/{module} shard {shard_tag}] {len(rows)} rows, {len(done)} done, {len(todo)} todo "
+          f"({expected_per_row} outcomes per row)", flush=True)
+    if not todo:
+        meta = {"model_key": model_key, "dataset_id": dataset_id, "module": module, "shard": shard, "n_shards": n_shards,
+                "rows": len(rows), "todo": 0, "scored_rows": 0, "outcomes": 0, "seconds": 0.0, "throughput_per_s": 0.0, "batch": batch,
+                "primary_template": primary, "note": "every row of the shard was already fully scored; nothing to do",
+                "ended_utc": time.strftime("%Y-%m-%dT%T", time.gmtime()) + "Z"}
+        (part_dir / f"meta-{shard_tag}-{int(time.time())}.json").write_text(json.dumps(meta, indent=1))
+        return meta
+
     ad = get_adapter(model_key, revision).load(device_map=device_map)
     locus = ad.loci()[locus_id]
     hook = LocusHook(ad.module(locus.module_path), locus_id)
