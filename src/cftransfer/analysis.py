@@ -9,6 +9,9 @@ Implemented:
   max_t(contrasts, draws)             -> two-sided simultaneous interval via max|Z| with fixed bootstrap SD (ddof=1)
   bootstrap_indices(dataset, n, seed) -> shared unit-bootstrap indices (5000 x n) in frozen test order
   label_shifts(...)                   -> positive-minus-negative margin shift per (question, direction)
+  altdir(model, dataset)              -> ALTDIR: per alternative direction family (dom, pattern, orth, resid) the 6x6 write
+                                         matrix, within-family O_q with percentile interval and max-T verdict, own write
+                                         minus the strongest logistic competitor of CORE, and the per-concept cosines
 """
 from __future__ import annotations
 
@@ -21,9 +24,11 @@ import pandas as pd
 import pyarrow.parquet as pq
 from sklearn.metrics import roc_auc_score
 
+from .altdir import load_altdir
 from .images import DATA_ROOT, load_cohort, load_labels
-from .protocol import (BOOT_CALIBRATION_DRAWS, BOOT_CALIBRATION_SEED, BOOT_CORE_DRAWS, BOOT_CORE_SEED, BOOT_DIAGNOSTIC_SEED,
-                       CONCEPTS, DATASETS, N_RANDOM, PROMPT_CONCEPTS, expected_rows, primary_template)
+from .protocol import (ALTDIR_FAMILIES, BOOT_CALIBRATION_DRAWS, BOOT_CALIBRATION_SEED, BOOT_CORE_DRAWS, BOOT_CORE_SEED,
+                       BOOT_DIAGNOSTIC_SEED, CONCEPTS, DATASETS, LOCI, N_RANDOM, PRIMARY_ALPHA, PROMPT_CONCEPTS, expected_rows,
+                       primary_template)
 from .runpaths import outcomes_dir, run_dir
 
 DATASET_ORDER = ["nih", "chexpert", "coco"]
@@ -65,6 +70,14 @@ def bootstrap_indices(dataset_id: str, n: int, seed: int, draws: int) -> np.ndar
         if ds == dataset_id:
             out = idx
     return out
+
+
+def core_bootstrap_indices(dataset_id: str, n: int, draws: int) -> np.ndarray:
+    """Unit-bootstrap indices of the CORE family (README 6, computation details): the shared 600-row draws of
+    BOOT_CORE_SEED when the block has the full 600 test rows, else a PCG64(BOOT_CORE_SEED) draw of the block's own size."""
+    if n == 600:
+        return bootstrap_indices(dataset_id, 600, BOOT_CORE_SEED, draws)
+    return np.random.Generator(np.random.PCG64(BOOT_CORE_SEED)).integers(0, n, size=(draws, n))
 
 
 def auroc_safe(y, s) -> float:
@@ -221,9 +234,7 @@ def core(model_key: str, dataset_id: str, module: str = "CORE", template_id: str
         res["per_question"][q] = cell
     # bootstrap of the 6x5 family C_qd = W_qq - W_qd, shared unit indices in frozen test order
     if all(f"concept:{d}" in W[q] for q in concepts for d in concepts):
-        draws_n = n_boot or BOOT_CORE_DRAWS
-        idx = bootstrap_indices(dataset_id, 600, BOOT_CORE_SEED, draws_n)[:, :n] if n == 600 else \
-            np.random.Generator(np.random.PCG64(BOOT_CORE_SEED)).integers(0, n, size=(draws_n, n))
+        idx = core_bootstrap_indices(dataset_id, n, n_boot or BOOT_CORE_DRAWS)
         names, est, mat = [], [], []
         for q in concepts:
             dq = delta[(q, f"concept:{q}")]
@@ -305,14 +316,15 @@ def _matrix(df, concepts, order, alpha, *, template_id, fit_seed=0, baseline=Non
     return delta
 
 
-def _O_from_delta(delta, concepts, idx=None, sign=1.0, questions=None):
+def _O_from_delta(delta, concepts, idx=None, sign=1.0, questions=None, prefix="concept"):
     """O_q = sign*W_qq - max_{d != q} sign*W_qd from per-sample deltas (optionally over a bootstrap index).
-    `questions` restricts the rows of the surface (PROMPT scores only two questions); directions span `concepts`."""
+    `questions` restricts the rows of the surface (PROMPT scores only two questions); directions span `concepts`;
+    `prefix` is the direction family (concept, or an ALTDIR family)."""
     out = {}
     for q in (questions or concepts):
         vals = {}
         for d in concepts:
-            v = delta.get((q, f"concept:{d}"))
+            v = delta.get((q, f"{prefix}:{d}"))
             if v is None:
                 return None
             vals[d] = sign * float(np.nanmean(v if idx is None else v[idx]))
@@ -446,6 +458,110 @@ def t3(model_key: str, dataset_id: str, draws: int = 2000, template_id: str | No
 DOSE_ALPHAS_T3 = [-0.5, -0.25, -0.1, 0.1, 0.5]
 
 
+# ----------------------------------------------------------------------------------------------- ALTDIR
+def _family_stack(delta: dict, concepts: list[str], prefix: str, n: int) -> np.ndarray:
+    """(6, 6, n) per-sample deltas delta[(q, prefix:d)] in concept order; raises when a cell is missing."""
+    missing = [f"{q}<-{prefix}:{d}" for q in concepts for d in concepts if (q, f"{prefix}:{d}") not in delta]
+    if missing:
+        raise RuntimeError(f"{prefix}: no scored rows for {len(missing)} (question, direction) cells, e.g. {missing[:3]}")
+    return np.stack([np.stack([delta[(q, f"{prefix}:{d}")] for d in concepts]) for q in concepts]).astype(float).reshape(len(concepts), len(concepts), n)
+
+
+def altdir(model_key: str, dataset_id: str, template_id: str | None = None, alpha: float = PRIMARY_ALPHA,
+           draws: int = BOOT_CALIBRATION_DRAWS) -> dict:
+    """ALTDIR statistics on the block's primary template against the CORE clean baseline, same rows / dose / locus /
+    competitor protocol as CORE. For every alternative family F (dom, pattern, orth, resid):
+      W^F_qd = mean_i [p_i(q, F:d) - p_i(q, baseline)]           6x6 write matrix
+      O^F_q  = W^F_qq - max_{d != q} W^F_qd                        within-family ownership, percentile interval from the
+                                                                  CORE unit-bootstrap indices (`draws`, default 2,000; max
+                                                                  recomputed inside every draw)
+      C^F_qd = W^F_qq - W^F_qd, 6x5 max-T simultaneous intervals   verdict as CORE: stronger_competitor / fixed_family_advantage / unresolved
+      X^F_q  = W^F_qq - max_{d != q} W^log_qd                      own alternative write minus the strongest LOGISTIC competitor
+                                                                  of CORE (percentile interval, paired draws)
+    plus the CORE steering reference applied to W^F_qq (> 0, > random p95, > |sham| of CORE at the same dose) and the
+    per-concept cosines / norm fractions from fits/<locus>/altdir_seed0.npz."""
+    primary = _primary(model_key, dataset_id, template_id)
+    concepts = CONCEPTS[dataset_id]
+    rows = load_cohort(dataset_id, ("test",))
+    order = {r["row_id"]: i for i, r in enumerate(rows)}
+    n = len(rows)
+    core_df = _load_module(model_key, dataset_id, "CORE")
+    alt_df = _load_module(model_key, dataset_id, "ALTDIR")
+    if core_df is None or alt_df is None or len(alt_df) == 0:
+        raise FileNotFoundError("altdir needs merged outcomes/CORE.parquet and outcomes/ALTDIR.parquet (python -m cftransfer.package)")
+    base_core = core_df[core_df.direction_id == "baseline"]
+    d_log = _matrix(core_df, concepts, order, alpha, template_id=primary, baseline=base_core)
+    d_alt = _matrix(alt_df, concepts, order, alpha, template_id=primary, baseline=base_core)
+    idx = core_bootstrap_indices(dataset_id, n, draws)
+    B = idx.shape[0]
+    # logistic family of CORE: point matrix, per-draw strongest competitor, random / sham references
+    L = _family_stack(d_log, concepts, "concept", n)
+    Wlog = np.nanmean(L, axis=2)
+    off = ~np.eye(len(concepts), dtype=bool)
+    log_comp_boot = np.stack([np.where(off, np.nanmean(L[:, :, idx[b]], axis=2), -np.inf).max(axis=1) for b in range(B)])   # (B, 6)
+    log_ref = {}
+    for qi, q in enumerate(concepts):
+        rand = np.array([np.nanmean(d_log[(q, f"random:{i:03d}")]) for i in range(N_RANDOM) if (q, f"random:{i:03d}") in d_log])
+        sham = float(np.nanmean(d_log[(q, f"sham:{q}")])) if (q, f"sham:{q}") in d_log else np.nan
+        others = {d: float(Wlog[qi, di]) for di, d in enumerate(concepts) if d != q}
+        log_ref[q] = {"W_logistic_qq": float(Wlog[qi, qi]), "max_other_logistic": max(others.values()),
+                      "argmax_other_logistic": max(others, key=others.get), "O_logistic_q": float(Wlog[qi, qi] - max(others.values())),
+                      "random_p95": float(np.percentile(rand, 95)) if len(rand) else np.nan, "random_n": int(len(rand)),
+                      "abs_sham": abs(sham) if not np.isnan(sham) else np.nan}
+    # cosines from the prep file
+    arr = load_altdir(model_key, dataset_id, LOCI["primary"])
+    fo = list(arr["family_order"].astype(str))
+    cos = {}
+    for ci, c in enumerate(arr["concept_names"].astype(str)):
+        cos[c] = {"model": {a: {b: float(arr["cos_model"][ci, ai, bi]) for bi, b in enumerate(fo)} for ai, a in enumerate(fo)},
+                  "projected": {a: {b: float(arr["cos_projected"][ci, ai, bi]) for bi, b in enumerate(fo)} for ai, a in enumerate(fo)},
+                  "orth_norm_removed_fraction": float(arr["orth_norm_removed_fraction"][ci]),
+                  "resid_cos_to_logistic_projected": float(arr["resid_cos_to_logistic_projected"][ci])}
+    res = {"n_rows": n, "alpha": alpha, "template_id": primary, "baseline_module": "CORE", "draws": B,
+           "families": list(ALTDIR_FAMILIES), "logistic_reference": log_ref, "cosines": cos}
+    for fam in ALTDIR_FAMILIES:
+        A = _family_stack(d_alt, concepts, fam, n)
+        W = np.nanmean(A, axis=2)
+        Wb = np.stack([np.nanmean(A[:, :, idx[b]], axis=2) for b in range(B)])                       # (B, 6, 6)
+        names, est, boot = [], [], []
+        for qi, q in enumerate(concepts):
+            for di, d in enumerate(concepts):
+                if d != q:
+                    names.append(f"{q}-{d}"); est.append(float(W[qi, qi] - W[qi, di])); boot.append(Wb[:, qi, qi] - Wb[:, qi, di])
+        boot = np.stack(boot, axis=1)                                                                  # (B, 30)
+        mt = max_t(np.array(est), boot)
+        fam_res = {"W": {q: {d: float(W[qi, di]) for di, d in enumerate(concepts)} for qi, q in enumerate(concepts)},
+                   "n_scored_rows_min": int(np.min((~np.isnan(A)).sum(axis=2))),
+                   "contrasts": {nm: {"estimate": float(e), "sd": float(sd), "lower": float(lo), "upper": float(hi)}
+                                 for nm, e, sd, lo, hi in zip(names, mt["estimate"], mt["sd"], mt["lower"], mt["upper"])},
+                   "max_t_critical": mt["critical"], "per_question": {}}
+        for qi, q in enumerate(concepts):
+            others = {d: float(W[qi, di]) for di, d in enumerate(concepts) if d != q}
+            O_draws = boot[:, qi * 5:(qi + 1) * 5].min(axis=1)
+            X_draws = Wb[:, qi, qi] - log_comp_boot[:, qi]
+            lows = [fam_res["contrasts"][f"{q}-{d}"]["lower"] for d in concepts if d != q]
+            highs = [fam_res["contrasts"][f"{q}-{d}"]["upper"] for d in concepts if d != q]
+            ref = log_ref[q]
+            cell = {"W_qq": float(W[qi, qi]), "O_q": float(W[qi, qi] - max(others.values())),
+                    "max_other": max(others.values()), "argmax_other": max(others, key=others.get),
+                    "O_q_ci95_percentile": [float(np.percentile(O_draws, 2.5)), float(np.percentile(O_draws, 97.5))],
+                    "verdict": ("stronger_competitor" if any(h < 0 for h in highs) else
+                                ("fixed_family_advantage" if all(l > 0 for l in lows) else "unresolved")),
+                    "own_minus_max_logistic_competitor": float(W[qi, qi] - ref["max_other_logistic"]),
+                    "own_minus_max_logistic_competitor_ci95_percentile": [float(np.percentile(X_draws, 2.5)), float(np.percentile(X_draws, 97.5))],
+                    "W_logistic_qq": ref["W_logistic_qq"], "O_logistic_q": ref["O_logistic_q"],
+                    "random_p95": ref["random_p95"], "abs_sham": ref["abs_sham"],
+                    "steering_reference": bool(ref["random_n"] == N_RANDOM and W[qi, qi] > 0 and W[qi, qi] > ref["random_p95"]
+                                               and W[qi, qi] > ref["abs_sham"]),
+                    "cos_to_logistic_model": cos[q]["model"]["logistic"][fam],
+                    "cos_to_logistic_projected": cos[q]["projected"]["logistic"][fam]}
+            if fam == "orth":
+                cell["norm_removed_fraction"] = cos[q]["orth_norm_removed_fraction"]
+            fam_res["per_question"][q] = cell
+        res[fam] = fam_res
+    return res
+
+
 def _ineligible_prompt_rows(model_key, dataset_id) -> int:
     """Rows the PROMPT block legitimately lacks because templates were INELIGIBLE at preflight."""
     elig = _eligibility(model_key, dataset_id)
@@ -457,7 +573,7 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--model-key", required=True)
     ap.add_argument("--dataset", required=True)
-    ap.add_argument("--what", default="calibration,core", help="comma list of calibration,core,shifts")
+    ap.add_argument("--what", default="calibration,core", help="comma list of calibration,core,shifts,t3,altdir")
     ap.add_argument("--n-boot", type=int, default=None)
     a = ap.parse_args()
     rd = run_dir(a.model_key, a.dataset)
@@ -471,6 +587,8 @@ if __name__ == "__main__":
             report["label_shifts"] = label_shifts(a.model_key, a.dataset)
         elif w == "t3":
             report["t3"] = t3(a.model_key, a.dataset)
+        elif w == "altdir":
+            report["altdir"] = altdir(a.model_key, a.dataset, draws=a.n_boot or BOOT_CALIBRATION_DRAWS)
     report["primary_template"] = primary_template(rd)       # template the single-template statistics above refer to
     (rd / "summary.json").write_text(json.dumps(report, indent=1, default=lambda o: float(o) if isinstance(o, np.floating) else str(o)))
     if "calibration" in report:
@@ -480,6 +598,13 @@ if __name__ == "__main__":
     if "t3" in report:
         for k, v in report["t3"].items():
             print(f"T3  {k:40s} {v['estimate']:+.4f} [{v['ci_low']:+.4f}, {v['ci_high']:+.4f}] {v['status']}")
+    if "altdir" in report and "altdir" in a.what:
+        for fam in report["altdir"]["families"]:
+            for q, cell in report["altdir"][fam]["per_question"].items():
+                lo, hi = cell["O_q_ci95_percentile"]; xlo, xhi = cell["own_minus_max_logistic_competitor_ci95_percentile"]
+                print(f"ALTDIR {fam:8s} {q:14s} W_qq={cell['W_qq']:+.4f} O_q={cell['O_q']:+.4f} [{lo:+.4f},{hi:+.4f}] (vs {cell['argmax_other']}) "
+                      f"own-maxlog={cell['own_minus_max_logistic_competitor']:+.4f} [{xlo:+.4f},{xhi:+.4f}] "
+                      f"cos={cell['cos_to_logistic_model']:+.3f} ref={cell['steering_reference']} verdict={cell['verdict']}")
     if "core" in report and "core" in a.what:
         for q, cell in report["core"]["per_question"].items():
             print(f"CORE {q:14s} W_qq={cell['W_qq']:.4f} O_q={cell['O_q']:.4f} (vs {cell['argmax_other']}) p95rand={cell['random_p95']:.4f} "

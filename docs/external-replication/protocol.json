@@ -280,6 +280,36 @@
       "cohort": "test",
       "expected_rows_per_dataset_checkpoint": 457200,
       "calibration_rows_per_dataset_checkpoint": 2400
+    },
+    "ALTDIR": {
+      "cohort": "test",
+      "concepts": "all",
+      "templates": [
+        "IY"
+      ],
+      "alpha": [
+        0.25
+      ],
+      "locus": "primary (vis.last)",
+      "fit_seed": 0,
+      "directions": "6dom+6pattern+6orth+6resid (24 steered conditions per question; no baseline rows)",
+      "direction_families": {
+        "dom": "difference of class means mu_pos - mu_neg in the projected, train-scaled 512-d space (known-label training rows)",
+        "pattern": "Haufe pattern Sigma w, Sigma = covariance of the projected, train-scaled features over all training rows, w = seed-0 logistic normal",
+        "orth": "seed-0 logistic normal with its component in the span of the other five concepts' logistic normals removed (512-d space); fraction of norm removed recorded",
+        "resid": "logistic normal (same C, iterations, seed 0) refitted on features residualised column-wise against the other five binary labels (intercept + labels; training rows with all six labels known); cosine to the original normal recorded"
+      },
+      "lift": "every family is mapped to model space exactly as the logistic normal: v = normalize(P @ (u / max(s, 1e-8)))",
+      "prep": "python -m cftransfer.altdir --model-key K --dataset D  (CPU; writes fits/vis.last/altdir_seed0.npz)",
+      "expected_rows": 86400,
+      "baseline": "reuse CORE",
+      "datasets": [
+        "nih",
+        "chexpert",
+        "coco"
+      ],
+      "added": "2026-09-14; not part of the planned campaign total (see total_planned_outcomes.ALTDIR_rows_addendum); enqueued explicitly",
+      "analysis": "cftransfer.analysis --what altdir: per family W (6x6), within-family O_q with 2,000-draw patient-bootstrap percentile interval and 6x5 max-T verdict, own write minus the strongest logistic competitor from CORE, per-concept cosines"
     }
   },
   "numerics": {
@@ -503,6 +533,8 @@
     "core_clinical_matrix_cells": 2376,
     "primary_CORE_rows": 30175200,
     "all_test_and_calibration_rows": 125153600,
-    "excludes": "feature extraction, interface preflight and retries"
+    "excludes": "feature extraction, interface preflight and retries",
+    "ALTDIR_rows_addendum": 5702400,
+    "ALTDIR_note": "ALTDIR rows are an addendum (2026-09-14); all_test_and_calibration_rows keeps the planned total of the original seven modules"
   }
 }

@@ -13,6 +13,9 @@ capabilities the protocol measures, computed from the packaged statistics with t
 
 Blocks whose templates are INELIGIBLE by preflight check E are reported with the disposition instead of a count; a
 block scored on a non-IY primary template is graded on that template and the template is shown in an extra column.
+Blocks with ALTDIR statistics (summary.json "altdir") add one CSV column, altdir_owned_dom_pattern_orth_resid: the
+owned count per alternative direction family under the same rule (steering reference + fixed_family_advantage within
+the family); the column is absent when no block has the key, and the markdown table ignores it.
 Outputs runs/leaderboard.csv and runs/leaderboard.md.
 """
 from __future__ import annotations
@@ -28,6 +31,8 @@ DATASETS = ("nih", "chexpert", "coco")
 COLUMNS = ["model_key", "dataset_id", "status", "modules_complete", "modules_ineligible", "n_concepts",
            "readable", "answer_capable", "owned", "owned_concepts", "readable_concepts", "capable_concepts",
            "eligible_templates", "primary_template", "gpu_hours"]
+ALTDIR_COL = "altdir_owned_dom_pattern_orth_resid"          # only written when some block carries summary["altdir"]
+ALTDIR_FAMILIES = ("dom", "pattern", "orth", "resid")
 
 
 def grade_block(summary: dict, run: dict | None, eligibility: dict | None) -> dict:
@@ -51,6 +56,13 @@ def grade_block(summary: dict, run: dict | None, eligibility: dict | None) -> di
         "owned_concepts": ", ".join(owned), "readable_concepts": ", ".join(readable), "capable_concepts": ", ".join(capable),
         "eligible_templates": elig, "primary_template": primary, "gpu_hours": (run or {}).get("gpu_hours"),
     }
+    alt = summary.get("altdir")
+    if alt:
+        counts = []
+        for fam in alt.get("families") or ALTDIR_FAMILIES:
+            pq_ = (alt.get(fam) or {}).get("per_question") or {}
+            counts.append(str(sum(1 for v in pq_.values() if v.get("steering_reference") and v.get("verdict") == "fixed_family_advantage")))
+        row[ALTDIR_COL] = "/".join(counts)
     return row
 
 
@@ -111,8 +123,9 @@ def render_markdown(rows: list[dict]) -> str:
 def main(runs_root: Path = RUNS_ROOT) -> Path:
     rows = collect(runs_root)
     csv_path = runs_root / "leaderboard.csv"
+    fields = COLUMNS + ([ALTDIR_COL] if any(ALTDIR_COL in r for r in rows) else [])
     with csv_path.open("w", newline="") as f:
-        w = csv.DictWriter(f, fieldnames=COLUMNS); w.writeheader(); w.writerows(rows)
+        w = csv.DictWriter(f, fieldnames=fields); w.writeheader(); w.writerows(rows)
     (runs_root / "leaderboard.md").write_text(render_markdown(rows) + "\n")
     print(f"{csv_path} {len(rows)} blocks")
     return csv_path

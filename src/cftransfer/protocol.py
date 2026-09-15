@@ -45,7 +45,14 @@ CALIBRATION_PROMPT_DATASETS = ("nih", "coco")
 # Modules added to CheXpert after the first campaign wave (CORE + CALIBRATION). A CheXpert block packaged before one of
 # them is started is judged on the modules it has: package.build counts such a module as requested only once its
 # outcomes directory exists (the runner creates it when the module starts).
-MODULES_ADDED_LATER = {"chexpert": ("PROMPT", "DOSE", "REFIT", "LOCUS", "LOCUS_CALIBRATION")}
+# ALTDIR (alternative direction estimators, reviewer objection on estimator dependence) was added to every dataset
+# after the campaign's blocks were packaged; it is enqueued explicitly (enqueue --modules ALTDIR) and its coverage is
+# requested only once its outcomes directory exists, so packaged blocks keep COMPLETE until it starts.
+MODULES_ADDED_LATER = {"nih": ("ALTDIR",), "coco": ("ALTDIR",),
+                       "chexpert": ("PROMPT", "DOSE", "REFIT", "LOCUS", "LOCUS_CALIBRATION", "ALTDIR")}
+# ALTDIR direction families, in condition order: difference of means, Haufe pattern, orthogonalised logistic normal,
+# logistic normal refitted on label-residualised features (altdir.py); every family is lifted with the logistic rule.
+ALTDIR_FAMILIES = ("dom", "pattern", "orth", "resid")
 COCO_CATEGORY_IDS = {"person": 1, "dog": 18, "car": 3, "chair": 62, "bottle": 44, "bicycle": 2}
 
 # probe / direction constants
@@ -118,7 +125,7 @@ class ModuleSpec:
     templates: tuple[str, ...]
     concepts_rule: str              # "all" | "prompt"
     alphas: tuple[float, ...]
-    directions: str                 # "core" | "clean" | "dose" | "refit"
+    directions: str                 # "core" | "clean" | "dose" | "refit" | "altdir"
     fit_seeds: tuple[int, ...]
     locus: str                      # "primary" | "connector"
     baseline_module: str | None     # module whose clean baseline is reused (DOSE/REFIT)
@@ -140,6 +147,9 @@ MODULES: dict[str, ModuleSpec] = {
                         ("nih", "chexpert", "coco")),
     "LOCUS_CALIBRATION": ModuleSpec("LOCUS_CALIBRATION", "calibration", None, ("IY",), "all", (0.0,), "clean", (0,),
                                     "connector", None, ("nih", "chexpert", "coco")),
+    # alternative direction estimators at the primary locus, seed 0, primary dose; clean baseline reused from CORE
+    "ALTDIR": ModuleSpec("ALTDIR", "test", None, ("IY",), "all", (PRIMARY_ALPHA,), "altdir", (0,), "primary", "CORE",
+                         ("nih", "chexpert", "coco")),
 }
 
 
@@ -174,6 +184,10 @@ def conditions_for(module: str, dataset_id: str, concept: str) -> list[tuple[str
         return [(d, a) for a in spec.alphas for d in ids]
     if spec.directions == "refit":
         ids = [f"concept:{c}" for c in CONCEPTS[dataset_id]] + [sham]
+        return [(d, spec.alphas[0]) for d in ids]
+    if spec.directions == "altdir":
+        # every family's six concept directions, family by family: 24 steered conditions, no baseline rows
+        ids = [f"{fam}:{c}" for fam in ALTDIR_FAMILIES for c in CONCEPTS[dataset_id]]
         return [(d, spec.alphas[0]) for d in ids]
     raise ValueError(spec.directions)
 

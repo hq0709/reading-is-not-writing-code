@@ -24,7 +24,9 @@ BATCH_MODEL = {"llama32-11": 16, "llama32-90": 4}
 def batch_for(model_key: str, lane: str) -> int:
     return BATCH_MODEL.get(model_key, BATCH[lane])
 # shards per module for a 600-row test block (row budget relative to CORE); calibration modules are single tasks
-SHARDS = {"CORE": 4, "LOCUS": 4, "PROMPT": 7, "DOSE": 2, "REFIT": 1, "CALIBRATION": 1, "LOCUS_CALIBRATION": 1}
+SHARDS = {"CORE": 4, "LOCUS": 4, "PROMPT": 7, "DOSE": 2, "REFIT": 1, "CALIBRATION": 1, "LOCUS_CALIBRATION": 1, "ALTDIR": 1}
+# ALTDIR is not in the default order: it is enqueued explicitly (--modules ALTDIR) after its CPU prep
+# (python -m cftransfer.altdir), whose output file the task additionally requires.
 MODULE_ORDER = ["CALIBRATION", "CORE", "LOCUS_CALIBRATION", "DOSE", "REFIT", "LOCUS", "PROMPT"]
 MODEL_PRIORITY = ["q25-7", "llava15-7", "lingshu-7", "llavamed-7", "q3-8", "iv35-8", "medgemma-4", "q25-3", "q3-4", "iv35-14",
                   "llava15-13", "gemma3-4", "gemma3-12", "llama32-11", "q25-32", "q3-32", "lingshu-32", "medgemma-27",
@@ -53,6 +55,7 @@ def enqueue(model_key: str, dataset_id: str, modules: list[str] | None = None, p
         if dataset_id not in spec.datasets or expected_rows(mod, dataset_id) == 0:
             continue
         n = SHARDS[mod]
+        requires = prep_out + ([str(rd / "fits" / "vis.last" / "altdir_seed0.npz")] if mod == "ALTDIR" else [])
         for s in range(n):
             tag = f"{s:03d}of{n:03d}"
             name = f"{prefix}{prio_m:02d}{prio_d}-{mi + 1:02d}-{mod}-{model_key}-{dataset_id}-{tag}"
@@ -60,7 +63,7 @@ def enqueue(model_key: str, dataset_id: str, modules: list[str] | None = None, p
                 "name": name, "lane": lane,
                 "cmd": ["python", "-m", "cftransfer.runner", "--model-key", model_key, "--dataset", dataset_id, "--module", mod,
                         "--shard", str(s), "--n-shards", str(n), "--batch", str(batch_for(model_key, lane)), "--device-map", dm],
-                "requires": prep_out, "produces": [str(rd / "outcomes" / mod / f"meta-{tag}-*.json")], "env": env}, indent=1))
+                "requires": requires, "produces": [str(rd / "outcomes" / mod / f"meta-{tag}-*.json")], "env": env}, indent=1))
             names.append(name)
     return names
 

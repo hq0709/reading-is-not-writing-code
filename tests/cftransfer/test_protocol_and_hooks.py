@@ -23,8 +23,10 @@ def test_expected_rows_match_protocol_table():
     assert P.expected_rows("DOSE", "nih") == 162_000
     assert P.expected_rows("REFIT", "coco") == 50_400
     assert P.expected_rows("LOCUS", "nih") + P.expected_rows("LOCUS_CALIBRATION", "nih") == 459_600
-    per_model = sum(P.expected_rows(m, d) for d in P.DATASETS for m in P.MODULES)
+    # the planned campaign total covers the original seven modules; ALTDIR (added 2026-09-14) is a separate addendum
+    per_model = sum(P.expected_rows(m, d) for d in P.DATASETS for m in P.MODULES if m != "ALTDIR")
     assert per_model * 22 == P.PROTOCOL["total_planned_outcomes"]["all_test_and_calibration_rows"]
+    assert sum(P.expected_rows("ALTDIR", d) for d in P.DATASETS) * 22 == P.PROTOCOL["total_planned_outcomes"]["ALTDIR_rows_addendum"]
     core = sum(P.expected_rows("CORE", d) for d in P.DATASETS)
     assert core * 22 == P.PROTOCOL["total_planned_outcomes"]["primary_CORE_rows"]
 

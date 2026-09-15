@@ -20,11 +20,12 @@ import pyarrow.parquet as pq
 import torch
 
 from .adapters import get_adapter
+from .altdir import load_altdir
 from .fit import load_fit, run_id_for
 from .hooks import LocusHook
 from .images import image_path, load_cohort, open_rgb
-from .protocol import (CONCEPTS, LOCI, MODULES, PROTOCOL_ID, conditions_for, direction_kind, primary_template, question_list,
-                       render_question)
+from .protocol import (ALTDIR_FAMILIES, CONCEPTS, LOCI, MODULES, PROTOCOL_ID, conditions_for, direction_kind, primary_template,
+                       question_list, render_question)
 from .runpaths import outcomes_dir, run_dir
 from .scoring import score_logits
 
@@ -45,14 +46,23 @@ KEY = ["run_id", "module", "row_id", "concept", "template_id", "locus_id", "fit_
 
 
 class DirectionBank:
-    """direction_id -> unit vector for one (dataset, locus, seed); random family always from seed 0."""
+    """direction_id -> unit vector for one (dataset, locus, seed); random family always from seed 0. The ALTDIR module
+    (altdir=True) also loads the four alternative families from fits/<locus>/altdir_seed0.npz, written by the CPU prep
+    step `python -m cftransfer.altdir`; a missing file fails here with that command, before any model is loaded."""
 
-    def __init__(self, model_key, dataset_id, locus_id, seeds):
+    def __init__(self, model_key, dataset_id, locus_id, seeds, altdir: bool = False):
         self.fits = {s: load_fit(model_key, dataset_id, locus_id, s) for s in seeds}
         if 0 not in self.fits:
             self.fits[0] = load_fit(model_key, dataset_id, locus_id, 0)
         self.concepts = list(self.fits[0]["concept_names"].astype(str))
         self.D = int(self.fits[0]["clinical_vectors"].shape[1])
+        self.altdir = load_altdir(model_key, dataset_id, locus_id) if altdir else None
+        if self.altdir is not None:
+            if list(self.altdir["concept_names"].astype(str)) != self.concepts:
+                raise RuntimeError("altdir_seed0.npz concept order differs from seed0.npz")
+            for fam in ALTDIR_FAMILIES:
+                if self.altdir[f"{fam}_vectors"].shape != (len(self.concepts), self.D):
+                    raise RuntimeError(f"altdir_seed0.npz {fam}_vectors has shape {self.altdir[f'{fam}_vectors'].shape}")
 
     def vector(self, direction_id: str, seed: int) -> np.ndarray | None:
         kind, _, name = direction_id.partition(":")
@@ -64,6 +74,10 @@ class DirectionBank:
             return self.fits[0]["random_vectors"][int(name)]
         if kind == "sham":
             return self.fits[seed]["sham_vectors"][self.concepts.index(name)]
+        if kind in ALTDIR_FAMILIES:
+            if self.altdir is None:
+                raise KeyError(f"{direction_id}: alternative directions are only loaded for the ALTDIR module")
+            return self.altdir[f"{kind}_vectors"][self.concepts.index(name)]
         raise KeyError(direction_id)
 
 
@@ -81,6 +95,8 @@ def run_block(model_key: str, dataset_id: str, module: str, shard: int, n_shards
     if dataset_id not in spec.datasets:
         raise SystemExit(f"{module} is NOT_REQUESTED for {dataset_id}")
     locus_id = LOCI[spec.locus]
+    # directions first: a missing fit or altdir prep file fails before the outcomes directory or the model exist
+    bank = DirectionBank(model_key, dataset_id, locus_id, spec.fit_seeds, altdir=spec.directions == "altdir")
     rows = load_cohort(dataset_id, (spec.role,))
     if spec.row_limit:
         rows = rows[:spec.row_limit]
@@ -125,7 +141,6 @@ def run_block(model_key: str, dataset_id: str, module: str, shard: int, n_shards
         return meta
     ad = get_adapter(model_key, revision).load(device_map=device_map)
     locus = ad.loci()[locus_id]
-    bank = DirectionBank(model_key, dataset_id, locus_id, spec.fit_seeds)
     hook = LocusHook(ad.module(locus.module_path), locus_id)
     run_id = run_id_for(model_key, dataset_id)
     if spec.directions == "clean":

@@ -6,7 +6,8 @@ Per (model, dataset, locus, fit_seed):
   probes     LogisticRegression(C=1, max_iter=2000, lbfgs, class_weight=None, random_state=0), one per concept
   controls   20 type->random-label probes per concept (seeds 0..19; type = view x sex x age-decade or COCO buckets)
   nuisance   view_AP, sex_M where available
-  direction  v_c = normalize(P @ (w_c / max(s, 1e-8)))
+  direction  v_c = normalize(P @ (w_c / max(s, 1e-8)))                          (direction_from_projected; the ALTDIR
+             families in altdir.py lift their 512-d vectors to model space with this same function)
   random     119 x D standard normal from default_rng(0), row-normalised, then one coordinate permutation per
              concept (in concept order) applied to v_c -> sham            (seed-0 file only; shared by all seeds)
   REFIT      seeds 1,2 resample training units with replacement, keep every row of a sampled unit with its
@@ -50,6 +51,14 @@ def control_assignment(type_names: list[str], seed: int) -> np.ndarray:
 
 def fit_lr(z: np.ndarray, y: np.ndarray) -> LogisticRegression:
     return LogisticRegression(**LOGREG).fit(z, y)
+
+
+def direction_from_projected(P: np.ndarray, s: np.ndarray, u: np.ndarray) -> np.ndarray:
+    """Lift a vector u of the projected, train-scaled 512-d space to a unit model-space direction:
+    v = normalize(P @ (u / max(s, 1e-8))). This is the one mapping every direction family uses (logistic normals here,
+    dom/pattern/orth/resid in altdir.py), so families differ only in how u is estimated."""
+    raw = P @ (u / np.maximum(s, 1e-8))
+    return (raw / np.linalg.norm(raw)).astype(np.float32)
 
 
 def load_features(model_key: str, dataset_id: str, locus_id: str):
@@ -141,8 +150,7 @@ def fit_locus(model_key: str, dataset_id: str, locus_id: str, seeds: tuple[int, 
                 raise RuntimeError(f"{c}: single-class training labels")
             clf = fit_lr(Zs[tr][m], yy)
             coef[ci], intercept[ci] = clf.coef_[0], clf.intercept_[0]
-            raw = P @ (coef[ci] / np.maximum(s, 1e-8))
-            vectors[ci] = (raw / np.linalg.norm(raw)).astype(np.float32)
+            vectors[ci] = direction_from_projected(P, s, coef[ci])
             cell = {"n_train_pos": int(yy.sum()), "n_train_neg": int((1 - yy).sum())}
             # controls: same known-label subset, type-based random labels (fit for seed 0 only; reused by REFIT)
             if seed == 0 and controls_eligible:

@@ -156,6 +156,7 @@ REFIT seed1/2改变的是训练独立单元的bootstrap重抽样（胸片患者�
 | DOSE | 三数据集全部6概念，前200test图；-.5/-.25/-.1/+.1/+.5；6概念+前20random+sham | 每数据集162,000 |
 | REFIT | 三数据集全部6概念，seed1/2各6概念方向+问题sham，+.25，600图 | 每数据集50,400 |
 | LOCUS | 三数据集第二位置完整CORE，另400图×6概念clean校准 | 每数据集459,600 |
+| ALTDIR | 三数据集全部6概念，IY，+.25，600图；主位置seed0的四个替代方向族各6概念：dom（类均值差）、pattern（Haufe Σw）、orth（logistic normal去除其余五概念张成空间分量）、resid（对其余五标签残差化特征后重拟合的logistic normal），同一投影/缩放/映射；baseline复用CORE；后加模块，仅显式入队 | 每数据集86,400 |
 
 训练/测试pooled features不包含在以上计数。正向+.25全随机主比较和其他剂量20random敏感性是不同证据规格，不能拼起来声称整个dose sweep均做过119随机校正。
 
