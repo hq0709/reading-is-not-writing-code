@@ -1998,3 +1998,20 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   batched measurement is numerically stable at the level of the verdicts.
 - Gate decision: enters Section 5.7 and the appendix table once q25-7 NIH (fp32 pending) and gemma3-12 NIH (the
   worst-case batch-vs-single block, 1.84 logits) land.
+
+## 2026-09-15 Robustness R4: answer-direction validation, column selectivity, known-label ownership
+
+- Run: `scripts/mayo/robustness_validation.py` -> `runs/robustness/validation.{json,md}` (58 blocks, 348 cells;
+  9 ANSDIR blocks).
+- Observation (answer direction): a_q reads the clinical label WORSE than the probe (median label AUROC 0.64 vs
+  0.73 on NIH, 0.67 vs 0.85 on CheXpert; 0.95 vs 0.97 on COCO) and predicts the model's own clean answer far better
+  (0.89 vs 0.76); its cosine to the probe normal is 0.06-0.33 raw and 0.36-0.43 after whitening by the training
+  covariance on the chest sets, against 0.54-0.64 raw and 0.81 whitened on COCO. The direction that writes is not
+  the direction that reads.
+- Observation (column selectivity S_d = W_dd / sum_q |W_qd|): median 0.11 (NIH), 0.13 (CheXpert), 0.67 (COCO);
+  S_d >= 0.5 in 2/120, 1/114, 84/114 cells; the only chest cell that is selective but not owned (medgemma-27 NIH
+  Cardiomegaly) sits on a saturated question (random p95 0.65). Ownership on chest is almost never accompanied by
+  column selectivity (1 of 29 owned chest cells).
+- Observation (known-label rows, CheXpert): recomputing on rows with a known label (median 165 per cell) keeps the
+  sign of O_q in 108/114 cells and 18 of 19 owned cells (medgemma-4 Cardiomegaly becomes unresolved).
+- Gate decision: all three strengthen the thesis; enter Section 5.7 in one sentence each and the appendix table.
