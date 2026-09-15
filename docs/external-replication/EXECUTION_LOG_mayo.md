@@ -1825,3 +1825,14 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   dog +0.003, car +0.008, chair +0.016, bottle +0.010, bicycle +0.005 (W_qq 0.009-0.028, random p95 <= 0.009,
   |sham| <= 0.010). The family's third size repeats 8B and 14B: specific on objects, inert on chest findings.
 - Gate decision: valid OBSERVED block; tables and leaderboard regenerated.
+
+## 2026-09-14 iv35-38 COCO: all seven modules packaged; T3
+
+- Run: DOSE, LOCUS, PROMPT landed; block COMPLETE with all seven modules, 156.6 GPU-hours (the most expensive
+  COCO block; 38B on the 2-GPU lane).
+- Observation (T3): signed dose range +0.020 [+0.016, +0.023]; refit SD 0.001; connector median O +0.005;
+  label gap -0.075 [-0.131, -0.022]; person wording +0.002, mapping -0.003; bottle wording +0.002, mapping
+  +0.001. Small but consistently positive dose response on objects, against a flat one on NIH: the InternVL
+  family's writes are weak everywhere and directed only on natural objects.
+- Gate decision: valid OBSERVED block; iv35-38 complete on NIH and COCO (CheXpert running). Tables and
+  leaderboard regenerated; fully-scored watcher re-armed.
