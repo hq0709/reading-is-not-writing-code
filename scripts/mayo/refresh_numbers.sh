@@ -8,7 +8,7 @@ cd /rodata/azradonc_dev/m253405/concept-flow
 export PYTHONPATH=src
 t() { local s=$(date +%s); "$@"; local rc=$?; echo "$(date -u +%FT%TZ) rc=$rc $(( $(date +%s) - s ))s: $*" >&2; return $rc; }
 t python -m cftransfer.manifest > /dev/null
-for r in geometry scale pairs validation refit; do t python scripts/mayo/robustness_$r.py > /rodata/azradonc_dev/m253405/cf-transfer/logs/robustness_$r.log 2>&1; done
+for r in geometry scale pairs validation refit round2; do t python scripts/mayo/robustness_$r.py > /rodata/azradonc_dev/m253405/cf-transfer/logs/robustness_$r.log 2>&1; done
 cd /rodata/azradonc_dev/m253405/concept-flow-paper
 t python scripts/build_cf_transfer_tables.py > /dev/null
 t python scripts/build_robustness_tables.py > /dev/null
