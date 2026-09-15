@@ -47,6 +47,7 @@ from scipy.stats import spearmanr
 REPO = Path(__file__).resolve().parents[2]
 if str(REPO / "src") not in sys.path:
     sys.path.insert(0, str(REPO / "src"))
+from cftransfer.manifest import block_included  # noqa: E402
 from cftransfer.protocol import CONCEPTS, DATASETS  # noqa: E402
 from cftransfer.runpaths import RUN_ROOT  # noqa: E402
 
@@ -124,12 +125,16 @@ def phi_and_counts(Y: np.ndarray):
 
 # ------------------------------------------------------------------------------------------- data loading
 def discover_blocks(run_root: Path, locus: str, fit_seed: int):
-    """Blocks with a complete 6x6 core.W and a seed-<fit_seed> fit at the requested locus."""
+    """Blocks under the paper's one inclusion rule (cftransfer.manifest.block_included: CORE and CALIBRATION in
+    run.json completed_modules) with a complete 6x6 core.W and a seed-<fit_seed> fit at the requested locus."""
     used, skipped = [], []
     for sj in sorted(run_root.glob("*/*/summary.json")):
         mk, ds = sj.parts[-3], sj.parts[-2]
         if mk in SKIP_DIRS or ds not in DATASETS:
             continue
+        rj = sj.parent / "run.json"
+        if not (rj.exists() and block_included(json.loads(rj.read_text()))):
+            skipped.append({"block": f"{mk}/{ds}", "reason": "not included: run.json completed_modules lacks CORE or CALIBRATION"}); continue
         s = json.loads(sj.read_text())
         core = s.get("core") or {}
         W = core.get("W") or {}

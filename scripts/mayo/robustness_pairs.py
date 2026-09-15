@@ -6,10 +6,11 @@ Read-only over <RUN_ROOT>/<model_key>/<dataset>/ (summary.json, outcomes/CORE.pa
 features/vis.last.npz, fits/vis.last/seed0.npz, manifests/cohort.csv). Writes <RUN_ROOT>/robustness/pairs.json and
 pairs.md only.
 
-A block enters the write-matrix statistics when its summary.json carries core.W for all six concepts with a verdict
-per concept AND a merged outcomes/CORE.parquet exists (llama32-11/nih carries a core.W on template IB rebuilt from
-unmerged shards and no merged parquet; it is excluded and flagged in the denominator audit, matching the paper's
-228-cell chest write-matrix count).
+A block enters the write-matrix statistics when it is included under the paper's one rule
+(cftransfer.manifest.block_included: CORE and CALIBRATION in run.json completed_modules) AND its summary.json carries
+core.W for all six concepts with a verdict per concept AND a merged outcomes/CORE.parquet exists. Blocks that fail the
+rule (e.g. llama32-11/nih, whose CORE is incomplete and whose partial core.W was rebuilt from unmerged shards) are
+excluded and flagged in the denominator audit, matching the manifest's write-matrix cell count.
 
 Tasks (numbered as in the request):
   1. shared-tower paired deltas   Delta O_q = O_q(larger) - O_q(smaller) for the Gemma-3 / MedGemma size pairs on every
@@ -47,13 +48,14 @@ REPO = Path(__file__).resolve().parents[2]
 if str(REPO / "src") not in sys.path:
     sys.path.insert(0, str(REPO / "src"))
 from cftransfer.analysis import _O_from_delta, _load_module, _matrix, core_bootstrap_indices          # noqa: E402
+from cftransfer.manifest import block_included                                                        # noqa: E402
 from cftransfer.protocol import BOOT_CORE_SEED, CONCEPTS, DATASETS, MODEL_ORDER, PRIMARY_ALPHA, primary_template  # noqa: E402
 from cftransfer.runpaths import RUN_ROOT, run_dir                                                      # noqa: E402
 
 OUT_DIR = RUN_ROOT / "robustness"
 SKIP_DIRS = {"robustness", "figures"}
 CHEST = ("nih", "chexpert")
-EXCLUDED_MODELS = ("llama32-11",)          # yes/no modules ineligible; no merged CORE.parquet on any dataset
+EXCLUDED_MODELS: tuple = ()                # filled at discovery: models with no block under the inclusion rule
 PAIRS = [("gemma3-4", "gemma3-12"), ("gemma3-12", "gemma3-27"), ("gemma3-4", "gemma3-27"), ("medgemma-4", "medgemma-27")]
 FAMILIES = {
     "qwen25vl": ["q25-3", "q25-7", "q25-32", "q25-72"],
@@ -153,6 +155,8 @@ def discover() -> list[dict]:
         if mk in SKIP_DIRS or ds not in DATASETS:
             continue
         s = json.loads(sj.read_text())
+        rj = sj.parent / "run.json"
+        included = rj.exists() and block_included(json.loads(rj.read_text()))
         cs = CONCEPTS[ds]
         core = s.get("core") or {}
         W = core.get("W") or {}
@@ -165,12 +169,12 @@ def discover() -> list[dict]:
                "calibration_present": all(q in cal for q in cs),
                "core_W_in_summary": w_complete, "core_verdicts_in_summary": verdicts, "core_parquet": parquet,
                "refit_parquet": (sj.parent / "outcomes" / "REFIT.parquet").exists(),
-               "excluded_model": mk in EXCLUDED_MODELS,
+               "excluded_model": not included,       # excluded under the inclusion rule (CORE and CALIBRATION completed)
                "refit_sd": (s.get("t3") or {}).get("all|median_refit_O_sd", {}).get("estimate"),
                "summary": s}
         rec["write_matrix"] = bool(w_complete and verdicts and parquet and not rec["excluded_model"])
         rec["write_matrix_reason"] = ("" if rec["write_matrix"] else
-                                      "excluded model (yes/no template ineligible; no merged CORE.parquet)" if rec["excluded_model"] else
+                                      "not included (run.json completed_modules lacks CORE or CALIBRATION)" if rec["excluded_model"] else
                                       "core.W incomplete in summary" if not w_complete else
                                       "no verdicts in summary" if not verdicts else "no merged outcomes/CORE.parquet")
         blocks.append(rec)
@@ -181,10 +185,12 @@ def discover() -> list[dict]:
             continue
         blocks.append({"model": mk, "dataset": ds, "primary_template": None, "calibration_present": False,
                        "core_W_in_summary": False, "core_verdicts_in_summary": False, "core_parquet": (d / "outcomes" / "CORE.parquet").exists(),
-                       "refit_parquet": False, "excluded_model": mk in EXCLUDED_MODELS, "refit_sd": None, "summary": {},
+                       "refit_parquet": False, "excluded_model": True, "refit_sd": None, "summary": {},
                        "write_matrix": False, "write_matrix_reason": "no summary.json"})
     order = {m: i for i, m in enumerate(MODEL_ORDER)}
     blocks.sort(key=lambda b: (order.get(b["model"], 999), b["model"], DATASETS.index(b["dataset"])))
+    global EXCLUDED_MODELS
+    EXCLUDED_MODELS = tuple(sorted({b["model"] for b in blocks} - {b["model"] for b in blocks if not b["excluded_model"]}))
     return blocks
 
 

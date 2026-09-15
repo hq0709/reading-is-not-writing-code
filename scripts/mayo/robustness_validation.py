@@ -54,11 +54,12 @@ REPO = Path(__file__).resolve().parents[2]
 if str(REPO / "src") not in sys.path:
     sys.path.insert(0, str(REPO / "src"))
 from cftransfer.analysis import _matrix, core_bootstrap_indices          # noqa: E402
+from cftransfer.manifest import block_included                            # noqa: E402
 from cftransfer.protocol import BOOT_CORE_SEED, CONCEPTS, DATASETS, N_RANDOM, PRIMARY_ALPHA, primary_template  # noqa: E402
 from cftransfer.runpaths import RUN_ROOT                                  # noqa: E402
 
 SKIP_DIRS = {"robustness", "figures"}
-EXCLUDED_MODELS = ("llama32-11",)      # yes/no template ineligible; no merged CORE.parquet (robustness_pairs.py rule)
+EXCLUDED_MODELS: tuple = ()            # filled at discovery: models with no block under the inclusion rule
 CHEST = ("nih", "chexpert")
 SUPPORT_MIN = 10                       # the 10/10 support rule of the calibration grading
 S_THRESHOLD = 0.5
@@ -138,8 +139,10 @@ def boot_means(D: np.ndarray, C: np.ndarray) -> np.ndarray:
 
 # ------------------------------------------------------------------------------------------- data loading
 def discover_blocks(run_root: Path):
-    """Blocks with a complete 6x6 core.W, a verdict per question and a merged CORE.parquet; excluded models flagged."""
-    used, skipped = [], []
+    """Blocks under the paper's one inclusion rule (cftransfer.manifest.block_included: CORE and CALIBRATION in
+    run.json completed_modules) with a complete 6x6 core.W, a verdict per question and a merged CORE.parquet."""
+    global EXCLUDED_MODELS
+    used, skipped, seen, kept = [], [], set(), set()
     for sj in sorted(run_root.glob("*/*/summary.json")):
         mk, ds = sj.parts[-3], sj.parts[-2]
         if mk in SKIP_DIRS or ds not in DATASETS:
@@ -151,14 +154,18 @@ def discover_blocks(run_root: Path):
         cs = CONCEPTS[ds]
         complete = all(f"concept:{d}" in W.get(q, {}) for q in cs for d in cs) and all("verdict" in pqn.get(q, {}) for q in cs)
         parquet = sj.parent / "outcomes" / "CORE.parquet"
-        if mk in EXCLUDED_MODELS:
-            skipped.append({"block": f"{mk}/{ds}", "reason": f"excluded model (yes/no template ineligible; no merged CORE.parquet); core.W complete: {complete}"})
+        rj = sj.parent / "run.json"
+        seen.add(mk)
+        if not (rj.exists() and block_included(json.loads(rj.read_text()))):
+            skipped.append({"block": f"{mk}/{ds}", "reason": f"not included (run.json completed_modules lacks CORE or CALIBRATION); core.W complete: {complete}"})
             continue
+        kept.add(mk)
         if not complete:
             skipped.append({"block": f"{mk}/{ds}", "reason": "core.W incomplete or without verdicts"}); continue
         if not parquet.exists():
             skipped.append({"block": f"{mk}/{ds}", "reason": "no merged outcomes/CORE.parquet"}); continue
         used.append((mk, ds, sj.parent, s))
+    EXCLUDED_MODELS = tuple(sorted(seen - kept))
     return used, skipped
 
 

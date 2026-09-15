@@ -31,6 +31,7 @@ from scipy.stats import fisher_exact
 REPO = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO / "src"))
 from cftransfer.analysis import _load_module, _matrix, _O_from_delta, bootstrap_indices          # noqa: E402
+from cftransfer.manifest import block_included                                                   # noqa: E402
 from cftransfer.protocol import (BOOT_CORE_DRAWS, BOOT_CORE_SEED, CONCEPTS, DATASETS, MODEL_ORDER, N_RANDOM,  # noqa: E402
                                  PRIMARY_ALPHA, primary_template)
 from cftransfer.runpaths import RUN_ROOT, run_dir                                                # noqa: E402
@@ -201,6 +202,10 @@ def analyse_block(model_key: str, dataset_id: str, draws: int) -> dict:
     rec = {"model": model_key, "dataset": dataset_id, "preflight": preflight_checks(rd)}
     if not (rd / "summary.json").exists():
         rec["status"] = "NO_SUMMARY"
+        return rec
+    if not ((rd / "run.json").exists() and block_included(json.loads((rd / "run.json").read_text()))):
+        rec["status"] = "NOT_INCLUDED"       # the paper's one rule (cftransfer.manifest): CORE and CALIBRATION completed
+        rec["reason"] = "run.json completed_modules lacks CORE or CALIBRATION"
         return rec
     sm = json.loads((rd / "summary.json").read_text())
     primary = sm.get("primary_template") or primary_template(rd)
