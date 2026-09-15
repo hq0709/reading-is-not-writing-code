@@ -1856,3 +1856,29 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   most similar direction (Atelectasis, cosine 0.49) writes it by 0.083.
 - Gate decision: the deficit is not explained by direction similarity or label co-occurrence; enter as a
   robustness subsection and appendix table in the paper.
+
+## 2026-09-15 Robustness R2: scale, ceiling, refits, connector, batch effects (existing data)
+
+- Run: `scripts/mayo/robustness_scale.py` over the 57 blocks with a complete write matrix ->
+  `runs/robustness/scale.{json,md}`.
+- Observation (scale): ownership recomputed on the answer-margin (logit) scale agrees with the probability
+  scale in 335 of 342 cells (124 owned on both, 3 p-only, 4 m-only); every p-owned cell has O^m > 0.
+- Observation (ceiling): restricting to unsaturated rows (clean P(yes) in [0.01, 0.99]) keeps O > 0 in 27/27
+  owned chest cells and gives O > 0 in 32/191 not-owned chest cells; the same in the clean-No, clean-Yes,
+  label-present and label-absent strata. COCO blocks are MORE saturated than chest blocks (median block share
+  0.82 vs 0.18 NIH / 0.32 CheXpert) and still owned.
+- Observation (refits): a refit seed resamples training units with replacement and refits scaler and probes;
+  median |O(seed k) - O(seed 0)| 0.028 (NIH) / 0.026 (COCO); refit directions have cosine 0.80 / 0.89 to seed
+  0; 6/10 NIH and 94/100 COCO owned cells keep O > 0 under both refits; the four NIH exceptions are
+  q25-32 Cardiomegaly, q25-72 Mass, q3-32 Nodule, gemma3-12 Nodule.
+- Observation (connector): median |W_qq| 0.009 (NIH) / 0.008 (COCO) at the connector vs 0.046 / 0.270 at the
+  primary locus; connector write beats its own random p95 in 13/120 NIH and 85/114 COCO cells; median O at the
+  connector -0.009 / +0.004.
+- Observation (batch): preflight batch-vs-single candidate-logit differences 0.07-1.84 (median 0.36), margin
+  sign agreement in 55/61 blocks; the 6 disagreeing blocks contain 0 owned cells. In-situ clean-forward
+  reproducibility (CORE vs LOCUS baseline of the same 3,600 rows): identical margins in 100% of rows for 22 of
+  33 NIH/COCO blocks and 75% for the rest, |dP(yes)| > 0.1 in <= 1.9% of rows, sign flips <= 0.6%.
+- Observation (grades): owned rate among readable-and-answerable chest cells 19/91 (21%) vs 8/137 (6%) for the
+  rest (Fisher p = 0.001).
+- Gate decision: neither scale, saturation, refit instability, nor batch effects account for the deficit;
+  enter as robustness results in the paper.
