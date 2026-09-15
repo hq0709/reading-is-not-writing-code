@@ -161,6 +161,9 @@ REFIT seed1/2改变的是训练独立单元的bootstrap重抽样（胸片患者�
 | TOKENW | 三数据集全部6概念，IY，+.25，600图；六个logistic方向按逐token权重写入：tokenw（token探针分数的softmax×T，均值1）与topq（分数前25%的token权重4，其余0，均值1），总剂量同CORE；baseline复用CORE；后加模块，仅显式入队 | 每数据集43,200 |
 | PRECISION | NIH/COCO全部6概念，IY，+.25，前200test图；完整CORE网格（127配置，自带baseline）在两种数值设置下各跑一遍：fp32（权重与前向float32，批组成同CORE）、batch1（bf16，每个条件单独batch=1）；outcomes多一列numerics；后加模块，按设置各一个任务显式入队 | 每数据集304,800（每设置152,400） |
 | ANSDIR | 三数据集全部6概念，IY，+.25，600图；回答方向oracle：对前3,000训练行做clean前向，取主模板回答margin，在同一投影/缩放的512维特征上按问题做ridge回归（5折CV选alpha），按logistic同一规则映射为a_q；每问题写入6个a_d加a_q的坐标置换sham，baseline与random族复用CORE；prep为GPU队列任务，后加模块，仅显式入队 | 每数据集25,200 |
+| ALTDIRD | 三数据集全部6概念，IY，+.25，600图；dom/pattern两族按位移规则映射（标准化空间位移u的最小范数原像 R(RᵀR)⁻¹diag(s)u，而非系数规则 R diag(1/s)β），各6概念共12条件；baseline复用CORE；后加模块，仅显式入队 | 每数据集43,200 |
+| ATTR | NIH/CheXpert，IY，+.25，600图；3个非临床属性问题（AP投照、女性、年龄≥60，协议模板+属性短语）加6个临床问题；方向=3属性方向（按协议normal同法拟合）+6临床normal+该问题sham；属性问题自带baseline（11条件），临床问题复用CORE baseline（10条件）；无random族；后加模块，仅显式入队 | 每数据集55,800 |
+| ANSDIRT | 三数据集全部6概念，IY之外5模板，+.25，600图；IY上拟合的回答方向a_d（6个）加a_q的sham，另带每（问题,模板）自身baseline，共8条件；不合格模板同PROMPT规则跳过；后加模块，仅显式入队 | 每数据集144,000 |
 
 训练/测试pooled features不包含在以上计数。正向+.25全随机主比较和其他剂量20random敏感性是不同证据规格，不能拼起来声称整个dose sweep均做过119随机校正。
 

@@ -38,6 +38,9 @@ FINDING_PHRASES = {
     "coco": dict(zip(PROTOCOL["dataset"]["coco_concepts"], PROTOCOL["dataset"]["coco_finding_phrases"])),
 }
 IMAGE_PHRASE = PROTOCOL["dataset"]["templates_image_phrase"]
+for _ds in ("nih", "chexpert"):                                  # attribute questions render with the protocol templates
+    FINDING_PHRASES[_ds].update({"view_AP": "an anteroposterior (portable) projection", "sex_F": "a female patient",
+                                 "age_60": "a patient aged sixty or older"})
 PROMPT_CONCEPTS = PROTOCOL["modules"]["PROMPT"]["concepts_by_dataset"]   # nih: Effusion, Mass; coco: person, bottle; chexpert: Effusion, Edema
 # CALIBRATION additionally scores the PROMPT concepts under the five other templates on these datasets only (README 5.4).
 # CheXpert is deliberately excluded: every CheXpert CALIBRATION block ran IY-only before PROMPT was extended to it.
@@ -48,11 +51,27 @@ CALIBRATION_PROMPT_DATASETS = ("nih", "coco")
 # ALTDIR (alternative direction estimators, reviewer objection on estimator dependence) was added to every dataset
 # after the campaign's blocks were packaged; it is enqueued explicitly (enqueue --modules ALTDIR) and its coverage is
 # requested only once its outcomes directory exists, so packaged blocks keep COMPLETE until it starts.
-MODULES_ADDED_LATER = {"nih": ("ALTDIR", "EXTCOMP", "TOKENW", "PRECISION", "ANSDIR"), "coco": ("ALTDIR", "TOKENW", "PRECISION", "ANSDIR"),
-                       "chexpert": ("PROMPT", "DOSE", "REFIT", "LOCUS", "LOCUS_CALIBRATION", "ALTDIR", "EXTCOMP", "TOKENW", "ANSDIR")}
+MODULES_ADDED_LATER = {"nih": ("ALTDIR", "EXTCOMP", "TOKENW", "PRECISION", "ANSDIR", "ALTDIRD", "ATTR", "ANSDIRT"),
+                       "coco": ("ALTDIR", "TOKENW", "PRECISION", "ANSDIR", "ALTDIRD", "ANSDIRT"),
+                       "chexpert": ("PROMPT", "DOSE", "REFIT", "LOCUS", "LOCUS_CALIBRATION", "ALTDIR", "EXTCOMP", "TOKENW", "ANSDIR",
+                                    "ALTDIRD", "ATTR", "ANSDIRT")}
 # ALTDIR direction families, in condition order: difference of means, Haufe pattern, orthogonalised logistic normal,
 # logistic normal refitted on label-residualised features (altdir.py); every family is lifted with the logistic rule.
 ALTDIR_FAMILIES = ("dom", "pattern", "orth", "resid")
+# ALTDIRD: the two displacement families lifted as displacements, x = R (R^T R)^{-1} diag(s) u (minimum-norm preimage
+# of the standardised displacement u), instead of the coefficient lift R diag(1/s) beta (altdir.displacement_lift).
+ALTDIRD_FAMILIES = ("dom_disp", "pattern_disp")
+# ATTR: non-clinical radiographic attributes of the same images, fitted like the protocol normals (attr.py):
+# view_AP (1 = AP/portable, 0 = PA), sex_F (1 = female, 0 = male), age_60 (1 = age >= 60); >= ATTR_MIN_CLASS_ROWS known
+# training rows per class (NIH and CheXpert both qualify on all three). Questions use the protocol templates with the
+# attribute phrase in the {finding} slot.
+ATTR_CONCEPTS = ["view_AP", "sex_F", "age_60"]
+ATTR_PHRASES = {"view_AP": "an anteroposterior (portable) projection", "sex_F": "a female patient",
+                "age_60": "a patient aged sixty or older"}
+ATTR_MIN_CLASS_ROWS = 100
+ATTR_SHAM_SEED = 1                 # PCG64(1): one coordinate permutation per attribute, in ATTR_CONCEPTS order
+# ANSDIRT: the IY-fitted answer directions written under the five other templates (own clean baseline per template)
+ANSDIRT_TEMPLATES = ("WY", "IA", "IB", "WA", "WB")
 # EXTCOMP: extra dataset labels fitted like the protocol normals (extcomp.py) and added to the competitor family. The
 # frozen lists are the manifest labels with at least EXTCOMP_MIN_SUPPORT known positives AND negatives in the training
 # rows (counts checked again by the prep); the excluded labels and the reason are recorded next to them.
@@ -77,7 +96,7 @@ MODULE_SETTINGS = {"PRECISION": PRECISION_SETTINGS}       # modules scored once 
 # The seven modules of the planned campaign (protocol.json total_planned_outcomes) and the modules added afterwards as
 # addenda (each enqueued explicitly, each counted in total_planned_outcomes.addenda, each in MODULES_ADDED_LATER).
 PLANNED_MODULES = ("CORE", "CALIBRATION", "PROMPT", "DOSE", "REFIT", "LOCUS", "LOCUS_CALIBRATION")
-ADDENDUM_MODULES = ("ALTDIR", "EXTCOMP", "TOKENW", "PRECISION", "ANSDIR")
+ADDENDUM_MODULES = ("ALTDIR", "EXTCOMP", "TOKENW", "PRECISION", "ANSDIR", "ALTDIRD", "ATTR", "ANSDIRT")
 # ANSDIR (answer-direction oracle, ansdir.py): per question q a ridge regression of the clean answer margin on the
 # projected, train-scaled features of the first ANSDIR_N_TRAIN training rows (alpha by 5-fold CV over ANSDIR_ALPHAS),
 # lifted like the logistic normals; written with the six a_d plus the coordinate-permutation sham of a_q.
@@ -154,9 +173,9 @@ class ModuleSpec:
     role: str                       # cohort role scored
     row_limit: int | None           # first N rows of the role in cohorts order (DOSE)
     templates: tuple[str, ...]
-    concepts_rule: str              # "all" | "prompt"
+    concepts_rule: str              # "all" | "prompt" | "attr" (three attribute questions + the six clinical ones)
     alphas: tuple[float, ...]
-    directions: str                 # "core" | "clean" | "dose" | "refit" | "altdir" | "extcomp" | "tokenw" | "ansdir"
+    directions: str                 # "core" | "clean" | "dose" | "refit" | "altdir" | "extcomp" | "tokenw" | "ansdir" | "altdird" | "attr" | "ansdirt"
     fit_seeds: tuple[int, ...]
     locus: str                      # "primary" | "connector"
     baseline_module: str | None     # module whose clean baseline is reused (DOSE/REFIT)
@@ -193,6 +212,15 @@ MODULES: dict[str, ModuleSpec] = {
     # answer-direction oracle: the six ridge answer directions a_d plus the sham of a_q, CORE baseline and random family reused
     "ANSDIR": ModuleSpec("ANSDIR", "test", None, ("IY",), "all", (PRIMARY_ALPHA,), "ansdir", (0,), "primary", "CORE",
                          ("nih", "chexpert", "coco")),
+    # displacement-lifted dom / pattern families, CORE baseline reused
+    "ALTDIRD": ModuleSpec("ALTDIRD", "test", None, ("IY",), "all", (PRIMARY_ALPHA,), "altdird", (0,), "primary", "CORE",
+                          ("nih", "chexpert", "coco")),
+    # attribute questions (own baseline) and clinical questions (CORE baseline) under the 3 attribute + 6 clinical directions
+    "ATTR": ModuleSpec("ATTR", "test", None, ("IY",), "attr", (PRIMARY_ALPHA,), "attr", (0,), "primary", "CORE",
+                       ("nih", "chexpert")),
+    # answer directions under the five other templates, own baseline per (question, template)
+    "ANSDIRT": ModuleSpec("ANSDIRT", "test", None, ANSDIRT_TEMPLATES, "all", (PRIMARY_ALPHA,), "ansdirt", (0,), "primary", None,
+                          ("nih", "chexpert", "coco")),
 }
 
 
@@ -205,6 +233,8 @@ def question_list(dataset_id: str, module: str, primary: str = "IY") -> list[tup
     concepts = CONCEPTS[dataset_id]
     if spec.concepts_rule == "prompt":
         concepts = PROMPT_CONCEPTS[dataset_id]
+    elif spec.concepts_rule == "attr":
+        concepts = ATTR_CONCEPTS + list(concepts)
     out = [(c, primary if t == "IY" else t) for t in spec.templates for c in concepts]
     if module == "CALIBRATION" and dataset_id in CALIBRATION_PROMPT_DATASETS:
         # NIH/COCO calibration also scores the two PROMPT concepts under the five other templates (README 5.4)
@@ -238,6 +268,16 @@ def conditions_for(module: str, dataset_id: str, concept: str) -> list[tuple[str
         return [(f"{v}:{c}", spec.alphas[0]) for v in TOKENW_VARIANTS for c in CONCEPTS[dataset_id]]
     if spec.directions == "ansdir":
         return [(f"ans:{c}", spec.alphas[0]) for c in CONCEPTS[dataset_id]] + [(f"anssham:{concept}", spec.alphas[0])]
+    if spec.directions == "altdird":
+        return [(f"{fam}:{c}", spec.alphas[0]) for fam in ALTDIRD_FAMILIES for c in CONCEPTS[dataset_id]]
+    if spec.directions == "attr":
+        # attribute questions score their own clean baseline (no other module has it); clinical questions reuse CORE's
+        dirs = [f"attr:{a}" for a in ATTR_CONCEPTS] + [f"concept:{c}" for c in CONCEPTS[dataset_id]]
+        if concept in ATTR_CONCEPTS:
+            return [("baseline", 0.0)] + [(d, spec.alphas[0]) for d in dirs] + [(f"attrsham:{concept}", spec.alphas[0])]
+        return [(d, spec.alphas[0]) for d in dirs] + [(sham, spec.alphas[0])]
+    if spec.directions == "ansdirt":
+        return [("baseline", 0.0)] + [(f"ans:{c}", spec.alphas[0]) for c in CONCEPTS[dataset_id]] + [(f"anssham:{concept}", spec.alphas[0])]
     raise ValueError(spec.directions)
 
 

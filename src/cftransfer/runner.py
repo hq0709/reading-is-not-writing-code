@@ -22,13 +22,14 @@ import torch
 from .adapters import get_adapter
 from .altdir import load_altdir
 from .ansdir import load_ansdir
+from .attr import load_attr
 from .extcomp import load_extcomp
 from .fit import load_fit, run_id_for
 from .hooks import LocusHook
 from .images import image_path, load_cohort, open_rgb
 from .hooks import MODE_SOFTMAX, MODE_TOPQ
-from .protocol import (ALTDIR_FAMILIES, CONCEPTS, LOCI, MODULE_SETTINGS, MODULES, NUMERICS_DEFAULT, PROTOCOL_ID, TOKENW_VARIANTS,
-                       conditions_for, direction_kind, primary_template, question_list, render_question)
+from .protocol import (ALTDIR_FAMILIES, ALTDIRD_FAMILIES, ATTR_CONCEPTS, CONCEPTS, LOCI, MODULE_SETTINGS, MODULES, NUMERICS_DEFAULT,
+                       PROTOCOL_ID, TOKENW_VARIANTS, conditions_for, direction_kind, primary_template, question_list, render_question)
 from .runpaths import outcomes_dir, run_dir
 from .scoring import score_logits
 
@@ -56,7 +57,7 @@ class DirectionBank:
     step `python -m cftransfer.altdir`; a missing file fails here with that command, before any model is loaded."""
 
     def __init__(self, model_key, dataset_id, locus_id, seeds, altdir: bool = False, extcomp: bool = False, tokenw: bool = False,
-                 ansdir: bool = False):
+                 ansdir: bool = False, altdird: bool = False, attr: bool = False):
         self.fits = {s: load_fit(model_key, dataset_id, locus_id, s) for s in seeds}
         if 0 not in self.fits:
             self.fits[0] = load_fit(model_key, dataset_id, locus_id, 0)
@@ -74,7 +75,14 @@ class DirectionBank:
         if self.ansdir is not None and (list(self.ansdir["concept_names"].astype(str)) != self.concepts
                                         or self.ansdir["answer_vectors"].shape != (len(self.concepts), self.D)):
             raise RuntimeError("ansdir_seed0.npz concept order or width differs from seed0.npz")
-        self.altdir = load_altdir(model_key, dataset_id, locus_id) if altdir else None
+        self.attr = load_attr(model_key, dataset_id, locus_id) if attr else None
+        if self.attr is not None and (list(self.attr["attr_names"].astype(str)) != list(ATTR_CONCEPTS)
+                                      or self.attr["attr_vectors"].shape != (len(ATTR_CONCEPTS), self.D)):
+            raise RuntimeError("attr_seed0.npz attribute order or width differs from the protocol / fit")
+        self.altdir = load_altdir(model_key, dataset_id, locus_id) if (altdir or altdird) else None
+        if altdird and any(f"{fam}_vectors" not in self.altdir for fam in ALTDIRD_FAMILIES):
+            raise FileNotFoundError(f"ALTDIRD needs the displacement families in altdir_seed0.npz; re-run "
+                                    f"python -m cftransfer.altdir --model-key {model_key} --dataset {dataset_id} (appends them)")
         if self.altdir is not None:
             if list(self.altdir["concept_names"].astype(str)) != self.concepts:
                 raise RuntimeError("altdir_seed0.npz concept order differs from seed0.npz")
@@ -92,10 +100,14 @@ class DirectionBank:
             return self.fits[0]["random_vectors"][int(name)]
         if kind == "sham":
             return self.fits[seed]["sham_vectors"][self.concepts.index(name)]
-        if kind in ALTDIR_FAMILIES:
-            if self.altdir is None:
-                raise KeyError(f"{direction_id}: alternative directions are only loaded for the ALTDIR module")
+        if kind in ALTDIR_FAMILIES or kind in ALTDIRD_FAMILIES:
+            if self.altdir is None or f"{kind}_vectors" not in self.altdir:
+                raise KeyError(f"{direction_id}: alternative directions are only loaded for the ALTDIR / ALTDIRD modules")
             return self.altdir[f"{kind}_vectors"][self.concepts.index(name)]
+        if kind in ("attr", "attrsham"):
+            if self.attr is None:
+                raise KeyError(f"{direction_id}: attribute directions are only loaded for the ATTR module")
+            return self.attr["attr_vectors" if kind == "attr" else "attr_sham_vectors"][list(ATTR_CONCEPTS).index(name)]
         if kind == "extra":
             if self.extcomp is None:
                 raise KeyError(f"{direction_id}: extra directions are only loaded for the EXTCOMP module")
@@ -148,7 +160,8 @@ def run_block(model_key: str, dataset_id: str, module: str, shard: int, n_shards
     locus_id = LOCI[spec.locus]
     # directions first: a missing fit or altdir/extcomp prep file fails before the outcomes directory or the model exist
     bank = DirectionBank(model_key, dataset_id, locus_id, spec.fit_seeds, altdir=spec.directions == "altdir",
-                         extcomp=spec.directions == "extcomp", tokenw=spec.directions == "tokenw", ansdir=spec.directions == "ansdir")
+                         extcomp=spec.directions == "extcomp", tokenw=spec.directions == "tokenw",
+                         ansdir=spec.directions in ("ansdir", "ansdirt"), altdird=spec.directions == "altdird", attr=spec.directions == "attr")
     rows = load_cohort(dataset_id, (spec.role,))
     if spec.row_limit:
         rows = rows[:spec.row_limit]

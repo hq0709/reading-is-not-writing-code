@@ -25,12 +25,14 @@ def batch_for(model_key: str, lane: str) -> int:
     return BATCH_MODEL.get(model_key, BATCH[lane])
 # shards per module for a 600-row test block (row budget relative to CORE); calibration modules are single tasks
 SHARDS = {"CORE": 4, "LOCUS": 4, "PROMPT": 7, "DOSE": 2, "REFIT": 1, "CALIBRATION": 1, "LOCUS_CALIBRATION": 1, "ALTDIR": 1,
-          "EXTCOMP": 1, "TOKENW": 1, "PRECISION": 1, "ANSDIR": 1}   # PRECISION: one shard per numerics setting (two tasks)
+          "EXTCOMP": 1, "TOKENW": 1, "PRECISION": 1, "ANSDIR": 1, "ALTDIRD": 1, "ATTR": 1, "ANSDIRT": 2}   # PRECISION: one shard per setting
 # The addendum modules are not in the default order: they are enqueued explicitly (--modules ...). ALTDIR / EXTCOMP need a
 # CPU prep run by hand (python -m cftransfer.altdir / cftransfer.extcomp) whose file the task requires; ANSDIR's prep is a
 # GPU task (python -m cftransfer.ansdir) that enqueue emits itself, with the module task requiring its file.
-PREP_FILE = {"ALTDIR": "altdir_seed0.npz", "EXTCOMP": "extcomp_seed0.npz", "ANSDIR": "ansdir_seed0.npz"}
-PREP_TASK = {"ANSDIR": ["python", "-m", "cftransfer.ansdir", "--n-train", str(ANSDIR_N_TRAIN)]}
+PREP_FILE = {"ALTDIR": "altdir_seed0.npz", "EXTCOMP": "extcomp_seed0.npz", "ANSDIR": "ansdir_seed0.npz",
+             "ALTDIRD": "altdir_seed0.npz", "ATTR": "attr_seed0.npz", "ANSDIRT": "ansdir_seed0.npz"}
+PREP_TASK = {"ANSDIR": ["python", "-m", "cftransfer.ansdir", "--n-train", str(ANSDIR_N_TRAIN)],
+             "ANSDIRT": ["python", "-m", "cftransfer.ansdir", "--n-train", str(ANSDIR_N_TRAIN)]}
 MODULE_ORDER = ["CALIBRATION", "CORE", "LOCUS_CALIBRATION", "DOSE", "REFIT", "LOCUS", "PROMPT"]
 MODEL_PRIORITY = ["q25-7", "llava15-7", "lingshu-7", "llavamed-7", "q3-8", "iv35-8", "medgemma-4", "q25-3", "q3-4", "iv35-14",
                   "llava15-13", "gemma3-4", "gemma3-12", "llama32-11", "q25-32", "q3-32", "lingshu-32", "medgemma-27",

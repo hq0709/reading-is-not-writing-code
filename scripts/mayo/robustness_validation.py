@@ -789,6 +789,22 @@ def main():
             aggregate[f"{ds}_median_pearson_scores"] = med([c["pearson_scores"] for c in cd])
             aggregate[f"{ds}_n_answer_dir_reads_label_better"] = int(sum(c["answer_dir_reads_label_better"] for c in cd))
             aggregate[f"{ds}_n_label_auroc_defined"] = int(sum(np.isfinite(c["auroc_answer_dir"]) for c in cd))
+    # alignment versus ownership: does the whitened cosine between a_q and w_q track the label direction's ownership?
+    def align(cd):
+        cs_ = np.array([c["cos_sigma_projected"] for c in cd], float); Oq = np.array([c["core_O_q"] for c in cd], float)
+        ow = np.array([float(bool(c["core_owned"])) for c in cd])
+        keep = np.isfinite(cs_) & np.isfinite(Oq)
+        r_o = spearmanr(cs_[keep], Oq[keep]); r_w = spearmanr(cs_[keep], ow[keep]) if 0 < ow[keep].sum() < keep.sum() else (np.nan, np.nan)
+        return {"n_cells": int(keep.sum()), "n_owned": int(ow[keep].sum()),
+                "spearman_cos_sigma_vs_O_q": {"rho": float(r_o[0]), "p": float(r_o[1])},
+                "spearman_cos_sigma_vs_owned": {"rho": float(r_w[0]), "p": float(r_w[1])},
+                "median_cos_sigma_owned": med(cs_[keep & (ow > 0)].tolist()), "median_cos_sigma_not_owned": med(cs_[keep & (ow == 0)].tolist())}
+    aggregate["alignment_vs_ownership"] = {"all": align(cells),
+                                           "chest": align([c for k, b in ans_blocks.items() for c in b["per_question"].values() if b["dataset"] in ("nih", "chexpert")])}
+    for ds in DATASETS:
+        cd = [c for k, b in ans_blocks.items() for c in b["per_question"].values() if b["dataset"] == ds]
+        if cd:
+            aggregate["alignment_vs_ownership"][ds] = align(cd)
 
     # task 2
     colsel = column_selectivity(used)

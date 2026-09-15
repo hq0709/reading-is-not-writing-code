@@ -18,10 +18,19 @@ template and batch composition are the CORE ones. Per concept c (w_c = seed-0 lo
            usable rows, resid falls back to the logistic normal.
            resid_covariates_used / resid_rows_used / resid_fallback record this per concept.
 
+  dom_disp / pattern_disp (ALTDIRD): the same u as dom / pattern, lifted as a DISPLACEMENT instead of a coefficient:
+           a coefficient beta of the standardised space lifts as R diag(1/s) beta (the rule above), whereas a
+           displacement u of that space is diag(s) u in the projected space and its minimum-norm preimage in model
+           space is x = R (R^T R)^{-1} diag(s) u (displacement_lift; R = P). Unit-normalised like the others. The
+           eigenvalue spectrum of R^T R / D is stored (disp_gram_eigenvalues, min / max).
+
 Writes fits/<locus>/altdir_seed0.npz: <family>_vectors (6 x D, model space, unit), <family>_projected (6 x 512),
 logistic_vectors / logistic_projected (copies of seed 0), cos_model / cos_projected (6 x 5 x 5 cosine matrices over
 FAMILY_ORDER), orth_norm_removed_fraction, resid_cos_to_logistic_projected, resid_covariates_used (6 x 6 bool),
-resid_rows_used, resid_fallback, and per-concept counts.
+resid_rows_used, resid_fallback, per-concept counts, and the ALTDIRD extension: dom_disp_* / pattern_disp_*,
+disp_gram_eigenvalues / disp_gram_eig_min / disp_gram_eig_max, family_order_ext, cos_model_ext / cos_projected_ext
+(6 x 7 x 7 over FAMILY_ORDER_EXT). Re-running the CLI on an existing file appends the extension keys and verifies that
+every key already present is reproduced bit for bit (existing arrays are never changed).
 CPU only; seconds.
 """
 from __future__ import annotations
@@ -39,9 +48,11 @@ from .protocol import CONCEPTS, PROJECTION_DIM
 from .runpaths import fits_dir
 
 FAMILIES = ("dom", "pattern", "orth", "resid")          # direction kinds the ALTDIR module scores
+DISP_FAMILIES = ("dom_disp", "pattern_disp")             # ALTDIRD: displacement-lifted dom / pattern
 RESID_MIN_CLASS_ROWS = 5                                 # a resid covariate needs at least this many rows in each class
 RESID_RETENTION_FRACTION = 0.25                          # the usable rows must keep this fraction of the concept's known rows
 FAMILY_ORDER = ("logistic",) + FAMILIES                  # order of the cosine matrices
+FAMILY_ORDER_EXT = FAMILY_ORDER + DISP_FAMILIES          # order of the extended cosine matrices (cos_model_ext)
 ALTDIR_FILE = "altdir_seed0.npz"
 
 
@@ -134,9 +145,37 @@ def resid_directions(Zs: np.ndarray, Y: np.ndarray, coef: np.ndarray, min_class_
     return out, cos, cov_used, rows_used, fallback
 
 
-def cosine_matrix(vectors: dict[str, np.ndarray]) -> np.ndarray:
-    """(n_concepts, n_families, n_families) cosines between the families of FAMILY_ORDER."""
-    fams = [vectors[f] for f in FAMILY_ORDER]
+def gram_inverse(P: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    """(R^T R)^{-1} of the projection R = P (512 x 512, float64) and the eigenvalues of R^T R / D (ascending). Every
+    campaign locus has D >= 1024 > 512, so R^T R is full rank and this is the plain inverse; the Moore-Penrose
+    pseudoinverse is used so that a rank-deficient R (D < 512, synthetic runs) still yields the least-squares
+    minimum-norm preimage instead of noise."""
+    R = P.astype(np.float64)
+    G = R.T @ R
+    return np.linalg.pinv(G, hermitian=True), np.linalg.eigvalsh(G / R.shape[0])
+
+
+def gram_spectrum_summary(eig: np.ndarray) -> dict:
+    """min / max / median / rank / condition of the R^T R / D spectrum; the condition number is over the eigenvalues
+    above rank tolerance (max * 512 * eps), so a rank-deficient gram reports its rank instead of a meaningless ratio."""
+    eig = np.asarray(eig, float)
+    tol = eig.max() * len(eig) * np.finfo(float).eps
+    pos = eig[eig > tol]
+    return {"min": float(eig.min()), "max": float(eig.max()), "median": float(np.median(eig)), "n": int(len(eig)),
+            "rank": int(len(pos)), "full_rank": bool(len(pos) == len(eig)), "condition": float(eig.max() / pos.min())}
+
+
+def displacement_lift(P: np.ndarray, s: np.ndarray, u: np.ndarray, G_inv: np.ndarray) -> np.ndarray:
+    """Lift a DISPLACEMENT u of the projected, train-scaled space to a unit model-space direction through its
+    minimum-norm preimage: x = R (R^T R)^{-1} diag(s) u  (R^T x = diag(s) u exactly). Contrast with
+    fit.direction_from_projected, the coefficient lift R diag(1/s) beta."""
+    x = P.astype(np.float64) @ (G_inv @ (np.maximum(s, 1e-8).astype(np.float64) * u.astype(np.float64)))
+    return (x / np.linalg.norm(x)).astype(np.float32)
+
+
+def cosine_matrix(vectors: dict[str, np.ndarray], order: tuple[str, ...] = FAMILY_ORDER) -> np.ndarray:
+    """(n_concepts, n_families, n_families) cosines between the families of `order`."""
+    fams = [vectors[f] for f in order]
     n = fams[0].shape[0]
     out = np.zeros((n, len(fams), len(fams)))
     for ci in range(n):
@@ -180,6 +219,18 @@ def altdir_arrays(fit: dict, Zs: np.ndarray, Y: np.ndarray) -> dict:
     for f in FAMILY_ORDER:
         arrays[f"{f}_projected"] = proj[f].astype(np.float32)
         arrays[f"{f}_vectors"] = vec[f]
+    # ALTDIRD extension: displacement lift of the same dom / pattern vectors
+    G_inv, eig = gram_inverse(P)
+    for f, src in (("dom_disp", "dom"), ("pattern_disp", "pattern")):
+        proj[f] = proj[src]
+        vec[f] = np.stack([displacement_lift(P, s, proj[src][ci], G_inv) for ci in range(len(concepts))])
+        arrays[f"{f}_projected"] = proj[f].astype(np.float32)
+        arrays[f"{f}_vectors"] = vec[f]
+    gs = gram_spectrum_summary(eig)
+    arrays.update(disp_gram_eigenvalues=eig, disp_gram_eig_min=np.float64(eig.min()), disp_gram_eig_max=np.float64(eig.max()),
+                  disp_gram_rank=np.int64(gs["rank"]), disp_gram_condition=np.float64(gs["condition"]),
+                  family_order_ext=np.array(FAMILY_ORDER_EXT), cos_model_ext=cosine_matrix(vec, FAMILY_ORDER_EXT),
+                  cos_projected_ext=cosine_matrix(proj, FAMILY_ORDER_EXT))
     return arrays
 
 
@@ -217,6 +268,15 @@ def build_altdir(model_key: str, dataset_id: str, locus_id: str = "vis.last", ou
     out_dir = Path(out_dir) if out_dir else fits_dir(model_key, dataset_id, locus_id)
     out_dir.mkdir(parents=True, exist_ok=True)
     path = out_dir / ALTDIR_FILE
+    if path.exists():
+        # append-only: every key the existing file shares with this build must be reproduced exactly; keys the file
+        # has from an earlier build (e.g. resid_n_rows) are kept, new keys are added
+        old = dict(np.load(path, allow_pickle=False))
+        changed = [k for k in old if k in arrays and not np.array_equal(old[k], arrays[k])]
+        if changed:
+            raise RuntimeError(f"{path} exists and its arrays {changed} are not reproduced by this build; refusing to overwrite "
+                               f"(delete the file to recompute from scratch)")
+        arrays = {**old, **{k: v for k, v in arrays.items() if k not in old}}
     np.savez(path, **arrays)
     print(f"[{model_key}/{dataset_id}/{locus_id}] altdir written to {path} in {time.time() - t0:.1f}s", flush=True)
     return path, arrays
@@ -248,6 +308,11 @@ def cosine_table(arrays: dict) -> list[dict]:
         r["resid_rows_used"] = int(arrays["resid_rows_used"][ci])
         r["resid_fallback"] = bool(arrays["resid_fallback"][ci])
         r["resid_dropped"] = ",".join(d for di, d in enumerate(concepts) if di != ci and not arrays["resid_covariates_used"][ci, di]) or "-"
+        if "cos_model_ext" in arrays:
+            fe = list(arrays["family_order_ext"].astype(str)); ce = arrays["cos_model_ext"]
+            for f, src in (("dom_disp", "dom"), ("pattern_disp", "pattern")):
+                r[f"cos_model_{f}_logistic"] = float(ce[ci, 0, fe.index(f)])
+                r[f"cos_model_{f}_{src}"] = float(ce[ci, fe.index(src), fe.index(f)])
         rows.append(r)
     return rows
 
@@ -262,5 +327,8 @@ if __name__ == "__main__":
     path, arr = build_altdir(a.model_key, a.dataset, a.locus, a.out_dir)
     for r in cosine_table(arr):
         print("  " + " ".join(f"{k}={v:+.4f}" if isinstance(v, float) else f"{k}={v}" for k, v in r.items()))
+    gs = gram_spectrum_summary(arr["disp_gram_eigenvalues"])
+    print(f"  R^T R / D spectrum: min={gs['min']:.6f} max={gs['max']:.6f} median={gs['median']:.6f} rank={gs['rank']}/{gs['n']} "
+          f"condition={gs['condition']:.3f} (D={arr['logistic_vectors'].shape[1]})")
     print(json.dumps({"path": str(path), "n_train_rows": int(arr["n_train_rows"]), "resid_rows_used": arr["resid_rows_used"].tolist(),
                       "resid_fallback": arr["resid_fallback"].tolist()}))

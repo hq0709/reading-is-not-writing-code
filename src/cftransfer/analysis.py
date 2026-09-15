@@ -17,6 +17,9 @@ Implemented:
   tokenw(model, dataset)              -> TOKENW: W / O per token-weighting variant with interval and verdict
   precision(model, dataset)           -> PRECISION: W / O per numerics setting on the first 200 rows against CORE
   ansdir(model, dataset)              -> ANSDIR: W^a / O^a of the answer directions with interval, verdict, references, cosines
+  altdird(model, dataset)             -> ALTDIRD: as altdir for the displacement-lifted dom / pattern families
+  attr(model, dataset)                -> ATTR: 9x9 write matrix, ownership over {3 attributes + 6 clinical}, attribute readability
+  ansdirt(model, dataset)             -> ANSDIRT: per template O^a with interval / verdict, PROMPT cross reference, transfer counts
 """
 from __future__ import annotations
 
@@ -29,13 +32,15 @@ import pandas as pd
 import pyarrow.parquet as pq
 from sklearn.metrics import roc_auc_score
 
-from .altdir import load_altdir
+from .altdir import gram_spectrum_summary, load_altdir
 from .ansdir import load_ansdir
+from .attr import attribute_labels, load_attr
 from .extcomp import load_extcomp
 from .images import DATA_ROOT, load_cohort, load_labels
-from .protocol import (ALTDIR_FAMILIES, BOOT_CALIBRATION_DRAWS, BOOT_CALIBRATION_SEED, BOOT_CORE_DRAWS, BOOT_CORE_SEED,
-                       BOOT_DIAGNOSTIC_SEED, CONCEPTS, DATASETS, EXTCOMP_LABELS, LOCI, MODULES, N_RANDOM, NUMERICS_DEFAULT,
-                       PRECISION_SETTINGS, PRIMARY_ALPHA, PROMPT_CONCEPTS, TOKENW_VARIANTS, expected_rows, primary_template)
+from .protocol import (ALTDIR_FAMILIES, ALTDIRD_FAMILIES, ANSDIRT_TEMPLATES, ATTR_CONCEPTS, BOOT_CALIBRATION_DRAWS,
+                       BOOT_CALIBRATION_SEED, BOOT_CORE_DRAWS, BOOT_CORE_SEED, BOOT_DIAGNOSTIC_SEED, CONCEPTS, DATASETS,
+                       EXTCOMP_LABELS, LOCI, MODULE_SETTINGS, MODULES, N_RANDOM, NUMERICS_DEFAULT, PRECISION_SETTINGS, PRIMARY_ALPHA,
+                       PROMPT_CONCEPTS, TOKENW_VARIANTS, expected_rows, primary_template)
 from .runpaths import outcomes_dir, run_dir
 
 DATASET_ORDER = ["nih", "chexpert", "coco"]
@@ -194,26 +199,39 @@ def calibration(model_key: str, dataset_id: str, locus_id: str = "vis.last", tem
 
 # ------------------------------------------------------------------------------------------------- CORE
 def core(model_key: str, dataset_id: str, module: str = "CORE", template_id: str | None = None, fit_seed: int = 0,
-         alpha: float = 0.25, n_boot: int | None = None) -> dict:
+         alpha: float = 0.25, n_boot: int | None = None, row_limit: int | None = None, numerics: str | None = None) -> dict:
     """W_qd = mean_i [p_i(q,d) - p_i(q,baseline)], O_q = W_qq - max_{d != q} W_qd, references, ranks, and the
     per-contrast bootstrap C_qd = W_qq - W_qd with max-T simultaneous intervals over the 6x5 family.
-    template_id defaults to the block's primary template."""
+    template_id defaults to the block's primary template. Rows: the module's own row limit (DOSE / PRECISION: 200), or
+    `row_limit` when given (CORE on the first 200 rows). `numerics` selects one setting of a per-setting module."""
     template_id = _primary(model_key, dataset_id, template_id)
-    df = pq.read_table(outcomes_dir(model_key, dataset_id) / f"{module}.parquet",
-                       columns=["row_id", "concept", "template_id", "fit_seed", "direction_id", "direction_kind", "alpha",
-                                "p_present", "semantic_margin", "sample_status"]).to_pandas()
+    path = outcomes_dir(model_key, dataset_id) / f"{module}.parquet"
+    cols = ["row_id", "concept", "template_id", "fit_seed", "direction_id", "direction_kind", "alpha", "p_present", "semantic_margin",
+            "sample_status"]
+    has_numerics = "numerics" in pq.read_schema(path).names
+    df = pq.read_table(path, columns=cols + (["numerics"] if has_numerics else [])).to_pandas()
     df = df[(df.template_id == template_id) & (df.fit_seed == fit_seed) & (df.sample_status == "OK")]
+    if numerics is not None:
+        settings = MODULE_SETTINGS.get(module, (NUMERICS_DEFAULT,))
+        if numerics not in settings:
+            raise ValueError(f"{module}: numerics must be one of {settings}, got {numerics!r}")
+        df = df[df.numerics == numerics] if has_numerics else df
+    if df.empty:
+        raise RuntimeError(f"{module}: no OK rows for template {template_id}, fit seed {fit_seed}" + (f", numerics {numerics}" if numerics else ""))
     concepts = CONCEPTS[dataset_id]
     rows = load_cohort(dataset_id, ("test",))
-    if module == "DOSE":
-        rows = rows[:200]
+    limit = row_limit or MODULES[module].row_limit
+    if limit:
+        rows = rows[:limit]
     order = {r["row_id"]: i for i, r in enumerate(rows)}
     n = len(rows)
+    df = df[df.row_id.isin(order)]                   # a row-limited module (DOSE, PRECISION, CORE on 200 rows) keeps only its rows
     base = df[df.direction_id == "baseline"]
     if base.empty:                                   # DOSE/REFIT reuse the CORE baseline
         cb = pq.read_table(outcomes_dir(model_key, dataset_id) / "CORE.parquet",
                            columns=["row_id", "concept", "template_id", "fit_seed", "direction_id", "p_present", "sample_status"]).to_pandas()
-        base = cb[(cb.direction_id == "baseline") & (cb.template_id == template_id) & (cb.fit_seed == 0) & (cb.sample_status == "OK")]
+        base = cb[(cb.direction_id == "baseline") & (cb.template_id == template_id) & (cb.fit_seed == 0) & (cb.sample_status == "OK")
+                  & cb.row_id.isin(order)]
     P0 = {}
     for q in concepts:
         v = np.full(n, np.nan); g = base[base.concept == q]
@@ -502,12 +520,14 @@ def _logistic_reference(d_log: dict, concepts: list[str], idx: np.ndarray) -> tu
     return Wlog, comp_boot, ref
 
 
-def _ownership_block(own: np.ndarray, fam: dict, concepts: list[str], idx: np.ndarray) -> dict:
+def _ownership_block(own: np.ndarray, fam: dict, concepts: list[str], idx: np.ndarray, own_names: dict | None = None) -> dict:
     """Ownership of an own write against a competitor family, with the CORE rules.
-    own: (6, n) per-sample deltas of each question's own direction; fam: name -> (6, n) deltas of that direction on
-    every question; the competitors of question q are every name except q itself. Returns the write matrix W[q][name]
-    (own under q's own name), per question W_qq / O_q / strongest competitor / percentile interval of O_q (max
-    recomputed per draw) / verdict from the max-T simultaneous intervals over all (q, competitor) contrasts."""
+    own: (Q, n) per-sample deltas of each question's own direction; fam: name -> (Q, n) deltas of that direction on
+    every question; the competitors of question q are every name except its own (`own_names[q]`, default q).
+    Returns the write matrix W[q][name] (own under its own name), per question W_qq / O_q / strongest competitor /
+    percentile interval of O_q (max recomputed per draw) / verdict from the max-T simultaneous intervals over all
+    (q, competitor) contrasts."""
+    own_names = own_names or {q: q for q in concepts}
     names = list(fam)
     F = np.stack([fam[nm] for nm in names], axis=1)                                       # (6, K, n)
     B = idx.shape[0]
@@ -518,19 +538,20 @@ def _ownership_block(own: np.ndarray, fam: dict, concepts: list[str], idx: np.nd
     for qi, q in enumerate(concepts):
         blocks[q] = []
         for ki, nm in enumerate(names):
-            if nm == q:
+            if nm == own_names[q]:
                 continue
             blocks[q].append(len(cnames))
             cnames.append(f"{q}-{nm}"); est.append(float(Wo[qi] - Wf[qi, ki])); boot.append(Ob[:, qi] - Fb[:, qi, ki])
     boot = np.stack(boot, axis=1)
     mt = max_t(np.array(est), boot)
-    res = {"W": {q: {**{nm: float(Wf[qi, ki]) for ki, nm in enumerate(names) if nm != q}, q: float(Wo[qi])} for qi, q in enumerate(concepts)},
+    res = {"W": {q: {**{nm: float(Wf[qi, ki]) for ki, nm in enumerate(names) if nm != own_names[q]}, own_names[q]: float(Wo[qi])}
+                 for qi, q in enumerate(concepts)},
            "n_scored_rows_min": int(min(np.min((~np.isnan(F)).sum(axis=2)), np.min((~np.isnan(own)).sum(axis=1)))),
            "contrasts": {nm: {"estimate": float(e), "sd": float(sd), "lower": float(lo), "upper": float(hi)}
                          for nm, e, sd, lo, hi in zip(cnames, mt["estimate"], mt["sd"], mt["lower"], mt["upper"])},
            "max_t_critical": mt["critical"], "per_question": {}, "own_boot": Ob}
     for qi, q in enumerate(concepts):
-        others = {nm: float(Wf[qi, ki]) for ki, nm in enumerate(names) if nm != q}
+        others = {nm: float(Wf[qi, ki]) for ki, nm in enumerate(names) if nm != own_names[q]}
         cols = blocks[q]
         lows = [mt["lower"][j] for j in cols]; highs = [mt["upper"][j] for j in cols]
         O_draws = boot[:, cols].min(axis=1)
@@ -710,7 +731,240 @@ def ansdir(model_key: str, dataset_id: str, template_id: str | None = None, alph
             "n_train_rows": int(arr["n_train_rows"]), "logistic_reference": log_ref, "cos_model": cos, **block}
 
 
+# ---------------------------------------------------------------------------------------------- ALTDIRD
+def altdird(model_key: str, dataset_id: str, template_id: str | None = None, alpha: float = PRIMARY_ALPHA,
+            draws: int = BOOT_CALIBRATION_DRAWS) -> dict:
+    """ALTDIRD statistics: as altdir for the displacement-lifted families dom_disp / pattern_disp (altdir.displacement_lift),
+    with cosines to the logistic normal and to the coefficient-lifted dom / pattern, and the R^T R / D spectrum."""
+    primary, concepts, n, d_log, d_alt, idx, Wlog, comp_boot, log_ref = _module_deltas(model_key, dataset_id, "ALTDIRD", alpha, template_id, draws)
+    arr = load_altdir(model_key, dataset_id, LOCI["primary"])
+    if "cos_model_ext" not in arr:
+        raise FileNotFoundError(f"altdir_seed0.npz lacks the displacement families; re-run python -m cftransfer.altdir --model-key {model_key} --dataset {dataset_id}")
+    fe = list(arr["family_order_ext"].astype(str))
+    names = list(arr["concept_names"].astype(str))
+    ce, cpx = arr["cos_model_ext"], arr["cos_projected_ext"]
+    res = {"n_rows": n, "alpha": alpha, "template_id": primary, "baseline_module": "CORE", "draws": int(idx.shape[0]),
+           "families": list(ALTDIRD_FAMILIES), "logistic_reference": log_ref,
+           "gram_spectrum": gram_spectrum_summary(arr["disp_gram_eigenvalues"]),
+           "cosines": {c: {a: {b: float(ce[ci, ai, bi]) for bi, b in enumerate(fe)} for ai, a in enumerate(fe)} for ci, c in enumerate(names)}}
+    for fam in ALTDIRD_FAMILIES:
+        src = fam.replace("_disp", "")
+        A = _family_stack(d_alt, concepts, fam, n)
+        block = _ownership_block(np.stack([A[qi, qi] for qi in range(len(concepts))]), {d: A[:, di, :] for di, d in enumerate(concepts)}, concepts, idx)
+        own_b = block.pop("own_boot")
+        for qi, q in enumerate(concepts):
+            cell = block["per_question"][q]
+            _cross_reference(cell, own_b[:, qi], comp_boot[:, qi], log_ref[q])
+            k = names.index(q)
+            cell.update({"cos_to_logistic_model": float(ce[k, 0, fe.index(fam)]), "cos_to_logistic_projected": float(cpx[k, 0, fe.index(fam)]),
+                         f"cos_to_{src}_model": float(ce[k, fe.index(src), fe.index(fam)])})
+        res[fam] = block
+    return res
+
+
+# ------------------------------------------------------------------------------------------------- ATTR
+def _readability_cell(y: np.ndarray, s_real: np.ndarray, controls: list[tuple[np.ndarray, np.ndarray]], idx: np.ndarray) -> dict:
+    """The campaign's readability rule (analysis.calibration) on given calibration-row scores: real AUROC, control
+    mean / range, selectivity S with unit-bootstrap draws (valid when the real AUROC is finite and >= MIN_CONTROLS_PER_DRAW
+    controls are), one-sided 95% lower bound, readable flag."""
+    known = y >= 0
+    cell = {"n_pos": int((y == 1).sum()), "n_neg": int((y == 0).sum()), "n_unknown": int((~known).sum())}
+    cell["auroc_real"] = auroc_safe(y[known], s_real[known])
+    ctrl_auc = [auroc_safe(t[t >= 0], v[t >= 0]) for v, t in controls]
+    cell["control_mean"] = float(np.nanmean(ctrl_auc)) if ctrl_auc else np.nan
+    cell["control_min"], cell["control_max"] = (float(np.nanmin(ctrl_auc)), float(np.nanmax(ctrl_auc))) if ctrl_auc else (np.nan, np.nan)
+    cell["selectivity"] = cell["auroc_real"] - cell["control_mean"]
+    S, A, used = [], [], []
+    for b in range(idx.shape[0]):
+        ii = idx[b]; kk = known[ii]
+        a = auroc_safe(y[ii][kk], s_real[ii][kk])
+        cm = np.array([auroc_safe(t[ii][t[ii] >= 0], v[ii][t[ii] >= 0]) for v, t in controls], dtype=float)
+        fin = cm[np.isfinite(cm)] if controls else np.array([])
+        if np.isnan(a) or (controls and len(fin) < MIN_CONTROLS_PER_DRAW):
+            continue
+        A.append(a); S.append(a - fin.mean() if controls else np.nan); used.append(len(fin))
+    cell["bootstrap_valid_draws"] = len(A)
+    cell["controls_used_per_draw_min"] = int(min(used)) if used else 0
+    if len(A) >= 1900:
+        cell["selectivity_lower95_one_sided"] = float(np.percentile(S, 5))
+        cell["selectivity_ci95"] = [float(np.percentile(S, 2.5)), float(np.percentile(S, 97.5))]
+        cell["auroc_real_ci95"] = [float(np.percentile(A, 2.5)), float(np.percentile(A, 97.5))]
+    cell["readable"] = bool(cell["n_pos"] >= 10 and cell["n_neg"] >= 10 and len(A) >= 1900 and controls
+                            and cell.get("selectivity_lower95_one_sided", -1) > 0)
+    cell["readable_status"] = "readable" if cell["readable"] else (
+        "insufficient_support" if cell["n_pos"] < 10 or cell["n_neg"] < 10 else
+        ("controls_ineligible" if not controls else ("insufficient_draws" if len(A) < 1900 else "not_readable")))
+    return cell
+
+
+def _answer_cell(y: np.ndarray, margin: np.ndarray, idx: np.ndarray) -> dict:
+    """Answer capability rule (analysis.calibration) for clean margins against a binary label."""
+    known = (y >= 0) & ~np.isnan(margin)
+    cell = {"n_pos": int((y == 1).sum()), "n_neg": int((y == 0).sum()), "answer_auroc": auroc_safe(y[known], margin[known]),
+            "answer_brier": float(np.nanmean((1 / (1 + np.exp(-margin[known])) - y[known]) ** 2)) if known.any() else np.nan}
+    AA = []
+    for b in range(idx.shape[0]):
+        ii = idx[b]; kk = known[ii]
+        a = auroc_safe(y[ii][kk], margin[ii][kk])
+        if not np.isnan(a):
+            AA.append(a)
+    cell["answer_valid_draws"] = len(AA)
+    if len(AA) >= 1900:
+        cell["answer_auroc_lower95_one_sided"] = float(np.percentile(AA, 5))
+    cell["answer_capable"] = bool(cell["n_pos"] >= 10 and cell["n_neg"] >= 10 and len(AA) >= 1900 and cell.get("answer_auroc_lower95_one_sided", 0) > 0.5)
+    return cell
+
+
+def attr(model_key: str, dataset_id: str, template_id: str | None = None, alpha: float = PRIMARY_ALPHA,
+         draws: int = BOOT_CALIBRATION_DRAWS) -> dict:
+    """ATTR statistics. Questions Q = 3 attributes + 6 clinical, directions = 3 attribute directions + 6 clinical normals:
+      W[q][d] (9x9) against the question's clean baseline (attribute questions: ATTR's own; clinical: CORE's)
+      ownership of every question over the 9-direction family (8 competitors): O_q with percentile interval and max-T
+      verdict; steering reference W_qq > 0, > |sham_q| (the question's sham scored in ATTR) and, for clinical questions,
+      > the CORE random p95 on the same rows (attribute questions have no random family: random_reference false)
+      readability of the attribute probes on the calibration rows (selectivity against the 20 type->random-label controls,
+      campaign rule) and answer capability of the clean attribute questions on the test rows (answer AUROC vs the label)."""
+    primary = _primary(model_key, dataset_id, template_id)
+    clin = CONCEPTS[dataset_id]
+    Q = list(ATTR_CONCEPTS) + list(clin)
+    rows = load_cohort(dataset_id, ("test",))
+    order = {r["row_id"]: i for i, r in enumerate(rows)}
+    n = len(rows)
+    core_df = _load_module(model_key, dataset_id, "CORE")
+    attr_df = _load_module(model_key, dataset_id, "ATTR")
+    if core_df is None or attr_df is None or len(attr_df) == 0:
+        raise FileNotFoundError("attr needs merged outcomes/CORE.parquet and outcomes/ATTR.parquet (python -m cftransfer.package)")
+    base_core = core_df[core_df.direction_id == "baseline"]
+    base = pd.concat([base_core[base_core.concept.isin(clin)], attr_df[attr_df.direction_id == "baseline"]], ignore_index=True)
+    d = _matrix(attr_df, Q, order, alpha, template_id=primary, baseline=base)
+    d_log = _matrix(core_df, clin, order, alpha, template_id=primary, baseline=base_core)
+    dir_names = [f"attr:{a}" for a in ATTR_CONCEPTS] + [f"concept:{c}" for c in clin]
+    own_names = {q: (f"attr:{q}" if q in ATTR_CONCEPTS else f"concept:{q}") for q in Q}
+    fam = {nm: _direction_rows(d, Q, nm, n) for nm in dir_names}
+    own = np.stack([d[(q, own_names[q])] for q in Q]).astype(float)
+    idx = core_bootstrap_indices(dataset_id, n, draws)
+    block = _ownership_block(own, fam, Q, idx, own_names)
+    block.pop("own_boot")
+    for q in Q:
+        cell = block["per_question"][q]
+        attribute = q in ATTR_CONCEPTS
+        sk = f"attrsham:{q}" if attribute else f"sham:{q}"
+        sham = float(np.nanmean(d[(q, sk)])) if (q, sk) in d else np.nan
+        rand = np.array([np.nanmean(d_log[(q, f"random:{i:03d}")]) for i in range(N_RANDOM) if (q, f"random:{i:03d}") in d_log]) if not attribute else np.array([])
+        cell.update({"question_kind": "attribute" if attribute else "clinical", "abs_sham": abs(sham) if not np.isnan(sham) else np.nan,
+                     "random_reference": bool(len(rand) == N_RANDOM), "random_p95": float(np.percentile(rand, 95)) if len(rand) else None,
+                     "own_direction": own_names[q]})
+        w = cell["W_qq"]
+        cell["steering_reference"] = bool(w > 0 and w > cell["abs_sham"] and (not cell["random_reference"] or w > cell["random_p95"]))
+    # attribute readability (calibration rows) and answer capability (test rows) from the prep file and ATTR baselines
+    arr = load_attr(model_key, dataset_id, LOCI["primary"])
+    an = list(arr["attr_names"].astype(str))
+    n_cal = len(arr["cal_row_ids"])
+    idx_cal = bootstrap_indices(dataset_id, n_cal, BOOT_CALIBRATION_SEED, draws)
+    idx_test = bootstrap_indices(dataset_id, n, BOOT_CALIBRATION_SEED, draws)
+    test_pos = {r: i for i, r in enumerate(arr["test_row_ids"].astype(str))}
+    attributes = {}
+    for a in ATTR_CONCEPTS:
+        k = an.index(a)
+        controls = [(arr["cal_control_logits"][k, j], arr["cal_control_labels"][j]) for j in range(arr["cal_control_logits"].shape[1])
+                    if np.isfinite(arr["cal_control_logits"][k, j]).all()] if bool(arr["controls_eligible"]) else []
+        cell = _readability_cell(arr["cal_labels"][k].astype(int), arr["cal_real_logits"][k].astype(float), controls, idx_cal)
+        cell["controls_note"] = "type->random-label controls over the view x sex x age-decade strata; an attribute label is one particular labelling of those strata"
+        y_test = np.full(n, -1, int); m_test = np.full(n, np.nan)
+        for r, i in order.items():
+            if r in test_pos:
+                y_test[i] = int(arr["test_labels"][k, test_pos[r]])
+        g = attr_df[(attr_df.direction_id == "baseline") & (attr_df.concept == a)]
+        m_test[[order[r] for r in g.row_id if r in order]] = g.semantic_margin.values[[i for i, r in enumerate(g.row_id) if r in order]]
+        cell.update(_answer_cell(y_test, m_test, idx_test))
+        cell.update({"auroc_calibration_prep": float(arr["auroc_calibration"][k]), "auroc_test_prep": float(arr["auroc_test"][k]),
+                     "n_train_pos": int(arr["n_pos"][k]), "n_train_neg": int(arr["n_neg"][k]),
+                     "cos_model_to_clinical": {c: float(arr["cos_model"][k, ci]) for ci, c in enumerate(clin)}})
+        attributes[a] = cell
+    return {"n_rows": n, "alpha": alpha, "template_id": primary, "draws": int(idx.shape[0]), "questions": Q, "directions": dir_names,
+            "attributes": attributes, **block}
+
+
+# --------------------------------------------------------------------------------------------- ANSDIRT
+def ansdirt(model_key: str, dataset_id: str, alpha: float = PRIMARY_ALPHA, draws: int = BOOT_CALIBRATION_DRAWS) -> dict:
+    """ANSDIRT statistics: the IY-fitted answer directions written under each other eligible template, with the
+    module's own clean baseline per (question, template). Per template: W^a (6x6), O^a_q with percentile interval and
+    6x5 max-T verdict, the a-sham reference, and for PROMPT's designated concepts the cross comparison against the
+    logistic competitors and random p95 scored by PROMPT under that template (own answer write minus the strongest
+    logistic competitor, paired interval). Transfer: the IY-owned a_q cells (from ansdir(): steering reference and
+    fixed_family_advantage) and how many stay owned under each template (same rule; random p95 where PROMPT provides it)."""
+    concepts = CONCEPTS[dataset_id]
+    rows = load_cohort(dataset_id, ("test",))
+    order = {r["row_id"]: i for i, r in enumerate(rows)}
+    n = len(rows)
+    df = _load_module(model_key, dataset_id, "ANSDIRT")
+    if df is None or len(df) == 0:
+        raise FileNotFoundError("ansdirt needs merged outcomes/ANSDIRT.parquet (python -m cftransfer.package)")
+    prompt = _load_module(model_key, dataset_id, "PROMPT")
+    elig = _eligibility(model_key, dataset_id)
+    idx = core_bootstrap_indices(dataset_id, n, draws)
+    B = idx.shape[0]
+    try:
+        iy = ansdir(model_key, dataset_id, alpha=alpha, draws=draws)
+        owned_iy = {q for q, c in iy["per_question"].items() if c["steering_reference"] and c["verdict"] == "fixed_family_advantage"}
+    except FileNotFoundError:
+        iy, owned_iy = None, None
+    res = {"n_rows": n, "alpha": alpha, "draws": B, "templates": [], "ineligible_templates": [], "not_started_templates": [],
+           "iy_owned": sorted(owned_iy) if owned_iy is not None else None, "per_template": {}, "transfer": {}}
+    for t in ANSDIRT_TEMPLATES:
+        if not elig.get(t, {}).get("eligible", True):
+            res["ineligible_templates"].append(t)
+            continue
+        dt = df[df.template_id == t]
+        if dt.empty:
+            res["not_started_templates"].append(t)
+            continue
+        d = _matrix(dt, concepts, order, alpha, template_id=t, baseline=dt[dt.direction_id == "baseline"])
+        A = _family_stack(d, concepts, "ans", n)
+        block = _ownership_block(np.stack([A[qi, qi] for qi in range(len(concepts))]), {c: A[:, ci, :] for ci, c in enumerate(concepts)}, concepts, idx)
+        own_b = block.pop("own_boot")
+        dp = None
+        if prompt is not None and (prompt.template_id == t).any():
+            pt = prompt[prompt.template_id == t]
+            dp = _matrix(pt, concepts, order, alpha, template_id=t, baseline=pt[pt.direction_id == "baseline"])
+        owned_t = set()
+        for qi, q in enumerate(concepts):
+            cell = block["per_question"][q]
+            sham = float(np.nanmean(d[(q, f"anssham:{q}")])) if (q, f"anssham:{q}") in d else np.nan
+            cell["abs_sham"] = abs(sham) if not np.isnan(sham) else np.nan
+            cell["random_reference"], cell["random_p95"] = False, None
+            if dp is not None and all((q, f"concept:{c}") in dp and np.isfinite(dp[(q, f"concept:{c}")]).any() for c in concepts):
+                Wl = {c: float(np.nanmean(dp[(q, f"concept:{c}")])) for c in concepts}
+                others = {c: v for c, v in Wl.items() if c != q}
+                comp_b = np.stack([max(np.nanmean(dp[(q, f"concept:{c}")][idx[b]]) for c in concepts if c != q) for b in range(B)])
+                X = own_b[:, qi] - comp_b
+                rand = np.array([np.nanmean(dp[(q, f"random:{i:03d}")]) for i in range(N_RANDOM) if (q, f"random:{i:03d}") in dp])
+                cell.update({"logistic_source": "PROMPT", "W_logistic_qq": Wl[q], "max_other_logistic": max(others.values()),
+                             "argmax_other_logistic": max(others, key=others.get), "O_logistic_q": Wl[q] - max(others.values()),
+                             "own_minus_max_logistic_competitor": float(cell["W_qq"] - max(others.values())),
+                             "own_minus_max_logistic_competitor_ci95_percentile": [float(np.percentile(X, 2.5)), float(np.percentile(X, 97.5))],
+                             "random_p95": float(np.percentile(rand, 95)) if len(rand) == N_RANDOM else None,
+                             "random_reference": bool(len(rand) == N_RANDOM)})
+            w = cell["W_qq"]
+            cell["steering_reference"] = bool(w > 0 and w > cell["abs_sham"] and (not cell["random_reference"] or w > cell["random_p95"]))
+            if cell["steering_reference"] and cell["verdict"] == "fixed_family_advantage":
+                owned_t.add(q)
+        block.update({"owned": sorted(owned_t), "n_owned": len(owned_t), "n_scored_rows_min": block["n_scored_rows_min"]})
+        res["templates"].append(t)
+        res["per_template"][t] = block
+        if owned_iy is not None:
+            res["transfer"][t] = {"n_owned_IY": len(owned_iy), "n_stay_owned": len(owned_iy & owned_t), "stay": sorted(owned_iy & owned_t),
+                                  "lost": sorted(owned_iy - owned_t), "gained": sorted(owned_t - owned_iy)}
+    return res
+
+
 # -------------------------------------------------------------------------------------------- PRECISION
+def _grade_cells(c: dict) -> dict:
+    """The campaign grade of one core() result, per question: verdict, steering reference, O_q and its interval."""
+    return {q: {k: v.get(k) for k in ("W_qq", "O_q", "O_q_ci95_percentile", "verdict", "steering_reference", "random_p95", "abs_sham",
+                                      "argmax_other")} for q, v in c["per_question"].items()}
+
+
 def _core_cells(delta: dict, concepts: list[str]) -> dict:
     """Point W (6x6 + random p95 + |sham|) and the two reference comparisons per question from per-sample deltas."""
     out = {}
@@ -729,11 +983,15 @@ def _core_cells(delta: dict, concepts: list[str]) -> dict:
     return out
 
 
-def precision(model_key: str, dataset_id: str, template_id: str | None = None, alpha: float = PRIMARY_ALPHA) -> dict:
+def precision(model_key: str, dataset_id: str, template_id: str | None = None, alpha: float = PRIMARY_ALPHA,
+              draws: int = BOOT_CALIBRATION_DRAWS) -> dict:
     """PRECISION: the CORE grid on the first PRECISION_ROWS test rows under each numerics setting (fp32, batch1), each
     with its own clean baseline, against CORE (bf16, batched) on the same rows: W and O per setting, the maximum |dW|
     over the 6x6 clinical cells, dO per question, and whether the two point verdicts (own > strongest competitor,
-    own > random p95) agree with CORE's on those rows. No bootstrap: the question is numerical, not sampling."""
+    own > random p95) agree with CORE's on those rows (point estimates), and, under "grade", the FULL campaign grade of
+    every setting and of CORE on the 200 rows (core(): steering reference against the 119-random p95 and the sham on those
+    rows, 6x5 max-T contrasts with `draws` unit-bootstrap draws, verdicts) with the count of cells whose verdict or
+    steering reference changes, max |dW| over the whole 127-direction grid and max |d contrast|."""
     primary = _primary(model_key, dataset_id, template_id)
     concepts = CONCEPTS[dataset_id]
     n_rows = MODULES["PRECISION"].row_limit
@@ -748,8 +1006,10 @@ def precision(model_key: str, dataset_id: str, template_id: str | None = None, a
     prec = prec[prec.sample_status == "OK"]
     d_core = _matrix(core_df, concepts, order, alpha, template_id=primary, baseline=core_df[core_df.direction_id == "baseline"])
     core_cells = _core_cells(d_core, concepts)
-    res = {"n_rows": len(rows), "alpha": alpha, "template_id": primary, "settings": list(PRECISION_SETTINGS),
-           "core": {"numerics": NUMERICS_DEFAULT, "per_question": core_cells}}
+    core_grade = core(model_key, dataset_id, "CORE", template_id=primary, alpha=alpha, n_boot=draws, row_limit=n_rows)
+    res = {"n_rows": len(rows), "alpha": alpha, "template_id": primary, "settings": list(PRECISION_SETTINGS), "draws": draws,
+           "core": {"numerics": NUMERICS_DEFAULT, "per_question": core_cells, "grade": _grade_cells(core_grade),
+                    "max_t_critical": core_grade.get("max_t_critical")}}
     for st in PRECISION_SETTINGS:
         df = prec[prec.numerics == st]
         if df.empty:
@@ -769,6 +1029,22 @@ def precision(model_key: str, dataset_id: str, template_id: str | None = None, a
                    "max_abs_dW": float(np.abs(dW).max()), "max_abs_dO": float(max(abs(cells[q]["dO_q"]) for q in concepts)),
                    "n_agree_competitor": int(sum(cells[q]["agree_competitor"] for q in concepts)),
                    "n_agree_random_p95": int(sum(cells[q]["agree_random_p95"] for q in concepts)), "per_question": cells}
+        # full campaign grade under this setting versus CORE on the same rows
+        g = core(model_key, dataset_id, "PRECISION", template_id=primary, alpha=alpha, n_boot=draws, numerics=st)
+        grade = _grade_cells(g)
+        cg = res["core"]["grade"]
+        for q in concepts:
+            grade[q]["verdict_core"] = cg[q]["verdict"]; grade[q]["verdict_changed"] = grade[q]["verdict"] != cg[q]["verdict"]
+            grade[q]["steering_reference_core"] = cg[q]["steering_reference"]
+            grade[q]["steering_reference_changed"] = grade[q]["steering_reference"] != cg[q]["steering_reference"]
+            grade[q]["dO_q"] = (grade[q]["O_q"] - cg[q]["O_q"]) if grade[q]["O_q"] is not None and cg[q]["O_q"] is not None else None
+        common = {q: sorted(set(g["W"][q]) & set(core_grade["W"][q])) for q in concepts}
+        dW_grid = max(abs(g["W"][q][k] - core_grade["W"][q][k]) for q in concepts for k in common[q])
+        dC = max(abs(g["contrasts"][k]["estimate"] - core_grade["contrasts"][k]["estimate"]) for k in g.get("contrasts", {}) if k in core_grade.get("contrasts", {}))
+        res[st]["grade"] = {"per_question": grade, "n_verdict_changes": int(sum(grade[q]["verdict_changed"] for q in concepts)),
+                            "n_steering_reference_changes": int(sum(grade[q]["steering_reference_changed"] for q in concepts)),
+                            "max_abs_dW_grid": float(dW_grid), "n_grid_cells_compared": int(sum(len(v) for v in common.values())),
+                            "max_abs_dcontrast": float(dC), "max_t_critical": g.get("max_t_critical")}
     return res
 
 
@@ -783,7 +1059,8 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--model-key", required=True)
     ap.add_argument("--dataset", required=True)
-    ap.add_argument("--what", default="calibration,core", help="comma list of calibration,core,shifts,t3,altdir,extcomp,tokenw,precision,ansdir")
+    ap.add_argument("--what", default="calibration,core",
+                    help="comma list of calibration,core,shifts,t3,altdir,extcomp,tokenw,precision,ansdir,altdird,attr,ansdirt")
     ap.add_argument("--n-boot", type=int, default=None)
     a = ap.parse_args()
     rd = run_dir(a.model_key, a.dataset)
@@ -804,9 +1081,15 @@ if __name__ == "__main__":
         elif w == "tokenw":
             report["tokenw"] = tokenw(a.model_key, a.dataset, draws=a.n_boot or BOOT_CALIBRATION_DRAWS)
         elif w == "precision":
-            report["precision"] = precision(a.model_key, a.dataset)
+            report["precision"] = precision(a.model_key, a.dataset, draws=a.n_boot or BOOT_CALIBRATION_DRAWS)
         elif w == "ansdir":
             report["ansdir"] = ansdir(a.model_key, a.dataset, draws=a.n_boot or BOOT_CALIBRATION_DRAWS)
+        elif w == "altdird":
+            report["altdird"] = altdird(a.model_key, a.dataset, draws=a.n_boot or BOOT_CALIBRATION_DRAWS)
+        elif w == "attr":
+            report["attr"] = attr(a.model_key, a.dataset, draws=a.n_boot or BOOT_CALIBRATION_DRAWS)
+        elif w == "ansdirt":
+            report["ansdirt"] = ansdirt(a.model_key, a.dataset, draws=a.n_boot or BOOT_CALIBRATION_DRAWS)
     report["primary_template"] = primary_template(rd)       # template the single-template statistics above refer to
     (rd / "summary.json").write_text(json.dumps(report, indent=1, default=lambda o: float(o) if isinstance(o, np.floating) else str(o)))
     if "calibration" in report:
@@ -845,8 +1128,35 @@ if __name__ == "__main__":
             r = report["precision"][st]
             if r.get("status") == "NOT_STARTED":
                 print(f"PRECISION {st:7s} NOT_STARTED"); continue
+            g = r.get("grade", {})
             print(f"PRECISION {st:7s} {r['status']} max|dW|={r['max_abs_dW']:.4f} max|dO|={r['max_abs_dO']:.4f} "
-                  f"agree competitor {r['n_agree_competitor']}/6, random p95 {r['n_agree_random_p95']}/6")
+                  f"agree competitor {r['n_agree_competitor']}/6, random p95 {r['n_agree_random_p95']}/6; grade: verdict changes "
+                  f"{g.get('n_verdict_changes')}/6, reference changes {g.get('n_steering_reference_changes')}/6, "
+                  f"max|dW| grid={g.get('max_abs_dW_grid', float('nan')):.4f} max|dC|={g.get('max_abs_dcontrast', float('nan')):.4f}")
+    if "altdird" in report and "altdird" in a.what:
+        gs = report["altdird"]["gram_spectrum"]
+        print(f"ALTDIRD R^T R / D spectrum: min={gs['min']:.6f} max={gs['max']:.6f} condition={gs['condition']:.2f}")
+        for fam in report["altdird"]["families"]:
+            for q, cell in report["altdird"][fam]["per_question"].items():
+                lo, hi = cell["O_q_ci95_percentile"]
+                print(f"ALTDIRD {fam:12s} {q:14s} W_qq={cell['W_qq']:+.4f} O_q={cell['O_q']:+.4f} [{lo:+.4f},{hi:+.4f}] "
+                      f"own-maxlog={cell['own_minus_max_logistic_competitor']:+.4f} cos_log={cell['cos_to_logistic_model']:+.3f} ref={cell['steering_reference']} verdict={cell['verdict']}")
+    if "attr" in report and "attr" in a.what:
+        for a_name, cell in report["attr"]["attributes"].items():
+            print(f"ATTR probe {a_name:8s} auroc={cell['auroc_real']:.4f} S={cell['selectivity']:+.4f} readable={cell['readable']} "
+                  f"answer_auroc={cell.get('answer_auroc', float('nan')):.4f} capable={cell.get('answer_capable')}")
+        for q, cell in report["attr"]["per_question"].items():
+            lo, hi = cell["O_q_ci95_percentile"]
+            print(f"ATTR {cell['question_kind']:9s} {q:14s} W_qq={cell['W_qq']:+.4f} O_q={cell['O_q']:+.4f} [{lo:+.4f},{hi:+.4f}] (vs {cell['argmax_other']}) "
+                  f"ref={cell['steering_reference']} verdict={cell['verdict']}")
+    if "ansdirt" in report and "ansdirt" in a.what:
+        r = report["ansdirt"]
+        for t in r["templates"]:
+            tr = r["transfer"].get(t, {})
+            print(f"ANSDIRT {t}: owned {r['per_template'][t]['n_owned']}/6 ({', '.join(r['per_template'][t]['owned']) or '-'}); "
+                  f"IY-owned staying: {tr.get('n_stay_owned', '?')}/{tr.get('n_owned_IY', '?')}")
+        if r["ineligible_templates"]:
+            print(f"ANSDIRT ineligible templates: {r['ineligible_templates']}")
     if "core" in report and "core" in a.what:
         for q, cell in report["core"]["per_question"].items():
             print(f"CORE {q:14s} W_qq={cell['W_qq']:.4f} O_q={cell['O_q']:.4f} (vs {cell['argmax_other']}) p95rand={cell['random_p95']:.4f} "

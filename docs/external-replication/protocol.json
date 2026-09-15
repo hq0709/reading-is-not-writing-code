@@ -438,6 +438,90 @@
       ],
       "added": "2026-09-14; addendum, enqueued explicitly",
       "analysis": "cftransfer.analysis --what ansdir: W^a (6x6), O^a_q with the 2,000-draw percentile interval and 6x5 max-T verdict, steering reference against the CORE random p95 and the a-sham, own answer write minus the strongest logistic competitor of CORE, cosines / CV R^2"
+    },
+    "ALTDIRD": {
+      "cohort": "test",
+      "concepts": "all",
+      "templates": [
+        "IY"
+      ],
+      "alpha": [
+        0.25
+      ],
+      "locus": "primary (vis.last)",
+      "fit_seed": 0,
+      "directions": "6 dom_disp + 6 pattern_disp = 12 steered conditions per question (no baseline rows; CORE baseline reused)",
+      "lift": "a displacement u in the standardised 512-d space is lifted as its minimum-norm preimage x = R (R^T R)^{-1} diag(s) u (R = the seed-0 projection), unit-normalised; the coefficient lift R diag(1/s) beta of the logistic normals and of the ALTDIR families is unchanged",
+      "prep": "python -m cftransfer.altdir --model-key K --dataset D  (CPU; appends dom_disp/pattern_disp vectors, the R^T R / D eigenvalue spectrum and the extended cosine matrices to fits/vis.last/altdir_seed0.npz without changing existing arrays)",
+      "expected_rows": 43200,
+      "baseline": "reuse CORE",
+      "datasets": [
+        "nih",
+        "chexpert",
+        "coco"
+      ],
+      "added": "2026-09-15; addendum, enqueued explicitly",
+      "analysis": "cftransfer.analysis --what altdird: per family W (6x6), within-family O_q with interval and 6x5 max-T verdict, own write minus the strongest logistic competitor of CORE, cosines to the logistic normal and to the coefficient-lifted dom / pattern"
+    },
+    "ATTR": {
+      "cohort": "test",
+      "questions": "3 attribute questions (view_AP, sex_F, age_60; protocol templates with the attribute phrase) + the 6 clinical questions",
+      "templates": [
+        "IY"
+      ],
+      "alpha": [
+        0.25
+      ],
+      "locus": "primary (vis.last)",
+      "fit_seed": 0,
+      "attribute_phrases": {
+        "view_AP": "an anteroposterior (portable) projection",
+        "sex_F": "a female patient",
+        "age_60": "a patient aged sixty or older"
+      },
+      "attribute_labels": {
+        "view_AP": "1 = AP, 0 = PA (manifest `view`)",
+        "sex_F": "1 = F, 0 = M (manifest `sex`)",
+        "age_60": "1 = age >= 60, 0 = age < 60 (manifest `age`)"
+      },
+      "support_rule": ">= 100 known training rows per class (both chest sets qualify on all three attributes)",
+      "directions": "3 attribute directions (fitted like the protocol normals) + 6 clinical normals + the question's sham; attribute questions also score their clean baseline (11 conditions), clinical questions reuse CORE's baseline (10 conditions); no random family (CORE's random p95 is the reference for clinical questions; attribute questions are referenced against their sham only)",
+      "prep": "python -m cftransfer.attr --model-key K --dataset D  (CPU; writes fits/vis.last/attr_seed0.npz with directions, shams, cosines to the six normals, calibration-row probe and type->random-label control logits)",
+      "expected_rows": 55800,
+      "baseline": "attribute questions: own; clinical questions: reuse CORE",
+      "datasets": [
+        "nih",
+        "chexpert"
+      ],
+      "added": "2026-09-15; addendum, enqueued explicitly",
+      "analysis": "cftransfer.analysis --what attr: 9x9 write matrix (questions x directions), ownership of every question over the family {3 attributes + 6 clinical} with interval and max-T verdict, readability of the attribute probes (calibration rows, selectivity vs the 20 type->random-label controls) and answer AUROC of the clean attribute questions on the test rows"
+    },
+    "ANSDIRT": {
+      "cohort": "test",
+      "concepts": "all",
+      "templates": [
+        "WY",
+        "IA",
+        "IB",
+        "WA",
+        "WB"
+      ],
+      "alpha": [
+        0.25
+      ],
+      "locus": "primary (vis.last)",
+      "fit_seed": 0,
+      "directions": "baseline + 6 IY-fitted answer directions a_d + the a-sham of q = 8 conditions per (question, template); 40 per question over the five templates",
+      "prep": "fits/vis.last/ansdir_seed0.npz from the ANSDIR prep (python -m cftransfer.ansdir; enqueue emits it)",
+      "expected_rows": 144000,
+      "baseline": "own, per (question, template)",
+      "datasets": [
+        "nih",
+        "chexpert",
+        "coco"
+      ],
+      "added": "2026-09-15; addendum, enqueued explicitly; INELIGIBLE templates are dropped as in PROMPT",
+      "analysis": "cftransfer.analysis --what ansdirt: per template W^a (6x6), O^a_q with interval and 6x5 max-T verdict, the a-sham reference, the cross comparison against the logistic competitors and random p95 of PROMPT under the same template (its two designated concepts), and transfer counts of the IY-owned a_q cells (from --what ansdir) that stay owned under each template"
     }
   },
   "numerics": {
@@ -663,13 +747,16 @@
     "all_test_and_calibration_rows": 125153600,
     "excludes": "feature extraction, interface preflight and retries",
     "ALTDIR_rows_addendum": 5702400,
-    "ALTDIR_note": "addenda rows (ALTDIR, EXTCOMP, TOKENW, PRECISION, ANSDIR; 2026-09-14) are outside all_test_and_calibration_rows, which keeps the planned total of the original seven modules",
+    "ALTDIR_note": "addenda rows (ALTDIR, EXTCOMP, TOKENW, PRECISION, ANSDIR, ALTDIRD, ATTR, ANSDIRT) are outside all_test_and_calibration_rows, which keeps the planned total of the original seven modules",
     "addenda": {
       "ALTDIR": 5702400,
       "EXTCOMP": 712800,
       "TOKENW": 2851200,
       "PRECISION": 13411200,
-      "ANSDIR": 1663200
+      "ANSDIR": 1663200,
+      "ALTDIRD": 2851200,
+      "ATTR": 2455200,
+      "ANSDIRT": 9504000
     }
   }
 }
