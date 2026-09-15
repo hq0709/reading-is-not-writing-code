@@ -1897,3 +1897,26 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   enqueued at prefix 1 (ahead of everything except running work).
 - Gate decision: answers the objection that the deficit could be an artefact of the logistic-normal estimator
   or of correlated labels; results enter Section 5.7 as they land.
+
+## 2026-09-15 Robustness R3: shared-tower paired deltas, ceilings, floors, denominators (existing data)
+
+- Run: `scripts/mayo/robustness_pairs.py` -> `runs/robustness/pairs.{json,md}`.
+- Observation (shared towers): gemma3-4/12 features and write vectors bit-identical; gemma3-27 and medgemma-27
+  within one bf16 ulp of their siblings (cosines 0.9987-0.99996); llava15-7/13 bit-identical (a third same-write
+  ladder). Qwen2.5-VL, Qwen3-VL, InternVL3.5, Lingshu sizes do not share towers.
+- Observation (paired Delta O, same 600 patients, 2,000 shared draws): the interval excludes zero for 5-6 of 6
+  concepts in 11 of 12 pair-dataset combinations (medgemma-4/27 COCO: 3/6); median |Delta O| 0.05-0.37, 1.4-3.7x
+  the mean refit SD (max 8.8x). NIH Effusion: -0.83 [-0.85, -0.81] (4B -> 12B), +0.79 [+0.76, +0.82] (12B -> 27B).
+- Observation (ceilings): 71/342 cells have > 90% of clean rows saturated (NIH 15, CheXpert 13, COCO 43); only one
+  owned chest cell is a ceiling cell. gemma3-4 chest cells are high-side saturated; on the logit scale every own
+  write lowers its own margin (O^m -1.1 to -19.8, all intervals below zero).
+- Observation (floors): owned cells with W_qq >= 0.05 and O_q >= 0.05: chest 18/228 (NIH 9, CheXpert 9), COCO
+  78/114; refit-stable owned: NIH 6/10, COCO 94/100.
+- Observation (readability): grid-wide mean selectivity Cardiomegaly 0.187 > Effusion 0.171 > Atelectasis 0.130
+  > Pneumothorax 0.063 (40 chest blocks).
+- Observation (denominators): probe-graded chest cells 240 (21 blocks NIH incl. llama32-11 and iv35-38; 19
+  CheXpert), write-matrix cells 228, owned 27, readable 134, answer-capable 140, readable-and-answerable 91 (19
+  owned), stronger competitor 150, steering reference 41. Table 1 superscripts used graded denominators; the
+  tables now use the write-matrix denominator for Ans/Own.
+- Gate decision: the reader result is refit-proof (paired deltas); floors and stability enter Section 5.1; the
+  paper's "most readable" sentence corrected.
