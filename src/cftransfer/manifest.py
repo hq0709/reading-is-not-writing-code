@@ -25,7 +25,10 @@ consumer can count them.
 Cell rows: the concept cells of a block are its CORE rows with fit_seed 0 (one per concept; CORE scores one
 template per block, the primary one). Calibration grades attach to those rows for probe-graded blocks; core
 verdict fields and answer grades attach only for included blocks. ALTDIR rows carry the per-family ownership
-flags of the alternative-direction module for included blocks whose ALTDIR is COMPLETE for that concept.
+flags of the alternative-direction module for included blocks whose ALTDIR is COMPLETE for that concept. VALID rows
+carry the grade of the same concept on the radiologist-labelled CheXpert valid rows (summary.json `valid`: readable,
+answer-capable, owned, O_q, verdict) for included blocks whose VALID is COMPLETE for that concept; block_included
+never depends on VALID.
 """
 from __future__ import annotations
 
@@ -48,6 +51,7 @@ CHEST = ("nih", "chexpert")
 CAL_FIELDS = ("readable", "n_pos", "n_neg", "selectivity")
 ANS_FIELDS = ("answer_capable", "answer_auroc")
 CORE_FIELDS = ("W_qq", "O_q", "verdict", "steering_reference")
+VALID_FIELDS = ("readable", "answer_capable", "owned", "O_q", "verdict")
 COVERAGE_FIELDS = ("expected_rows", "actual_unique_rows", "failed_rows", "execution_status", "reason")
 
 COLUMNS = (["model_key", "dataset", "module", "locus_id", "fit_seed", "template", "concept"]
@@ -56,7 +60,8 @@ COLUMNS = (["model_key", "dataset", "module", "locus_id", "fit_seed", "template"
               "run_status", "completed_modules", "ineligible_modules", "requested_modules",
               "block_included", "probe_graded", "cell"]
            + list(CAL_FIELDS) + list(ANS_FIELDS) + list(CORE_FIELDS) + ["owned"]
-           + [f"altdir_owned_{f}" for f in ALTDIR_FAMILIES] + [f"altdir_O_q_{f}" for f in ALTDIR_FAMILIES])
+           + [f"altdir_owned_{f}" for f in ALTDIR_FAMILIES] + [f"altdir_O_q_{f}" for f in ALTDIR_FAMILIES]
+           + [f"valid_{f}" for f in VALID_FIELDS])
 
 
 # ------------------------------------------------------------------------------------------------ the rule
@@ -111,6 +116,8 @@ def block_rows(run_dir: Path) -> list[dict]:
     core = ((summary.get("core") or {}).get("per_question") or {}) if included else {}
     alt = summary.get("altdir") or {}
     alt_ok = included and "ALTDIR" in set(run.get("completed_modules") or []) and all(f in alt for f in ALTDIR_FAMILIES)
+    val = (summary.get("valid") or {}).get("per_question") or {}
+    val_ok = included and "VALID" in set(run.get("completed_modules") or [])
     block = {"primary_template": primary, "run_status": run.get("status", ""),
              "completed_modules": "|".join(run.get("completed_modules") or []),
              "ineligible_modules": "|".join(run.get("ineligible_modules") or []),
@@ -134,6 +141,8 @@ def block_rows(run_dir: Path) -> list[dict]:
                 row[k] = None
             for fam in ALTDIR_FAMILIES:
                 row[f"altdir_owned_{fam}"] = None; row[f"altdir_O_q_{fam}"] = None
+            for k in VALID_FIELDS:
+                row[f"valid_{k}"] = None
             if cell and probe and concept in cal:
                 for k in CAL_FIELDS:
                     row[k] = cal[concept].get(k)
@@ -149,6 +158,9 @@ def block_rows(run_dir: Path) -> list[dict]:
                     c = (alt[fam].get("per_question") or {}).get(concept)
                     if c:
                         row[f"altdir_owned_{fam}"] = owned(c); row[f"altdir_O_q_{fam}"] = c.get("O_q")
+            if r["module"] == "VALID" and seed == "0" and concept in val and val_ok and r.get("execution_status") == "COMPLETE":
+                for k in VALID_FIELDS:
+                    row[f"valid_{k}"] = val[concept].get(k)
             rows.append(row)
     return rows
 

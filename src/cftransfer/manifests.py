@@ -6,6 +6,8 @@ Outputs per dataset, under <data_root>/<dataset_id>/manifests/:
 
 Sampling uses SHA-256 of tagged identifiers exactly as the package specifies; labels never enter the
 ordering. NIH reuses the package's cohorts.csv verbatim (verified to reproduce from data/manifest.csv).
+CheXpert's `valid` role (build_chexpert_valid) is appended afterwards: the official validation split with
+radiologist labels, scored by the VALID module.
 """
 from __future__ import annotations
 
@@ -284,10 +286,86 @@ def build_chexpert_plus(data_root: Path, release: str) -> dict:
     return summarize("chexpert", cohort_rows, label_rows)
 
 
+# ------------------------------------------------------------------ CheXpert valid split (radiologist labels)
+VALID_LABELS_CSV = "valid_radiologist_labels.csv"
+
+
+def build_chexpert_valid(data_root: Path) -> dict:
+    """Append the `valid` role to the CheXpert Plus manifests: one frontal per patient of the official CheXpert validation
+    split (200 patients), labelled by the radiologist consensus of CheXpert-v1.0 valid.csv, staged as
+    <data_root>/chexpert/valid_radiologist_labels.csv (+ .provenance.json; dense 0/1 for every observation), instead of
+    the labeler output that labels every other role. Selection as build_chexpert_plus: split == valid, frontal, one image
+    per patient by the row hash, patients in patient-hash order. Images are valid/<patient>/<study>/<view>.png from the
+    CheXpert Plus PNG zips (scripts/mayo/extract_chexpert_valid.py). Append-only and idempotent: existing rows are not
+    rewritten; a second call finds the rows already present (and refuses to continue if they differ)."""
+    import pandas as pd
+    d = data_root / "chexpert"
+    out = d / "manifests"
+    lab_path = d / VALID_LABELS_CSV
+    prov = json.loads(Path(str(lab_path) + ".provenance.json").read_text(encoding="utf-8"))
+    digest = hashlib.sha256(lab_path.read_bytes()).hexdigest()
+    if digest != prov["sha256"]:
+        raise SystemExit(f"{lab_path.name}: sha256 {digest} differs from its provenance file")
+    labels = {r["Path"]: r for r in csv.DictReader(lab_path.open(newline="", encoding="utf-8"))}
+    meta = pd.read_parquet(d / "df_chexpert_plus_240401.parquet")
+    fr = meta[(meta["split"] == "valid") & (meta["frontal_lateral"] == "Frontal") & meta["path_to_image"].isin(labels)]
+    per_patient = defaultdict(list)
+    for r in fr.itertuples(index=False):
+        per_patient[r.deid_patient_id].append(r)
+    chosen = {pid: min(v, key=lambda r: sha("cf-transfer-v1-chexpert-row:", r.path_to_image)) for pid, v in per_patient.items()}
+    order = sorted(chosen, key=lambda pid: sha("cf-transfer-v1-chexpert-patient:", pid))
+    cohort_rows, label_rows = [], []
+    for k, pid in enumerate(order):
+        r = chosen[pid]
+        rel = r.path_to_image.rsplit(".", 1)[0] + ".png"                       # valid/patientNNNNN/studyN/viewN_frontal.png
+        row_id = rel.split("/", 1)[1].replace("/", "__").rsplit(".", 1)[0]
+        cohort_rows.append({"dataset_id": "chexpert", "row_id": row_id, "unit_id": pid, "role": "valid", "order": k,
+                            "relative_image_path": rel, "original_split": "valid"})
+        view = r.ap_pa if isinstance(r.ap_pa, str) else ""
+        sex = r.sex if isinstance(r.sex, str) else ""
+        tid = xray_type_id("1" if view == "AP" else ("0" if view == "PA" else "na"),
+                           "1" if sex == "Male" else ("0" if sex == "Female" else "na"), r.age)
+        lab = labels[r.path_to_image]
+        for raw_name, concept in list(CHEXPERT_RAW_TO_CONCEPT.items()) + [(x, x) for x in CHEXPERT_EXTRA]:
+            raw = lab[raw_name].strip()
+            if raw not in ("1.0", "0.0", "1", "0"):
+                raise SystemExit(f"{rel} {raw_name}: radiologist label {raw!r} is not 0/1")
+            label_rows.append({"dataset_id": "chexpert", "row_id": row_id, "concept": concept,
+                               "label": "1" if raw in ("1.0", "1") else "0", "label_known": "true", "label_raw": raw,
+                               "view": view, "sex": sex[:1] if sex else "", "age": "" if pd.isna(r.age) else int(r.age),
+                               "width": "", "height": "", "type_id": tid})
+    existing = [r for r in csv.DictReader((out / "cohort.csv").open(newline="", encoding="utf-8")) if r["role"] == "valid"]
+    if existing:
+        if existing != [{c: str(r[c]) for c in COHORT_COLS} for r in cohort_rows]:
+            raise SystemExit("cohort.csv already carries valid rows that differ from this build; nothing written")
+    else:
+        for name, cols, rows in (("cohort.csv", COHORT_COLS, cohort_rows), ("labels.csv", LABEL_COLS, label_rows)):
+            with (out / name).open("a", newline="", encoding="utf-8") as f:
+                csv.DictWriter(f, fieldnames=cols).writerows(rows)
+    rel_path = out / "release.json"
+    release = json.loads(rel_path.read_text(encoding="utf-8")) if rel_path.exists() else {}
+    release["valid"] = {
+        "role": "valid", "rows": len(cohort_rows), "patients": len(order), "frontal_valid_rows": int(len(fr)),
+        "label_source": "radiologist",
+        "label_file": f"{VALID_LABELS_CSV} (CheXpert-v1.0 valid.csv radiologist consensus labels; dense 0/1, every row label_known)",
+        "labels_sha256": digest, "source": prov["source"], "hf_repo": prov["hf_repo"], "hf_revision": prov["hf_revision"],
+        "hf_file": prov["hf_file"],
+        "image_files": "PNG/valid/* of the CheXpert Plus PNG zips, extracted to images/valid/ (scripts/mayo/extract_chexpert_valid.py)",
+        "selection": "split valid, frontal; one image per patient by SHA-256('cf-transfer-v1-chexpert-row:'+path_to_image); "
+                     "patients by SHA-256('cf-transfer-v1-chexpert-patient:'+deid_patient_id)"}
+    rel_path.write_text(json.dumps(release, indent=2))
+    pos = {c: [0, 0, 0] for c in CONCEPTS["chexpert"]}
+    for r in label_rows:
+        if r["concept"] in pos:
+            pos[r["concept"]][0 if r["label"] == "1" else 1] += 1
+    return {"dataset_id": "chexpert", "role": "valid", "rows": len(cohort_rows), "patients": len(order),
+            "appended": not existing, "labels_pos_neg_unknown": pos}
+
+
 if __name__ == "__main__":
     import argparse
     ap = argparse.ArgumentParser()
-    ap.add_argument("dataset", choices=["nih", "coco", "chexpert", "chexpert_plus"])
+    ap.add_argument("dataset", choices=["nih", "coco", "chexpert", "chexpert_plus", "chexpert_valid"])
     ap.add_argument("--data-root", default="/rodata/azradonc_dev/m253405/cf-transfer/data")
     ap.add_argument("--nih-meta", default="/rodata/azradonc_dev/m253405/cache/nih/Data_Entry_2017_v2020.csv")
     ap.add_argument("--chexpert-train-csv")
@@ -300,8 +378,11 @@ if __name__ == "__main__":
         s = build_coco(root)
     elif a.dataset == "chexpert_plus":
         s = build_chexpert_plus(root, a.chexpert_release or "CheXpert Plus v1.0 (Redivis aimi.chexpert_plus:5yyj), full-resolution PNG")
+    elif a.dataset == "chexpert_valid":
+        s = build_chexpert_valid(root)
     else:
         s = build_chexpert(root, Path(a.chexpert_train_csv), a.chexpert_release)
     print(json.dumps(s, indent=1))
-    (root / "chexpert" / "manifests" / "summary.json").write_text(json.dumps(s, indent=1)) if a.dataset.startswith("chexpert") else \
-        (root / a.dataset / "manifests" / "summary.json").write_text(json.dumps(s, indent=1))
+    if a.dataset != "chexpert_valid":          # the valid build appends to the CheXpert Plus manifests; their summary stays
+        ds = "chexpert" if a.dataset.startswith("chexpert") else a.dataset
+        (root / ds / "manifests" / "summary.json").write_text(json.dumps(s, indent=1))

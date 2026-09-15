@@ -20,6 +20,8 @@ Implemented:
   altdird(model, dataset)             -> ALTDIRD: as altdir for the displacement-lifted dom / pattern families
   attr(model, dataset)                -> ATTR: 9x9 write matrix, ownership over {3 attributes + 6 clinical}, attribute readability
   ansdirt(model, dataset)             -> ANSDIRT: per template O^a with interval / verdict, PROMPT cross reference, transfer counts
+  valid(model, dataset)               -> VALID: the CORE grade on the radiologist-labelled CheXpert valid rows, answer capability and
+                                         probe readability against those labels, paired comparison with the block's CORE grade on test
 """
 from __future__ import annotations
 
@@ -36,12 +38,13 @@ from .altdir import gram_spectrum_summary, load_altdir
 from .ansdir import load_ansdir
 from .attr import attribute_labels, load_attr
 from .extcomp import load_extcomp
+from .fit import load_fit
 from .images import DATA_ROOT, load_cohort, load_labels
 from .protocol import (ALTDIR_FAMILIES, ALTDIRD_FAMILIES, ANSDIRT_TEMPLATES, ATTR_CONCEPTS, BOOT_CALIBRATION_DRAWS,
-                       BOOT_CALIBRATION_SEED, BOOT_CORE_DRAWS, BOOT_CORE_SEED, BOOT_DIAGNOSTIC_SEED, CONCEPTS, DATASETS,
+                       BOOT_CALIBRATION_SEED, BOOT_CORE_DRAWS, BOOT_CORE_SEED, BOOT_DIAGNOSTIC_SEED, CONCEPTS, CONTROL_SEEDS, DATASETS,
                        EXTCOMP_LABELS, LOCI, MODULE_SETTINGS, MODULES, N_RANDOM, NUMERICS_DEFAULT, PRECISION_SETTINGS, PRIMARY_ALPHA,
                        PROMPT_CONCEPTS, TOKENW_VARIANTS, expected_rows, primary_template)
-from .runpaths import outcomes_dir, run_dir
+from .runpaths import outcomes_dir, run_dir, valid_features_dir
 
 DATASET_ORDER = ["nih", "chexpert", "coco"]
 MIN_CONTROLS_PER_DRAW = 10      # declared: a draw counts when at least half the 20 control AUROCs are estimable
@@ -202,8 +205,9 @@ def core(model_key: str, dataset_id: str, module: str = "CORE", template_id: str
          alpha: float = 0.25, n_boot: int | None = None, row_limit: int | None = None, numerics: str | None = None) -> dict:
     """W_qd = mean_i [p_i(q,d) - p_i(q,baseline)], O_q = W_qq - max_{d != q} W_qd, references, ranks, and the
     per-contrast bootstrap C_qd = W_qq - W_qd with max-T simultaneous intervals over the 6x5 family.
-    template_id defaults to the block's primary template. Rows: the module's own row limit (DOSE / PRECISION: 200), or
-    `row_limit` when given (CORE on the first 200 rows). `numerics` selects one setting of a per-setting module."""
+    template_id defaults to the block's primary template. Rows: the module's cohort role (test; valid for VALID), its own
+    row limit (DOSE / PRECISION: 200), or `row_limit` when given (CORE on the first 200 rows). `numerics` selects one
+    setting of a per-setting module."""
     template_id = _primary(model_key, dataset_id, template_id)
     path = outcomes_dir(model_key, dataset_id) / f"{module}.parquet"
     cols = ["row_id", "concept", "template_id", "fit_seed", "direction_id", "direction_kind", "alpha", "p_present", "semantic_margin",
@@ -219,7 +223,7 @@ def core(model_key: str, dataset_id: str, module: str = "CORE", template_id: str
     if df.empty:
         raise RuntimeError(f"{module}: no OK rows for template {template_id}, fit seed {fit_seed}" + (f", numerics {numerics}" if numerics else ""))
     concepts = CONCEPTS[dataset_id]
-    rows = load_cohort(dataset_id, ("test",))
+    rows = load_cohort(dataset_id, (MODULES[module].role,))
     limit = row_limit or MODULES[module].row_limit
     if limit:
         rows = rows[:limit]
@@ -1048,6 +1052,109 @@ def precision(model_key: str, dataset_id: str, template_id: str | None = None, a
     return res
 
 
+# ------------------------------------------------------------------------------------------------ VALID
+def _valid_probe_scores(model_key: str, dataset_id: str, rows: list[dict], locus_id: str = "vis.last") -> dict | None:
+    """Seed-0 probe logits on the valid rows from features/valid/<locus>.npz (None when those features are not extracted):
+    per concept the real-probe logit vector (NaN for a row without features) and the (logit, target) pairs of the 20
+    type->random-label control probes (target -1 for a row whose type was not seen in training)."""
+    path = valid_features_dir(model_key, dataset_id) / f"{locus_id}.npz"
+    if not path.exists():
+        return None
+    f = np.load(path)
+    pos = {r: i for i, r in enumerate(f["row_id"].astype(str))}
+    fit = load_fit(model_key, dataset_id, locus_id, 0)
+    Zs = ((f["x"].astype(np.float32) @ fit["projection"] - fit["scaler_mean"]) / np.maximum(fit["scaler_scale"], 1e-8)).astype(np.float32)
+    labels = load_labels(dataset_id)
+    concepts = list(fit["concept_names"].astype(str))
+    type_names = list(fit["type_names"].astype(str))
+    n = len(rows)
+    sel = np.array([pos.get(r["row_id"], -1) for r in rows])
+    ok = sel >= 0
+    type_ix = np.array([type_names.index(t) if (t := labels[(r["row_id"], concepts[0])]["type_id"]) in type_names else -1 for r in rows])
+    out = {}
+    for ci, c in enumerate(concepts):
+        real = np.full(n, np.nan)
+        real[ok] = Zs[sel[ok]] @ fit["coefficients"][ci] + fit["intercepts"][ci]
+        controls = []
+        if bool(fit["controls_eligible"]):
+            for k in range(len(CONTROL_SEEDS)):
+                v = np.full(n, np.nan)
+                v[ok] = Zs[sel[ok]] @ fit["control_coefficients"][ci, k] + fit["control_intercepts"][ci, k]
+                t = np.where(type_ix >= 0, fit["control_type_labels"][k][np.maximum(type_ix, 0)], -1).astype(np.int8)
+                controls.append((v, t))
+        out[c] = (real, controls)
+    return out
+
+
+def valid(model_key: str, dataset_id: str, template_id: str | None = None, alpha: float = PRIMARY_ALPHA,
+          draws: int = BOOT_CALIBRATION_DRAWS) -> dict:
+    """VALID: the CORE grade on the radiologist-labelled valid rows (CheXpert, 200 rows) and its paired comparison with the
+    block's CORE grade on the labeler-labelled test rows. Per concept on the valid rows:
+      W_qq, strongest competitor, O_q with percentile interval and the 6x5 max-T verdict (core() on VALID.parquet: `draws`
+      paired draws of PCG64(BOOT_CORE_SEED) at n = 200, as the PRECISION grade), the steering reference (random p95 / |sham|
+      on the valid rows);
+      answer-capable: the module's own clean answers against the radiologist label, campaign rule (>= 10 positives and
+      negatives, `draws` unit-bootstrap draws of BOOT_CALIBRATION_SEED, one-sided 95% lower AUROC bound > 0.5);
+      readable: the seed-0 probe on features/valid/vis.last.npz against the 20 type->random-label control probes, campaign
+      rule (selectivity lower bound > 0); readable None / "features_not_available" until those features are extracted.
+    `comparison`: per concept the test grade (CORE verdict, O_q and steering reference recomputed on the test rows with
+    `draws` draws; readable and answer-capable from the block's recorded calibration grade in summary.json) next to the
+    valid grade, dO_q, and the counts of concepts whose verdict, ownership, readability and answer capability agree."""
+    primary = _primary(model_key, dataset_id, template_id)
+    concepts = CONCEPTS[dataset_id]
+    rows = load_cohort(dataset_id, ("valid",))
+    order = {r["row_id"]: i for i, r in enumerate(rows)}
+    n = len(rows)
+    df = _load_module(model_key, dataset_id, "VALID")
+    if df is None or len(df) == 0 or _load_module(model_key, dataset_id, "CORE") is None:
+        raise FileNotFoundError("valid needs merged outcomes/VALID.parquet and outcomes/CORE.parquet (python -m cftransfer.package)")
+    g = core(model_key, dataset_id, "VALID", template_id=primary, alpha=alpha, n_boot=draws)
+    grade = _grade_cells(g)
+    labels = load_labels(dataset_id)
+    idx = bootstrap_indices(dataset_id, n, BOOT_CALIBRATION_SEED, draws)
+    probes = _valid_probe_scores(model_key, dataset_id, rows)
+    base = df[(df.direction_id == "baseline") & (df.template_id == primary)]
+    per = {}
+    for q in concepts:
+        y = np.array([int(labels[(r["row_id"], q)]["label"]) if labels[(r["row_id"], q)]["label_known"] == "true" else -1 for r in rows])
+        cell = dict(grade[q])
+        cell["max_other"] = g["per_question"][q]["max_other_clinical"]
+        gb = base[base.concept == q]
+        m = np.full(n, np.nan); m[[order[r] for r in gb.row_id]] = gb.semantic_margin.values
+        cell.update(_answer_cell(y, m, idx))
+        if probes is None:
+            cell.update({"readable": None, "readable_status": "features_not_available"})
+        else:
+            real, controls = probes[q]
+            cell.update(_readability_cell(np.where(np.isnan(real), -1, y), real, controls, idx))
+        cell["owned"] = bool(cell["steering_reference"] and cell["verdict"] == "fixed_family_advantage")
+        cell["label_source"] = "radiologist"
+        per[q] = cell
+    # the same block's CORE grade on the test rows: verdict / O_q / reference recomputed, probe grades as recorded
+    test_grade = _grade_cells(core(model_key, dataset_id, "CORE", template_id=primary, alpha=alpha, n_boot=draws))
+    sp = run_dir(model_key, dataset_id) / "summary.json"
+    cal = (json.loads(sp.read_text()).get("calibration") or {}) if sp.exists() else {}
+    keys = ("verdict", "owned", "readable", "answer_capable")
+    agree, compared = {k: 0 for k in keys}, {k: 0 for k in keys}
+    comparison = {"test_rows": len(load_cohort(dataset_id, ("test",))), "valid_rows": n, "per_question": {}}
+    for q in concepts:
+        t = test_grade[q]
+        test = {"W_qq": t["W_qq"], "O_q": t["O_q"], "verdict": t["verdict"], "steering_reference": t["steering_reference"],
+                "owned": bool(t["steering_reference"] and t["verdict"] == "fixed_family_advantage"),
+                "readable": (cal.get(q) or {}).get("readable"), "answer_capable": (cal.get(q) or {}).get("answer_capable"),
+                "label_source": "labeler"}
+        val = {k: per[q].get(k) for k in ("W_qq", "O_q", "verdict", "steering_reference", "owned", "readable", "answer_capable", "label_source")}
+        for k in keys:
+            if test[k] is not None and val[k] is not None:
+                compared[k] += 1; agree[k] += int(test[k] == val[k])
+        comparison["per_question"][q] = {"test": test, "valid": val,
+                                         "dO_q": (val["O_q"] - test["O_q"]) if val["O_q"] is not None and test["O_q"] is not None else None}
+    comparison.update({"n_agree": agree, "n_compared": compared})
+    return {"n_rows": n, "alpha": alpha, "template_id": primary, "draws": int(draws), "label_source": "radiologist",
+            "features_available": probes is not None, "W": g["W"], "contrasts": g.get("contrasts"), "max_t_critical": g.get("max_t_critical"),
+            "per_question": per, "comparison": comparison}
+
+
 def _ineligible_prompt_rows(model_key, dataset_id) -> int:
     """Rows the PROMPT block legitimately lacks because templates were INELIGIBLE at preflight."""
     elig = _eligibility(model_key, dataset_id)
@@ -1060,7 +1167,7 @@ if __name__ == "__main__":
     ap.add_argument("--model-key", required=True)
     ap.add_argument("--dataset", required=True)
     ap.add_argument("--what", default="calibration,core",
-                    help="comma list of calibration,core,shifts,t3,altdir,extcomp,tokenw,precision,ansdir,altdird,attr,ansdirt")
+                    help="comma list of calibration,core,shifts,t3,altdir,extcomp,tokenw,precision,ansdir,altdird,attr,ansdirt,valid")
     ap.add_argument("--n-boot", type=int, default=None)
     a = ap.parse_args()
     rd = run_dir(a.model_key, a.dataset)
@@ -1090,6 +1197,8 @@ if __name__ == "__main__":
             report["attr"] = attr(a.model_key, a.dataset, draws=a.n_boot or BOOT_CALIBRATION_DRAWS)
         elif w == "ansdirt":
             report["ansdirt"] = ansdirt(a.model_key, a.dataset, draws=a.n_boot or BOOT_CALIBRATION_DRAWS)
+        elif w == "valid":
+            report["valid"] = valid(a.model_key, a.dataset, draws=a.n_boot or BOOT_CALIBRATION_DRAWS)
     report["primary_template"] = primary_template(rd)       # template the single-template statistics above refer to
     (rd / "summary.json").write_text(json.dumps(report, indent=1, default=lambda o: float(o) if isinstance(o, np.floating) else str(o)))
     if "calibration" in report:
@@ -1157,6 +1266,15 @@ if __name__ == "__main__":
                   f"IY-owned staying: {tr.get('n_stay_owned', '?')}/{tr.get('n_owned_IY', '?')}")
         if r["ineligible_templates"]:
             print(f"ANSDIRT ineligible templates: {r['ineligible_templates']}")
+    if "valid" in report and "valid" in a.what:
+        r = report["valid"]
+        for q, cell in r["per_question"].items():
+            t = r["comparison"]["per_question"][q]["test"]
+            print(f"VALID {q:14s} W_qq={cell['W_qq']:+.4f} O_q={cell['O_q']:+.4f} (vs {cell['argmax_other']}) ref={cell['steering_reference']} "
+                  f"verdict={cell['verdict']} answer_auroc={cell.get('answer_auroc', float('nan')):.4f} capable={cell.get('answer_capable')} "
+                  f"readable={cell['readable']} [{cell['readable_status']}] | test: O_q={t['O_q']:+.4f} verdict={t['verdict']} owned={t['owned']}")
+        ag, nc = r["comparison"]["n_agree"], r["comparison"]["n_compared"]
+        print("VALID agreement test vs valid: " + ", ".join(f"{k} {ag[k]}/{nc[k]}" for k in ag) + f"; valid features {'present' if r['features_available'] else 'absent'}")
     if "core" in report and "core" in a.what:
         for q, cell in report["core"]["per_question"].items():
             print(f"CORE {q:14s} W_qq={cell['W_qq']:.4f} O_q={cell['O_q']:.4f} (vs {cell['argmax_other']}) p95rand={cell['random_p95']:.4f} "

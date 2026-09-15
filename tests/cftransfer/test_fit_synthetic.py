@@ -12,33 +12,34 @@ sys.path.insert(0, str(SRC))
 from cftransfer import fit as F, images as I, runpaths as R, protocol as P   # noqa: E402
 
 
-def make_synthetic(tmp: Path, D=16, n_units=30, rows_per_unit=2, n_eval=12):
+def make_synthetic(tmp: Path, D=16, n_units=30, rows_per_unit=2, n_eval=12, dataset_id="nih"):
     rng = np.random.default_rng(1)
     data = tmp / "data"; runs = tmp / "runs"
-    man = data / "nih" / "manifests"; man.mkdir(parents=True)
+    man = data / dataset_id / "manifests"; man.mkdir(parents=True)
     cohort, labels, ids, roles, units = [], [], [], [], []
     views, sexes, ages = ["AP", "PA"], ["M", "F"], [20, 35, 48, 61, 75]
     k = 0
     for u in range(n_units):
         for j in range(rows_per_unit):
             rid = f"{u:08d}_{j:03d}"; ids.append(rid); roles.append("train"); units.append(str(u))
-            cohort.append(dict(dataset_id="nih", row_id=rid, unit_id=str(u), role="train", order=k, relative_image_path="x", original_split="train")); k += 1
+            cohort.append(dict(dataset_id=dataset_id, row_id=rid, unit_id=str(u), role="train", order=k, relative_image_path="x", original_split="train")); k += 1
     for role in ("preflight", "calibration", "test"):
         for j in range(n_eval):
             rid = f"{role[:3]}_{j:03d}"; ids.append(rid); roles.append(role); units.append(f"{role}{j}")
-            cohort.append(dict(dataset_id="nih", row_id=rid, unit_id=f"{role}{j}", role=role, order=j, relative_image_path="x", original_split="val"))
+            cohort.append(dict(dataset_id=dataset_id, row_id=rid, unit_id=f"{role}{j}", role=role, order=j, relative_image_path="x", original_split="val"))
+    concepts = P.CONCEPTS[dataset_id] + (["Consolidation", "Edema", "Infiltration", "no_finding"] if dataset_id == "nih" else [])
     for i, rid in enumerate(ids):
         v, s, a = views[i % 2], sexes[(i // 2) % 2], ages[(i // 4) % 5]
         tid = f"{1 if v == 'AP' else 0}_{1 if s == 'M' else 0}_{a // 10}"
-        for c in P.CONCEPTS["nih"] + ["Consolidation", "Edema", "Infiltration", "no_finding"]:
+        for c in concepts:
             lab = int(rng.integers(0, 2))
-            labels.append(dict(dataset_id="nih", row_id=rid, concept=c, label=lab, label_known="true", label_raw=lab, view=v, sex=s,
+            labels.append(dict(dataset_id=dataset_id, row_id=rid, concept=c, label=lab, label_known="true", label_raw=lab, view=v, sex=s,
                                age=a, width=1024, height=1024, type_id=tid))
     with (man / "cohort.csv").open("w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=list(cohort[0])); w.writeheader(); w.writerows(cohort)
     with (man / "labels.csv").open("w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=list(labels[0])); w.writeheader(); w.writerows(labels)
-    feat = runs / "m" / "nih" / "features"; feat.mkdir(parents=True)
+    feat = runs / "m" / dataset_id / "features"; feat.mkdir(parents=True)
     X = rng.standard_normal((len(ids), D)).astype(np.float16)
     for lid in ("vis.last", "connector"):
         np.savez(feat / f"{lid}.npz", row_id=np.array(ids), x=X, valid_token_count=np.full(len(ids), 9), fit_role=np.array(roles))

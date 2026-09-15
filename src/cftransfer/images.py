@@ -18,7 +18,7 @@ def load_cohort(dataset_id: str, roles: tuple[str, ...] | None = None) -> list[d
     rows = list(csv.DictReader((DATA_ROOT / dataset_id / "manifests" / "cohort.csv").open(newline="", encoding="utf-8")))
     if roles:
         rows = [r for r in rows if r["role"] in roles]
-    rows.sort(key=lambda r: (["train", "preflight", "calibration", "test"].index(r["role"]), int(r["order"])))
+    rows.sort(key=lambda r: (["train", "preflight", "calibration", "test", "valid"].index(r["role"]), int(r["order"])))
     return rows
 
 

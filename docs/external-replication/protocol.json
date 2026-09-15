@@ -522,6 +522,27 @@
       ],
       "added": "2026-09-15; addendum, enqueued explicitly; INELIGIBLE templates are dropped as in PROMPT",
       "analysis": "cftransfer.analysis --what ansdirt: per template W^a (6x6), O^a_q with interval and 6x5 max-T verdict, the a-sham reference, the cross comparison against the logistic competitors and random p95 of PROMPT under the same template (its two designated concepts), and transfer counts of the IY-owned a_q cells (from --what ansdir) that stay owned under each template"
+    },
+    "VALID": {
+      "cohort": "valid",
+      "concepts": "all",
+      "templates": [
+        "IY"
+      ],
+      "alpha": [
+        0.25
+      ],
+      "locus": "primary (vis.last)",
+      "fit_seed": 0,
+      "directions": "baseline+6clinical+119random+question_sham (the CORE grid with the block's seed-0 directions; no new fit)",
+      "rows": "200: one frontal per patient of the official CheXpert validation split (200 patients, 202 frontals), selected and ordered by the CheXpert Plus hash rules (manifests.build_chexpert_valid); labels are the radiologist consensus of CheXpert-v1.0 valid.csv (manifests/release.json `valid`, label_source radiologist), not the labeler output of the other roles",
+      "expected_rows": 152400,
+      "baseline": "own",
+      "datasets": [
+        "chexpert"
+      ],
+      "added": "2026-09-15; addendum, enqueued explicitly; images PNG/valid/* of the CheXpert Plus zips (scripts/mayo/extract_chexpert_valid.py); enqueue also emits a features task for the valid rows (features/valid/<locus>.npz) that the module task does not wait for",
+      "analysis": "cftransfer.analysis --what valid: the CORE grade on the valid rows (W_qq, strongest competitor, O_q with interval, 6x5 max-T verdict from 2,000 paired draws at n = 200, random p95 / |sham| reference on those rows), answer capability of the clean answers against the radiologist labels (campaign rule), probe readability on the valid features against the 20 control probes when extracted, and the paired comparison with the block's CORE grade on the 600 labeler-labelled test rows (per-concept readable / answer-capable / owned, O_q on both, counts of agreeing verdicts)"
     }
   },
   "numerics": {
@@ -747,7 +768,7 @@
     "all_test_and_calibration_rows": 125153600,
     "excludes": "feature extraction, interface preflight and retries",
     "ALTDIR_rows_addendum": 5702400,
-    "ALTDIR_note": "addenda rows (ALTDIR, EXTCOMP, TOKENW, PRECISION, ANSDIR, ALTDIRD, ATTR, ANSDIRT) are outside all_test_and_calibration_rows, which keeps the planned total of the original seven modules",
+    "ALTDIR_note": "addenda rows (ALTDIR, EXTCOMP, TOKENW, PRECISION, ANSDIR, ALTDIRD, ATTR, ANSDIRT, VALID) are outside all_test_and_calibration_rows, which keeps the planned total of the original seven modules",
     "addenda": {
       "ALTDIR": 5702400,
       "EXTCOMP": 712800,
@@ -756,7 +777,8 @@
       "ANSDIR": 1663200,
       "ALTDIRD": 2851200,
       "ATTR": 2455200,
-      "ANSDIRT": 9504000
+      "ANSDIRT": 9504000,
+      "VALID": 3352800
     }
   }
 }
