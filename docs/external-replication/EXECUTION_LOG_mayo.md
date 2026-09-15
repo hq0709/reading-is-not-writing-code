@@ -1932,3 +1932,15 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   cosine 0.09-0.37 to the logistic normal; orth/resid at 0.92-0.999.
 - Gate decision: nothing to conclude from one block; the pre-registered rule (chest owned share a small fraction
   of the COCO share under the same estimator, plus any-estimator counts) is evaluated once the 60 blocks land.
+
+## 2026-09-15 iv35-38 CheXpert CORE statistics; iv35-38 complete on all three datasets
+
+- Run: CORE and CALIBRATION packaged (43.6 GPU-hours); the block is COMPLETE under the added-later rule; the
+  five CheXpert extension modules are queued behind the priority modules.
+- Observation (known labels): readable Effusion (S 0.242), Cardiomegaly (0.247), Consolidation (0.213), Edema
+  (0.183); Atelectasis insufficient support, Pneumothorax 0.008; answers 0.66-0.94 AUROC.
+- Observation (CORE): owns Effusion (O +0.019, W_qq 0.036, rank 3) and Consolidation (+0.010, W_qq 0.025, rank
+  5) with margins below the 0.05 floor; Cardiomegaly meets the reference but is unresolved; the rest are
+  stronger competitor. The InternVL family's writes stay within 0.04 of zero on every chest set at every size.
+- Gate decision: valid OBSERVED block; InternVL3.5-38B is complete on NIH, COCO and CheXpert; tables and
+  leaderboard regenerated.
