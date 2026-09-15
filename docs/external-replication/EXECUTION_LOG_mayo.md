@@ -1988,3 +1988,13 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   inference note. In progress: authoritative manifest + macro-generated numbers (one inclusion rule for tables,
   figures, prose); answer-direction validation (label AUROC, score correlation, whitened cosine), column
   selectivity, known-label ownership (robustness_validation.py); PRECISION results when they land.
+
+## 2026-09-15 PRECISION first block (q25-7 COCO): fp32 and batch-1 rescoring
+
+- Run: the CORE grid (baseline + 6 concepts + 119 random + sham) on the first 200 test rows rescored with fp32
+  weights and forward, and separately in bf16 at batch size 1, compared with the CORE values on the same rows.
+- Observation: fp32 max |dW| 0.0023, max |dO| 0.0025; batch-1 max |dW| 0.0017, max |dO| 0.0013; the
+  own-vs-strongest-competitor and own-vs-random-p95 verdicts agree in 6/6 cells under both settings. The bf16
+  batched measurement is numerically stable at the level of the verdicts.
+- Gate decision: enters Section 5.7 and the appendix table once q25-7 NIH (fp32 pending) and gemma3-12 NIH (the
+  worst-case batch-vs-single block, 1.84 logits) land.
