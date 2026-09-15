@@ -1920,3 +1920,15 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   tables now use the write-matrix denominator for Ans/Own.
 - Gate decision: the reader result is refit-proof (paired deltas); floors and stability enter Section 5.1; the
   paper's "most readable" sentence corrected.
+
+## 2026-09-15 ALTDIR first block: q25-7 NIH and COCO
+
+- Run: ALTDIR shards landed for q25-7 NIH and COCO; packaged and analysed (`--what altdir`).
+- Observation (NIH): logistic owns 0/6. dom owns Atelectasis (O +0.07, W_qq 0.36) and Cardiomegaly (+0.11,
+  W_qq 0.47); pattern the same two (+0.09, +0.12); orth 0 (Mass +0.02 without the steering reference); resid 0.
+  The seed cell holds under every family (Effusion O: dom -0.06, pattern -0.03, orth -0.29, resid -0.13).
+- Observation (COCO): dom owns 4/6 (car, chair fail), pattern 3/6, orth 6/6, resid 6/6; dom/pattern own writes
+  0.17-0.41 against 0.5-0.9 for the logistic normal. dom and pattern are near-collinear with each other and at
+  cosine 0.09-0.37 to the logistic normal; orth/resid at 0.92-0.999.
+- Gate decision: nothing to conclude from one block; the pre-registered rule (chest owned share a small fraction
+  of the COCO share under the same estimator, plus any-estimator counts) is evaluated once the 60 blocks land.
