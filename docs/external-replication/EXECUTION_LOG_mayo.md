@@ -2035,3 +2035,46 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   correlation from existing data; wording: weaker-handles sentence, EXTCOMP as retention, numerics scoped to the
   completed blocks, coverage sentence. CheXpert Plus ships only the 234-image radiologist-labelled valid split:
   candidate adjudicated subset for evaluation.
+
+## 2026-09-15 Round-2 evidence: refit transitions, coverage, rescue table; ALTDIRD / ATTR / ANSDIRT; adjudicated CheXpert labels
+
+- Run: scripts/mayo/robustness_refit.py (runs/robustness/refit.json): seeds 1 and 2 regraded with the campaign rules
+  (steering reference from the summary on the same rows, 6x5 max-T over the shared 2,000 draws). 41 blocks; the seed-0
+  regrade reproduces the paper grade in 246/246 cells. q25-7/chexpert excluded (REFIT scored on 70 of 600 rows).
+- Observation: owned cells keeping the owned grade under both refits: NIH 3/10 (7/10 under at least one), CheXpert
+  0/1, COCO 87/100 (97/100 under at least one). Competitor cells stable under both: NIH 56/81, COCO 2/6.
+- Run: robustness_validation.py adds alignment versus ownership over the 54 ANSDIR cells: Spearman(cos_Sigma, O_q)
+  = 0.75 (p = 8e-11); median cos_Sigma 0.80 in owned cells versus 0.34 in the rest.
+- Observation: over all nine ANSDIR blocks, a_q is owned in 19 of 36 chest cells where the label direction is owned
+  in 9, and its write beats the strongest logistic competitor in 30 of 36 (COCO 18/18 on every count). Gemma 3 12B
+  CheXpert: a_q owned 0/6, beats the logistic competitor 1/6 (paper sentence corrected to the aggregate).
+- Gate decision: paper tables table_cf_coverage (per checkpoint, modules completed per dataset), table_cf_refit,
+  table_cf_rescue added; prose corrected: refit sentence counts full-grade retention (3/10 vs 87/100), baseline
+  agreement "at least 75%" (two blocks at 0.75 and 0.77).
+- Run: round-2 modules committed (concept-flow 1a37755): ALTDIRD (displacement lift x = R (R^T R)^-1 diag(s) u for the
+  dom and pattern vectors; gram spectrum of q25-7 nih min 0.000265 / max 0.005184, condition 19.6, matching the
+  Marchenko-Pastur edges of a 1280x512 Gaussian projection), ATTR (view AP, sex F, age >= 60 directions from
+  labels.csv with protocol-identical probes, PCG64(1) shams, 9x9 write matrix, sham-only steering reference for the
+  attribute questions), ANSDIRT (answer direction under the five other templates, own baseline), PRECISION full grade
+  (fp32 and batch-1 regraded on the 200-row grid with paired bootstrap draws). 45 tests pass.
+- Observation: q25-7 coco PRECISION full grade: verdict changes 0/6 and reference changes 0/6 under fp32 and under
+  batch 1; max |dW| over the 127-direction grid 0.0060 (fp32) / 0.0028 (batch 1).
+- Fix: the altdir CLI's append-only guard required a bitwise rebuild of the stored arrays, which a rebuild does not
+  reproduce (BLAS thread count); the CLI now extends an existing file from its own stored dom / pattern vectors, the
+  ones ALTDIR scored (57baa95). 19 blocks had been extended but reported as failed by the first loop because the
+  printout indexed keys that pre-amendment files lack (d4d59a9); re-run of the loop enqueues them.
+- Run: scripts/mayo/round2_preps.sh: ALTDIRD on every included block and ANSDIRT on the nine ANSDIR blocks at
+  prefix 11 (ahead of the CheXpert extension), ATTR on the chest blocks at prefix 4 (after it).
+- Observation (feasibility of an adjudicated CheXpert cohort): the labels on disk for the 234-image valid split
+  (impression_fixed.json and the other two label files) are CheXpert-labeler passes over three report sections
+  (Effusion positives 63 / 23 / 93 across the three files; -1 and null entries), not the radiologist consensus. The
+  original valid.csv (three board-certified radiologists, dense 0/1) is not in the Redivis release. It was obtained
+  from the Hugging Face dataset danjacobellis/chexpert (validation split, revision ca5a840e438b5d2d0fa07f560782f196b38a84aa,
+  class labels 2 = absent, 3 = present, no uncertain or blank entries): positives over the 234 images Cardiomegaly 68,
+  Edema 45, Consolidation 33, Atelectasis 80, Pneumothorax 8, Pleural Effusion 67, which match the published valid.csv
+  distribution. Saved as data/chexpert/valid_radiologist_labels.csv with a provenance file. The 234 PNGs are inside the
+  CheXpert Plus zips (PNG/valid/, 778 MB); patient overlap with every campaign role is 0. images/_test (8 files) are
+  the first eight train entries from the throttled download test, not valid images.
+- Gate decision: module VALID (CORE write matrix and grade on the 200 valid frontals, one per patient by the campaign's
+  row hash, radiologist labels, paired with the same block's test grade) implemented next; about 56 GPU-hours over
+  the CheXpert checkpoints at or below 40B.
