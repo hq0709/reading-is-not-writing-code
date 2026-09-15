@@ -1882,3 +1882,18 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   rest (Fisher p = 0.001).
 - Gate decision: neither scale, saturation, refit instability, nor batch effects account for the deficit;
   enter as robustness results in the paper.
+
+## 2026-09-15 Protocol amendment A3: alternative direction estimators (ALTDIR)
+
+- Run: module ALTDIR writes, at the primary locus, dose +0.25, on the same 600 test rows with the CORE clean
+  baseline, four alternative directions per concept built from the same projected, train-scaled features as the
+  logistic normal: difference of class means (dom), the Haufe pattern Sigma w (pattern), the logistic normal
+  orthogonalised against the other five normals (orth), and the normal refitted on features residualised
+  against the other five labels (resid); 24 steered conditions per question, 86,400 rows per block. Analysis
+  gives per-family write matrices, within-family ownership with bootstrap intervals and max-T verdicts, and the
+  own-write-minus-strongest-logistic-competitor contrast. Tests 29/29. Directions computed for the 40 NIH/COCO
+  blocks at or below 40B (dom/pattern have cosine 0.09-0.37 to the logistic normal; orth/resid 0.92-0.999);
+  CheXpert directions wait for a resid fix (Atelectasis is single-class on the all-known rows). 40 tasks
+  enqueued at prefix 1 (ahead of everything except running work).
+- Gate decision: answers the objection that the deficit could be an artefact of the logistic-normal estimator
+  or of correlated labels; results enter Section 5.7 as they land.
