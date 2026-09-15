@@ -1,7 +1,7 @@
 """Print `model dataset module` for addendum modules whose shard(s) landed but whose summary.json lacks the analysis key."""
 import json, glob, os
 R = "/rodata/azradonc_dev/m253405/cf-transfer/runs"
-MODS = {"ANSDIR": "ansdir", "EXTCOMP": "extcomp", "TOKENW": "tokenw", "PRECISION": "precision"}
+MODS = {"ANSDIR": "ansdir", "EXTCOMP": "extcomp", "TOKENW": "tokenw", "PRECISION": "precision", "ALTDIRD": "altdird", "ATTR": "attr", "ANSDIRT": "ansdirt"}
 for mod, key in MODS.items():
     for d in sorted(glob.glob(f"{R}/*/*/outcomes/{mod}")):
         metas = glob.glob(f"{d}/meta-*.json")

@@ -330,9 +330,10 @@ def cosine_table(arrays: dict) -> list[dict]:
         r["cos_model_orth_resid"] = float(cm[ci, fo.index("orth"), fo.index("resid")])
         r["orth_norm_removed_fraction"] = float(arrays["orth_norm_removed_fraction"][ci])
         r["resid_cos_to_logistic_projected"] = float(arrays["resid_cos_to_logistic_projected"][ci])
-        r["resid_rows_used"] = int(arrays["resid_rows_used"][ci])
-        r["resid_fallback"] = bool(arrays["resid_fallback"][ci])
-        r["resid_dropped"] = ",".join(d for di, d in enumerate(concepts) if di != ci and not arrays["resid_covariates_used"][ci, di]) or "-"
+        if "resid_rows_used" in arrays:      # files built before the covariate-drop amendment lack these keys
+            r["resid_rows_used"] = int(arrays["resid_rows_used"][ci])
+            r["resid_fallback"] = bool(arrays["resid_fallback"][ci])
+            r["resid_dropped"] = ",".join(d for di, d in enumerate(concepts) if di != ci and not arrays["resid_covariates_used"][ci, di]) or "-"
         if "cos_model_ext" in arrays:
             fe = list(arrays["family_order_ext"].astype(str)); ce = arrays["cos_model_ext"]
             for f, src in (("dom_disp", "dom"), ("pattern_disp", "pattern")):
@@ -355,5 +356,6 @@ if __name__ == "__main__":
     gs = gram_spectrum_summary(arr["disp_gram_eigenvalues"])
     print(f"  R^T R / D spectrum: min={gs['min']:.6f} max={gs['max']:.6f} median={gs['median']:.6f} rank={gs['rank']}/{gs['n']} "
           f"condition={gs['condition']:.3f} (D={arr['logistic_vectors'].shape[1]})")
-    print(json.dumps({"path": str(path), "n_train_rows": int(arr["n_train_rows"]), "resid_rows_used": arr["resid_rows_used"].tolist(),
-                      "resid_fallback": arr["resid_fallback"].tolist()}))
+    print(json.dumps({"path": str(path), "n_train_rows": int(arr["n_train_rows"]),
+                      "resid_rows_used": arr["resid_rows_used"].tolist() if "resid_rows_used" in arr else None,
+                      "resid_fallback": arr["resid_fallback"].tolist() if "resid_fallback" in arr else None}))
