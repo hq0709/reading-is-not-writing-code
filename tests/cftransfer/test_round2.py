@@ -103,9 +103,16 @@ def test_displacement_lift_and_append_only_npz(tmp_path, monkeypatch):
     path2, merged = AD.build_altdir("m", "nih", "vis.last")
     on_disk = dict(np.load(path2, allow_pickle=False))
     assert all(np.array_equal(on_disk[k], old[k]) for k in old) and "dom_disp_vectors" in on_disk and "cos_model_ext" in on_disk
-    bad = dict(old); bad["dom_vectors"] = old["dom_vectors"] * -1
-    np.savez(path, **bad)
-    with pytest.raises(RuntimeError, match="not reproduced"):
+    # the extension lifts the FILE's stored vectors, not a refit: negating dom_projected on disk flips dom_disp
+    flipped = dict(old); flipped["dom_projected"] = old["dom_projected"] * -1
+    np.savez(path, **flipped)
+    _, ext = AD.build_altdir("m", "nih", "vis.last")
+    assert np.allclose(ext["dom_disp_vectors"], -merged["dom_disp_vectors"], atol=1e-6)
+    assert np.array_equal(ext["dom_projected"], flipped["dom_projected"])
+    # a file from another fit is refused
+    other = dict(old); other["logistic_vectors"] = old["logistic_vectors"] * -1
+    np.savez(path, **other)
+    with pytest.raises(RuntimeError, match="does not belong"):
         AD.build_altdir("m", "nih", "vis.last")
 
 

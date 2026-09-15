@@ -219,19 +219,47 @@ def altdir_arrays(fit: dict, Zs: np.ndarray, Y: np.ndarray) -> dict:
     for f in FAMILY_ORDER:
         arrays[f"{f}_projected"] = proj[f].astype(np.float32)
         arrays[f"{f}_vectors"] = vec[f]
-    # ALTDIRD extension: displacement lift of the same dom / pattern vectors
-    G_inv, eig = gram_inverse(P)
-    for f, src in (("dom_disp", "dom"), ("pattern_disp", "pattern")):
-        proj[f] = proj[src]
-        vec[f] = np.stack([displacement_lift(P, s, proj[src][ci], G_inv) for ci in range(len(concepts))])
-        arrays[f"{f}_projected"] = proj[f].astype(np.float32)
-        arrays[f"{f}_vectors"] = vec[f]
-    gs = gram_spectrum_summary(eig)
-    arrays.update(disp_gram_eigenvalues=eig, disp_gram_eig_min=np.float64(eig.min()), disp_gram_eig_max=np.float64(eig.max()),
-                  disp_gram_rank=np.int64(gs["rank"]), disp_gram_condition=np.float64(gs["condition"]),
-                  family_order_ext=np.array(FAMILY_ORDER_EXT), cos_model_ext=cosine_matrix(vec, FAMILY_ORDER_EXT),
-                  cos_projected_ext=cosine_matrix(proj, FAMILY_ORDER_EXT))
+    arrays.update(displacement_extension(P, s, proj, vec))
     return arrays
+
+
+def displacement_extension(P: np.ndarray, s: np.ndarray, proj: dict, vec: dict) -> dict:
+    """ALTDIRD extension arrays: the dom / pattern projected vectors of `proj` lifted as displacements, the gram spectrum,
+    and the extended cosine tables. `proj`/`vec` hold the four base families (projected / model space); they are not
+    modified. Used both by a fresh build and by the extension of an existing altdir file."""
+    proj, vec = dict(proj), dict(vec)
+    n = next(iter(proj.values())).shape[0]
+    G_inv, eig = gram_inverse(P)
+    out = {}
+    for f, src in (("dom_disp", "dom"), ("pattern_disp", "pattern")):
+        proj[f] = np.asarray(proj[src], np.float64)
+        vec[f] = np.stack([displacement_lift(P, s, proj[src][ci], G_inv) for ci in range(n)])
+        out[f"{f}_projected"] = proj[f].astype(np.float32)
+        out[f"{f}_vectors"] = vec[f]
+    gs = gram_spectrum_summary(eig)
+    out.update(disp_gram_eigenvalues=eig, disp_gram_eig_min=np.float64(eig.min()), disp_gram_eig_max=np.float64(eig.max()),
+               disp_gram_rank=np.int64(gs["rank"]), disp_gram_condition=np.float64(gs["condition"]),
+               family_order_ext=np.array(FAMILY_ORDER_EXT), cos_model_ext=cosine_matrix(vec, FAMILY_ORDER_EXT),
+               cos_projected_ext=cosine_matrix(proj, FAMILY_ORDER_EXT))
+    return out
+
+
+def extend_altdir_file(path: Path, fit: dict) -> dict:
+    """Append the ALTDIRD arrays to an existing altdir file from ITS OWN stored dom / pattern vectors (no refit), so the
+    displacement families lift exactly the coefficient vectors the ALTDIR module already scored. Existing keys are kept
+    byte for byte; a file that already carries the extension is returned unchanged. The file must belong to the fit
+    (its logistic vectors must equal the fit's clinical vectors)."""
+    old = dict(np.load(path, allow_pickle=False))
+    if "dom_disp_vectors" in old and "cos_model_ext" in old:
+        return old
+    if not np.allclose(old["logistic_vectors"], fit["clinical_vectors"], atol=1e-6):
+        raise RuntimeError(f"{path} does not belong to this fit (logistic_vectors != clinical_vectors); refusing to extend")
+    proj = {f: old[f"{f}_projected"].astype(np.float64) for f in FAMILY_ORDER}
+    vec = {f: old[f"{f}_vectors"] for f in FAMILY_ORDER}
+    ext = displacement_extension(fit["projection"], fit["scaler_scale"], proj, vec)
+    merged = {**old, **{k: v for k, v in ext.items() if k not in old}}
+    np.savez(path, **merged)
+    return merged
 
 
 # ------------------------------------------------------------------------------------------- pipeline
@@ -263,20 +291,17 @@ def build_altdir(model_key: str, dataset_id: str, locus_id: str = "vis.last", ou
     t0 = time.time()
     fit = load_fit(model_key, dataset_id, locus_id, 0)
     fit["locus_id"] = locus_id
-    Zs, Y = scaled_training_features(model_key, dataset_id, locus_id, fit)
-    arrays = altdir_arrays(fit, Zs, Y)
     out_dir = Path(out_dir) if out_dir else fits_dir(model_key, dataset_id, locus_id)
     out_dir.mkdir(parents=True, exist_ok=True)
     path = out_dir / ALTDIR_FILE
     if path.exists():
-        # append-only: every key the existing file shares with this build must be reproduced exactly; keys the file
-        # has from an earlier build (e.g. resid_n_rows) are kept, new keys are added
-        old = dict(np.load(path, allow_pickle=False))
-        changed = [k for k in old if k in arrays and not np.array_equal(old[k], arrays[k])]
-        if changed:
-            raise RuntimeError(f"{path} exists and its arrays {changed} are not reproduced by this build; refusing to overwrite "
-                               f"(delete the file to recompute from scratch)")
-        arrays = {**old, **{k: v for k, v in arrays.items() if k not in old}}
+        # append-only: an existing file is never rebuilt (its vectors are the ones ALTDIR scored); the ALTDIRD arrays
+        # are derived from the file's own stored vectors and appended
+        arrays = extend_altdir_file(path, fit)
+        print(f"[{model_key}/{dataset_id}/{locus_id}] altdir extended in place at {path} in {time.time() - t0:.1f}s", flush=True)
+        return path, arrays
+    Zs, Y = scaled_training_features(model_key, dataset_id, locus_id, fit)
+    arrays = altdir_arrays(fit, Zs, Y)
     np.savez(path, **arrays)
     print(f"[{model_key}/{dataset_id}/{locus_id}] altdir written to {path} in {time.time() - t0:.1f}s", flush=True)
     return path, arrays
