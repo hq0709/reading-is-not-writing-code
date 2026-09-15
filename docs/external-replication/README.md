@@ -157,6 +157,10 @@ REFIT seed1/2改变的是训练独立单元的bootstrap重抽样（胸片患者�
 | REFIT | 三数据集全部6概念，seed1/2各6概念方向+问题sham，+.25，600图 | 每数据集50,400 |
 | LOCUS | 三数据集第二位置完整CORE，另400图×6概念clean校准 | 每数据集459,600 |
 | ALTDIR | 三数据集全部6概念，IY，+.25，600图；主位置seed0的四个替代方向族各6概念：dom（类均值差）、pattern（Haufe Σw）、orth（logistic normal去除其余五概念张成空间分量）、resid（对其余五标签残差化特征后重拟合的logistic normal），同一投影/缩放/映射；baseline复用CORE；后加模块，仅显式入队 | 每数据集86,400 |
+| EXTCOMP | NIH/CheXpert全部6概念，IY，+.25，600图；扩展竞争方向族：数据集其余标签（训练行已知阳性、阴性各≥100：NIH Consolidation/Edema/Infiltration；CheXpert Enlarged Cardiomediastinum/Fracture/Lung Lesion/Lung Opacity/Pneumonia/Support Devices）按同一投影/缩放/C/seed0拟合的logistic方向；baseline复用CORE；后加模块，仅显式入队 | NIH 10,800；CheXpert 21,600 |
+| TOKENW | 三数据集全部6概念，IY，+.25，600图；六个logistic方向按逐token权重写入：tokenw（token探针分数的softmax×T，均值1）与topq（分数前25%的token权重4，其余0，均值1），总剂量同CORE；baseline复用CORE；后加模块，仅显式入队 | 每数据集43,200 |
+| PRECISION | NIH/COCO全部6概念，IY，+.25，前200test图；完整CORE网格（127配置，自带baseline）在两种数值设置下各跑一遍：fp32（权重与前向float32，批组成同CORE）、batch1（bf16，每个条件单独batch=1）；outcomes多一列numerics；后加模块，按设置各一个任务显式入队 | 每数据集304,800（每设置152,400） |
+| ANSDIR | 三数据集全部6概念，IY，+.25，600图；回答方向oracle：对前3,000训练行做clean前向，取主模板回答margin，在同一投影/缩放的512维特征上按问题做ridge回归（5折CV选alpha），按logistic同一规则映射为a_q；每问题写入6个a_d加a_q的坐标置换sham，baseline与random族复用CORE；prep为GPU队列任务，后加模块，仅显式入队 | 每数据集25,200 |
 
 训练/测试pooled features不包含在以上计数。正向+.25全随机主比较和其他剂量20random敏感性是不同证据规格，不能拼起来声称整个dose sweep均做过119随机校正。
 

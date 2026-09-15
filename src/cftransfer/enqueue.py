@@ -5,7 +5,7 @@ import argparse
 import json
 from pathlib import Path
 
-from .protocol import MODULES, expected_rows
+from .protocol import ANSDIR_N_TRAIN, MODULE_SETTINGS, MODULES, expected_rows
 from .runpaths import run_dir
 from .worker import QUEUE
 
@@ -24,9 +24,13 @@ BATCH_MODEL = {"llama32-11": 16, "llama32-90": 4}
 def batch_for(model_key: str, lane: str) -> int:
     return BATCH_MODEL.get(model_key, BATCH[lane])
 # shards per module for a 600-row test block (row budget relative to CORE); calibration modules are single tasks
-SHARDS = {"CORE": 4, "LOCUS": 4, "PROMPT": 7, "DOSE": 2, "REFIT": 1, "CALIBRATION": 1, "LOCUS_CALIBRATION": 1, "ALTDIR": 1}
-# ALTDIR is not in the default order: it is enqueued explicitly (--modules ALTDIR) after its CPU prep
-# (python -m cftransfer.altdir), whose output file the task additionally requires.
+SHARDS = {"CORE": 4, "LOCUS": 4, "PROMPT": 7, "DOSE": 2, "REFIT": 1, "CALIBRATION": 1, "LOCUS_CALIBRATION": 1, "ALTDIR": 1,
+          "EXTCOMP": 1, "TOKENW": 1, "PRECISION": 1, "ANSDIR": 1}   # PRECISION: one shard per numerics setting (two tasks)
+# The addendum modules are not in the default order: they are enqueued explicitly (--modules ...). ALTDIR / EXTCOMP need a
+# CPU prep run by hand (python -m cftransfer.altdir / cftransfer.extcomp) whose file the task requires; ANSDIR's prep is a
+# GPU task (python -m cftransfer.ansdir) that enqueue emits itself, with the module task requiring its file.
+PREP_FILE = {"ALTDIR": "altdir_seed0.npz", "EXTCOMP": "extcomp_seed0.npz", "ANSDIR": "ansdir_seed0.npz"}
+PREP_TASK = {"ANSDIR": ["python", "-m", "cftransfer.ansdir", "--n-train", str(ANSDIR_N_TRAIN)]}
 MODULE_ORDER = ["CALIBRATION", "CORE", "LOCUS_CALIBRATION", "DOSE", "REFIT", "LOCUS", "PROMPT"]
 MODEL_PRIORITY = ["q25-7", "llava15-7", "lingshu-7", "llavamed-7", "q3-8", "iv35-8", "medgemma-4", "q25-3", "q3-4", "iv35-14",
                   "llava15-13", "gemma3-4", "gemma3-12", "llama32-11", "q25-32", "q3-32", "lingshu-32", "medgemma-27",
@@ -55,16 +59,28 @@ def enqueue(model_key: str, dataset_id: str, modules: list[str] | None = None, p
         if dataset_id not in spec.datasets or expected_rows(mod, dataset_id) == 0:
             continue
         n = SHARDS[mod]
-        requires = prep_out + ([str(rd / "fits" / "vis.last" / "altdir_seed0.npz")] if mod == "ALTDIR" else [])
-        for s in range(n):
-            tag = f"{s:03d}of{n:03d}"
-            name = f"{prefix}{prio_m:02d}{prio_d}-{mi + 1:02d}-{mod}-{model_key}-{dataset_id}-{tag}"
+        requires = prep_out + ([str(rd / "fits" / "vis.last" / PREP_FILE[mod])] if mod in PREP_FILE else [])
+        if mod in PREP_TASK:                      # the module's own prep as a queue task; the module task waits for its file
+            name = f"{prefix}{prio_m:02d}{prio_d}-{mi + 1:02d}-{mod}-prep-{model_key}-{dataset_id}"
             (QUEUE / "pending" / f"{name}.json").write_text(json.dumps({
                 "name": name, "lane": lane,
-                "cmd": ["python", "-m", "cftransfer.runner", "--model-key", model_key, "--dataset", dataset_id, "--module", mod,
-                        "--shard", str(s), "--n-shards", str(n), "--batch", str(batch_for(model_key, lane)), "--device-map", dm],
-                "requires": requires, "produces": [str(rd / "outcomes" / mod / f"meta-{tag}-*.json")], "env": env}, indent=1))
+                "cmd": PREP_TASK[mod] + ["--model-key", model_key, "--dataset", dataset_id, "--device-map", dm],
+                "requires": prep_out, "produces": [str(rd / "fits" / "vis.last" / PREP_FILE[mod])], "env": env}, indent=1))
             names.append(name)
+        for setting in MODULE_SETTINGS.get(mod, (None,)):
+            label = mod if setting is None else f"{mod}-{setting}"
+            for s in range(n):
+                tag = f"{s:03d}of{n:03d}"
+                meta_tag = tag if setting is None else f"{setting}-{tag}"
+                name = f"{prefix}{prio_m:02d}{prio_d}-{mi + 1:02d}-{label}-{model_key}-{dataset_id}-{tag}"
+                cmd = ["python", "-m", "cftransfer.runner", "--model-key", model_key, "--dataset", dataset_id, "--module", mod,
+                       "--shard", str(s), "--n-shards", str(n), "--batch", str(batch_for(model_key, lane)), "--device-map", dm]
+                if setting is not None:
+                    cmd += ["--numerics", setting]
+                (QUEUE / "pending" / f"{name}.json").write_text(json.dumps({
+                    "name": name, "lane": lane, "cmd": cmd,
+                    "requires": requires, "produces": [str(rd / "outcomes" / mod / f"meta-{meta_tag}-*.json")], "env": env}, indent=1))
+                names.append(name)
     return names
 
 

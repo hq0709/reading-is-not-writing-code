@@ -57,10 +57,11 @@ def test_chexpert_modules_requested():
     assert P.CALIBRATION_PROMPT_DATASETS == ("nih", "coco")
     assert P.PROMPT_CONCEPTS["chexpert"] == ["Effusion", "Edema"]
     assert P.question_list("chexpert", "PROMPT") == [(c, t) for t in ("WY", "IA", "IB", "WA", "WB") for c in ("Effusion", "Edema")]
-    # ALTDIR (2026-09-14) is added-later on every dataset and outside the planned campaign total
-    assert set(P.MODULES_ADDED_LATER["chexpert"]) == {"PROMPT", "DOSE", "REFIT", "LOCUS", "LOCUS_CALIBRATION", "ALTDIR"}
-    assert all("ALTDIR" in P.MODULES_ADDED_LATER[d] for d in P.DATASETS)
-    per_model = sum(P.expected_rows(m, d) for d in P.DATASETS for m in P.MODULES if m != "ALTDIR")
+    # the addendum modules (2026-09-14) are added-later on every dataset they request and outside the planned total
+    addenda_chex = {m for m in P.ADDENDUM_MODULES if "chexpert" in P.MODULES[m].datasets}
+    assert set(P.MODULES_ADDED_LATER["chexpert"]) == {"PROMPT", "DOSE", "REFIT", "LOCUS", "LOCUS_CALIBRATION"} | addenda_chex
+    assert all(m in P.MODULES_ADDED_LATER[d] for m in P.ADDENDUM_MODULES for d in P.MODULES[m].datasets)
+    per_model = sum(P.expected_rows(m, d) for d in P.DATASETS for m in P.PLANNED_MODULES)
     assert per_model * 22 == P.PROTOCOL["total_planned_outcomes"]["all_test_and_calibration_rows"] == 125_153_600
 
 
@@ -69,10 +70,11 @@ def test_requested_modules_keep_old_chexpert_blocks_complete(tmp_path):
     assert PK.requested_modules("chexpert", rd) == ["CORE", "CALIBRATION"]        # packaged before the extension: unchanged
     (rd / "outcomes" / "DOSE").mkdir()
     assert PK.requested_modules("chexpert", rd) == ["CORE", "CALIBRATION", "DOSE"]  # started: now required
-    planned = [m for m in P.MODULES if m != "ALTDIR"]                              # ALTDIR is added-later everywhere
+    planned = [m for m in P.MODULES if m in P.PLANNED_MODULES]                     # addenda are added-later everywhere
     assert PK.requested_modules("nih", tmp_path / "m" / "nih") == planned
-    (tmp_path / "m" / "nih" / "outcomes" / "ALTDIR").mkdir(parents=True)
-    assert PK.requested_modules("nih", tmp_path / "m" / "nih") == list(P.MODULES)   # started: now required
+    for m in P.ADDENDUM_MODULES:
+        (tmp_path / "m" / "nih" / "outcomes" / m).mkdir(parents=True)
+    assert PK.requested_modules("nih", tmp_path / "m" / "nih") == [m for m in P.MODULES if "nih" in P.MODULES[m].datasets]   # started: required
 
 
 def test_prompt_contrast_gating():
@@ -99,7 +101,7 @@ def test_runner_scores_primary_template(tmp_path, monkeypatch):
     (runs / "m" / "nih" / "processing_settings.json").write_text(json.dumps(ad.processing_settings()))
     run = PK.build("m", "nih")
     assert run["primary_template"] == "IB" and run["ineligible_modules"] == []
-    assert run["requested_modules"] == [m for m in P.MODULES if m != "ALTDIR"]         # ALTDIR not started: not required
+    assert run["requested_modules"] == [m for m in P.MODULES if m in P.PLANNED_MODULES]   # addenda not started: not required
     cov = list(csv.DictReader((runs / "m" / "nih" / "coverage.csv").open()))
     core_rows = [r for r in cov if r["module"] == "CORE"]
     assert core_rows and {r["template_id"] for r in core_rows} == {"IB"}

@@ -4,12 +4,33 @@ The steering rule is fixed by the protocol (README 5.2):  h'_t = h_t + alpha * |
 with the norm taken from that token's own clean activation at this forward. The hook never falls
 back silently: the adapter must supply, for every batch element, the exact token indices the
 connector consumes at this locus. Anything else raises.
+
+TOKENW (per-token weights): with `scorers` (B, D) and `modes` (B,) armed, token t of element b gets
+h'_t = h_t + alpha * w_t * ||h_t|| * v with w from token_weights(h_t . scorer_b, mode): mode 1 ("tokenw")
+w = softmax over the consumed tokens of the score (temperature 1) times T (mean 1); mode 2 ("topq") the
+top TOPQ_FRACTION of tokens by score get 1/fraction, the rest 0 (mean 1); mode 0 is the uniform write.
+The score h_t . (P w_c / s) is the token's projected, scaled probe logit up to an additive constant, which
+neither the softmax nor the top-quarter selection sees.
 """
 from __future__ import annotations
 
 from dataclasses import dataclass, field
 
 import torch
+
+TOPQ_FRACTION = 0.25
+MODE_UNIFORM, MODE_SOFTMAX, MODE_TOPQ = 0, 1, 2
+
+
+def token_weights(scores: torch.Tensor, modes: torch.Tensor, fraction: float = TOPQ_FRACTION) -> torch.Tensor:
+    """(B, T) per-token weights with mean 1 over T for every row: uniform (mode 0), softmax x T (mode 1), or the
+    top round(fraction * T) tokens (at least one) at T / k and the rest 0 (mode 2). `scores`: (B, T) float32."""
+    B, T = scores.shape
+    k = max(1, int(round(fraction * T)))
+    soft = torch.softmax(scores.float(), dim=1) * T
+    top = torch.zeros_like(soft).scatter_(1, scores.topk(k, dim=1).indices, T / k)
+    modes = modes.to(scores.device).view(B, 1)
+    return torch.where(modes == MODE_SOFTMAX, soft, torch.where(modes == MODE_TOPQ, top, torch.ones_like(soft)))
 
 
 def as_hidden(out):
@@ -72,6 +93,8 @@ class LocusHook:
         self.layout: TokenLayout | None = None
         self.vectors: torch.Tensor | None = None
         self.alphas: torch.Tensor | None = None
+        self.scorers: torch.Tensor | None = None            # (B, D) per-element token scorer for weighted writes
+        self.modes: torch.Tensor | None = None              # (B,) token_weights modes
         self.capture = False
         self.pooled: torch.Tensor | None = None
         self.stats: dict[str, list[float]] = {}
@@ -90,12 +113,25 @@ class LocusHook:
         return False
 
     def arm(self, layout: TokenLayout, vectors: torch.Tensor | None = None, alphas: torch.Tensor | None = None,
-            capture: bool = False):
+            capture: bool = False, scorers: torch.Tensor | None = None, modes: torch.Tensor | None = None):
         if vectors is not None:
             if vectors.shape[0] != layout.batch or alphas is None or alphas.shape[0] != layout.batch:
                 raise ValueError("vectors/alphas must have one row per batch element in the layout")
+        if scorers is not None:
+            if vectors is None or modes is None or scorers.shape != vectors.shape or modes.shape[0] != layout.batch:
+                raise ValueError("scorers (B, D) and modes (B,) must match the steered batch")
         self.layout, self.vectors, self.alphas, self.capture = layout, vectors, alphas, capture
+        self.scorers, self.modes = scorers, modes
         self.pooled, self.stats, self.calls = None, {}, 0
+
+    def _weights(self, hf: torch.Tensor, b: int | None) -> torch.Tensor | None:
+        """Per-token weights for one element (hf: (T, D), b given) or the batch (hf: (B, T, D)); None when uniform."""
+        if self.scorers is None:
+            return None
+        sc = self.scorers.to(device=hf.device, dtype=torch.float32)
+        if b is not None:
+            return token_weights((hf @ sc[b]).unsqueeze(0), self.modes[b:b + 1])[0]
+        return token_weights(torch.einsum("btd,bd->bt", hf, sc), self.modes)
 
     # ---------------------------------------------------------------- the hook
     def _hook(self, _module, _inputs, output):
@@ -134,7 +170,7 @@ class LocusHook:
         if len(set(counts)) == 1 and (lay.flat or all(bool(m.all()) for m in lay.masks) or
                                       all(torch.equal(m, lay.masks[0]) for m in lay.masks)):
             return self._vectorised(output, h, lay, counts[0], restore)
-        tok_mean, tok_med, delta_mean, pooled = [], [], [], []
+        tok_mean, tok_med, delta_mean, pooled, w_max = [], [], [], [], []
         new = h if self.vectors is None else h.clone()
         for b in range(lay.batch):
             if lay.flat:
@@ -154,7 +190,10 @@ class LocusHook:
                 continue
             v = self.vectors[b].to(device=h.device, dtype=torch.float32)
             a = float(self.alphas[b])
-            delta = (a * norms).unsqueeze(-1) * v.unsqueeze(0)      # (T_b, D) in fp32
+            wt = self._weights(hb.float(), b)                          # (T_b,) or None
+            scale = a * norms if wt is None else a * norms * wt
+            w_max.append(1.0 if wt is None else float(wt.max()))
+            delta = scale.unsqueeze(-1) * v.unsqueeze(0)              # (T_b, D) in fp32
             delta_mean.append(float(delta.norm(dim=-1).mean()))
             steered = (hb.float() + delta).to(h.dtype)
             if lay.flat:
@@ -165,6 +204,8 @@ class LocusHook:
                 row[idx] = steered
                 new[b] = row
         self.stats = {"token_norm_mean": tok_mean, "token_norm_median": tok_med, "delta_norm_mean": delta_mean}
+        if self.vectors is not None:
+            self.stats["token_weight_max"] = w_max
         if self.capture:
             self.pooled = torch.stack(pooled)
         if self.vectors is None:
@@ -191,8 +232,11 @@ class LocusHook:
             return None
         v = self.vectors.to(device=h.device, dtype=torch.float32)     # (B, D)
         a = self.alphas.to(device=h.device, dtype=torch.float32)      # (B,)
-        delta = (a[:, None] * norms)[:, :, None] * v[:, None, :]      # (B, T, D)
+        wt = self._weights(hf, None)                                   # (B, T) or None
+        scale = a[:, None] * norms if wt is None else a[:, None] * norms * wt
+        delta = scale[:, :, None] * v[:, None, :]                     # (B, T, D)
         self.stats["delta_norm_mean"] = delta.norm(dim=-1).mean(dim=1).tolist()
+        self.stats["token_weight_max"] = [1.0] * B if wt is None else wt.max(dim=1).values.tolist()
         steered = (hf + delta).to(h.dtype)
         if lay.flat:
             new = steered.reshape(h.shape)

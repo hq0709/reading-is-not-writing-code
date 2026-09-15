@@ -48,11 +48,42 @@ CALIBRATION_PROMPT_DATASETS = ("nih", "coco")
 # ALTDIR (alternative direction estimators, reviewer objection on estimator dependence) was added to every dataset
 # after the campaign's blocks were packaged; it is enqueued explicitly (enqueue --modules ALTDIR) and its coverage is
 # requested only once its outcomes directory exists, so packaged blocks keep COMPLETE until it starts.
-MODULES_ADDED_LATER = {"nih": ("ALTDIR",), "coco": ("ALTDIR",),
-                       "chexpert": ("PROMPT", "DOSE", "REFIT", "LOCUS", "LOCUS_CALIBRATION", "ALTDIR")}
+MODULES_ADDED_LATER = {"nih": ("ALTDIR", "EXTCOMP", "TOKENW", "PRECISION", "ANSDIR"), "coco": ("ALTDIR", "TOKENW", "PRECISION", "ANSDIR"),
+                       "chexpert": ("PROMPT", "DOSE", "REFIT", "LOCUS", "LOCUS_CALIBRATION", "ALTDIR", "EXTCOMP", "TOKENW", "ANSDIR")}
 # ALTDIR direction families, in condition order: difference of means, Haufe pattern, orthogonalised logistic normal,
 # logistic normal refitted on label-residualised features (altdir.py); every family is lifted with the logistic rule.
 ALTDIR_FAMILIES = ("dom", "pattern", "orth", "resid")
+# EXTCOMP: extra dataset labels fitted like the protocol normals (extcomp.py) and added to the competitor family. The
+# frozen lists are the manifest labels with at least EXTCOMP_MIN_SUPPORT known positives AND negatives in the training
+# rows (counts checked again by the prep); the excluded labels and the reason are recorded next to them.
+EXTCOMP_MIN_SUPPORT = 100
+EXTCOMP_LABELS = {"nih": ["Consolidation", "Edema", "Infiltration"],
+                  "chexpert": ["Enlarged Cardiomediastinum", "Fracture", "Lung Lesion", "Lung Opacity", "Pneumonia", "Support Devices"]}
+EXTCOMP_EXCLUDED = {"nih": {"no_finding": "no-finding label, excluded by design"},
+                    "chexpert": {"No Finding": "no-finding label, excluded by design",
+                                 "Pleural Other": "12 known negatives in the training rows (< 100)"}}
+# TOKENW: the six logistic directions written with per-token weights (hooks.token_weights): "tokenw" = softmax over the
+# consumed tokens of the token's probe score (temperature 1) rescaled to mean 1; "topq" = the top TOKENW_TOPQ_FRACTION of
+# tokens by probe score with weight 1/fraction (mean 1). Same total dose as CORE's uniform write.
+TOKENW_VARIANTS = ("tokenw", "topq")
+TOKENW_TOPQ_FRACTION = 0.25
+# PRECISION: the CORE grid on the first PRECISION_ROWS test rows under two numerics settings selected by the runner's
+# --numerics flag: "fp32" (weights and forward in float32, CORE batch composition) and "batch1" (bf16, batch size 1 for
+# every condition). Every other module runs NUMERICS_DEFAULT; outcomes carry it in the `numerics` column.
+PRECISION_SETTINGS = ("fp32", "batch1")
+PRECISION_ROWS = 200
+NUMERICS_DEFAULT = "bf16-batched"
+MODULE_SETTINGS = {"PRECISION": PRECISION_SETTINGS}       # modules scored once per setting (rows x settings)
+# The seven modules of the planned campaign (protocol.json total_planned_outcomes) and the modules added afterwards as
+# addenda (each enqueued explicitly, each counted in total_planned_outcomes.addenda, each in MODULES_ADDED_LATER).
+PLANNED_MODULES = ("CORE", "CALIBRATION", "PROMPT", "DOSE", "REFIT", "LOCUS", "LOCUS_CALIBRATION")
+ADDENDUM_MODULES = ("ALTDIR", "EXTCOMP", "TOKENW", "PRECISION", "ANSDIR")
+# ANSDIR (answer-direction oracle, ansdir.py): per question q a ridge regression of the clean answer margin on the
+# projected, train-scaled features of the first ANSDIR_N_TRAIN training rows (alpha by 5-fold CV over ANSDIR_ALPHAS),
+# lifted like the logistic normals; written with the six a_d plus the coordinate-permutation sham of a_q.
+ANSDIR_N_TRAIN = 3000
+ANSDIR_ALPHAS = (0.1, 1.0, 10.0, 100.0)
+ANSDIR_CV_FOLDS = 5
 COCO_CATEGORY_IDS = {"person": 1, "dog": 18, "car": 3, "chair": 62, "bottle": 44, "bicycle": 2}
 
 # probe / direction constants
@@ -125,7 +156,7 @@ class ModuleSpec:
     templates: tuple[str, ...]
     concepts_rule: str              # "all" | "prompt"
     alphas: tuple[float, ...]
-    directions: str                 # "core" | "clean" | "dose" | "refit" | "altdir"
+    directions: str                 # "core" | "clean" | "dose" | "refit" | "altdir" | "extcomp" | "tokenw" | "ansdir"
     fit_seeds: tuple[int, ...]
     locus: str                      # "primary" | "connector"
     baseline_module: str | None     # module whose clean baseline is reused (DOSE/REFIT)
@@ -149,6 +180,18 @@ MODULES: dict[str, ModuleSpec] = {
                                     "connector", None, ("nih", "chexpert", "coco")),
     # alternative direction estimators at the primary locus, seed 0, primary dose; clean baseline reused from CORE
     "ALTDIR": ModuleSpec("ALTDIR", "test", None, ("IY",), "all", (PRIMARY_ALPHA,), "altdir", (0,), "primary", "CORE",
+                         ("nih", "chexpert", "coco")),
+    # extended competitor set: every extra dataset label's logistic direction, CORE baseline reused
+    "EXTCOMP": ModuleSpec("EXTCOMP", "test", None, ("IY",), "all", (PRIMARY_ALPHA,), "extcomp", (0,), "primary", "CORE",
+                          ("nih", "chexpert")),
+    # token-weighted writes of the six logistic directions (softmax / top-quarter weights), CORE baseline reused
+    "TOKENW": ModuleSpec("TOKENW", "test", None, ("IY",), "all", (PRIMARY_ALPHA,), "tokenw", (0,), "primary", "CORE",
+                         ("nih", "chexpert", "coco")),
+    # the CORE grid (own baseline) on the first 200 test rows, once per numerics setting (fp32, batch1)
+    "PRECISION": ModuleSpec("PRECISION", "test", PRECISION_ROWS, ("IY",), "all", (PRIMARY_ALPHA,), "core", (0,), "primary", None,
+                            ("nih", "coco")),
+    # answer-direction oracle: the six ridge answer directions a_d plus the sham of a_q, CORE baseline and random family reused
+    "ANSDIR": ModuleSpec("ANSDIR", "test", None, ("IY",), "all", (PRIMARY_ALPHA,), "ansdir", (0,), "primary", "CORE",
                          ("nih", "chexpert", "coco")),
 }
 
@@ -189,6 +232,12 @@ def conditions_for(module: str, dataset_id: str, concept: str) -> list[tuple[str
         # every family's six concept directions, family by family: 24 steered conditions, no baseline rows
         ids = [f"{fam}:{c}" for fam in ALTDIR_FAMILIES for c in CONCEPTS[dataset_id]]
         return [(d, spec.alphas[0]) for d in ids]
+    if spec.directions == "extcomp":
+        return [(f"extra:{k}", spec.alphas[0]) for k in EXTCOMP_LABELS[dataset_id]]
+    if spec.directions == "tokenw":
+        return [(f"{v}:{c}", spec.alphas[0]) for v in TOKENW_VARIANTS for c in CONCEPTS[dataset_id]]
+    if spec.directions == "ansdir":
+        return [(f"ans:{c}", spec.alphas[0]) for c in CONCEPTS[dataset_id]] + [(f"anssham:{concept}", spec.alphas[0])]
     raise ValueError(spec.directions)
 
 
@@ -202,7 +251,7 @@ def expected_rows(module: str, dataset_id: str, n_rows: int | None = None) -> in
     total = 0
     for concept, _t in question_list(dataset_id, module):
         total += len(conditions_for(module, dataset_id, concept)) * len(spec.fit_seeds)
-    return total * n
+    return total * n * len(MODULE_SETTINGS.get(module, (None,)))
 
 
 if __name__ == "__main__":

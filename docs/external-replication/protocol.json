@@ -297,7 +297,7 @@
         "dom": "difference of class means mu_pos - mu_neg in the projected, train-scaled 512-d space (known-label training rows)",
         "pattern": "Haufe pattern Sigma w, Sigma = covariance of the projected, train-scaled features over all training rows, w = seed-0 logistic normal",
         "orth": "seed-0 logistic normal with its component in the span of the other five concepts' logistic normals removed (512-d space); fraction of norm removed recorded",
-        "resid": "logistic normal (same C, iterations, seed 0) refitted on features residualised column-wise against the other five binary labels (intercept + labels; training rows with all six labels known); cosine to the original normal recorded"
+        "resid": "logistic normal (same C, iterations, seed 0) refitted on features residualised column-wise against the other concepts' binary labels (intercept + labels) on the training rows where the concept's label and every used covariate label are known; covariates are dropped one at a time, worst first, while one has fewer than 5 rows in a class on those rows or the rows fall below 25% of the concept's own known rows (CheXpert); a concept single-class on its usable rows keeps the logistic normal (fallback); resid_covariates_used / resid_rows_used / resid_fallback / resid_retention_fraction and the cosine to the original normal are recorded"
       },
       "lift": "every family is mapped to model space exactly as the logistic normal: v = normalize(P @ (u / max(s, 1e-8)))",
       "prep": "python -m cftransfer.altdir --model-key K --dataset D  (CPU; writes fits/vis.last/altdir_seed0.npz)",
@@ -310,6 +310,134 @@
       ],
       "added": "2026-09-14; not part of the planned campaign total (see total_planned_outcomes.ALTDIR_rows_addendum); enqueued explicitly",
       "analysis": "cftransfer.analysis --what altdir: per family W (6x6), within-family O_q with 2,000-draw patient-bootstrap percentile interval and 6x5 max-T verdict, own write minus the strongest logistic competitor from CORE, per-concept cosines"
+    },
+    "EXTCOMP": {
+      "cohort": "test",
+      "concepts": "all",
+      "templates": [
+        "IY"
+      ],
+      "alpha": [
+        0.25
+      ],
+      "locus": "primary (vis.last)",
+      "fit_seed": 0,
+      "directions": "one logistic direction per extra dataset label (no baseline rows; CORE baseline reused)",
+      "extra_labels": {
+        "nih": [
+          "Consolidation",
+          "Edema",
+          "Infiltration"
+        ],
+        "chexpert": [
+          "Enlarged Cardiomediastinum",
+          "Fracture",
+          "Lung Lesion",
+          "Lung Opacity",
+          "Pneumonia",
+          "Support Devices"
+        ]
+      },
+      "support_rule": "label kept when the training rows hold >= 100 known positives and >= 100 known negatives",
+      "excluded": {
+        "nih": {
+          "no_finding": "no-finding label, excluded by design"
+        },
+        "chexpert": {
+          "No Finding": "no-finding label, excluded by design",
+          "Pleural Other": "12 known negatives in the training rows (< 100)"
+        }
+      },
+      "fit": "as the protocol normals: seed-0 projection P, train-only scaler, LogisticRegression(C=1, lbfgs, 2000 iterations, random_state 0) on the label's known-label training rows; lifted with normalize(P @ (w / max(s, 1e-8)))",
+      "prep": "python -m cftransfer.extcomp --model-key K --dataset D  (CPU; writes fits/vis.last/extcomp_seed0.npz with cosines to the six normals and calibration/test AUROC)",
+      "expected_rows": {
+        "nih": 10800,
+        "chexpert": 21600
+      },
+      "baseline": "reuse CORE",
+      "datasets": [
+        "nih",
+        "chexpert"
+      ],
+      "added": "2026-09-14; addendum, enqueued explicitly",
+      "analysis": "cftransfer.analysis --what extcomp: W_q,extra per extra direction, extended ownership O^ext_q = W_qq - max over the five protocol competitors and the extras with the 2,000-draw percentile interval, extras beating W_qq, verdict over the extended 6 x (5 + K) max-T family"
+    },
+    "TOKENW": {
+      "cohort": "test",
+      "concepts": "all",
+      "templates": [
+        "IY"
+      ],
+      "alpha": [
+        0.25
+      ],
+      "locus": "primary (vis.last)",
+      "fit_seed": 0,
+      "directions": "6 logistic directions x 2 token-weighting variants = 12 steered conditions per question (no baseline rows; CORE baseline reused)",
+      "variants": {
+        "tokenw": "weight_t = T * softmax_t(score_t), score_t = the token's projected, train-scaled feature dotted with the concept's logistic normal (temperature 1); mean weight 1",
+        "topq": "the top 25% of consumed tokens by score_t (round(0.25 T), at least 1) get weight T/k (= 4), the rest 0; mean weight 1"
+      },
+      "write": "h'_t = h_t + alpha * weight_t * ||h_t|| * v_c per consumed token (hooks.token_weights); same total dose as CORE's uniform write",
+      "expected_rows": 43200,
+      "baseline": "reuse CORE",
+      "datasets": [
+        "nih",
+        "chexpert",
+        "coco"
+      ],
+      "added": "2026-09-14; addendum, enqueued explicitly; no prep beyond fits/vis.last/seed0.npz",
+      "analysis": "cftransfer.analysis --what tokenw: per variant W (6x6), O_q with percentile interval and 6x5 max-T verdict, own weighted write minus the strongest uniform logistic competitor of CORE"
+    },
+    "PRECISION": {
+      "cohort": "first 200 test rows in cohorts.csv order",
+      "concepts": "all",
+      "templates": [
+        "IY"
+      ],
+      "alpha": [
+        0.25
+      ],
+      "locus": "primary (vis.last)",
+      "fit_seed": 0,
+      "directions": "the CORE grid: baseline + 6 clinical + 119 random + question sham = 127 (own baseline per setting)",
+      "settings": {
+        "fp32": "model weights and forward in float32; CORE batch composition",
+        "batch1": "bf16 weights; batch size 1 for every condition, baseline included"
+      },
+      "runner": "python -m cftransfer.runner ... --module PRECISION --numerics fp32|batch1; outcomes carry the setting in the `numerics` column (every other module: bf16-batched)",
+      "expected_rows": 304800,
+      "expected_rows_per_setting": 152400,
+      "baseline": "own (per setting)",
+      "datasets": [
+        "nih",
+        "coco"
+      ],
+      "added": "2026-09-14; addendum, enqueued explicitly as two tasks (PRECISION-fp32, PRECISION-batch1)",
+      "analysis": "cftransfer.analysis --what precision: per setting W and O on the 200 rows against CORE on the same rows, max |dW| over the 6x6 clinical cells, dO per question, agreement of the two point verdicts (own > strongest competitor, own > random p95)"
+    },
+    "ANSDIR": {
+      "cohort": "test",
+      "concepts": "all",
+      "templates": [
+        "IY"
+      ],
+      "alpha": [
+        0.25
+      ],
+      "locus": "primary (vis.last)",
+      "fit_seed": 0,
+      "directions": "6 answer directions a_d + the coordinate-permutation sham of a_q = 7 steered conditions per question (no baseline rows; CORE baseline and random family reused)",
+      "prep": "python -m cftransfer.ansdir --model-key K --dataset D --n-train 3000 (GPU, enqueued by enqueue --modules ANSDIR as the module's prep task): clean forwards of the six primary-template questions on the first 3,000 training-cohort rows in manifest order, fp32 answer margins to outcomes/ANSDIR_prep.parquet; per question a ridge regression of the margin on the projected, train-scaled 512-d features (seed-0 P and scaler; alpha by 5-fold CV over {0.1, 1, 10, 100}), lifted with normalize(P @ (w / max(s, 1e-8))) to a_q; fits/vis.last/ansdir_seed0.npz holds a_q, the CV R^2, cos(a_q, w_q) and the 6x6 cosine matrix to the logistic normals",
+      "expected_rows": 25200,
+      "baseline": "reuse CORE",
+      "datasets": [
+        "nih",
+        "chexpert",
+        "coco"
+      ],
+      "added": "2026-09-14; addendum, enqueued explicitly",
+      "analysis": "cftransfer.analysis --what ansdir: W^a (6x6), O^a_q with the 2,000-draw percentile interval and 6x5 max-T verdict, steering reference against the CORE random p95 and the a-sham, own answer write minus the strongest logistic competitor of CORE, cosines / CV R^2"
     }
   },
   "numerics": {
@@ -535,6 +663,13 @@
     "all_test_and_calibration_rows": 125153600,
     "excludes": "feature extraction, interface preflight and retries",
     "ALTDIR_rows_addendum": 5702400,
-    "ALTDIR_note": "ALTDIR rows are an addendum (2026-09-14); all_test_and_calibration_rows keeps the planned total of the original seven modules"
+    "ALTDIR_note": "addenda rows (ALTDIR, EXTCOMP, TOKENW, PRECISION, ANSDIR; 2026-09-14) are outside all_test_and_calibration_rows, which keeps the planned total of the original seven modules",
+    "addenda": {
+      "ALTDIR": 5702400,
+      "EXTCOMP": 712800,
+      "TOKENW": 2851200,
+      "PRECISION": 13411200,
+      "ANSDIR": 1663200
+    }
   }
 }

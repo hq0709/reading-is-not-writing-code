@@ -96,7 +96,8 @@ def test_resid_on_independent_labels_equals_original():
     assert np.allclose(AD.residualise(Zs, Y[1:].T), Zs, atol=1e-4)
     assert arr["resid_cos_to_logistic_projected"][0] > 0.9999 and arr["cos_model"][0, 0, 4] > 0.9999
     assert np.allclose(arr["resid_projected"][0], fit["coefficients"][0], rtol=1e-3, atol=1e-4)
-    assert int(arr["resid_n_rows"]) == Zs.shape[0]
+    assert (arr["resid_rows_used"] == Zs.shape[0]).all() and not arr["resid_fallback"].any()
+    assert np.array_equal(arr["resid_covariates_used"], ~np.eye(6, dtype=bool))
     # a competitor label the features do carry changes concept 0's residualised probe
     assert not np.allclose(AD.residualise(Zs, np.delete(Y, 1, axis=0).T), Zs, atol=1e-3)
     Y2 = Y.copy(); Y2[1] = (Zs[:, 0] > 0).astype(np.int8)
@@ -105,7 +106,68 @@ def test_resid_on_independent_labels_equals_original():
     Yk = Y.copy(); Yk[2, :40] = -1
     fitk = dict(fit); fitk["real_train_mask"] = Yk >= 0            # normals kept: only the row masks matter here
     arrk = AD.altdir_arrays(fitk, Zs, Yk)
-    assert int(arrk["resid_n_rows"]) == Zs.shape[0] - 40 and int(arrk["dom_n_pos"][2] + arrk["dom_n_neg"][2]) == Zs.shape[0] - 40
+    assert (arrk["resid_rows_used"] == Zs.shape[0] - 40).all() and not arrk["resid_fallback"].any()   # covariate 2 kept, its rows required
+    assert int(arrk["dom_n_pos"][2] + arrk["dom_n_neg"][2]) == Zs.shape[0] - 40
+
+
+def test_resid_single_class_covariate_dropped_and_fallback():
+    """CheXpert pattern: concept 3 has three known negatives, and concept 2 is unknown on exactly those rows, so on any
+    all-known row set concept 3 is single-class. It must be dropped as a covariate (with the rows recomputed without it)
+    and, as a question, fall back to the logistic normal; dom/pattern/orth are unchanged."""
+    rng = np.random.default_rng(11)
+    fit, Zs, Y = _synthetic_fit(rng)
+    n = Zs.shape[0]
+    Y = Y.copy(); Y[3] = 1; Y[3, :3] = 0; Y[2, :3] = -1
+    fit = dict(fit); fit["real_train_mask"] = Y >= 0
+    fit["coefficients"] = np.stack([F.fit_lr(Zs[Y[ci] >= 0], Y[ci][Y[ci] >= 0]).coef_[0] for ci in range(6)]).astype(np.float32)
+    fit["clinical_vectors"] = np.stack([F.direction_from_projected(fit["projection"], fit["scaler_scale"], fit["coefficients"][ci]) for ci in range(6)])
+    arr = AD.altdir_arrays(fit, Zs, Y)
+    used = arr["resid_covariates_used"]
+    for ci in (0, 1, 2, 4, 5):
+        assert not used[ci, 3] and not used[ci, ci] and used[ci].sum() == 4          # covariate 3 dropped, the rest kept
+        assert arr["resid_rows_used"][ci] == n - 3 and not arr["resid_fallback"][ci]  # rows: concept 2 known
+        rows = Y[2] >= 0
+        cov = [d for d in range(6) if d not in (ci, 3)]
+        w = F.fit_lr(AD.residualise(Zs[rows], Y[cov][:, rows].T).astype(np.float32), Y[ci][rows]).coef_[0]
+        assert np.allclose(arr["resid_projected"][ci], w, rtol=1e-4, atol=1e-6)
+    assert arr["resid_fallback"][3] and arr["resid_rows_used"][3] == n - 3 and used[3].sum() == 5
+    assert np.array_equal(arr["resid_projected"][3], fit["coefficients"][3]) and arr["resid_cos_to_logistic_projected"][3] == 1.0
+    assert np.allclose(arr["resid_vectors"][3], arr["logistic_vectors"][3])
+    # the direct rule: rows and covariates for concept 0
+    rows, cov = AD.resid_covariate_rows(Y, 0)
+    assert rows.sum() == n - 3 and cov.tolist() == [False, True, True, False, True, True]
+    # dom uses each concept's own known rows; pattern and orth do not depend on labels
+    assert int(arr["dom_n_pos"][3] + arr["dom_n_neg"][3]) == n and int(arr["dom_n_neg"][3]) == 3
+    ref = AD.altdir_arrays({**fit, "real_train_mask": np.ones((6, n), bool)}, Zs, np.where(Y < 0, 0, Y))
+    for fam in ("pattern", "orth"):
+        assert np.array_equal(arr[f"{fam}_projected"], ref[f"{fam}_projected"])
+
+
+def test_resid_row_retention():
+    """A covariate known on too few rows (below 25% of the concept's own known rows) is dropped even though it is
+    two-class there; the class-count rule is applied first when both fail; nothing else changes."""
+    rng = np.random.default_rng(13)
+    fit, Zs, Y = _synthetic_fit(rng)
+    n = Zs.shape[0]
+    Y = Y.copy(); Y[5, 50:] = -1                                  # covariate 5 known on 50 rows < 0.25 * 240
+    fit = dict(fit); fit["real_train_mask"] = Y >= 0
+    fit["coefficients"] = np.stack([F.fit_lr(Zs[Y[ci] >= 0], Y[ci][Y[ci] >= 0]).coef_[0] for ci in range(6)]).astype(np.float32)
+    fit["clinical_vectors"] = np.stack([F.direction_from_projected(fit["projection"], fit["scaler_scale"], fit["coefficients"][ci]) for ci in range(6)])
+    arr = AD.altdir_arrays(fit, Zs, Y)
+    assert float(arr["resid_retention_fraction"]) == AD.RESID_RETENTION_FRACTION == 0.25
+    for ci in range(5):
+        assert arr["resid_covariates_used"][ci].tolist() == [d not in (ci, 5) for d in range(6)]
+        assert arr["resid_rows_used"][ci] == n and not arr["resid_fallback"][ci]
+    assert arr["resid_covariates_used"][5].sum() == 5 and arr["resid_rows_used"][5] == 50    # its own rows keep every covariate
+    rows, cov = AD.resid_covariate_rows(Y, 0)
+    assert rows.sum() == n and cov.tolist() == [False, True, True, True, True, False]
+    rows_lo, cov_lo = AD.resid_covariate_rows(Y, 0, retention=0.2)                 # 50 >= 0.2 * 240: covariate 5 kept
+    assert cov_lo[5] and cov_lo.sum() == 5 and rows_lo.sum() == 50
+    # class-count shortfall is handled before retention: covariate 3 single-class on the 50 rows goes first, then 5
+    Y2 = Y.copy(); Y2[3, :50] = 1
+    rows2, cov2 = AD.resid_covariate_rows(Y2, 0)
+    assert cov2.tolist() == [False, True, True, False, True, False] and rows2.sum() == n
+    assert AD.resid_covariate_rows(Y2, 0, retention=0.0)[1].tolist() == [False, True, True, False, True, True]
 
 
 def test_altdir_protocol_grid():

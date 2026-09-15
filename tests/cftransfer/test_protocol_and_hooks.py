@@ -23,10 +23,14 @@ def test_expected_rows_match_protocol_table():
     assert P.expected_rows("DOSE", "nih") == 162_000
     assert P.expected_rows("REFIT", "coco") == 50_400
     assert P.expected_rows("LOCUS", "nih") + P.expected_rows("LOCUS_CALIBRATION", "nih") == 459_600
-    # the planned campaign total covers the original seven modules; ALTDIR (added 2026-09-14) is a separate addendum
-    per_model = sum(P.expected_rows(m, d) for d in P.DATASETS for m in P.MODULES if m != "ALTDIR")
+    # the planned campaign total covers the original seven modules; the modules added later are separate addenda
+    assert set(P.PLANNED_MODULES) | set(P.ADDENDUM_MODULES) == set(P.MODULES) and not set(P.PLANNED_MODULES) & set(P.ADDENDUM_MODULES)
+    per_model = sum(P.expected_rows(m, d) for d in P.DATASETS for m in P.PLANNED_MODULES)
     assert per_model * 22 == P.PROTOCOL["total_planned_outcomes"]["all_test_and_calibration_rows"]
-    assert sum(P.expected_rows("ALTDIR", d) for d in P.DATASETS) * 22 == P.PROTOCOL["total_planned_outcomes"]["ALTDIR_rows_addendum"]
+    for m in P.ADDENDUM_MODULES:
+        assert sum(P.expected_rows(m, d) for d in P.DATASETS) * 22 == P.PROTOCOL["total_planned_outcomes"]["addenda"][m]
+        assert all(m in P.MODULES_ADDED_LATER[d] for d in P.DATASETS if d in P.MODULES[m].datasets)
+    assert P.PROTOCOL["total_planned_outcomes"]["addenda"]["ALTDIR"] == P.PROTOCOL["total_planned_outcomes"]["ALTDIR_rows_addendum"]
     core = sum(P.expected_rows("CORE", d) for d in P.DATASETS)
     assert core * 22 == P.PROTOCOL["total_planned_outcomes"]["primary_CORE_rows"]
 

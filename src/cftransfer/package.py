@@ -19,9 +19,9 @@ import pyarrow.parquet as pq
 
 from .fit import run_id_for
 from .images import DATA_ROOT
-from .protocol import (CONCEPTS, LOCI, MODULES, MODULES_ADDED_LATER, PROTOCOL_ID, TEMPLATE_ORDER, MODELS, conditions_for,
-                       expected_rows, primary_template, question_list, render_question)
-from .runner import KEY
+from .protocol import (CONCEPTS, LOCI, MODULE_SETTINGS, MODULES, MODULES_ADDED_LATER, NUMERICS_DEFAULT, PROTOCOL_ID, TEMPLATE_ORDER,
+                       MODELS, conditions_for, expected_rows, primary_template, question_list, render_question)
+from .runner import KEY, SCHEMA
 from .runpaths import outcomes_dir, run_dir
 
 COVERAGE_COLS = ["run_id", "model_key", "dataset_id", "module", "locus_id", "fit_seed", "template_id", "concept",
@@ -41,7 +41,13 @@ def merge_module(model_key: str, dataset_id: str, module: str) -> tuple[Path | N
     parts = sorted(part_dir.glob("part-*.parquet")) if part_dir.exists() else []
     if not parts:
         return None, {}
-    table = pa.concat_tables([pq.read_table(p) for p in parts])
+    tables = []
+    for p in parts:
+        t = pq.read_table(p)
+        if "numerics" not in t.column_names:      # parts written before the column existed: the default setting
+            t = t.append_column("numerics", pa.array([NUMERICS_DEFAULT] * t.num_rows, pa.string()))
+        tables.append(t.select(SCHEMA.names))
+    table = pa.concat_tables(tables)
     # de-duplicate on the unique key (resumed shards can legitimately re-score a chunk; keep the last)
     df = table.to_pandas()
     before = len(df)
@@ -76,17 +82,25 @@ def coverage_rows(model_key: str, dataset_id: str, module: str, merged: Path | N
                  "execution_status": "NOT_REQUESTED", "baseline_module": spec.baseline_module or "", "baseline_fit_seed": "",
                  "reason": "module not requested for this dataset by protocol"}]
     counts = defaultdict(lambda: [0, 0])
+    per_setting = defaultdict(lambda: defaultdict(int))     # (concept, tpl, seed) -> numerics -> OK rows (settings modules)
+    settings = MODULE_SETTINGS.get(module, ())
     if merged is not None:
-        t = pq.read_table(merged, columns=["concept", "template_id", "fit_seed", "sample_status"]).to_pandas()
-        for (c, tpl, s, st), n in t.groupby(["concept", "template_id", "fit_seed", "sample_status"]).size().items():
+        t = pq.read_table(merged, columns=["concept", "template_id", "fit_seed", "sample_status", "numerics"]).to_pandas()
+        for (c, tpl, s, st, nm), n in t.groupby(["concept", "template_id", "fit_seed", "sample_status", "numerics"]).size().items():
             counts[(c, tpl, int(s))][0 if st == "OK" else 1] += int(n)
+            if st == "OK":
+                per_setting[(c, tpl, int(s))][nm] += int(n)
     elig_path = run_dir(model_key, dataset_id) / "template_eligibility.json"
     elig = json.loads(elig_path.read_text()) if elig_path.exists() else {}
     for concept, tpl in question_list(dataset_id, module, primary):
         for seed in spec.fit_seeds:
-            exp = len(conditions_for(module, dataset_id, concept)) * n_rows
+            exp = len(conditions_for(module, dataset_id, concept)) * n_rows * max(1, len(settings))
             ok, failed = counts.get((concept, tpl, seed), [0, 0])
             status = "NOT_STARTED" if ok + failed == 0 else ("COMPLETE" if ok == exp and failed == 0 else ("FAILED" if failed else "RUNNING"))
+            detail = ""
+            if settings and ok + failed:
+                got = per_setting.get((concept, tpl, seed), {})
+                detail = "; " + ", ".join(f"{nm} {got.get(nm, 0)}/{exp // len(settings)} ok" for nm in settings)
             if not elig.get(tpl, {}).get("eligible", True) and ok + failed == 0:
                 rows.append({"run_id": run_id, "model_key": model_key, "dataset_id": dataset_id, "module": module,
                              "locus_id": LOCI[spec.locus], "fit_seed": seed, "template_id": tpl, "concept": concept,
@@ -98,7 +112,7 @@ def coverage_rows(model_key: str, dataset_id: str, module: str, merged: Path | N
                          "locus_id": LOCI[spec.locus], "fit_seed": seed, "template_id": tpl, "concept": concept,
                          "expected_rows": exp, "actual_unique_rows": ok, "failed_rows": failed, "execution_status": status,
                          "baseline_module": spec.baseline_module or "", "baseline_fit_seed": 0 if spec.baseline_module else "",
-                         "reason": "" if status in ("COMPLETE", "NOT_STARTED") else f"{ok}/{exp} ok, {failed} failed"})
+                         "reason": "" if status in ("COMPLETE", "NOT_STARTED") else f"{ok}/{exp} ok, {failed} failed{detail}"})
     return rows
 
 

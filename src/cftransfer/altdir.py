@@ -11,11 +11,17 @@ template and batch composition are the CORE ones. Per concept c (w_c = seed-0 lo
   pattern  u_c = Sigma @ w_c, Sigma = cov(Zs, ddof=1)             Haufe pattern over all training rows
   orth     u_c = w_c - proj_{span(w_d, d != c)} w_c               logistic normal with the other five normals' span removed
   resid    u_c = logistic normal of c refitted (same C, iterations, seed) on Zs residualised column-wise against the
-           other five binary labels (intercept + five labels; training rows with all six labels known)
+           other concepts' binary labels (intercept + labels). Rows: c's label and every used covariate label known;
+           covariates are dropped one at a time, worst first, while one has fewer than RESID_MIN_CLASS_ROWS rows in a
+           class on those rows or the rows fall below RESID_RETENTION_FRACTION of c's own known rows (CheXpert:
+           uncertain labels are unknown, so the all-known intersection is 8 rows); if c itself is single-class on the
+           usable rows, resid falls back to the logistic normal.
+           resid_covariates_used / resid_rows_used / resid_fallback record this per concept.
 
 Writes fits/<locus>/altdir_seed0.npz: <family>_vectors (6 x D, model space, unit), <family>_projected (6 x 512),
 logistic_vectors / logistic_projected (copies of seed 0), cos_model / cos_projected (6 x 5 x 5 cosine matrices over
-FAMILY_ORDER), orth_norm_removed_fraction, resid_cos_to_logistic_projected, resid_n_rows, and per-concept counts.
+FAMILY_ORDER), orth_norm_removed_fraction, resid_cos_to_logistic_projected, resid_covariates_used (6 x 6 bool),
+resid_rows_used, resid_fallback, and per-concept counts.
 CPU only; seconds.
 """
 from __future__ import annotations
@@ -33,6 +39,8 @@ from .protocol import CONCEPTS, PROJECTION_DIM
 from .runpaths import fits_dir
 
 FAMILIES = ("dom", "pattern", "orth", "resid")          # direction kinds the ALTDIR module scores
+RESID_MIN_CLASS_ROWS = 5                                 # a resid covariate needs at least this many rows in each class
+RESID_RETENTION_FRACTION = 0.25                          # the usable rows must keep this fraction of the concept's known rows
 FAMILY_ORDER = ("logistic",) + FAMILIES                  # order of the cosine matrices
 ALTDIR_FILE = "altdir_seed0.npz"
 
@@ -78,26 +86,52 @@ def residualise(Zs: np.ndarray, labels_other: np.ndarray) -> np.ndarray:
     return Zs.astype(np.float64) - A @ beta
 
 
-def resid_directions(Zs: np.ndarray, Y: np.ndarray, coef: np.ndarray) -> tuple[np.ndarray, np.ndarray, int]:
-    """Refit the logistic probe of every concept on features residualised against the other concepts' labels, using the
-    training rows where all labels are known. Returns the refit normals, their projected-space cosine to the original
-    normals, and the number of rows used."""
-    all_known = (Y >= 0).all(axis=0)
-    n_rows = int(all_known.sum())
-    if n_rows == 0:
-        raise RuntimeError("no training row has every concept label known")
-    Zk, Yk = Zs[all_known], Y[:, all_known]
-    out = np.zeros((Y.shape[0], Zs.shape[1]), np.float64); cos = np.zeros(Y.shape[0])
-    for ci in range(Y.shape[0]):
-        others = np.delete(Yk, ci, axis=0).T                           # (n_rows, 5)
-        R = residualise(Zk, others)
-        yy = Yk[ci]
-        if yy.min() == yy.max():
-            raise RuntimeError(f"concept {ci}: single-class labels on the all-known rows")
+def resid_covariate_rows(Y: np.ndarray, ci: int, min_class_rows: int = RESID_MIN_CLASS_ROWS,
+                         retention: float = RESID_RETENTION_FRACTION) -> tuple[np.ndarray, np.ndarray]:
+    """Usable rows and covariate set for concept ci: rows where ci's label and every used covariate label are known.
+    Covariates are dropped one at a time, worst first, until both hold: every covariate has at least `min_class_rows`
+    rows in each class on the usable rows (else the one with the smallest minor class goes), and the usable rows keep
+    at least `retention` of ci's own known rows (else the covariate whose known-mask costs the most rows goes).
+    Dropping only enlarges the row set, so at most n_concepts - 1 steps. Returns (rows mask, covariate mask)."""
+    known = Y >= 0
+    own = int(known[ci].sum())
+    cov = np.ones(Y.shape[0], bool); cov[ci] = False
+    while True:
+        rows = known[ci] & known[cov].all(axis=0)
+        used = np.where(cov)[0]
+        minor = {d: min(int((Y[d][rows] == 0).sum()), int((Y[d][rows] == 1).sum())) for d in used}
+        short = [d for d, m in minor.items() if m < min_class_rows]
+        if short:
+            cov[min(short, key=lambda d: (minor[d], d))] = False
+            continue
+        if len(used) and rows.sum() < retention * own:
+            gain = {d: int((known[ci] & known[cov & (np.arange(Y.shape[0]) != d)].all(axis=0)).sum()) for d in used}
+            cov[max(used, key=lambda d: (gain[d], -d))] = False
+            continue
+        return rows, cov
+
+
+def resid_directions(Zs: np.ndarray, Y: np.ndarray, coef: np.ndarray, min_class_rows: int = RESID_MIN_CLASS_ROWS,
+                     retention: float = RESID_RETENTION_FRACTION) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    """Refit the logistic probe of every concept on features residualised against the usable covariate labels
+    (resid_covariate_rows). A concept that is single-class on its usable rows keeps the logistic normal (fallback).
+    Returns the refit normals, their projected-space cosine to the original normals, the (n_concepts, n_concepts)
+    covariate mask, the rows used per concept and the fallback flags."""
+    n_c = Y.shape[0]
+    out = np.zeros((n_c, Zs.shape[1]), np.float64); cos = np.zeros(n_c)
+    cov_used = np.zeros((n_c, n_c), bool); rows_used = np.zeros(n_c, np.int64); fallback = np.zeros(n_c, bool)
+    for ci in range(n_c):
+        rows, cov = resid_covariate_rows(Y, ci, min_class_rows, retention)
+        cov_used[ci], rows_used[ci] = cov, int(rows.sum())
+        yy = Y[ci][rows]
+        if rows.sum() == 0 or yy.min() == yy.max():
+            out[ci], cos[ci], fallback[ci] = coef[ci].astype(np.float64), 1.0, True
+            continue
+        R = residualise(Zs[rows], Y[cov][:, rows].T) if cov.any() else Zs[rows].astype(np.float64) - Zs[rows].mean(axis=0)
         w = fit_lr(R.astype(np.float32), yy).coef_[0].astype(np.float64)
         out[ci] = w
         cos[ci] = float(w @ coef[ci] / (np.linalg.norm(w) * np.linalg.norm(coef[ci])))
-    return out, cos, n_rows
+    return out, cos, cov_used, rows_used, fallback
 
 
 def cosine_matrix(vectors: dict[str, np.ndarray]) -> np.ndarray:
@@ -127,7 +161,7 @@ def altdir_arrays(fit: dict, Zs: np.ndarray, Y: np.ndarray) -> dict:
     proj["dom"], n_pos, n_neg = dom_directions(Zs, Y)
     proj["pattern"], _Sigma = pattern_directions(Zs, coef)
     proj["orth"], removed = orth_directions(coef)
-    proj["resid"], resid_cos, resid_n = resid_directions(Zs, Y, coef)
+    proj["resid"], resid_cos, resid_cov, resid_rows, resid_fb = resid_directions(Zs, Y, coef)
     for f, u in proj.items():
         norms = np.linalg.norm(u, axis=1)
         if not np.all(norms > 1e-12):
@@ -139,7 +173,9 @@ def altdir_arrays(fit: dict, Zs: np.ndarray, Y: np.ndarray) -> dict:
     arrays = {"concept_names": np.array(concepts), "family_order": np.array(FAMILY_ORDER), "fit_seed": np.int64(0),
               "locus_id": np.array(str(fit.get("locus_id", ""))), "n_train_rows": np.int64(Zs.shape[0]),
               "dom_n_pos": n_pos, "dom_n_neg": n_neg, "orth_norm_removed_fraction": removed,
-              "resid_cos_to_logistic_projected": resid_cos, "resid_n_rows": np.int64(resid_n),
+              "resid_cos_to_logistic_projected": resid_cos, "resid_covariates_used": resid_cov,
+              "resid_rows_used": resid_rows, "resid_fallback": resid_fb, "resid_min_class_rows": np.int64(RESID_MIN_CLASS_ROWS),
+              "resid_retention_fraction": np.float64(RESID_RETENTION_FRACTION),
               "cos_model": cosine_matrix(vec), "cos_projected": cosine_matrix(proj)}
     for f in FAMILY_ORDER:
         arrays[f"{f}_projected"] = proj[f].astype(np.float32)
@@ -209,6 +245,9 @@ def cosine_table(arrays: dict) -> list[dict]:
         r["cos_model_orth_resid"] = float(cm[ci, fo.index("orth"), fo.index("resid")])
         r["orth_norm_removed_fraction"] = float(arrays["orth_norm_removed_fraction"][ci])
         r["resid_cos_to_logistic_projected"] = float(arrays["resid_cos_to_logistic_projected"][ci])
+        r["resid_rows_used"] = int(arrays["resid_rows_used"][ci])
+        r["resid_fallback"] = bool(arrays["resid_fallback"][ci])
+        r["resid_dropped"] = ",".join(d for di, d in enumerate(concepts) if di != ci and not arrays["resid_covariates_used"][ci, di]) or "-"
         rows.append(r)
     return rows
 
@@ -223,4 +262,5 @@ if __name__ == "__main__":
     path, arr = build_altdir(a.model_key, a.dataset, a.locus, a.out_dir)
     for r in cosine_table(arr):
         print("  " + " ".join(f"{k}={v:+.4f}" if isinstance(v, float) else f"{k}={v}" for k, v in r.items()))
-    print(json.dumps({"path": str(path), "n_train_rows": int(arr["n_train_rows"]), "resid_n_rows": int(arr["resid_n_rows"])}))
+    print(json.dumps({"path": str(path), "n_train_rows": int(arr["n_train_rows"]), "resid_rows_used": arr["resid_rows_used"].tolist(),
+                      "resid_fallback": arr["resid_fallback"].tolist()}))
