@@ -2015,3 +2015,23 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
 - Observation (known-label rows, CheXpert): recomputing on rows with a known label (median 165 per cell) keeps the
   sign of O_q in 108/114 cells and 18 of 19 owned cells (medgemma-4 Cardiomegaly becomes unresolved).
 - Gate decision: all three strengthen the thesis; enter Section 5.7 in one sentence each and the appendix table.
+
+## 2026-09-15 GPT-6-Astra review round 2 (fresh thread, xhigh)
+
+- Run: review of the manifest-driven manuscript saved as concept-flow-paper/review-artifacts/gpt6_reviews/
+  round2_20260915_0420.md. Scores unchanged (2/2/3, overall 4/10, confidence 4).
+- Observation: W1 the displacement lift for difference-of-means/pattern directions is the classifier lift
+  (R diag(1/s) u) where a displacement needs R (R^T R)^{-1} diag(s) u; "weaker handles everywhere" is wrong on
+  NIH (12/96, 13/96 vs 7/96 logistic). W2 PRECISION covers one COCO block with point-estimate agreement; chest
+  blocks with the largest gate deviations and full max-T verdicts are needed. W3 clinical specificity needs
+  adjudicated labels and non-clinical radiographic attributes in the same images. W4 answer-direction transfer
+  to held-out templates/mappings and per-cell rescue/loss. W5 token-tensor replay across shared-tower readers;
+  Lingshu's whitened alignment (0.87 CheXpert vs 0.73 COCO) to be explained (it owns 5/6 CheXpert). W6 full-grade
+  refit transitions; both bound algorithms; percentile vs max-T consistency. W7 coverage table; Llama status;
+  EXTCOMP is a retention test by definition.
+- Gate decision: new modules ALTDIRD (displacement lift), ATTR (view/sex/age attribute directions), ANSDIRT
+  (oracle transfer across templates), PRECISION full-verdict analysis, PRECISION on gemma3-4/27, medgemma-4,
+  lingshu-32, q3-8, iv35-8 NIH (12 tasks enqueued); coverage table, refit grade transitions, alignment-ownership
+  correlation from existing data; wording: weaker-handles sentence, EXTCOMP as retention, numerics scoped to the
+  completed blocks, coverage sentence. CheXpert Plus ships only the 234-image radiologist-labelled valid split:
+  candidate adjudicated subset for evaluation.
