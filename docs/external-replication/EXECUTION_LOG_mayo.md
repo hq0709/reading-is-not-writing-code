@@ -2100,3 +2100,29 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   Consolidation 32, Edema 42; every label known, radiologist consensus); 200 PNGs extracted from PNG/valid/
   (685 MiB). 19 checkpoints x (features task + VALID task) enqueued at prefix 11 (38 tasks, 152,400 outcomes per
   block). Pneumothorax will grade insufficient_support under the ten-per-class rule.
+
+## 2026-09-15 Round-2 results integrated: VALID, ALTDIRD, ANSDIRT, PRECISION grade; Llama 3.2 11B graded
+
+- Observation: Llama 3.2 Vision 11B (primary template IB) owns 0/6 NIH, 0/6 CheXpert, 1/6 COCO (bicycle). With it the
+  grid is 61 blocks and 366 write-matrix cells; chest owned 29/246, COCO 101/120.
+- Observation (VALID, 16 of 20 CheXpert blocks): ownership on 200 radiologist-labelled frontals agrees with the
+  labeler-labelled test grade in 94/96 cells (owned 17 test, 15 valid; verdict agreement 83/96); median |dO_q| 0.004,
+  p90 0.022. Disagreements: iv35-8 Pneumothorax (O 0.0037 -> 0.0028, reference not met on 200 rows) and medgemma-4
+  Cardiomegaly (O 0.045 -> 0.038, unresolved on 200 rows). No cell gains ownership under radiologist labels.
+- Observation (ALTDIRD, 56 blocks): displacement-lifted difference-of-means owns NIH 21/114, CheXpert 17/108, COCO
+  58/114; displacement-lifted pattern NIH 17/114, CheXpert 14/108, COCO 49/114 (logistic on the same blocks 7 / 17 /
+  100). RtR/D full rank in every block, condition 5.3-33.2. Median cosine to the logistic normal 0.07 chest, 0.19 COCO;
+  on chest blocks the six displacement directions nearly coincide (common high-variance axis).
+- Observation (ANSDIRT): a_q fitted on IY stays owned under WY/IA/IB/WA/WB: q25-7 CheXpert 6 IY-owned -> 4/6/5/5/5,
+  q25-7 COCO 6 -> 6 each, lingshu-32 NIH 3 -> 3 each, lingshu-32 CheXpert 5 -> 5/3/3/4/4, gemma3-12 COCO 6 -> 5/6/6/6/6,
+  gemma3-12 CheXpert 0 IY-owned. Paper numbers count only blocks scored on all 600 rows per template (3 so far:
+  chest 25/30 pairs kept, COCO 59/60).
+- Observation (PRECISION full grade): q25-7 NIH and COCO, fp32 and batch 1: 0 verdict and 0 reference changes over
+  24 graded cells; max |dW| over the 127-direction grid 0.0087.
+- Fix: new_addendum_blocks.py re-triggers an analysis whose summary saw fewer scored rows than the module has, once no
+  task of that module is pending or running (five ANSDIRT summaries had been written mid-module).
+- Fix: GPT-6 polish calls at xhigh were timing out at 900 s (every paragraph rejected, text unchanged); the polish
+  script now sends the prompt on stdin, retries, runs calls in parallel, and can target paragraphs by substring.
+- Gate decision: paper commit bbaed07: tables cf-valid, cf-altdird, cf-ansdirt, full-grade cf-precision; one sentence
+  each in the robustness, alternative-construction, and answer-direction paragraphs and the Labels paragraph,
+  rewritten by GPT-6; main text ends on page 10.
