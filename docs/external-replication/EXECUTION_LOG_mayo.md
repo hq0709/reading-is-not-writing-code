@@ -1944,3 +1944,19 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   stronger competitor. The InternVL family's writes stay within 0.04 of zero on every chest set at every size.
 - Gate decision: valid OBSERVED block; InternVL3.5-38B is complete on NIH, COCO and CheXpert; tables and
   leaderboard regenerated.
+
+## 2026-09-15 ALTDIR interim (42 blocks), ANSDIR first blocks, EXTCOMP first blocks
+
+- Run: 42 ALTDIR blocks analysed (14 per dataset); ANSDIR for q25-7 (nih, chexpert, coco), lingshu-32 (all
+  three), gemma3-12 (coco); EXTCOMP for q25-7 (nih, chexpert), q3-8 nih, iv35-8 nih.
+- Observation (ALTDIR, owned cells of 84 per dataset; logistic / dom / pattern / orth / resid / any): NIH 5 / 12 /
+  13 / 7 / 6 / 19; CheXpert 15 / 13 / 10 / 13 / 9 / 28; COCO 72 / 43 / 37 / 70 / 72 / 76. The pre-registered rule
+  holds under every construction (chest 6-15% vs COCO 44-86%); dom/pattern are weaker handles everywhere.
+- Observation (ANSDIR): the answer direction a_q (ridge on the model's own clean margins, 3,000 training rows) is
+  owned in 3/6 NIH and 6/6 CheXpert cells of q25-7 (Effusion O^a +0.29, W^a_qq 0.81) and 3/6 NIH, 5/6 CheXpert of
+  lingshu-32, beats the strongest logistic competitor on 6/6 questions in every block, and has median cosine to
+  the probe normal 0.06-0.07 (q25-7) and 0.30-0.33 (lingshu-32) on chest against 0.54-0.64 on COCO.
+- Observation (EXTCOMP): with 3 (NIH) / 6 (CheXpert) extra clinical directions, q25-7 stays at 0 owned on both
+  chest sets (O_ext -0.07 to -0.46); q3-8 NIH keeps Effusion; iv35-8 NIH 1/6.
+- Gate decision: the three findings enter Section 5.7 and Tables cf-altdir / cf-ansdir / cf-extcomp; numbers are
+  refreshed when the remaining blocks land.
