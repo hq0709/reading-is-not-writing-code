@@ -1836,3 +1836,23 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   family's writes are weak everywhere and directed only on natural objects.
 - Gate decision: valid OBSERVED block; iv35-38 complete on NIH and COCO (CheXpert running). Tables and
   leaderboard regenerated; fully-scored watcher re-armed.
+
+## 2026-09-14 Robustness R1: direction geometry and competitor sensitivity (existing data)
+
+- Run: `scripts/mayo/robustness_geometry.py` over the 57 blocks with a complete write matrix (nih 20, chexpert 18,
+  coco 19) -> `runs/robustness/geometry.{json,md}`. Tests the alternative that off-diagonal dominance is
+  correlated-label geometry.
+- Observation: NIH concept directions are as orthogonal as random vectors (mean off-diagonal cosine 0.019 vs
+  0.023 for random pairs; labels phi 0.026) yet show the same off-diagonal dominance as CheXpert (O_q > 0 in
+  0.258 vs 0.287 of cells), where directions are correlated (mean cosine 0.241; Effusion-Consolidation 0.51,
+  phi 0.74). The strongest competitor coincides with the most similar direction at chance (0.19-0.23 vs
+  0.20) and with the most co-occurring label at chance (0.17-0.25). Over 1,140 chest off-diagonal cells the
+  competitor advantage W_qd - W_qq is uncorrelated with cosine (Spearman 0.047, p=0.11) and with phi (0.003,
+  p=0.93). Leave-one-competitor-out: chest cells with O > 0 rise from 62/228 to 102/228 when the strongest
+  competitor is removed; 126/228 (55%) have >= 2 competitors above the own write, 81 (36%) >= 3. COCO
+  restricted to co-occurring families (person+bicycle, person+dog, chair+bottle, car+bicycle,
+  person+chair+bottle) keeps ownership in 98-100% of cells. Seed cell: Nodule is the LEAST similar direction to
+  Effusion (cosine -0.056, phi 0.033, n11 = 5) and still writes the Effusion answer more (0.262 vs 0.190); the
+  most similar direction (Atelectasis, cosine 0.49) writes it by 0.083.
+- Gate decision: the deficit is not explained by direction similarity or label co-occurrence; enter as a
+  robustness subsection and appendix table in the paper.
