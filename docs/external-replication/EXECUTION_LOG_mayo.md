@@ -2078,3 +2078,25 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
 - Gate decision: module VALID (CORE write matrix and grade on the 200 valid frontals, one per patient by the campaign's
   row hash, radiologist labels, paired with the same block's test grade) implemented next; about 56 GPU-hours over
   the CheXpert checkpoints at or below 40B.
+
+## 2026-09-15 GPT-6-Astra review round 3 (fresh thread, xhigh); VALID module merged and enqueued
+
+- Run: review of the round-2 manuscript (coverage, refit-transition, rescue tables; aggregate answer-direction
+  numbers) saved as concept-flow-paper/review-artifacts/gpt6_reviews/round3_20260915_1007.md. Scores unchanged
+  (2/2/3, overall 4/10, confidence 4).
+- Observation: items already covered by running modules: W2 displacement lift (ALTDIRD), W3 attributes in the same
+  radiographs and adjudicated labels (ATTR, VALID), W5 chest-block full-grade numerics (PRECISION NIH tasks), W6
+  transfer of a_q across templates (ANSDIRT). Items fixed without runs: the 44 reference-meeting chest cells are
+  29 owned / 8 stronger competitor / 7 unresolved (the prose had subtracted 29 from 44); the answerable grade now
+  states the ten-per-class support rule the code applies; the simultaneous upper bounds are defined in the bounds
+  appendix; the paired-reader sentence quotes the ratio range 0.6-3.7 and 7 of 8 pairs above one; the write-flow
+  figure's CheXpert panel had inherited NIH row labels (Nodule for Edema) and every panel now carries its own;
+  the manifest was stale for TOKENW / PRECISION completions (rebuilt; coverage table regenerated).
+- Observation: items not addressed by the paper: an anonymous artifact URL and a patient-level overlap audit
+  against the seed-study cohorts (the seed cohort lists are being located); direction-specific shams after refits
+  (would need a GPU pass scoring the refit probes' shams).
+- Run: VALID module merged (concept-flow 4c483c8; 48 tests pass): cohort role valid appended to the CheXpert
+  cohort (200 frontals, one per patient; positives Effusion 64, Atelectasis 75, Pneumothorax 6, Cardiomegaly 66,
+  Consolidation 32, Edema 42; every label known, radiologist consensus); 200 PNGs extracted from PNG/valid/
+  (685 MiB). 19 checkpoints x (features task + VALID task) enqueued at prefix 11 (38 tasks, 152,400 outcomes per
+  block). Pneumothorax will grade insufficient_support under the ten-per-class rule.
