@@ -1960,3 +1960,13 @@ Run root: `/rodata/azradonc_dev/m253405/cf-transfer/` (data, runs, logs). Record
   chest sets (O_ext -0.07 to -0.46); q3-8 NIH keeps Effusion; iv35-8 NIH 1/6.
 - Gate decision: the three findings enter Section 5.7 and Tables cf-altdir / cf-ansdir / cf-extcomp; numbers are
   refreshed when the remaining blocks land.
+
+## 2026-09-15 TOKENW first blocks (q25-7 nih, coco, chexpert)
+
+- Observation: writing the six logistic directions with per-token weights (softmax of the probe score, mean weight
+  one; or the top quarter of tokens at four times the weight) owns 0/6 on NIH and 0/6 on CheXpert for Qwen2.5-VL-7B
+  (own writes 0.00-0.16; top-quarter Mass +0.03 and Edema +0.03 without the steering reference) and 6/6 on COCO
+  for both variants (top-quarter own writes 0.29-0.88, uniform 0.48-0.94). Concentrating the write on the tokens
+  the probe scores highest does not create a clinical handle and leaves the natural-object handles intact.
+- Gate decision: enters Section 5.7 and Table cf-tokenw; remaining TOKENW blocks (lingshu-32, gemma3-12, q3-8)
+  are queued.
