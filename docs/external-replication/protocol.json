@@ -617,6 +617,87 @@
       ],
       "added": "2026-09-16; addendum, enqueued explicitly, ONE SHARD PER PROJECTION SEED (runner --fit-seed); intended for a handful of representative blocks, not the whole grid",
       "analysis": "cftransfer.analysis --what projseed: per seed W^k (6x6), O^k_q with the 2,000-draw percentile interval and the 6x5 max-T verdict, that projection's OWN random p95 and sham as the steering reference, the model-space cosine to the seed-0 direction, and the count of verdicts / ownership decisions that agree with the block's CORE grade on the same rows"
+    },
+    "TOWERSWAP": {
+      "cohort": "first 200 test rows in cohorts.csv order",
+      "concepts": "all",
+      "templates": [
+        "IY"
+      ],
+      "alpha": [
+        0.25
+      ],
+      "locus": "primary (vis.last)",
+      "fit_seed": 0,
+      "directions": "the CORE grid: baseline + 6 clinical + 119 random + question sham = 127 (own baseline), with the DIRECTIONS OF THE TOWER IN USE -- the donor block's seed-0 fit, reused unchanged",
+      "model": "the block's own reader (multimodal projector + language model) with the PARTNER checkpoint's vision tower loaded in its place; protocol.TOWERSWAP_PAIRS pairs gemma3-4 with medgemma-4 and gemma3-27 with medgemma-27",
+      "swap_feasibility": "verified from the staged checkpoints (python -m cftransfer.towerswap): gemma-3-4b-it and medgemma-4b-it have IDENTICAL tensor name sets (883 each) and identical shapes for vision_tower (437 tensors, 416.9M params), multi_modal_projector (2) and language_model (444), with 0/437 tower tensors bitwise identical (MedSigLIP vs SigLIP); the same holds for gemma-3-27b-it vs medgemma-27b-it (1247 tensors). gemma-3-12b-it vs medgemma-27b-it fails as expected: mm_input_projection_weight (1152,3840) vs (1152,5376) and 48 vs 62 language-model layers.",
+      "verification": "every replaced tensor is torch.equal to the donor checkpoint's tensor after the runtime dtype cast, and every parameter and buffer outside the tower keeps its (dtype, shape, sum, sum|x|, NaN count) signature; the receipt is written to outcomes/TOWERSWAP/swap-<shard>.json",
+      "four_combinations": "the two crossed arms are this module on the two blocks of a pair; the two native arms are those blocks' own CORE grade restricted to the same 200 rows (analysis.core row_limit), so no GPU time is spent re-running CORE",
+      "expected_rows": 152400,
+      "baseline": "own",
+      "datasets": [
+        "nih",
+        "chexpert",
+        "coco"
+      ],
+      "added": "2026-09-16; addendum, enqueued explicitly, only for the models in TOWERSWAP_PAIRS",
+      "analysis": "cftransfer.analysis --what towerswap: per combination (tower, reader) the 6x6 write matrix, W_qq, O_q with the 2,000-draw percentile interval, the 119-random p95 / |sham| steering reference and the 6x5 max-T verdict; within the block the paired crossed-minus-native contrasts; and, when the partner block is packaged, the reader effect at fixed tower and the tower effect at fixed reader over the six questions"
+    },
+    "REPLAY": {
+      "cohort": "first 200 test rows in cohorts.csv order",
+      "concepts": "all",
+      "templates": [
+        "IY"
+      ],
+      "alpha": [
+        0.25
+      ],
+      "locus": "primary (vis.last)",
+      "fit_seed": 0,
+      "directions": "the CORE grid (127 configurations, own baseline) with the SOURCE block's seed-0 directions, random family and sham -- identical for every reader of the shared-tower group",
+      "mechanism": "the consumed block's output is overwritten with the source block's stored tensor before the steering hook reads it (cftransfer.replay.ReplayHook registers on the same module with prepend=True after LocusHook, so it runs first and LocusHook computes the token norms and the write on the replayed tensor); the outcome schema is unchanged",
+      "shared_tower_groups": "verified bitwise identical in the staged checkpoints: SigLIP 437/437 tensors across gemma3-4 / gemma3-12 / gemma3-27, MedSigLIP 437/437 across medgemma-4 / medgemma-27, CLIP ViT-L/14-336 391/391 across llava15-7 / llava15-13; SigLIP vs MedSigLIP 0/437. llavamed-7 joins the CLIP group: the same 391 tensors in the same shapes under the vision_tower.vision_model.* spelling, equal up to the fp16 -> bf16 storage change (max |difference| 0.047, 0 exactly equal after the cast), which is precisely the difference replaying one stored tensor into both readers removes; it is the grid's only shared-tower pair whose readers are a general and a medical model.",
+      "prep": "python -m cftransfer.replay --model-key SOURCE --dataset D (GPU; one tower pass over the 200 rows, writes runs/SOURCE/D/replay/vis.last.npz with the ORIGINAL bits of the captured tensor)",
+      "note": "the tower still runs during the module, so a replay block costs what the same CORE grid costs on the same rows; what it buys is an exactly identical input, not speed",
+      "expected_rows": 152400,
+      "baseline": "own",
+      "datasets": [
+        "nih",
+        "chexpert",
+        "coco"
+      ],
+      "added": "2026-09-16; addendum, enqueued explicitly, only for the models in REPLAY_SOURCE",
+      "analysis": "cftransfer.analysis --what replay: the CORE grade on the replayed tensors (core() on the REPLAY parquet), the paired comparison against the block's own CORE grade on the same rows, the recorded drift between this reader's own tower output and the stored tensor, and, when the group's other blocks are packaged, the cross-reader comparison on byte-identical inputs"
+    },
+    "SEMEND": {
+      "cohort": "test",
+      "concepts": "all",
+      "templates": [
+        "NY",
+        "DA",
+        "DB",
+        "RF"
+      ],
+      "alpha": [
+        0.25
+      ],
+      "locus": "primary (vis.last)",
+      "fit_seed": 0,
+      "directions": "baseline + 6 label directions concept:<c> + 6 answer directions ans:<c> + the question's label sham sham:<q> + the question's answer sham anssham:<q> + 18 random directions = 33 conditions per (question, endpoint). Both families therefore have a FULL 6x6 write matrix on every endpoint, so the campaign's ownership rule applies unchanged AND the spillover of one direction onto the other five concepts' endpoints is measured.",
+      "endpoints": "see the top-level `semend` block: NY negated question (sign -1), DA/DB counterbalanced two-finding forced choice, RF finding-word log-probability in a report continuation",
+      "reference": "each endpoint gets its own clean baseline and its own steering reference: the own signed effect must be positive, above all 18 random directions (rank 1 of 19) and above that family's own |sham|. Ownership is the campaign rule: the steering reference plus positive max-T lower bounds over the five-competitor family.",
+      "prep": "python -m cftransfer.semend --model-key K --dataset D (CPU; freezes the strongest competitor per question from the block's CORE write matrix and the exact rendered prompt of every (question, endpoint) into fits/vis.last/semend_seed0.npz). It requires fits/vis.last/ansdir_seed0.npz, so SEMEND is enqueued with or after ANSDIR.",
+      "expected_rows": 475200,
+      "baseline": "own, per (question, endpoint)",
+      "datasets": [
+        "nih",
+        "chexpert",
+        "coco"
+      ],
+      "added": "2026-09-16; addendum, enqueued explicitly",
+      "analysis": "cftransfer.analysis --what semend: per endpoint and per family the 6x6 write matrix, W_qq, O_q with the 2,000-draw percentile interval, the 18-random / sham steering reference and the 6x5 max-T verdict; the affirmative-versus-negated signed change and its across-question correlation with CORE; the counterbalanced forced-choice probability and the order bias; the report-continuation delta log p of the finding word; and the incremental-validity regression described above",
+      "incremental_validity": "the analysis asks whether OWNERSHIP predicts behaviour on these endpoints beyond what is already known. Per cell (question, endpoint, family) it records the intended change on the question's own endpoint, the unintended change of the same direction on the other five concepts' endpoints, and their difference (the selectivity of the change). Pooled over cells it regresses that difference on (i) the CORE write magnitude W_qq, (ii) the probe selectivity S, (iii) the clean-answer AUROC, and then adds (iv) the CORE ownership indicator and O_q, reporting the added coefficients, their patient-bootstrap intervals and the change in explained variance, separately for the label and the answer direction. Cells that meet the steering reference but are NOT owned are kept as their own group and compared with the owned cells directly, since that contrast is what ownership would have to explain."
     }
   },
   "numerics": {
@@ -842,7 +923,7 @@
     "all_test_and_calibration_rows": 125153600,
     "excludes": "feature extraction, interface preflight and retries",
     "ALTDIR_rows_addendum": 5702400,
-    "ALTDIR_note": "addenda rows (ALTDIR, EXTCOMP, TOKENW, PRECISION, ANSDIR, ALTDIRD, ATTR, ANSDIRT, VALID, ATTRRAND, VALIDFIT, PROJSEED) are outside all_test_and_calibration_rows, which keeps the planned total of the original seven modules",
+    "ALTDIR_note": "addenda rows (ALTDIR, EXTCOMP, TOKENW, PRECISION, ANSDIR, ALTDIRD, ATTR, ANSDIRT, VALID, ATTRRAND, VALIDFIT, PROJSEED, TOWERSWAP, REPLAY, SEMEND) are outside all_test_and_calibration_rows, which keeps the planned total of the original seven modules",
     "addenda": {
       "ALTDIR": 5702400,
       "EXTCOMP": 712800,
@@ -855,12 +936,90 @@
       "VALID": 3352800,
       "ATTRRAND": 9424800,
       "VALIDFIT": 475200,
-      "PROJSEED": 59875200
+      "PROJSEED": 59875200,
+      "TOWERSWAP": 10058400,
+      "REPLAY": 10058400,
+      "SEMEND": 31363200
     },
     "addenda_notes": {
       "PROJSEED": "907,200 rows per block (453,600 per projection seed). The addenda table states the whole-grid figure by its own convention (per model over all datasets x 22 models); the module is intended for a handful of representative blocks, not the whole grid.",
       "ATTRRAND": "214,200 rows per chest block (NIH + CheXpert x 22 models)",
-      "VALIDFIT": "21,600 rows per CheXpert block (22 models)"
+      "VALIDFIT": "21,600 rows per CheXpert block (22 models)",
+      "TOWERSWAP": "152,400 rows per crossed arm; the table follows the campaign convention (all datasets x 22 models), but the module is defined only for the four models of TOWERSWAP_PAIRS and is budgeted for the gemma3-4 / medgemma-4 pair on NIH and CheXpert (4 arms, ~10.9 GPU-h measured from those blocks' own CORE throughput), COCO optional (+5.3 GPU-h). The two native arms cost nothing: they are CORE restricted to the same 200 rows.",
+      "REPLAY": "152,400 rows per block; the table follows the campaign convention, but the module is defined only for the seven blocks of the three shared-tower groups (REPLAY_SOURCE). One dataset per group costs ~5.7 GPU-h (LLaVA-1.5 pair), ~7.5 (MedGemma pair) and ~11.2 (Gemma 3 triple), plus a tower-only tensor prep of well under 0.1 GPU-h per source block.",
+      "SEMEND": "475,200 rows per block; budgeted for at most 8 blocks, staged behind a 3-block stop rule. The GPU cost is set by the number of forwards, not the number of outcomes: 32 steered conditions are one batch-32 forward, so the full 33-condition grid costs exactly what a 25-condition grid would (7.3-19.5 GPU-h per block on the measured throughput of those blocks' own CORE runs)."
     }
+  },
+  "semend": {
+    "purpose": "semantic endpoints outside the six yes/no / A-B templates, so ownership is not validated only against the model's own answers under those six prompts",
+    "templates": {
+      "NY": "Is there no evidence of {finding} in {image_phrase}? Answer yes or no.",
+      "DA": "Which is present in {image_phrase}, {finding} or {competitor}? Answer A if it is {finding} and B if it is {competitor}. Reply with A or B only.",
+      "DB": "Which is present in {image_phrase}, {competitor} or {finding}? Answer A if it is {competitor} and B if it is {finding}. Reply with A or B only.",
+      "RF": "{report_prefix}\n{report_continuation}"
+    },
+    "endpoint": {
+      "NY": "negated question; the endpoint is p(yes) with SIGN -1, because a direction that carries the concept must move a negated question the other way",
+      "DA": "two-finding forced choice with the concept as option A; the endpoint is the probability of the CONCEPT option",
+      "DB": "the same forced choice with the order and the A/B mapping swapped (counterbalanced); the endpoint is again the probability of the concept option",
+      "RF": "short report continuation; the endpoint is log p(finding word) = max(positive_logits) - vocab_logsumexp at the continuation position, no yes/no head"
+    },
+    "candidate_source": {
+      "NY": "IY",
+      "DA": "IA",
+      "DB": "IB",
+      "RF": "first token of each spelling of the finding word (positive) and of the dataset's neutral word (negative)"
+    },
+    "sign": {
+      "NY": -1,
+      "DA": 1,
+      "DB": 1,
+      "RF": 1
+    },
+    "competitor": "the question's strongest competitor in the block's own CORE write matrix, argmax_{d != q} W_qd on the primary template; frozen by the prep into fits/vis.last/semend_seed0.npz",
+    "report_prefix": {
+      "nih": "Write the findings section of the radiology report for this chest radiograph.",
+      "chexpert": "Write the findings section of the radiology report for this chest radiograph.",
+      "coco": "List the objects visible in this photograph."
+    },
+    "report_continuation": {
+      "nih": "Findings:",
+      "chexpert": "Findings:",
+      "coco": "Objects:"
+    },
+    "neutral_word": {
+      "nih": "normal",
+      "chexpert": "normal",
+      "coco": "nothing"
+    },
+    "finding_words": {
+      "nih": {
+        "Effusion": "effusion",
+        "Atelectasis": "atelectasis",
+        "Pneumothorax": "pneumothorax",
+        "Cardiomegaly": "cardiomegaly",
+        "Mass": "mass",
+        "Nodule": "nodule"
+      },
+      "chexpert": {
+        "Effusion": "effusion",
+        "Atelectasis": "atelectasis",
+        "Pneumothorax": "pneumothorax",
+        "Cardiomegaly": "cardiomegaly",
+        "Consolidation": "consolidation",
+        "Edema": "edema"
+      },
+      "coco": {
+        "person": "person",
+        "dog": "dog",
+        "car": "car",
+        "chair": "chair",
+        "bottle": "bottle",
+        "bicycle": "bicycle"
+      }
+    },
+    "n_random": 18,
+    "grid": "per (question, endpoint): clean baseline + the SIX label directions + the SIX answer directions a_d + the question's label sham + the question's answer sham + 18 random directions = 33 conditions, of which 32 are steered and therefore fill exactly one batch-32 forward; the endpoint grid costs the same GPU time as a grid half its size would",
+    "reference": "per endpoint and per family, the own signed effect must be positive, above every one of the 18 random directions (rank 1 of 19) and above the |effect| of that family's own sham"
   }
 }

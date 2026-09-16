@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Round-2 robustness modules over the cf-transfer campaign grid: VALID, ALTDIRD, ANSDIRT, PRECISION (full grade).
+"""Round-2 robustness modules over the cf-transfer campaign grid: VALID, ALTDIRD, ANSDIRT, ATTR, PRECISION (full grade).
 
 Read-only over <RUN_ROOT>/<model_key>/<dataset>/{run.json,summary.json}. Only blocks under the paper's one inclusion rule
 (cftransfer.manifest.block_included: CORE and CALIBRATION in run.json completed_modules) enter; within them a module
@@ -25,6 +25,15 @@ Ownership everywhere: owned = steering_reference and verdict == "fixed_family_ad
              chest / COCO: IY-owned cells, kept per template, and kept (cell, template) pairs over all eligible templates.
              Blocks whose summary was scored on fewer rows (module still running, or a summary older than the completed
              module) are listed under partial_blocks with their row counts and never aggregated.
+  attr       summary.json `attr` of blocks with ATTR in run.json completed_modules and the 9 x 9 write matrix scored on every
+             test row (n_scored_rows_min == n_rows). Three non-clinical radiographic attributes (view_AP, sex_F, age_60) are
+             fitted on the same images, features, projection and probe settings as the clinical probes and written against one
+             nine-direction family (3 attributes + 6 findings) at the primary dose and template. Per block: owned attribute and
+             owned clinical cells inside that family, per-attribute ownership, probe AUROC, selectivity, answer AUROC, and the
+             median |cosine| of the attribute direction to the six clinical normals. Per dataset (+ chest, all): blocks, cells and
+             owned counts for both kinds with their shares, per-attribute owned counts, medians of probe AUROC / selectivity /
+             answer AUROC / |W_qq|, and the median |cosine| between attribute and clinical directions. Attribute questions carry no
+             random family (random_reference false): their steering reference is the sham alone.
   precision  summary.json `precision` settings (fp32, batch1) with status COMPLETE and a full grade: verdict changes,
              steering-reference changes, cells whose verdict or reference changes, and ownership changes against CORE on the same 200 rows, max |dW| over all
              6 x 126 written cells (clinical, random, sham), max |d contrast|; pooled over blocks and settings.
@@ -46,7 +55,8 @@ REPO = Path(__file__).resolve().parents[2]
 if str(REPO / "src") not in sys.path:
     sys.path.insert(0, str(REPO / "src"))
 from cftransfer.manifest import block_included, owned                                          # noqa: E402
-from cftransfer.protocol import ALTDIRD_FAMILIES, ANSDIRT_TEMPLATES, CONCEPTS, DATASETS, MODEL_ORDER, PRECISION_SETTINGS  # noqa: E402
+from cftransfer.protocol import (ALTDIRD_FAMILIES, ANSDIRT_TEMPLATES, ATTR_CONCEPTS, CONCEPTS, DATASETS, MODEL_ORDER,  # noqa: E402
+                                 PRECISION_SETTINGS)
 from cftransfer.runpaths import RUN_ROOT                                                        # noqa: E402
 
 OUT_DIR = RUN_ROOT / "robustness"
@@ -264,9 +274,104 @@ def ansdirt_section(blocks: dict) -> dict:
                                        "kept_of_iy": sum(r["templates"][t]["kept_of_iy"] for r in bs if t in r["templates"]),
                                        "iy_owned": sum(r["n_iy_owned"] for r in bs if t in r["templates"])} for t in ANSDIRT_TEMPLATES},
                   "kept_pairs": sum(r["kept_pairs"] for r in bs), "pairs": sum(r["pairs"] for r in bs),
+                  # unconditional: every (cell, held-out template) pair, not only the pairs whose cell is owned under IY
+                  "owned_pairs": sum(v["n_owned"] for r in bs for v in r["templates"].values()),
+                  "all_pairs": sum(len(r["templates"]) * len(CONCEPTS[r["dataset"]]) for r in bs),
                   "blocks_list": [r["block"] for r in bs]}
     return {"templates": list(ANSDIRT_TEMPLATES), "blocks": rows, "aggregate": agg, "skipped": skipped,
             "partial_blocks": partial}          # scored on fewer rows than the cohort: listed for tracking, never aggregated
+
+
+# ------------------------------------------------------------------------------------------------ ATTR
+ATTR_FIELDS = ("auroc_real", "selectivity", "selectivity_lower95_one_sided", "answer_auroc", "answer_auroc_lower95_one_sided",
+               "readable", "readable_status", "answer_capable", "n_pos", "n_neg", "n_train_pos", "n_train_neg")
+
+
+def attr_section(blocks: dict) -> dict:
+    """Non-clinical attribute directions written inside one nine-direction family, beside the clinical directions of the same family.
+
+    Picks up whatever blocks carry the module at run time: a block enters when it is included, ATTR is in run.json
+    completed_modules, and summary.json attr was scored on every test row."""
+    rows, skipped = [], []
+    for (mk, ds), b in blocks.items():
+        a = b["summary"].get("attr")
+        if not a:
+            if completed(b, "ATTR"):
+                skipped.append({"block": f"{mk}/{ds}", "reason": "ATTR completed but summary.json carries no attr; rerun python -m cftransfer.analysis --what attr"})
+            continue
+        if not completed(b, "ATTR"):
+            skipped.append({"block": f"{mk}/{ds}", "reason": "ATTR not in run.json completed_modules"}); continue
+        if a.get("n_scored_rows_min") != a.get("n_rows"):
+            skipped.append({"block": f"{mk}/{ds}", "reason": f"attr scored on {a.get('n_scored_rows_min')} of {a.get('n_rows')} rows"}); continue
+        expect_q = list(ATTR_CONCEPTS) + list(CONCEPTS[ds])
+        if list(a["questions"]) != expect_q or list(a["attributes"]) != list(ATTR_CONCEPTS):
+            raise RuntimeError(f"{mk}/{ds} attr: questions {a['questions']} / attributes {list(a['attributes'])} are not {expect_q}")
+        attrs, clin, cos_pairs = {}, {}, []
+        for q in expect_q:
+            c = a["per_question"][q]
+            kind = "attribute" if q in ATTR_CONCEPTS else "clinical"
+            if c["question_kind"] != kind or c["own_direction"] != (f"attr:{q}" if kind == "attribute" else f"concept:{q}"):
+                raise RuntimeError(f"{mk}/{ds} attr {q}: question_kind {c['question_kind']} / own_direction {c['own_direction']} unexpected for a {kind} question")
+            cell = {"owned": owned(c), "verdict": c["verdict"], "steering_reference": c["steering_reference"], "W_qq": c["W_qq"],
+                    "O_q": c["O_q"], "max_other": c["max_other"], "argmax_other": c["argmax_other"],
+                    "random_reference": c["random_reference"], "abs_sham": c["abs_sham"]}
+            if kind == "attribute":
+                at = a["attributes"][q]
+                cos = {k: float(v) for k, v in at["cos_model_to_clinical"].items()}
+                if set(cos) != set(CONCEPTS[ds]):
+                    raise RuntimeError(f"{mk}/{ds} attr {q}: cos_model_to_clinical keys {sorted(cos)} are not the six clinical concepts")
+                cell.update({k: at.get(k) for k in ATTR_FIELDS})
+                cell["cos_model_to_clinical"] = cos
+                cell["median_abs_cos_to_clinical"] = med([abs(v) for v in cos.values()])
+                cos_pairs += [(q, k, abs(v)) for k, v in cos.items()]
+                attrs[q] = cell
+            else:
+                clin[q] = cell
+        rows.append({"block": f"{mk}/{ds}", "model": mk, "dataset": ds, "n_rows": a["n_rows"], "template_id": a.get("template_id"),
+                     "alpha": a.get("alpha"), "draws": a.get("draws"), "max_t_critical": a.get("max_t_critical"),
+                     "attr_cells": len(attrs), "attr_owned": sum(c["owned"] for c in attrs.values()),
+                     "clin_cells": len(clin), "clin_owned": sum(c["owned"] for c in clin.values()),
+                     "attr_readable": sum(bool(c["readable"]) for c in attrs.values()),
+                     "attr_answer_capable": sum(bool(c["answer_capable"]) for c in attrs.values()),
+                     "median_abs_W_qq_attr": med([abs(c["W_qq"]) for c in attrs.values()]),
+                     "median_abs_W_qq_clinical": med([abs(c["W_qq"]) for c in clin.values()]),
+                     "median_abs_cos_attr_clinical": med([x for _, _, x in cos_pairs]),
+                     "attributes": attrs, "clinical": clin})
+    per = {}
+    for g, dss in GROUPS.items():
+        bs = [r for r in rows if r["dataset"] in dss]
+        ac = [c for r in bs for c in r["attributes"].values()]
+        cc = [c for r in bs for c in r["clinical"].values()]
+        pair = {}
+        for r in bs:
+            for q, c in r["attributes"].items():
+                for k, v in c["cos_model_to_clinical"].items():
+                    pair.setdefault((q, k), []).append(abs(v))
+        pm = {f"{q}~{k}": {"median_abs_cos": med(v), "n_blocks": len(v)} for (q, k), v in sorted(pair.items())}
+        top = max(pm.items(), key=lambda kv: kv[1]["median_abs_cos"], default=None) if pm else None
+        d = {"blocks": len(bs), "blocks_list": [r["block"] for r in bs],
+             "attr_cells": len(ac), "attr_owned": sum(c["owned"] for c in ac), "attr_owned_share": (sum(c["owned"] for c in ac) / len(ac)) if ac else None,
+             "clin_cells": len(cc), "clin_owned": sum(c["owned"] for c in cc), "clin_owned_share": (sum(c["owned"] for c in cc) / len(cc)) if cc else None,
+             "attr_readable": sum(bool(c["readable"]) for c in ac), "attr_answer_capable": sum(bool(c["answer_capable"]) for c in ac),
+             "median_abs_W_qq_attr": med([abs(c["W_qq"]) for c in ac]), "median_abs_W_qq_clinical": med([abs(c["W_qq"]) for c in cc]),
+             "median_abs_cos_attr_clinical": med([abs(v) for c in ac for v in c["cos_model_to_clinical"].values()]),
+             "per_pair_median_abs_cos": pm,
+             "max_median_abs_cos_pair": ({"pair": top[0], **top[1]} if top else None),
+             "attribute_random_reference": any(c["random_reference"] for c in ac),
+             "clinical_random_reference": all(c["random_reference"] for c in cc) if cc else None,
+             "per_attribute": {}}
+        for q in ATTR_CONCEPTS:
+            xs = [r["attributes"][q] for r in bs if q in r["attributes"]]
+            d["per_attribute"][q] = {
+                "blocks": len(xs), "owned": sum(c["owned"] for c in xs), "share": (sum(c["owned"] for c in xs) / len(xs)) if xs else None,
+                "readable": sum(bool(c["readable"]) for c in xs), "answer_capable": sum(bool(c["answer_capable"]) for c in xs),
+                "median_auroc_real": med([c["auroc_real"] for c in xs]), "median_selectivity": med([c["selectivity"] for c in xs]),
+                "median_answer_auroc": med([c["answer_auroc"] for c in xs]),
+                "median_abs_W_qq": med([abs(c["W_qq"]) for c in xs]),
+                "median_abs_cos_to_clinical": med([abs(v) for c in xs for v in c["cos_model_to_clinical"].values()]),
+                "median_n_pos": med([c["n_pos"] for c in xs]), "median_n_neg": med([c["n_neg"] for c in xs])}
+        per[g] = d
+    return {"attributes": list(ATTR_CONCEPTS), "blocks": rows, "per_dataset": per, "skipped": skipped}
 
 
 # ------------------------------------------------------------------------------------------------ PRECISION
@@ -310,9 +415,9 @@ def precision_section(blocks: dict) -> dict:
 
 # ------------------------------------------------------------------------------------------------ report
 def write_md(R: dict, path: Path) -> None:
-    m, V, A, T, P = R["meta"], R["valid"], R["altdird"], R["ansdirt"], R["precision"]
+    m, V, A, T, P, B = R["meta"], R["valid"], R["altdird"], R["ansdirt"], R["precision"], R["attr"]
     f3 = lambda x: "n/a" if x is None else f"{x:.3f}"
-    L = ["# Round-2 robustness: VALID, ALTDIRD, ANSDIRT, PRECISION", "",
+    L = ["# Round-2 robustness: VALID, ALTDIRD, ANSDIRT, ATTR, PRECISION", "",
          f"Generated {m['generated_utc']} from `{m['run_root']}`; {m['n_included_blocks']} blocks under the inclusion rule. "
          "Owned = steering reference and fixed-family advantage.", ""]
     a = V["aggregate"]
@@ -345,6 +450,34 @@ def write_md(R: dict, path: Path) -> None:
                  + f" | {r['kept_pairs']}/{r['pairs']} |")
     for g, d in T["aggregate"].items():
         L.append(f"| *{g}* | {d['iy_owned']} | " + " | ".join(f"{d['per_template'][t]['owned']} ({d['per_template'][t]['kept_of_iy']})" for t in ANSDIRT_TEMPLATES) + f" | {d['kept_pairs']}/{d['pairs']} |")
+    L += ["", "## ATTR: non-clinical attribute directions inside one nine-direction family", "",
+          "| block | attr owned | clinical owned | " + " | ".join(ATTR_CONCEPTS) + " | med abs W attr | med abs W clin | med abs cos |", "|---|---|---|" + "---|" * (len(ATTR_CONCEPTS) + 3)]
+    for r in B["blocks"]:
+        L.append(f"| {r['block']} | {r['attr_owned']}/{r['attr_cells']} | {r['clin_owned']}/{r['clin_cells']} | "
+                 + " | ".join(("owned" if r["attributes"][q]["owned"] else "--") if q in r["attributes"] else "n/a" for q in ATTR_CONCEPTS)
+                 + f" | {f3(r['median_abs_W_qq_attr'])} | {f3(r['median_abs_W_qq_clinical'])} | {f3(r['median_abs_cos_attr_clinical'])} |")
+    for g, d in B["per_dataset"].items():
+        if not d["blocks"]:
+            continue
+        L.append(f"| *{g}* ({d['blocks']} blocks) | {d['attr_owned']}/{d['attr_cells']} | {d['clin_owned']}/{d['clin_cells']} | "
+                 + " | ".join(f"{d['per_attribute'][q]['owned']}/{d['per_attribute'][q]['blocks']}" for q in ATTR_CONCEPTS)
+                 + f" | {f3(d['median_abs_W_qq_attr'])} | {f3(d['median_abs_W_qq_clinical'])} | {f3(d['median_abs_cos_attr_clinical'])} |")
+    L += ["", "| group | attribute | blocks | owned | probe AUROC | selectivity | answer AUROC | med abs cos to clinical |", "|---|---|---|---|---|---|---|---|"]
+    for g, d in B["per_dataset"].items():
+        if not d["blocks"]:
+            continue
+        for q in ATTR_CONCEPTS:
+            p = d["per_attribute"][q]
+            L.append(f"| {g} | {q} | {p['blocks']} | {p['owned']} | {f3(p['median_auroc_real'])} | {f3(p['median_selectivity'])} | "
+                     f"{f3(p['median_answer_auroc'])} | {f3(p['median_abs_cos_to_clinical'])} |")
+    ch = B["per_dataset"]["chest"]
+    if ch["blocks"]:
+        mm = ch["max_median_abs_cos_pair"] or {}
+        L += ["", f"Pooled chest: {ch['blocks']} blocks; attributes owned {ch['attr_owned']}/{ch['attr_cells']}, clinical owned "
+              f"{ch['clin_owned']}/{ch['clin_cells']} in the same family; attribute probes readable {ch['attr_readable']}/{ch['attr_cells']}, "
+              f"answer-capable {ch['attr_answer_capable']}/{ch['attr_cells']}; median |cos| attribute-to-clinical {f3(ch['median_abs_cos_attr_clinical'])} "
+              f"(largest pair median {f3(mm.get('median_abs_cos'))} for {mm.get('pair')} over {mm.get('n_blocks')} blocks); "
+              f"attribute questions carry a random family: {ch['attribute_random_reference']}."]
     L += ["", "## PRECISION: full grade under fp32 and batch size one (200 rows)", "",
           "| block | setting | verdict changes | reference changes | owned changes | max abs dW grid | max abs d contrast |", "|---|---|---|---|---|---|---|"]
     for r in P["blocks"]:
@@ -355,7 +488,7 @@ def write_md(R: dict, path: Path) -> None:
     L += ["", f"Pooled: {pa['blocks']} blocks, {pa['block_settings']} block-settings, {pa['graded_cells']} graded cells; verdict changes {pa['verdict_changes']}, "
           f"reference changes {pa['steering_reference_changes']}, owned changes {pa['owned_changes']}; max |dW| grid {f3(pa['max_abs_dW_grid'])} ({pa['max_abs_dW_grid_at']}); "
           f"max |d contrast| {f3(pa['max_abs_dcontrast'])}.", "", "## Skipped", ""]
-    for sec in ("valid", "altdird", "ansdirt", "precision"):
+    for sec in ("valid", "altdird", "ansdirt", "attr", "precision"):
         for s in R[sec]["skipped"]:
             L.append(f"- {sec}: {s['block']}{' ' + s['setting'] if s.get('setting') else ''}: {s['reason']}")
     path.write_text("\n".join(L) + "\n", encoding="utf-8")
@@ -375,21 +508,25 @@ def main():
                             "valid": "CheXpert, VALID in run.json completed_modules",
                             "altdird": "ALTDIRD completed; dom_disp and pattern_disp scored on every test row",
                             "ansdirt": "every eligible held-out template scored on every test row; IY grade present",
+                            "attr": "ATTR completed; the nine-direction write matrix scored on every test row",
                             "precision": "setting status COMPLETE with the full grade"},
                   "script": str(Path(__file__).resolve())},
-         "valid": valid_section(blocks), "altdird": altdird_section(blocks), "ansdirt": ansdirt_section(blocks), "precision": precision_section(blocks)}
+         "valid": valid_section(blocks), "altdird": altdird_section(blocks), "ansdirt": ansdirt_section(blocks),
+         "attr": attr_section(blocks), "precision": precision_section(blocks)}
     R["meta"]["seconds"] = round(time.time() - t0, 1)
     out = Path(a.out); out.mkdir(parents=True, exist_ok=True)
     (out / "round2.json").write_text(json.dumps(clean(R), indent=1), encoding="utf-8")
     write_md(R, out / "round2.md")
-    v, d, t, p = R["valid"]["aggregate"], R["altdird"]["per_dataset"], R["ansdirt"]["aggregate"], R["precision"]["aggregate"]
+    v, d, t, p, bt = R["valid"]["aggregate"], R["altdird"]["per_dataset"], R["ansdirt"]["aggregate"], R["precision"]["aggregate"], R["attr"]["per_dataset"]
     print(f"valid: {v['blocks']} blocks, owned agree {v['owned_agree']}/{v['cells']}, verdict agree {v['verdict_agree']}/{v['cells']}, "
           f"owned test {v['owned_test']} valid {v['owned_valid']}, median|dO| {v['median_abs_dO_q']:.4f} p90 {v['p90_abs_dO_q']:.4f}")
     print("altdird: " + "; ".join(f"{g} {x['blocks']}b dom {x['dom_disp']['owned']}/{x['cells']} pattern {x['pattern_disp']['owned']}/{x['cells']} logistic {x['logistic']['owned']}"
                                   for g, x in d.items() if g in DATASETS))
     print("ansdirt: " + "; ".join(f"{g} {x['blocks']}b kept {x['kept_pairs']}/{x['pairs']}" for g, x in t.items()))
+    print("attr: " + "; ".join(f"{g} {x['blocks']}b attributes {x['attr_owned']}/{x['attr_cells']} clinical {x['clin_owned']}/{x['clin_cells']}"
+                               for g, x in bt.items() if x["blocks"]))
     print(f"precision: {p['blocks']} blocks, {p['block_settings']} settings, verdict changes {p['verdict_changes']}, reference changes {p['steering_reference_changes']}, max|dW| grid {p['max_abs_dW_grid']}")
-    for sec in ("valid", "altdird", "ansdirt", "precision"):
+    for sec in ("valid", "altdird", "ansdirt", "attr", "precision"):
         for s in R[sec]["skipped"]:
             print(f"  skipped {sec}: {s['block']} {s.get('setting', '')} {s['reason']}")
     print(f"wrote {out / 'round2.json'} and round2.md in {time.time() - t0:.1f}s")

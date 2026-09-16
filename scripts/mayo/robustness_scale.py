@@ -30,7 +30,7 @@ from scipy.stats import fisher_exact
 
 REPO = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO / "src"))
-from cftransfer.analysis import _load_module, _matrix, _O_from_delta, bootstrap_indices          # noqa: E402
+from cftransfer.analysis import _load_module, _matrix, _O_from_delta, bootstrap_indices, max_t   # noqa: E402
 from cftransfer.manifest import block_included                                                   # noqa: E402
 from cftransfer.protocol import (BOOT_CORE_DRAWS, BOOT_CORE_SEED, CONCEPTS, DATASETS, MODEL_ORDER, N_RANDOM,  # noqa: E402
                                  PRIMARY_ALPHA, primary_template)
@@ -140,6 +140,48 @@ def O_masked(delta, q, concepts, mask) -> dict:
     w = {d: float(np.nanmean(delta[(q, f"concept:{d}")][mask])) for d in concepts}
     return {"n": n, "O": w[q] - max(w[d] for d in concepts if d != q), "W_qq": w[q],
             "max_competitor": max(w[d] for d in concepts if d != q)}
+
+
+def grade_masked(delta, concepts, masks, idx) -> dict:
+    """Full campaign grade recomputed on each question's own rows of `masks` (same rules as CORE and as
+    scripts/mayo/robustness_refit.py): steering reference (W_qq > 0, above the random 95th percentile and above the
+    absolute sham, all recomputed on those rows) and the simultaneous max-T verdict over the same 6x5 contrast family.
+    Units are resampled over the whole cohort and then restricted, so the draws stay coupled across questions."""
+    names, est, mat = [], [], []
+    for q in concepts:
+        m = masks[q]
+        for d in concepts:
+            if d == q:
+                continue
+            c = np.where(m, delta[(q, f"concept:{q}")] - delta[(q, f"concept:{d}")], np.nan)
+            names.append(f"{q}-{d}"); est.append(float(np.nanmean(c)) if np.isfinite(c).any() else float("nan")); mat.append(c)
+    mat = np.stack(mat)                                                                  # (30, n)
+    with np.errstate(invalid="ignore"):
+        boot = np.stack([np.nanmean(mat[:, idx[b]], axis=1) for b in range(idx.shape[0])])   # (B, 30)
+    est = np.asarray(est, float)
+    empty = ~np.isfinite(est)                # a question with no row in its mask: degenerate, never evaluable below
+    est[empty] = 0.0; boot[:, empty] = 0.0
+    n_degenerate = int((~np.isfinite(boot)).sum())
+    boot = np.where(np.isfinite(boot), boot, est)                                        # a draw with no masked row keeps the estimate
+    mt = max_t(est, boot)
+    out = {}
+    for qi, q in enumerate(concepts):
+        m = masks[q]
+        n_rows = int(m.sum())
+        W = {q: {d: (float(np.nanmean(v[m])) if np.isfinite(v[m]).any() else float("nan")) for (qq, d), v in delta.items() if qq == q}}
+        st = cell_stats(W, q, concepts)
+        lows, highs = mt["lower"][qi * 5:(qi + 1) * 5], mt["upper"][qi * 5:(qi + 1) * 5]
+        verdict = ("stronger_competitor" if (highs < 0).any() else
+                   ("fixed_family_advantage" if (lows > 0).all() else "unresolved"))
+        evaluable = bool(n_rows >= MIN_STRATUM and np.isfinite(st["O"]))
+        out[q] = {"n": n_rows, "evaluable": evaluable, "W_qq": st["W_qq"], "O": st["O"],
+                  "max_competitor": st["max_competitor"], "argmax_competitor": st["argmax_competitor"],
+                  "random_p95": st["random_p95"], "abs_sham": st["abs_sham"], "random_n": st["random_n"],
+                  "steering_reference": st["steering_reference"] if evaluable else None,
+                  "verdict": verdict if evaluable else None,
+                  "owned": bool(evaluable and st["steering_reference"] and verdict == "fixed_family_advantage"),
+                  "n_degenerate_boot_entries": n_degenerate}
+    return out
 
 
 def complete_matrix(delta, concepts, n) -> tuple[bool, str]:
@@ -275,12 +317,14 @@ def analyse_block(model_key: str, dataset_id: str, draws: int) -> dict:
     # ---- per cell
     cells = []
     sat_block = []
+    unsat_masks = {}
     for q in concepts:
         s = pq_.get(q, {})
         sp, smg = cell_stats(Wp, q, concepts), cell_stats(Wm, q, concepts)
         p0 = P0[q]
         strata_masks = {"p_lt_0.5": p0 < 0.5, "p_ge_0.5": p0 >= 0.5, "label_present": y[q] == 1, "label_absent": y[q] == 0,
                         "unsaturated": (p0 >= SAT_LO) & (p0 <= SAT_HI)}
+        unsat_masks[q] = strata_masks["unsaturated"]
         sat_hi, sat_lo = float(np.nanmean(p0 > SAT_HI)), float(np.nanmean(p0 < SAT_LO))
         sat_block.append(p0)
         c = {"model": model_key, "dataset": dataset_id, "concept": q, "primary_template": primary,
@@ -305,6 +349,10 @@ def analyse_block(model_key: str, dataset_id: str, draws: int) -> dict:
         if loc is not None:
             c["connector"] = {"p_scale": cell_stats(loc["Wp"], q, concepts), "margin_scale": cell_stats(loc["Wm"], q, concepts)}
         cells.append(c)
+    # full campaign grade on the unsaturated rows of each cell (same rules as CORE)
+    ug = grade_masked(dp, concepts, unsat_masks, idx)
+    for c in cells:
+        c["unsaturated_grade"] = ug[c["concept"]]
     allp = np.concatenate(sat_block)
     rec.update({"status": "OK", "n_rows": n, "draws": int(idx.shape[0]),
                 "saturation": {"sat_hi": float(np.nanmean(allp > SAT_HI)), "sat_lo": float(np.nanmean(allp < SAT_LO)),
@@ -393,6 +441,27 @@ def aggregate(blocks: list[dict]) -> dict:
                        "not_owned_O_pos": sum((not c["owned_p"]) and c["strata"][st]["O"] > 0 for c in ev),
                        "median_n_rows": nanmed([c["strata"][st]["n"] for c in cs])}
         it2["strata"][g] = row
+    # full campaign grade on the unsaturated rows (grade_masked): the same steering reference and simultaneous
+    # max-T verdict as CORE, recomputed on those rows, beside the sign-of-O count above
+    it2["unsaturated_full_grade"] = {}
+    for g, cs in groups.items():
+        if not cs:
+            continue
+        ev = [c for c in cs if c.get("unsaturated_grade", {}).get("evaluable")]
+        own = [c for c in ev if c["owned_p"]]
+        it2["unsaturated_full_grade"][g] = {
+            "cells": len(cs), "evaluable": len(ev), "owned_p": sum(c["owned_p"] for c in cs),
+            "owned_p_evaluable": len(own),
+            "owned_p_owned_unsaturated": sum(c["unsaturated_grade"]["owned"] for c in own),
+            "owned_p_reference_kept": sum(bool(c["unsaturated_grade"]["steering_reference"]) for c in own),
+            "owned_p_advantage_kept": sum(c["unsaturated_grade"]["verdict"] == "fixed_family_advantage" for c in own),
+            "owned_p_O_pos": sum(c["unsaturated_grade"]["O"] > 0 for c in own),
+            "not_owned_evaluable": sum(not c["owned_p"] for c in ev),
+            "not_owned_owned_unsaturated": sum(c["unsaturated_grade"]["owned"] for c in ev if not c["owned_p"]),
+            "lost": [{"model": c["model"], "dataset": c["dataset"], "concept": c["concept"], "n_rows": c["unsaturated_grade"]["n"],
+                      "O": round(c["unsaturated_grade"]["O"], 4), "reference": c["unsaturated_grade"]["steering_reference"],
+                      "verdict": c["unsaturated_grade"]["verdict"]}
+                     for c in own if not c["unsaturated_grade"]["owned"]]}
     sat_blocks = [{"model": b["model"], "dataset": b["dataset"], **{k: round(v, 4) for k, v in b["saturation"].items() if k != "per_concept"},
                    "per_concept_sat": {q: round(v["sat_hi"] + v["sat_lo"], 3) for q, v in b["saturation"]["per_concept"].items()}}
                   for b in ok]
@@ -569,6 +638,20 @@ def write_md(res: dict, path: Path):
         for st, r in strata.items():
             rows.append([g, st, r["evaluable"], r["O_pos"], f'{r["owned_p_O_pos"]}/{r["owned_p_evaluable"]}', f'{r["not_owned_O_pos"]}/{r["not_owned_evaluable"]}', r["median_n_rows"]])
     L.append(md_table(["group", "stratum", "evaluable cells", "O>0", "owned: O>0/evaluable", "not owned: O>0/evaluable", "median rows"], rows))
+    L += ["", "Unsaturated rows, FULL campaign grade (steering reference recomputed on those rows and the simultaneous max-T "
+          "verdict over the same 6x5 family; units resampled over the whole cohort, then restricted):"]
+    rows = []
+    for g, r in res["item2_ceiling"]["unsaturated_full_grade"].items():
+        rows.append([g, r["cells"], r["evaluable"], f'{r["owned_p_owned_unsaturated"]}/{r["owned_p_evaluable"]}', f'{r["owned_p_O_pos"]}/{r["owned_p_evaluable"]}',
+                     f'{r["owned_p_reference_kept"]}/{r["owned_p_evaluable"]}', f'{r["owned_p_advantage_kept"]}/{r["owned_p_evaluable"]}',
+                     f'{r["not_owned_owned_unsaturated"]}/{r["not_owned_evaluable"]}'])
+    L.append(md_table(["group", "cells", "evaluable", "owned kept (full grade)", "owned: O>0", "owned: reference kept", "owned: advantage kept",
+                       "not owned -> owned"], rows))
+    lost = [d for g in ("nih", "chexpert", "coco") for d in res["item2_ceiling"]["unsaturated_full_grade"].get(g, {}).get("lost", [])]
+    if lost:
+        L += ["", "Owned cells that lose the full grade on their unsaturated rows:",
+              md_table(["model", "dataset", "concept", "rows", "O", "reference", "verdict"],
+                       [[d["model"], d["dataset"], d["concept"], d["n_rows"], d["O"], d["reference"], d["verdict"]] for d in lost])]
     s = res["item2_ceiling"]["saturation"]
     L += ["", f"Saturation (clean P(yes) > {SAT_HI} or < {SAT_LO}); per-dataset median block share: " +
           ", ".join(f"{k} {v:.3f}" for k, v in s["per_dataset_median_block_sat"].items()) +

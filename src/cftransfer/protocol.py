@@ -52,10 +52,12 @@ CALIBRATION_PROMPT_DATASETS = ("nih", "coco")
 # after the campaign's blocks were packaged; it is enqueued explicitly (enqueue --modules ALTDIR) and its coverage is
 # requested only once its outcomes directory exists, so packaged blocks keep COMPLETE until it starts.
 MODULES_ADDED_LATER = {"nih": ("ALTDIR", "EXTCOMP", "TOKENW", "PRECISION", "ANSDIR", "ALTDIRD", "ATTR", "ANSDIRT",
-                               "ATTRRAND", "PROJSEED"),
-                       "coco": ("ALTDIR", "TOKENW", "PRECISION", "ANSDIR", "ALTDIRD", "ANSDIRT", "PROJSEED"),
+                               "ATTRRAND", "PROJSEED", "TOWERSWAP", "REPLAY", "SEMEND"),
+                       "coco": ("ALTDIR", "TOKENW", "PRECISION", "ANSDIR", "ALTDIRD", "ANSDIRT", "PROJSEED",
+                                "TOWERSWAP", "REPLAY", "SEMEND"),
                        "chexpert": ("PROMPT", "DOSE", "REFIT", "LOCUS", "LOCUS_CALIBRATION", "ALTDIR", "EXTCOMP", "TOKENW", "ANSDIR",
-                                    "ALTDIRD", "ATTR", "ANSDIRT", "VALID", "ATTRRAND", "VALIDFIT", "PROJSEED")}
+                                    "ALTDIRD", "ATTR", "ANSDIRT", "VALID", "ATTRRAND", "VALIDFIT", "PROJSEED",
+                                    "TOWERSWAP", "REPLAY", "SEMEND")}
 # ALTDIR direction families, in condition order: difference of means, Haufe pattern, orthogonalised logistic normal,
 # logistic normal refitted on label-residualised features (altdir.py); every family is lifted with the logistic rule.
 ALTDIR_FAMILIES = ("dom", "pattern", "orth", "resid")
@@ -128,7 +130,7 @@ MODULE_SETTINGS = {"PRECISION": PRECISION_SETTINGS}       # modules scored once 
 # addenda (each enqueued explicitly, each counted in total_planned_outcomes.addenda, each in MODULES_ADDED_LATER).
 PLANNED_MODULES = ("CORE", "CALIBRATION", "PROMPT", "DOSE", "REFIT", "LOCUS", "LOCUS_CALIBRATION")
 ADDENDUM_MODULES = ("ALTDIR", "EXTCOMP", "TOKENW", "PRECISION", "ANSDIR", "ALTDIRD", "ATTR", "ANSDIRT", "VALID",
-                    "ATTRRAND", "VALIDFIT", "PROJSEED")
+                    "ATTRRAND", "VALIDFIT", "PROJSEED", "TOWERSWAP", "REPLAY", "SEMEND")
 # ANSDIR (answer-direction oracle, ansdir.py): per question q a ridge regression of the clean answer margin on the
 # projected, train-scaled features of the first ANSDIR_N_TRAIN training rows (alpha by 5-fold CV over ANSDIR_ALPHAS),
 # lifted like the logistic normals; written with the six a_d plus the coordinate-permutation sham of a_q.
@@ -136,6 +138,60 @@ ANSDIR_N_TRAIN = 3000
 ANSDIR_ALPHAS = (0.1, 1.0, 10.0, 100.0)
 ANSDIR_CV_FOLDS = 5
 COCO_CATEGORY_IDS = {"person": 1, "dog": 18, "car": 3, "chair": 62, "bottle": 44, "bicycle": 2}
+# TOWERSWAP: one reader, the OTHER checkpoint's vision tower. Today's "the reader of the representation decides what a
+# written direction does" evidence is made of shared-tower pairs (one tower, two readers); this module supplies the
+# missing crossover (one reader, two towers). Gemma 3 and MedGemma are the same architecture with different weights, so
+# the tower of one loads into the other -- verified from the staged checkpoints (towerswap.compare_checkpoints):
+# gemma-3-4b-it and medgemma-4b-it have IDENTICAL tensor name sets (883 each) and identical shapes for vision_tower
+# (437 tensors, 416.9M params), multi_modal_projector (2) and language_model (444), with 0/437 tower tensors bitwise
+# identical (MedSigLIP vs SigLIP, mean relative difference 3.17); the 27B pair matches the same way; gemma3-12 against
+# medgemma-27 fails as expected (projector 1152x3840 vs 1152x5376, 48 vs 62 language-model layers). "Reader" is
+# connector + language model, so ONLY the tower is replaced. The module scores the CROSSED arm of a block; the native
+# arm is that block's own CORE grade restricted to the same rows (analysis.core row_limit), so the four combinations of
+# a pair cost two GPU arms rather than four. Directions are the fit of the TOWER IN USE, reused unchanged.
+TOWERSWAP_PAIRS = {"gemma3-4": "medgemma-4", "medgemma-4": "gemma3-4",
+                   "gemma3-27": "medgemma-27", "medgemma-27": "gemma3-27"}
+TOWERSWAP_ROWS = 200
+# REPLAY: the SAME stored consumed-block tensor written into every reader of a shared-tower group, so the comparison is
+# exact instead of "bf16-equal" (each block ran its own tower forward, and a bf16 matmul's reduction order depends on
+# the batch shape and the device). The groups are bitwise identical in the staged checkpoints: SigLIP 437/437 tensors
+# across gemma3-4 / gemma3-12 / gemma3-27, MedSigLIP 437/437 across medgemma-4 / medgemma-27, CLIP ViT-L/14-336 391/391
+# across llava15-7 / llava15-13 (and SigLIP vs MedSigLIP 0/437). llavamed-7 joins the CLIP group: its converted
+# checkpoint carries the SAME CLIP tower as llava15-7 under the `vision_tower.vision_model.*` spelling, identical in
+# shape for all 391 tensors and equal in value up to the fp16 -> bf16 storage change (max |difference| 0.047, 0 tensors
+# exactly equal after the cast), so it is the one shared-tower pair in the grid whose two readers are a GENERAL and a
+# MEDICAL model -- and the storage difference is exactly what replaying one stored tensor into both removes.
+# REPLAY_SOURCE names the block whose tower output is
+# stored; every block of the group -- the source included -- then scores the CORE grid on those tensors with the
+# SOURCE's seed-0 directions, random family and sham, so the tensor AND the write are identical and only the reader
+# differs. features/<locus>.npz cannot serve: it stores the MEAN over consumed tokens, not the token tensor, so the
+# module has a prep of its own (cftransfer.replay).
+REPLAY_SOURCE = {"gemma3-4": "gemma3-4", "gemma3-12": "gemma3-4", "gemma3-27": "gemma3-4",
+                 "medgemma-4": "medgemma-4", "medgemma-27": "medgemma-4",
+                 "llava15-7": "llava15-7", "llava15-13": "llava15-7", "llavamed-7": "llava15-7"}
+REPLAY_ROWS = 200
+# SEMEND: three semantic endpoints that are NOT the six yes/no / A-B templates, so ownership is not validated only
+# against the model's own answers under those prompts. The prompt texts live in protocol.json ("semend"), never in the
+# runner. NY is the negated question and is scored with SIGN -1 (a direction that carries the concept must move a
+# negated question the other way); DA / DB are the counterbalanced two-finding forced choice against the question's
+# strongest CORE competitor (the prep freezes which concept that is, so the condition id is the stable `comp:<q>`);
+# RF is a short report continuation whose endpoint is log p(finding word) = max(positive_logits) - vocab_logsumexp,
+# which needs no yes/no head. Each endpoint carries its own clean baseline, the FULL six-direction label family and the
+# FULL six-direction answer family (so every endpoint has a 6x6 write matrix for each family: the campaign's ownership
+# rule applies unchanged, and the spillover of one direction onto the OTHER five concepts' endpoints is measured), each
+# family's own sham, and a SEMEND_N_RANDOM-direction reference family. The 32 steered conditions fill exactly one
+# batch-32 forward, so this grid costs the same GPU time as a grid half its size would.
+SEMEND = PROTOCOL["semend"]
+SEMEND_TEMPLATES = ("NY", "DA", "DB", "RF")
+SEMEND_TEMPLATE_TEXT: dict[str, str] = SEMEND["templates"]
+SEMEND_SIGN = {t: float(SEMEND["sign"][t]) for t in SEMEND_TEMPLATES}
+SEMEND_YESNO_TEMPLATE_SOURCE = {"NY": "IY"}          # candidate sets reused verbatim from the frozen templates
+SEMEND_AB_TEMPLATE_SOURCE = {"DA": "IA", "DB": "IB"}  # DA: concept is option A; DB: concept is option B
+SEMEND_NEUTRAL_WORD: dict[str, str] = SEMEND["neutral_word"]
+SEMEND_FINDING_WORDS: dict[str, dict[str, str]] = SEMEND["finding_words"]
+SEMEND_REPORT_PREFIX: dict[str, str] = SEMEND["report_prefix"]
+SEMEND_REPORT_CONTINUATION: dict[str, str] = SEMEND["report_continuation"]
+SEMEND_N_RANDOM = int(SEMEND["n_random"])
 
 # probe / direction constants
 PROJECTION_DIM = PROTOCOL["probe"]["projection_dim"]          # 512
@@ -168,6 +224,25 @@ def render_question(dataset_id: str, concept: str, template_id: str) -> str:
     return TEMPLATES[template_id].format(
         finding=FINDING_PHRASES[dataset_id][concept], image_phrase=IMAGE_PHRASE[dataset_id]
     )
+
+
+def semend_finding_word(dataset_id: str, concept: str) -> str:
+    """The single word the report-continuation endpoint scores for one concept (frozen in protocol.json)."""
+    return SEMEND_FINDING_WORDS[dataset_id][concept]
+
+
+def render_semend(dataset_id: str, concept: str, template_id: str, competitor: str | None = None) -> str:
+    """Exact question text of one SEMEND endpoint. `competitor` is the question's strongest CORE competitor and is
+    required by the forced-choice endpoints (DA, DB); the syntax is protocol.json's, not the executor's to edit."""
+    if template_id not in SEMEND_TEMPLATES:
+        raise KeyError(f"{template_id}: not a SEMEND endpoint {SEMEND_TEMPLATES}")
+    if template_id in SEMEND_AB_TEMPLATE_SOURCE and competitor is None:
+        raise ValueError(f"{template_id} needs the question's strongest competitor")
+    slots = {"finding": FINDING_PHRASES[dataset_id][concept], "image_phrase": IMAGE_PHRASE[dataset_id],
+             "competitor": FINDING_PHRASES[dataset_id][competitor] if competitor else "",
+             "report_prefix": SEMEND_REPORT_PREFIX[dataset_id],
+             "report_continuation": SEMEND_REPORT_CONTINUATION[dataset_id]}
+    return SEMEND_TEMPLATE_TEXT[template_id].format(**slots)
 
 
 def primary_template(run_dir: Path | str) -> str:
@@ -208,7 +283,7 @@ class ModuleSpec:
     concepts_rule: str              # "all" | "prompt" | "attr" (3 attribute + 6 clinical) | "attrrand" (the 3 attribute questions)
     alphas: tuple[float, ...]
     directions: str                 # "core" | "clean" | "dose" | "refit" | "altdir" | "extcomp" | "tokenw" | "ansdir" | "altdird"
-                                    # | "attr" | "ansdirt" | "attrrand" | "validfit" | "projseed"
+                                    # | "attr" | "ansdirt" | "attrrand" | "validfit" | "projseed" | "semend"
     fit_seeds: tuple[int, ...]      # PROJSEED: the PROJECTION seeds (1, 2); every other module: probe fit seeds
     locus: str                      # "primary" | "connector"
     baseline_module: str | None     # module whose clean baseline is reused (DOSE/REFIT)
@@ -267,6 +342,16 @@ MODULES: dict[str, ModuleSpec] = {
     # the six clinical directions refitted under projection seeds 1 and 2, each with its own random family and sham
     "PROJSEED": ModuleSpec("PROJSEED", "test", None, ("IY",), "all", (PRIMARY_ALPHA,), "projseed", PROJSEED_SEEDS, "primary", "CORE",
                            ("nih", "chexpert", "coco")),
+    # the block's own reader with the PARTNER checkpoint's vision tower; the CORE grid with the tower's own seed-0
+    # directions and its own clean baseline, on the first TOWERSWAP_ROWS test rows (the native arm is CORE on those rows)
+    "TOWERSWAP": ModuleSpec("TOWERSWAP", "test", TOWERSWAP_ROWS, ("IY",), "all", (PRIMARY_ALPHA,), "core", (0,), "primary",
+                            None, ("nih", "chexpert", "coco")),
+    # the CORE grid written on the stored consumed-block tensors of the shared-tower group's source block (own baseline)
+    "REPLAY": ModuleSpec("REPLAY", "test", REPLAY_ROWS, ("IY",), "all", (PRIMARY_ALPHA,), "core", (0,), "primary", None,
+                         ("nih", "chexpert", "coco")),
+    # three semantic endpoints outside the six templates, own clean baseline per (question, endpoint)
+    "SEMEND": ModuleSpec("SEMEND", "test", None, SEMEND_TEMPLATES, "all", (PRIMARY_ALPHA,), "semend", (0,), "primary",
+                         None, ("nih", "chexpert", "coco")),
 }
 
 
@@ -332,6 +417,13 @@ def conditions_for(module: str, dataset_id: str, concept: str) -> list[tuple[str
     if spec.directions == "validfit":
         # the six expert-label (radiologist) refits; CORE baseline, CORE random family and CORE sham are the references
         return [(f"vfit:{c}", spec.alphas[0]) for c in CONCEPTS[dataset_id]]
+    if spec.directions == "semend":
+        # the six label directions and the six answer directions (a 6x6 write matrix per family per endpoint, so the
+        # intended change and the spillover onto the other five concepts' endpoints are both measured), each family's
+        # own sham, and the reference family: 32 steered conditions, exactly one batch-32 forward
+        ids = ([f"concept:{c}" for c in CONCEPTS[dataset_id]] + [f"ans:{c}" for c in CONCEPTS[dataset_id]]
+               + [sham, f"anssham:{concept}"] + [f"random:{i:03d}" for i in range(SEMEND_N_RANDOM)])
+        return [("baseline", 0.0)] + [(d, spec.alphas[0]) for d in ids]
     if spec.directions == "projseed":
         # one projection seed per fit_seed: six refit directions, that projection's own 119 random directions and its sham
         ids = [f"proj:{c}" for c in CONCEPTS[dataset_id]] + [f"projrand:{i:03d}" for i in range(N_RANDOM)] + [f"projsham:{concept}"]

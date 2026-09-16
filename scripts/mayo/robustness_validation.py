@@ -53,7 +53,7 @@ from sklearn.metrics import roc_auc_score
 REPO = Path(__file__).resolve().parents[2]
 if str(REPO / "src") not in sys.path:
     sys.path.insert(0, str(REPO / "src"))
-from cftransfer.analysis import _matrix, core_bootstrap_indices          # noqa: E402
+from cftransfer.analysis import _matrix, core_bootstrap_indices, max_t   # noqa: E402
 from cftransfer.manifest import block_included                            # noqa: E402
 from cftransfer.protocol import BOOT_CORE_SEED, CONCEPTS, DATASETS, N_RANDOM, PRIMARY_ALPHA, primary_template  # noqa: E402
 from cftransfer.runpaths import RUN_ROOT                                  # noqa: E402
@@ -425,6 +425,48 @@ def column_selectivity(used) -> dict:
 
 
 # --------------------------------------------------------------------------------- task 3: known-label ownership
+def full_grade_known(delta, cs, Y, C_all) -> dict:
+    """Full campaign grade on each question's known-label rows: the steering reference recomputed on those rows and
+    the simultaneous max-T verdict over the same 6x5 contrast family (cftransfer.analysis.core / robustness_refit).
+    Units are resampled over the whole cohort and then restricted, so the draws stay coupled across questions."""
+    n = Y.shape[0]
+    masks = {q: np.isfinite(Y[:, qi]) for qi, q in enumerate(cs)}
+    est, mat = [], []
+    for q in cs:
+        m = masks[q]
+        for d in cs:
+            if d == q:
+                continue
+            c = np.where(m, delta[(q, f"concept:{q}")] - delta[(q, f"concept:{d}")], np.nan)
+            est.append(float(np.nanmean(c)) if np.isfinite(c).any() else float("nan")); mat.append(c)
+    D = np.stack(mat)                                                       # (30, n)
+    boot = boot_means(D, C_all)                                             # (B, 30)
+    est = np.asarray(est, float)
+    empty = ~np.isfinite(est)               # a question with no known row: degenerate, so it cannot spoil the critical value
+    est[empty] = 0.0; boot[:, empty] = 0.0
+    boot = np.where(np.isfinite(boot), boot, est)
+    mt = max_t(est, boot)
+    out = {}
+    for qi, q in enumerate(cs):
+        m = masks[q]; others = [j for j in range(len(cs)) if j != qi]
+        Dq = np.stack([delta[(q, f"concept:{d}")] for d in cs]).astype(np.float64)[:, m]
+        with np.errstate(invalid="ignore"):
+            W = np.nanmean(Dq, axis=1) if Dq.shape[1] else np.full(len(cs), np.nan)
+        rand = [delta[(q, f"random:{i:03d}")] for i in range(N_RANDOM) if (q, f"random:{i:03d}") in delta]
+        rp95 = float(np.percentile([float(np.nanmean(r[m])) for r in rand], 95)) if rand else np.nan
+        sham = delta.get((q, f"sham:{q}"))
+        ash = abs(float(np.nanmean(sham[m]))) if sham is not None else np.nan
+        ref = bool(len(rand) == N_RANDOM and W[qi] > 0 and W[qi] > rp95 and W[qi] > ash)
+        lows, highs = mt["lower"][qi * 5:(qi + 1) * 5], mt["upper"][qi * 5:(qi + 1) * 5]
+        verdict = ("stronger_competitor" if (highs < 0).any() else
+                   ("fixed_family_advantage" if (lows > 0).all() else "unresolved"))
+        ok = bool(int(m.sum()) >= SUPPORT_MIN and np.isfinite(W).all())
+        out[q] = {"n_rows": int(m.sum()), "evaluable": ok, "W_qq": float(W[qi]), "O_q": float(W[qi] - W[others].max()),
+                  "random_p95": rp95, "abs_sham": ash, "steering_reference": ref, "verdict_maxT": verdict,
+                  "owned": bool(ok and ref and verdict == OWNED_VERDICT)}
+    return out
+
+
 def known_label_block(mk, ds, bdir, summary, draws, Y, rows) -> dict:
     cs = CONCEPTS[ds]; k = len(cs); n = len(rows)
     primary = summary.get("primary_template") or primary_template(bdir)
@@ -486,6 +528,10 @@ def known_label_block(mk, ds, bdir, summary, draws, Y, rows) -> dict:
                     "owned_known": bool(kn["verdict_percentile"] == OWNED_VERDICT and kn["steering_reference"]),
                     "owned_all_percentile": bool(a["verdict_percentile"] == OWNED_VERDICT and a["steering_reference"]),
                     "delta_O_known_minus_all": kn["O_q"] - a["O_q"]}
+    fg = full_grade_known(delta, cs, Y, C_all)
+    for q in cs:
+        per_q[q]["known_full_grade"] = fg[q]
+        per_q[q]["owned_known_full_grade"] = fg[q]["owned"]
     return {"model_key": mk, "dataset": ds, "primary_template": primary, "draws": int(draws), "cross_checks": cross, "per_question": per_q}
 
 
@@ -504,6 +550,9 @@ def known_label_dataset_summary(blocks: list[dict]) -> dict:
             "n_owned_summary": int(sum(c["summary_owned"] for *_, c in cells)),
             "n_owned_all_percentile": int(sum(c["owned_all_percentile"] for *_, c in cells)),
             "n_owned_known": int(sum(c["owned_known"] for *_, c in cells)),
+            "n_owned_known_full_grade": int(sum(c["owned_known_full_grade"] for *_, c in cells)),
+            "n_owned_summary_and_owned_known_full_grade": int(sum(c["summary_owned"] and c["owned_known_full_grade"] for *_, c in cells)),
+            "n_owned_known_full_grade_not_summary": int(sum(c["owned_known_full_grade"] and not c["summary_owned"] for *_, c in cells)),
             "verdicts_all_percentile": dict(pd.Series([c["all"]["verdict_percentile"] for *_, c in cells]).value_counts()) if n else {},
             "verdicts_known_percentile": dict(pd.Series([c["known"]["verdict_percentile"] for *_, c in cells]).value_counts()) if n else {},
             "median_abs_delta_O": med([abs(c["delta_O_known_minus_all"]) for *_, c in cells]),

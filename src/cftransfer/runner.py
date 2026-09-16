@@ -12,6 +12,7 @@ import argparse
 import json
 import time
 import traceback
+from contextlib import ExitStack
 from pathlib import Path
 
 import numpy as np
@@ -31,6 +32,9 @@ from .hooks import MODE_SOFTMAX, MODE_TOPQ
 from .projseed import load_projseed
 from .protocol import (ALTDIR_FAMILIES, ALTDIRD_FAMILIES, ATTR_CONCEPTS, CONCEPTS, LOCI, MODULE_SETTINGS, MODULES, NUMERICS_DEFAULT,
                        PROTOCOL_ID, TOKENW_VARIANTS, conditions_for, direction_kind, primary_template, question_list, render_question)
+from .replay import ReplayBank, replay_source
+from .semend import load_prompts
+from .towerswap import apply_tower_swap, swap_partner
 from .validfit import load_validfit
 from .runpaths import outcomes_dir, run_dir
 from .scoring import score_logits
@@ -188,13 +192,22 @@ def run_block(model_key: str, dataset_id: str, module: str, shard: int, n_shards
         raise ValueError(f"{module} has fit seeds {spec.fit_seeds}; --fit-seed {fit_seed} is not one of them")
     seeds = spec.fit_seeds if fit_seed is None else (fit_seed,)
     locus_id = LOCI[spec.locus]
+    # Which block's seed-0 fit supplies the directions. TOWERSWAP writes the DONOR TOWER's own directions (the fit
+    # belongs to the representation, not to the reader); REPLAY writes the SOURCE block's directions on the source's
+    # stored tensors, so every reader of a shared-tower group gets the identical write. Every other module: its own.
+    bank_key = {"TOWERSWAP": lambda: swap_partner(model_key), "REPLAY": lambda: replay_source(model_key)}.get(
+        module, lambda: model_key)()
+    if bank_key != model_key:
+        print(f"[{model_key}/{dataset_id}/{module}] directions come from the {bank_key} block's seed-0 fit", flush=True)
     # directions first: a missing fit or altdir/extcomp prep file fails before the outcomes directory or the model exist
-    bank = DirectionBank(model_key, dataset_id, locus_id, (0,) if spec.directions == "projseed" else spec.fit_seeds,
+    bank = DirectionBank(bank_key, dataset_id, locus_id, (0,) if spec.directions == "projseed" else spec.fit_seeds,
                          altdir=spec.directions == "altdir",
                          extcomp=spec.directions == "extcomp", tokenw=spec.directions == "tokenw",
-                         ansdir=spec.directions in ("ansdir", "ansdirt"), altdird=spec.directions == "altdird",
+                         ansdir=spec.directions in ("ansdir", "ansdirt", "semend"), altdird=spec.directions == "altdird",
                          attr=spec.directions == "attr", validfit=spec.directions == "validfit",
                          projseed=seeds if spec.directions == "projseed" else None)
+    # SEMEND renders its own endpoint prompts and candidate sets (protocol.json "semend", frozen by the module's prep)
+    prompts = load_prompts(model_key, dataset_id, locus_id) if spec.directions == "semend" else None
     rows = load_cohort(dataset_id, (spec.role,))
     if spec.row_limit:
         rows = rows[:spec.row_limit]
@@ -251,7 +264,20 @@ def run_block(model_key: str, dataset_id: str, module: str, shard: int, n_shards
     dtype = torch.float32 if numerics == "fp32" else torch.bfloat16
     ad = get_adapter(model_key, revision).load(device_map=device_map, dtype=dtype)
     locus = ad.loci()[locus_id]
+    swap = None
+    if module == "TOWERSWAP":                 # the reader (projector + language model) is the host's; the tower is not
+        if int(locus.hidden_dim) != bank.D:
+            raise RuntimeError(f"TOWERSWAP: {bank_key} directions are {bank.D}-d but {model_key}'s {locus_id} is "
+                               f"{locus.hidden_dim}-d; the towers are not interchangeable")
+        swap = apply_tower_swap(ad, bank_key)      # the donor is pinned by its own locked revision
+        (part_dir / f"swap-{shard_tag}.json").write_text(json.dumps(swap, indent=1))
+        print(f"[{model_key}/{dataset_id}/TOWERSWAP] {swap['n_tensors_replaced']} tower tensors "
+              f"({swap['n_params_replaced'] / 1e6:.1f}M params) replaced from {bank_key}; rest unchanged", flush=True)
     hook = LocusHook(ad.module(locus.module_path), locus_id)
+    # REPLAY: overwrite the consumed block with the source block's stored tensor. Registered AFTER the steering hook
+    # (both prepend=True) so it runs FIRST and LocusHook computes the norms and the write on the replayed tensor.
+    rhook = ReplayBank.open(model_key, dataset_id, locus_id, bank_key).hook(ad.module(locus.module_path)) \
+        if module == "REPLAY" else None
     run_id = run_id_for(model_key, dataset_id)
     if spec.directions == "clean" or numerics == "batch1":
         batch = 1          # clean-only modules score one forward per (row, question); no steered composition to match
@@ -269,12 +295,19 @@ def run_block(model_key: str, dataset_id: str, module: str, shard: int, n_shards
         part_idx += 1
         buffer = []
 
-    with hook:
+    with ExitStack() as stack:
+        stack.enter_context(hook)
+        if rhook is not None:
+            stack.enter_context(rhook)
         for ri, row in enumerate(todo):
+            if rhook is not None:
+                rhook.set_row(row["row_id"])
             image = open_rgb(image_path(dataset_id, row))
             for concept, template_id in questions:
-                question = render_question(dataset_id, concept, template_id)
-                cands = ad.candidates[template_id]
+                question = (render_question(dataset_id, concept, template_id) if prompts is None
+                            else prompts.render(dataset_id, concept, template_id))
+                cands = (ad.candidates[template_id] if prompts is None
+                         else prompts.candidates(ad, dataset_id, concept, template_id))
                 conds = [(d, a, s) for s in seeds for d, a in conditions_for(module, dataset_id, concept)]
                 base = dict(protocol_id=PROTOCOL_ID, run_id=run_id, model_key=model_key, dataset_id=dataset_id,
                             module=module, role=row["role"], row_id=row["row_id"], unit_id=row["unit_id"],
@@ -349,6 +382,16 @@ def run_block(model_key: str, dataset_id: str, module: str, shard: int, n_shards
             "throughput_per_s": round(n_out / max(el, 1e-9), 2), "batch": batch, "primary_template": primary, "numerics": numerics,
             "fit_seed": fit_seed,
             "batch_policy": "fixed composition per question: clean replicated baseline batch + padded steered batches",
+            "direction_block": bank_key, "tower_swap": swap,
+            "replay": ({"source_block": rhook.tensors and bank_key, "rows_replayed": len(rhook.drift),
+                        "hook_calls": rhook.calls,
+                        "drift_max_abs": max((v["max_abs"] for v in rhook.drift.values()), default=None),
+                        "drift_mean_abs": (sum(v["mean_abs"] for v in rhook.drift.values()) / len(rhook.drift))
+                        if rhook.drift else None,
+                        "block_mean_abs": (sum(v["block_mean_abs"] for v in rhook.drift.values()) / len(rhook.drift))
+                        if rhook.drift else None,
+                        "note": "drift = |this reader's own tower output - the stored tensor| before the replacement"}
+                       if rhook is not None else None),
             "peak_gpu_memory_bytes": int(torch.cuda.max_memory_allocated()), "gpu_count": torch.cuda.device_count(),
             "gpu_models": sorted({torch.cuda.get_device_name(i) for i in range(torch.cuda.device_count())}),
             "ended_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())}

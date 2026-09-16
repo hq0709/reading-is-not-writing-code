@@ -5,8 +5,9 @@ import argparse
 import json
 from pathlib import Path
 
-from .protocol import ANSDIR_N_TRAIN, MODULE_SETTINGS, MODULES, PROJSEED_SEEDS, expected_rows
-from .runpaths import run_dir, valid_features_dir
+from .protocol import (ANSDIR_N_TRAIN, MODULE_SETTINGS, MODULES, PROJSEED_SEEDS, REPLAY_SOURCE, TOWERSWAP_PAIRS,
+                       expected_rows)
+from .runpaths import fits_dir, run_dir, valid_features_dir
 from .worker import QUEUE
 
 SRC = "/rodata/azradonc_dev/m253405/concept-flow/src"
@@ -27,10 +28,12 @@ def batch_for(model_key: str, lane: str) -> int:
 SHARDS = {"CORE": 4, "LOCUS": 4, "PROMPT": 7, "DOSE": 2, "REFIT": 1, "CALIBRATION": 1, "LOCUS_CALIBRATION": 1, "ALTDIR": 1,
           "EXTCOMP": 1, "TOKENW": 1, "PRECISION": 1, "ANSDIR": 1, "ALTDIRD": 1, "ATTR": 1, "ANSDIRT": 2,
           "VALID": 1, "ATTRRAND": 2, "VALIDFIT": 1,
-          "PROJSEED": 1}   # PRECISION: one shard per setting; VALID: 152,400 outcomes on 200 rows, one third of a CORE shard
+          "PROJSEED": 1, "TOWERSWAP": 1, "REPLAY": 1, "SEMEND": 4}   # PRECISION: one shard per setting; VALID: 152,400 outcomes on 200 rows, one third of a CORE shard
 # budget; ATTRRAND: 214,200 outcomes, two shards keep a shard near CORE's 114,300; VALIDFIT: 21,600 outcomes, one shard;
 # PROJSEED: one shard PER PROJECTION SEED (MODULE_SEED_TASKS), i.e. 453,600 outcomes per task, and the module is meant
 # for a handful of representative blocks rather than the whole grid.
+# TOWERSWAP / REPLAY: 152,400 outcomes on 200 rows, one shard each (VALID's budget); SEMEND: 475,200 outcomes over 600
+# rows, four shards keep a shard at 118,800, near CORE's 114,300.
 # Modules whose fit seeds are independent grids and are therefore emitted as one task per seed (runner --fit-seed).
 MODULE_SEED_TASKS = {"PROJSEED": PROJSEED_SEEDS}
 # The addendum modules are not in the default order: they are enqueued explicitly (--modules ...). ALTDIR / EXTCOMP need a
@@ -41,12 +44,24 @@ MODULE_SEED_TASKS = {"PROJSEED": PROJSEED_SEEDS}
 PREP_FILE = {"ALTDIR": "altdir_seed0.npz", "EXTCOMP": "extcomp_seed0.npz", "ANSDIR": "ansdir_seed0.npz",
              "ALTDIRD": "altdir_seed0.npz", "ATTR": "attr_seed0.npz", "ANSDIRT": "ansdir_seed0.npz",
              "ATTRRAND": "attr_seed0.npz", "VALIDFIT": "validfit_seed0.npz",
-             "PROJSEED": tuple(f"projseed_seed{k}.npz" for k in PROJSEED_SEEDS)}
+             "PROJSEED": tuple(f"projseed_seed{k}.npz" for k in PROJSEED_SEEDS),
+             "SEMEND": "semend_seed0.npz"}
 PREP_TASK = {"ANSDIR": ["python", "-m", "cftransfer.ansdir", "--n-train", str(ANSDIR_N_TRAIN)],
              "ANSDIRT": ["python", "-m", "cftransfer.ansdir", "--n-train", str(ANSDIR_N_TRAIN)],
-             "VALIDFIT": ["python", "-m", "cftransfer.validfit"], "PROJSEED": ["python", "-m", "cftransfer.projseed"]}
+             "VALIDFIT": ["python", "-m", "cftransfer.validfit"], "PROJSEED": ["python", "-m", "cftransfer.projseed"],
+             "SEMEND": ["python", "-m", "cftransfer.semend"]}
 # Preps that never touch a GPU: the task is emitted without --device-map and may run on any lane.
-PREP_TASK_CPU = {"VALIDFIT", "PROJSEED"}
+PREP_TASK_CPU = {"VALIDFIT", "PROJSEED", "SEMEND"}
+# Modules that read a file of ANOTHER block: TOWERSWAP writes the PARTNER checkpoint's tower into this block's reader
+# and therefore writes the PARTNER's seed-0 directions; REPLAY writes the shared-tower group's SOURCE block's stored
+# consumed-block tensors with that block's seed-0 directions. Both dependencies are cross-block, so they cannot live in
+# PREP_FILE (which is always this block's fits/vis.last/).
+MODULE_DATA_FN = {
+    "TOWERSWAP": lambda mk, ds: [str(fits_dir(TOWERSWAP_PAIRS[mk], ds, "vis.last") / "seed0.npz")],
+    "REPLAY": lambda mk, ds: [str(run_dir(REPLAY_SOURCE[mk], ds) / "replay" / "vis.last.npz"),
+                              str(fits_dir(REPLAY_SOURCE[mk], ds, "vis.last") / "seed0.npz")]}
+# Models a module can be enqueued for at all (the pair / group tables of the protocol).
+MODULE_MODELS = {"TOWERSWAP": set(TOWERSWAP_PAIRS), "REPLAY": set(REPLAY_SOURCE)}
 
 
 def prep_files(mod: str) -> list[str]:
@@ -61,7 +76,11 @@ VALID_IMAGES = "/rodata/azradonc_dev/m253405/cf-transfer/data/chexpert/images/va
 MODULE_DATA = {"VALID": [VALID_IMAGES]}
 # VALIDFIT refits the six directions on the radiologist-labelled valid rows, so its CPU prep needs the valid-role
 # features the VALID feature task writes (features/valid/<locus>.npz); the module task itself waits only for the prep file.
-PREP_DATA = {"VALIDFIT": lambda mk, ds: [str(valid_features_dir(mk, ds) / "vis.last.npz")]}
+# SEMEND's prep reads the block's own CORE write matrix (to freeze each question's strongest competitor) and needs the
+# answer directions, because a_q is one of its 25 conditions; so it waits for the merged CORE parquet and for ANSDIR.
+PREP_DATA = {"VALIDFIT": lambda mk, ds: [str(valid_features_dir(mk, ds) / "vis.last.npz")],
+             "SEMEND": lambda mk, ds: [str(fits_dir(mk, ds, "vis.last") / "ansdir_seed0.npz"),
+                                       str(run_dir(mk, ds) / "outcomes" / "CORE.parquet")]}
 MODULE_ORDER = ["CALIBRATION", "CORE", "LOCUS_CALIBRATION", "DOSE", "REFIT", "LOCUS", "PROMPT"]
 MODEL_PRIORITY = ["q25-7", "llava15-7", "lingshu-7", "llavamed-7", "q3-8", "iv35-8", "medgemma-4", "q25-3", "q3-4", "iv35-14",
                   "llava15-13", "gemma3-4", "gemma3-12", "llama32-11", "q25-32", "q3-32", "lingshu-32", "medgemma-27",
@@ -89,8 +108,27 @@ def enqueue(model_key: str, dataset_id: str, modules: list[str] | None = None, p
         spec = MODULES[mod]
         if dataset_id not in spec.datasets or expected_rows(mod, dataset_id) == 0:
             continue
+        if mod in MODULE_MODELS and model_key not in MODULE_MODELS[mod]:
+            raise SystemExit(f"{mod} is only defined for {sorted(MODULE_MODELS[mod])}; {model_key} is not one of them")
         n = SHARDS[mod]
-        requires = prep_out + [str(rd / "fits" / "vis.last" / f) for f in prep_files(mod)] + MODULE_DATA.get(mod, [])
+        requires = (prep_out + [str(rd / "fits" / "vis.last" / f) for f in prep_files(mod)] + MODULE_DATA.get(mod, [])
+                    + (MODULE_DATA_FN[mod](model_key, dataset_id) if mod in MODULE_DATA_FN else []))
+        if mod == "REPLAY":
+            # one tower pass per SOURCE block and dataset, shared by every reader of the group: the task name is the
+            # same whichever reader enqueues it, so the second enqueue overwrites the first pending file
+            src = REPLAY_SOURCE[model_key]
+            sprio = MODEL_PRIORITY.index(src) if src in MODEL_PRIORITY else 99
+            name = f"{prefix}{sprio:02d}{prio_d}-00-REPLAY-tensors-{src}-{dataset_id}"
+            slane = LANE[src]
+            (QUEUE / "pending" / f"{name}.json").write_text(json.dumps({
+                "name": name, "lane": slane,
+                "cmd": ["python", "-m", "cftransfer.replay", "--model-key", src, "--dataset", dataset_id,
+                        "--batch-size", str(batch_for(src, slane)),
+                        "--device-map", "cuda:0" if slane == "gpu1" else "auto"],
+                "requires": data_ready + [str(run_dir(src, dataset_id) / "preflight.vis.last.json")],
+                "produces": [str(run_dir(src, dataset_id) / "replay" / "vis.last.npz")], "env": env}, indent=1))
+            if name not in names:
+                names.append(name)
         if mod == "VALID":
             name = f"{prefix}{prio_m:02d}{prio_d}-{mi + 1:02d}-{mod}-features-{model_key}-{dataset_id}"
             vf = valid_features_dir(model_key, dataset_id)

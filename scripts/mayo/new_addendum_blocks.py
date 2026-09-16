@@ -3,7 +3,7 @@ import json, glob, os
 R = "/rodata/azradonc_dev/m253405/cf-transfer/runs"
 
 
-SHARDS = {"ANSDIRT": 2, "ATTRRAND": 2, "PROJSEED": 2}      # PROJSEED: one task (and one meta) per projection seed
+SHARDS = {"ANSDIRT": 2, "ATTRRAND": 2, "PROJSEED": 2, "SEMEND": 4}   # PROJSEED: one task (and one meta) per projection seed
 Q = "/rodata/azradonc_dev/m253405/cf-transfer/queue"
 
 
@@ -24,7 +24,8 @@ def partial(a, n=None):
         return any(partial(v, n) for v in a.values())
     return False
 MODS = {"ANSDIR": "ansdir", "EXTCOMP": "extcomp", "TOKENW": "tokenw", "PRECISION": "precision", "ALTDIRD": "altdird", "ATTR": "attr", "ANSDIRT": "ansdirt",
-        "VALID": "valid", "ATTRRAND": "attr", "VALIDFIT": "validfit", "PROJSEED": "projseed"}
+        "VALID": "valid", "ATTRRAND": "attr", "VALIDFIT": "validfit", "PROJSEED": "projseed",
+        "TOWERSWAP": "towerswap", "REPLAY": "replay", "SEMEND": "semend"}
 # ATTRRAND has no analysis key of its own: it is folded into `attr`, so a block whose stored `attr` was computed before
 # ATTRRAND landed (no attribute random family in it) is reported as needing the analysis again.
 for mod, key in MODS.items():

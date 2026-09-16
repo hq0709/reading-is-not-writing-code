@@ -28,6 +28,18 @@ Implemented:
                                          random p95 and sham, plus the CPU cosines and cross-fitted AUROCs of the prep
   projseed(model, dataset)            -> PROJSEED: per projection seed the 6x6 write matrix, O_q with that projection's own
                                          119-random p95 and sham, interval, max-T verdict, and agreement with the seed-0 grade
+  towerswap(model, dataset)           -> TOWERSWAP: the write matrix and ownership grade of the four {tower} x {reader}
+                                         combinations of a Gemma 3 / MedGemma pair, the paired crossed-minus-native contrast,
+                                         and the reader effect at a fixed tower next to the tower effect at a fixed reader
+  replay(model, dataset)              -> REPLAY: the CORE grade on a stored consumed-block tensor replayed into this reader,
+                                         paired against the block's own CORE grade on the same rows, the drift the replacement
+                                         removed, and the cross-reader comparison on byte-identical input
+  semend(model, dataset)              -> SEMEND: per endpoint (negated question, counterbalanced forced choice, finding-word
+                                         log-probability) and per family (label / answer) a full 6x6 write matrix, the signed
+                                         effect with its own random / sham steering reference, the max-T ownership verdict, the
+                                         spillover onto the other five concepts' endpoints, the affirmative/negated correlation,
+                                         and the incremental validity of ownership over write magnitude, probe selectivity and
+                                         clean-answer AUROC (reported the same way whether or not it adds anything)
 """
 from __future__ import annotations
 
@@ -50,7 +62,9 @@ from .images import DATA_ROOT, load_cohort, load_labels
 from .protocol import (ALTDIR_FAMILIES, ALTDIRD_FAMILIES, ANSDIRT_TEMPLATES, ATTR_CONCEPTS, BOOT_CALIBRATION_DRAWS,
                        BOOT_CALIBRATION_SEED, BOOT_CORE_DRAWS, BOOT_CORE_SEED, BOOT_DIAGNOSTIC_SEED, CONCEPTS, CONTROL_SEEDS, DATASETS,
                        EXTCOMP_LABELS, LOCI, MODULE_SETTINGS, MODULES, N_RANDOM, NUMERICS_DEFAULT, PRECISION_SETTINGS, PRIMARY_ALPHA,
-                       PROJSEED_SEEDS, PROMPT_CONCEPTS, TOKENW_VARIANTS, expected_rows, primary_template)
+                       PROJSEED_SEEDS, PROMPT_CONCEPTS, REPLAY_SOURCE, SEMEND_N_RANDOM, SEMEND_SIGN, SEMEND_TEMPLATES,
+                       TOKENW_VARIANTS, TOWERSWAP_PAIRS, conditions_for, expected_rows, primary_template, semend_finding_word)
+from .semend import load_semend
 from .runpaths import outcomes_dir, run_dir, valid_features_dir
 from .validfit import load_validfit
 
@@ -1322,6 +1336,498 @@ def projseed(model_key: str, dataset_id: str, template_id: str | None = None, al
     return res
 
 
+# ------------------------------------------------------------------------------------------- TOWERSWAP
+def _arm_deltas(model_key: str, dataset_id: str, module: str, concepts: list[str], order: dict, alpha: float,
+                template_id: str, value: str = "p_present"):
+    """Per-sample deltas of one scored arm against ITS OWN clean baseline (None when the arm is not packaged)."""
+    df = _load_module(model_key, dataset_id, module)
+    if df is None or df.empty:
+        return None
+    base = df[df.direction_id == "baseline"]
+    if base.empty:
+        raise RuntimeError(f"{model_key}/{dataset_id}/{module}: no clean baseline rows; this module scores its own")
+    return _matrix(df, concepts, order, alpha, template_id=template_id, baseline=base, value=value)
+
+
+def _own_rows(delta: dict, concepts: list[str], n: int, prefix: str = "concept") -> np.ndarray:
+    """(6, n) per-sample deltas of each question's OWN direction."""
+    return np.stack([delta[(q, f"{prefix}:{q}")] for q in concepts]).astype(float).reshape(len(concepts), n)
+
+
+def _paired_contrast(a: np.ndarray, b: np.ndarray, concepts: list[str], idx: np.ndarray, names: list[str]) -> dict:
+    """Question-wise a - b with percentile intervals and max-T simultaneous intervals over the six questions."""
+    est = np.nanmean(a - b, axis=1)
+    boot = np.stack([np.nanmean((a - b)[:, idx[j]], axis=1) for j in range(idx.shape[0])])      # (B, 6)
+    mt = max_t(est, boot)
+    return {q: {"estimate": float(est[qi]), "sd": float(mt["sd"][qi]),
+                "ci95_percentile": [float(np.percentile(boot[:, qi], 2.5)), float(np.percentile(boot[:, qi], 97.5))],
+                "max_t_lower": float(mt["lower"][qi]), "max_t_upper": float(mt["upper"][qi]),
+                "nonzero_simultaneous": bool(mt["lower"][qi] > 0 or mt["upper"][qi] < 0)}
+            for qi, q in enumerate(concepts)} | {"max_t_critical": mt["critical"], "contrast": names}
+
+
+def towerswap(model_key: str, dataset_id: str, template_id: str | None = None, alpha: float = PRIMARY_ALPHA,
+              draws: int = BOOT_CALIBRATION_DRAWS) -> dict:
+    """TOWERSWAP: the write matrix of the same reader under two towers, and of the same tower under two readers.
+
+    The block's CROSSED arm (its own reader with the partner checkpoint's vision tower, written with the PARTNER's
+    seed-0 directions) is graded exactly as CORE -- 6x6 write matrix, W_qq, O_q with the percentile interval, the
+    119-random p95 / |sham| steering reference and the 6x5 max-T verdict -- and compared, paired on the same
+    TOWERSWAP_ROWS test rows, with the block's NATIVE arm, which is its own CORE grade restricted to those rows (so no
+    GPU time is spent re-running CORE). When the partner block is packaged too, all four combinations of
+    {tower A, tower B} x {reader A, reader B} are reported, together with the two contrasts the claim turns on:
+      reader effect at a fixed tower   W_qq(T, reader A) - W_qq(T, reader B)
+      tower effect at a fixed reader   W_qq(A, reader R) - W_qq(B, reader R)
+    each with max-T simultaneous intervals over the six questions. If what a written direction does is decided by the
+    reader, the tower effect is small where the reader effect is not.
+    """
+    partner = TOWERSWAP_PAIRS.get(model_key)
+    if partner is None:
+        raise KeyError(f"{model_key}: not a TOWERSWAP pair member ({sorted(TOWERSWAP_PAIRS)})")
+    primary = _primary(model_key, dataset_id, template_id)
+    concepts = CONCEPTS[dataset_id]
+    n_rows = MODULES["TOWERSWAP"].row_limit
+    rows = load_cohort(dataset_id, ("test",))[:n_rows]
+    order = {r["row_id"]: i for i, r in enumerate(rows)}
+    n = len(rows)
+    idx = core_bootstrap_indices(dataset_id, n, draws)
+    res = {"n_rows": n, "alpha": alpha, "template_id": primary, "draws": int(idx.shape[0]), "reader": model_key,
+           "partner": partner, "own_tower": model_key, "swapped_tower": partner, "combinations": {}, "arms": {}}
+    swaps = sorted((outcomes_dir(model_key, dataset_id) / "TOWERSWAP").glob("swap-*.json"))
+    res["swap_receipt"] = json.loads(swaps[-1].read_text()) if swaps else None
+    arms: dict[str, np.ndarray] = {}
+    for reader, tower, module in ((model_key, model_key, "CORE"), (model_key, partner, "TOWERSWAP"),
+                                  (partner, partner, "CORE"), (partner, model_key, "TOWERSWAP")):
+        name = f"tower={tower}|reader={reader}"
+        tpl = _primary(reader, dataset_id, template_id)
+        try:
+            d = _arm_deltas(reader, dataset_id, module, concepts, order, alpha, tpl)
+        except (FileNotFoundError, RuntimeError, KeyError):
+            d = None
+        if d is None or any((q, f"concept:{q}") not in d for q in concepts):
+            res["combinations"][name] = {"status": "NOT_STARTED", "module": module, "tower": tower, "reader": reader}
+            continue
+        g = core(reader, dataset_id, module, template_id=tpl, alpha=alpha, n_boot=draws,
+                 row_limit=n_rows if module == "CORE" else None)
+        cell = _grade_cells(g)
+        for q in concepts:
+            cell[q]["owned"] = bool(cell[q]["steering_reference"] and cell[q]["verdict"] == "fixed_family_advantage")
+        res["combinations"][name] = {"status": "COMPLETE", "module": module, "tower": tower, "reader": reader,
+                                     "directions_from": tower, "template_id": tpl, "W": g["W"], "grade": cell,
+                                     "max_t_critical": g.get("max_t_critical"),
+                                     "owned": sorted(q for q in concepts if cell[q]["owned"])}
+        arms[name] = _own_rows(d, concepts, n)
+    res["arms"] = sorted(arms)
+    a_self, a_cross = f"tower={model_key}|reader={model_key}", f"tower={partner}|reader={model_key}"
+    if a_self in arms and a_cross in arms:                     # within the block: the tower effect at this reader
+        res["swapped_minus_native"] = _paired_contrast(arms[a_cross], arms[a_self], concepts, idx,
+                                                       [a_cross, a_self])
+        for q in concepts:
+            sw, na = res["combinations"][a_cross]["grade"][q], res["combinations"][a_self]["grade"][q]
+            res["swapped_minus_native"][q].update({
+                "W_qq_swapped": sw["W_qq"], "W_qq_native": na["W_qq"], "dO_q": (sw["O_q"] - na["O_q"]),
+                "verdict_swapped": sw["verdict"], "verdict_native": na["verdict"],
+                "verdict_changed": sw["verdict"] != na["verdict"], "owned_swapped": sw["owned"],
+                "owned_native": na["owned"], "owned_changed": sw["owned"] != na["owned"]})
+    b_self, b_cross = f"tower={partner}|reader={partner}", f"tower={model_key}|reader={partner}"
+    have_all = all(k in arms for k in (a_self, a_cross, b_self, b_cross))
+    res["crossover_complete"] = have_all
+    if have_all:
+        res["crossover"] = {
+            "reader_effect_at_own_tower": _paired_contrast(arms[a_self], arms[b_cross], concepts, idx, [a_self, b_cross]),
+            "reader_effect_at_partner_tower": _paired_contrast(arms[a_cross], arms[b_self], concepts, idx, [a_cross, b_self]),
+            "tower_effect_at_own_reader": _paired_contrast(arms[a_cross], arms[a_self], concepts, idx, [a_cross, a_self]),
+            "tower_effect_at_partner_reader": _paired_contrast(arms[b_cross], arms[b_self], concepts, idx, [b_cross, b_self])}
+        for k, blk in res["crossover"].items():
+            vals = [abs(blk[q]["estimate"]) for q in concepts]
+            blk["mean_abs_effect"] = float(np.mean(vals))
+            blk["n_simultaneously_nonzero"] = int(sum(blk[q]["nonzero_simultaneous"] for q in concepts))
+        reader_eff = float(np.mean([res["crossover"]["reader_effect_at_own_tower"]["mean_abs_effect"],
+                                    res["crossover"]["reader_effect_at_partner_tower"]["mean_abs_effect"]]))
+        tower_eff = float(np.mean([res["crossover"]["tower_effect_at_own_reader"]["mean_abs_effect"],
+                                   res["crossover"]["tower_effect_at_partner_reader"]["mean_abs_effect"]]))
+        res["crossover"]["mean_abs_reader_effect"] = reader_eff
+        res["crossover"]["mean_abs_tower_effect"] = tower_eff
+        res["crossover"]["reader_over_tower"] = float(reader_eff / tower_eff) if tower_eff > 0 else None
+        res["crossover"]["ownership_by_combination"] = {k: res["combinations"][k]["owned"]
+                                                        for k in (a_self, a_cross, b_self, b_cross)}
+        res["crossover"]["ownership_follows"] = {
+            q: ("reader" if (res["combinations"][a_self]["grade"][q]["owned"] ==
+                             res["combinations"][a_cross]["grade"][q]["owned"] and
+                             res["combinations"][b_self]["grade"][q]["owned"] ==
+                             res["combinations"][b_cross]["grade"][q]["owned"] and
+                             res["combinations"][a_self]["grade"][q]["owned"] !=
+                             res["combinations"][b_self]["grade"][q]["owned"])
+                 else "tower" if (res["combinations"][a_self]["grade"][q]["owned"] ==
+                                  res["combinations"][b_cross]["grade"][q]["owned"] and
+                                  res["combinations"][a_cross]["grade"][q]["owned"] ==
+                                  res["combinations"][b_self]["grade"][q]["owned"] and
+                                  res["combinations"][a_self]["grade"][q]["owned"] !=
+                                  res["combinations"][a_cross]["grade"][q]["owned"])
+                 else "neither (all four agree or the pattern is mixed)") for q in concepts}
+    return res
+
+
+# ---------------------------------------------------------------------------------------------- REPLAY
+def replay(model_key: str, dataset_id: str, template_id: str | None = None, alpha: float = PRIMARY_ALPHA,
+           draws: int = BOOT_CALIBRATION_DRAWS) -> dict:
+    """REPLAY: the CORE grid scored on a stored consumed-block tensor, so two readers see byte-identical input.
+
+    The block's REPLAY arm is graded exactly as CORE and compared, paired on the same REPLAY_ROWS test rows, with the
+    block's own CORE grade on those rows (`replay_minus_core`). `drift` is what the replacement removed: the distance
+    between this reader's own tower output and the stored tensor, recorded by the hook while it fired. When another
+    block of the same shared-tower group is packaged, `group` reports the cross-reader difference of W_qq on the
+    byte-identical input next to the same difference computed from the two blocks' own CORE runs, so the part of the
+    reader gap that was bf16 kernel noise is separated from the part that is the reader.
+    """
+    source = REPLAY_SOURCE.get(model_key)
+    if source is None:
+        raise KeyError(f"{model_key}: not in a shared-tower group ({sorted(set(REPLAY_SOURCE.values()))})")
+    primary = _primary(model_key, dataset_id, template_id)
+    concepts = CONCEPTS[dataset_id]
+    n_rows = MODULES["REPLAY"].row_limit
+    rows = load_cohort(dataset_id, ("test",))[:n_rows]
+    order = {r["row_id"]: i for i, r in enumerate(rows)}
+    n = len(rows)
+    idx = core_bootstrap_indices(dataset_id, n, draws)
+    d_rep = _arm_deltas(model_key, dataset_id, "REPLAY", concepts, order, alpha, primary)
+    d_core = _arm_deltas(model_key, dataset_id, "CORE", concepts, order, alpha, primary)
+    if d_rep is None or d_core is None:
+        raise FileNotFoundError("replay needs merged outcomes/CORE.parquet and outcomes/REPLAY.parquet "
+                                "(python -m cftransfer.package)")
+    g_rep = core(model_key, dataset_id, "REPLAY", template_id=primary, alpha=alpha, n_boot=draws)
+    g_core = core(model_key, dataset_id, "CORE", template_id=primary, alpha=alpha, n_boot=draws, row_limit=n_rows)
+    rep_cells, core_cells = _grade_cells(g_rep), _grade_cells(g_core)
+    for cells in (rep_cells, core_cells):
+        for q in concepts:
+            cells[q]["owned"] = bool(cells[q]["steering_reference"] and cells[q]["verdict"] == "fixed_family_advantage")
+    res = {"n_rows": n, "alpha": alpha, "template_id": primary, "draws": int(idx.shape[0]), "reader": model_key,
+           "source_block": source, "directions_from": source,
+           "group": sorted(k for k, v in REPLAY_SOURCE.items() if v == source),
+           "replay": {"grade": rep_cells, "W": g_rep["W"], "max_t_critical": g_rep.get("max_t_critical"),
+                      "owned": sorted(q for q in concepts if rep_cells[q]["owned"])},
+           "core": {"grade": core_cells, "W": g_core["W"], "max_t_critical": g_core.get("max_t_critical"),
+                    "owned": sorted(q for q in concepts if core_cells[q]["owned"])}}
+    a, b = _own_rows(d_rep, concepts, n), _own_rows(d_core, concepts, n)
+    res["replay_minus_core"] = _paired_contrast(a, b, concepts, idx, ["REPLAY", "CORE"])
+    for q in concepts:
+        res["replay_minus_core"][q].update({"dO_q": rep_cells[q]["O_q"] - core_cells[q]["O_q"],
+                                            "verdict_changed": rep_cells[q]["verdict"] != core_cells[q]["verdict"],
+                                            "owned_changed": rep_cells[q]["owned"] != core_cells[q]["owned"]})
+    metas = [json.loads(p.read_text()) for p in (outcomes_dir(model_key, dataset_id) / "REPLAY").glob("meta-*.json")]
+    drift = [m["replay"] for m in metas if isinstance(m.get("replay"), dict) and m["replay"].get("rows_replayed")]
+    res["drift"] = ({"max_abs": max(d["drift_max_abs"] for d in drift),
+                     "mean_abs": float(np.mean([d["drift_mean_abs"] for d in drift])),
+                     "block_mean_abs": float(np.mean([d["block_mean_abs"] for d in drift])),
+                     "rows_replayed": int(sum(d["rows_replayed"] for d in drift)),
+                     "note": "|this reader's own tower output - the stored tensor|, measured before the replacement"}
+                    if drift else {"available": False})
+    res["group_comparison"] = {}
+    for other in res["group"]:
+        if other == model_key:
+            continue
+        try:
+            d_other_rep = _arm_deltas(other, dataset_id, "REPLAY", concepts, order, alpha,
+                                      _primary(other, dataset_id, template_id))
+            d_other_core = _arm_deltas(other, dataset_id, "CORE", concepts, order, alpha,
+                                       _primary(other, dataset_id, template_id))
+        except (FileNotFoundError, RuntimeError, KeyError):
+            d_other_rep = d_other_core = None
+        if d_other_rep is None or any((q, f"concept:{q}") not in d_other_rep for q in concepts):
+            res["group_comparison"][other] = {"status": "NOT_STARTED"}
+            continue
+        blk = {"status": "COMPLETE",
+               "exact": _paired_contrast(a, _own_rows(d_other_rep, concepts, n), concepts, idx, [model_key, other])}
+        if d_other_core is not None and all((q, f"concept:{q}") in d_other_core for q in concepts):
+            blk["own_towers"] = _paired_contrast(b, _own_rows(d_other_core, concepts, n), concepts, idx,
+                                                 [model_key, other])
+            blk["mean_abs_exact"] = float(np.mean([abs(blk["exact"][q]["estimate"]) for q in concepts]))
+            blk["mean_abs_own_towers"] = float(np.mean([abs(blk["own_towers"][q]["estimate"]) for q in concepts]))
+            blk["mean_abs_change"] = blk["mean_abs_exact"] - blk["mean_abs_own_towers"]
+        res["group_comparison"][other] = blk
+    return res
+
+
+# ---------------------------------------------------------------------------------------------- SEMEND
+SEMEND_FAMILIES = {"label": ("concept", "sham"), "answer": ("ans", "anssham")}
+SEMEND_BASE_PREDICTORS = ("W_qq_core", "probe_selectivity", "answer_auroc")
+SEMEND_ADDED_PREDICTORS = ("owned_core", "O_q_core")
+
+
+def _semend_frame(model_key: str, dataset_id: str):
+    """SEMEND outcomes with the report endpoint's log p(finding word) added as a scored column."""
+    p = outcomes_dir(model_key, dataset_id) / "SEMEND.parquet"
+    if not p.exists():
+        raise FileNotFoundError(f"semend needs {p} (python -m cftransfer.package)")
+    df = pq.read_table(p, columns=["row_id", "concept", "template_id", "fit_seed", "direction_id", "alpha", "p_present",
+                                   "semantic_margin", "positive_logits", "vocab_logsumexp", "sample_status"]).to_pandas()
+    df = df[df.sample_status == "OK"].copy()
+    pos = df["positive_logits"].map(lambda v: float(np.max(v)) if v is not None and len(v) else np.nan)
+    df["logp"] = pos - df["vocab_logsumexp"].astype(float)      # log p(finding word) at the continuation position
+    return df
+
+
+def _r2(y: np.ndarray, X: np.ndarray) -> tuple[np.ndarray, float]:
+    beta, *_ = np.linalg.lstsq(X, y, rcond=None)
+    resid = y - X @ beta
+    sst = float(((y - y.mean()) ** 2).sum())
+    return beta, (1.0 - float((resid ** 2).sum()) / sst if sst > 0 else float("nan"))
+
+
+def _incremental_validity(target_rows: np.ndarray, cells: list[dict], concepts: list[str], endpoints: list[str],
+                          core_own: np.ndarray, core_off: dict, fixed: dict, idx: np.ndarray) -> dict:
+    """Does the ownership label add signal about endpoint behaviour beyond write magnitude, readability, answerability?
+
+    target_rows: (K, n) per-cell, per-sample intended-minus-unintended change (the selectivity of the write on this
+    endpoint). Every predictor is a BLOCK-LEVEL per-concept quantity, so the pooled design has six distinct predictor
+    rows repeated across the endpoints; endpoint dummies are in BOTH models, so the change in explained variance is
+    entirely the concept-level contribution of ownership. W_qq and O_q are recomputed from the CORE writes inside every
+    patient-bootstrap draw together with the target; probe selectivity and the clean-answer AUROC are computed on the
+    CALIBRATION rows, so the test-row bootstrap leaves them fixed by construction.
+    """
+    K = len(cells)
+    qi = np.array([concepts.index(c["concept"]) for c in cells])
+    ep = np.array([endpoints.index(c["endpoint"]) for c in cells])
+    dummies = np.stack([(ep == j).astype(float) for j in range(1, len(endpoints))], axis=1) if len(endpoints) > 1 \
+        else np.zeros((K, 0))
+    sel = np.array([fixed["probe_selectivity"].get(c["concept"], np.nan) for c in cells], float)
+    auroc = np.array([fixed["answer_auroc"].get(c["concept"], np.nan) for c in cells], float)
+    owned = np.array([1.0 if fixed["owned_core"].get(c["concept"]) else 0.0 for c in cells])
+    if not np.isfinite(sel).all() or not np.isfinite(auroc).all():
+        return {"available": False, "reason": "summary.json has no calibration selectivity / answer AUROC for every "
+                                              "concept; run cftransfer.analysis --what calibration first"}
+
+    def design(w, o):
+        base = np.column_stack([np.ones(K), dummies, w[qi], sel, auroc])
+        return base, np.column_stack([base, owned, o[qi]])
+
+    def fit(w, o, y):
+        base, full = design(w, o)
+        bb, r2b = _r2(y, base)
+        bf, r2f = _r2(y, full)
+        return bb, r2b, bf, r2f
+    w0 = np.nanmean(core_own, axis=1)
+    o0 = np.array([w0[k] - max(np.nanmean(core_off[q], axis=1)) for k, q in enumerate(concepts)])
+    y0 = np.nanmean(target_rows, axis=1)
+    bb, r2b, bf, r2f = fit(w0, o0, y0)
+    names_base = ["intercept"] + [f"endpoint:{e}" for e in endpoints[1:]] + list(SEMEND_BASE_PREDICTORS)
+    names_full = names_base + list(SEMEND_ADDED_PREDICTORS)
+    draws = []
+    for b in range(idx.shape[0]):
+        wb = np.nanmean(core_own[:, idx[b]], axis=1)
+        ob = np.array([wb[k] - max(np.nanmean(core_off[q][:, idx[b]], axis=1)) for k, q in enumerate(concepts)])
+        yb = np.nanmean(target_rows[:, idx[b]], axis=1)
+        _bb, r2bb, bfb, r2fb = fit(wb, ob, yb)
+        draws.append(np.concatenate([bfb, [r2fb - r2bb, r2bb, r2fb]]))
+    D = np.stack(draws)
+
+    def ci(col):
+        return [float(np.percentile(D[:, col], 2.5)), float(np.percentile(D[:, col], 97.5))]
+    k_owned, k_oq = names_full.index("owned_core"), names_full.index("O_q_core")
+    add = {"delta_r2": float(r2f - r2b), "delta_r2_ci95": ci(len(names_full)),
+           "coef_owned_core": float(bf[k_owned]), "coef_owned_core_ci95": ci(k_owned),
+           "coef_O_q_core": float(bf[k_oq]), "coef_O_q_core_ci95": ci(k_oq)}
+    add["owned_core_interval_excludes_zero"] = bool(add["coef_owned_core_ci95"][0] > 0 or add["coef_owned_core_ci95"][1] < 0)
+    add["O_q_core_interval_excludes_zero"] = bool(add["coef_O_q_core_ci95"][0] > 0 or add["coef_O_q_core_ci95"][1] < 0)
+    add["delta_r2_interval_excludes_zero"] = bool(add["delta_r2_ci95"][0] > 0)
+    # the contrast ownership would have to explain: owned cells versus cells that met the steering reference but were
+    # graded not owned, on endpoints no direction was fitted against
+    grp = {"owned": [], "reference_met_not_owned": [], "neither": []}
+    for k, c in enumerate(cells):
+        q = c["concept"]
+        g = "owned" if fixed["owned_core"].get(q) else (
+            "reference_met_not_owned" if fixed["reference_core"].get(q) else "neither")
+        grp[g].append(k)
+        c["group_core"] = g
+    groups = {}
+    for g, ks in grp.items():
+        groups[g] = {"n_cells": len(ks), "concepts": sorted({cells[k]["concept"] for k in ks}),
+                     "mean_target": float(np.mean([y0[k] for k in ks])) if ks else None,
+                     "mean_intended": float(np.mean([cells[k]["intended"] for k in ks])) if ks else None,
+                     "mean_unintended": float(np.mean([cells[k]["unintended_mean"] for k in ks])) if ks else None}
+    out = {"available": True, "n_cells": K, "n_concepts": len(concepts), "endpoints": endpoints,
+           "base_predictors": list(SEMEND_BASE_PREDICTORS), "added_predictors": list(SEMEND_ADDED_PREDICTORS),
+           "base_model": {"r2": float(r2b), "coefficients": dict(zip(names_base, [float(x) for x in bb]))},
+           "full_model": {"r2": float(r2f), "coefficients": dict(zip(names_full, [float(x) for x in bf]))},
+           "ownership_adds": add, "groups": groups,
+           "note": "predictors are per-concept block-level quantities with endpoint dummies in both models; the effective "
+                   "sample is the six concepts, not the K cells, and the patient bootstrap carries the dependence between "
+                   "cells that share rows"}
+    a, b_ = grp["owned"], grp["reference_met_not_owned"]
+    if a and b_:
+        diff = np.nanmean(target_rows[a], axis=0) - np.nanmean(target_rows[b_], axis=0)          # (n,)
+        db = np.array([float(np.nanmean(diff[idx[j]])) for j in range(idx.shape[0])])
+        out["owned_minus_reference_met_not_owned"] = {
+            "estimate": float(np.nanmean(diff)), "ci95_percentile": [float(np.percentile(db, 2.5)), float(np.percentile(db, 97.5))],
+            "n_owned_cells": len(a), "n_reference_met_not_owned_cells": len(b_),
+            "interval_excludes_zero": bool(np.percentile(db, 2.5) > 0 or np.percentile(db, 97.5) < 0)}
+    else:
+        out["owned_minus_reference_met_not_owned"] = {
+            "available": False, "n_owned_cells": len(a), "n_reference_met_not_owned_cells": len(b_),
+            "reason": "one of the two groups is empty in this block"}
+    return out
+
+
+def semend(model_key: str, dataset_id: str, template_id: str | None = None, alpha: float = PRIMARY_ALPHA,
+           draws: int = BOOT_CALIBRATION_DRAWS) -> dict:
+    """SEMEND: three endpoints that are not the six templates, each with its own baseline and steering reference.
+
+    Per endpoint t, family f (label = the six logistic normals, answer = the six ridge answer directions) and question q,
+    with the endpoint's sign s_t (NY: -1, everything else +1) and the endpoint's own clean rows:
+      E^{t,f}_{q,d} = s_t * mean_i [score_i(q, t, f:d) - score_i(q, t, baseline)]        a full 6x6 write matrix
+                      score = p_present for NY / DA / DB, log p(finding word) for RF
+      ownership     the campaign rule, unchanged: W_qq = E_{q,q}, O_q = W_qq - max_{d != q} E_{q,d} with the percentile
+                    interval and the 6x5 max-T verdict, and a steering reference of the endpoint's own (W_qq > 0, above
+                    every one of the SEMEND_N_RANDOM random directions, above that family's |sham|)
+      spillover     intended = E_{q,q}; unintended = the same direction on the OTHER five concepts' endpoints,
+                    mean and max of E_{d,q}; selectivity = intended - mean unintended
+    `incremental_validity` then asks the question that decides whether the module was worth its compute: pooled over
+    cells, does the CORE ownership label add anything about that selectivity once the CORE write magnitude, the probe
+    selectivity and the clean-answer AUROC are in the model? It is reported separately for the two families, with the
+    cells that met the steering reference but were graded NOT owned kept as their own group and compared directly with
+    the owned cells. A null result is reported the same way as a positive one.
+    """
+    primary = _primary(model_key, dataset_id, template_id)
+    concepts = CONCEPTS[dataset_id]
+    rows = load_cohort(dataset_id, ("test",))
+    order = {r["row_id"]: i for i, r in enumerate(rows)}
+    n = len(rows)
+    idx = core_bootstrap_indices(dataset_id, n, draws)
+    df = _semend_frame(model_key, dataset_id)
+    arr = load_semend(model_key, dataset_id, LOCI["primary"])
+    comp = dict(zip(arr["concept_names"].astype(str), arr["competitor_names"].astype(str)))
+    core_df = _load_module(model_key, dataset_id, "CORE")
+    if core_df is None:
+        raise FileNotFoundError("semend needs merged outcomes/CORE.parquet (python -m cftransfer.package)")
+    d_log = _matrix(core_df, concepts, order, alpha, template_id=primary,
+                    baseline=core_df[core_df.direction_id == "baseline"])
+    core_grade = _grade_cells(core(model_key, dataset_id, "CORE", template_id=primary, alpha=alpha, n_boot=draws))
+    core_own = np.stack([d_log[(q, f"concept:{q}")] for q in concepts]).astype(float)
+    core_off = {q: np.stack([d_log[(q, f"concept:{c}")] for c in concepts if c != q]).astype(float) for q in concepts}
+    sp = run_dir(model_key, dataset_id) / "summary.json"
+    summary = json.loads(sp.read_text()) if sp.exists() else {}
+    cal = {c: v for c, v in (summary.get("calibration") or {}).items() if isinstance(v, dict)}
+    fixed = {"probe_selectivity": {q: cal.get(q, {}).get("selectivity", np.nan) for q in concepts},
+             "answer_auroc": {q: cal.get(q, {}).get("answer_auroc", np.nan) for q in concepts},
+             "owned_core": {q: bool(core_grade[q]["steering_reference"] and core_grade[q]["verdict"] == "fixed_family_advantage")
+                            for q in concepts},
+             "reference_core": {q: bool(core_grade[q]["steering_reference"]) for q in concepts}}
+    res = {"n_rows": n, "alpha": alpha, "primary_template": primary, "draws": int(idx.shape[0]),
+           "endpoints": list(SEMEND_TEMPLATES), "families": list(SEMEND_FAMILIES), "n_random": SEMEND_N_RANDOM,
+           "competitor": comp, "competitor_source": json.loads(str(arr["meta_json"]))["competitor_source"],
+           "prompts": {k: v["question"] for k, v in json.loads(str(arr["prompts_json"])).items()},
+           "core": core_grade, "per_endpoint": {}, "cells": []}
+    target_rows = {f: [] for f in SEMEND_FAMILIES}
+    cells = {f: [] for f in SEMEND_FAMILIES}
+    for t in SEMEND_TEMPLATES:
+        sub = df[df.template_id == t]
+        if sub.empty:
+            res["per_endpoint"][t] = {"status": "NOT_STARTED"}
+            continue
+        value = "logp" if t == "RF" else "p_present"
+        d = _matrix(sub, concepts, order, alpha, template_id=t, baseline=sub[sub.direction_id == "baseline"], value=value)
+        s = SEMEND_SIGN[t]
+        ep = {"status": None, "sign": s, "value": value,
+              "n_conditions": len(conditions_for("SEMEND", dataset_id, concepts[0])), "families": {}}
+        rand = {q: np.array([s * np.nanmean(d[(q, f"random:{i:03d}")]) for i in range(SEMEND_N_RANDOM)
+                             if (q, f"random:{i:03d}") in d]) for q in concepts}
+        n_scored = None
+        for fam_name, (prefix, sham_prefix) in SEMEND_FAMILIES.items():
+            A = s * _family_stack(d, concepts, prefix, n)                       # (question, direction, n)
+            own = np.stack([A[qi, qi] for qi in range(len(concepts))])
+            block = _ownership_block(own, {c: A[:, ci, :] for ci, c in enumerate(concepts)}, concepts, idx)
+            block.pop("own_boot", None)
+            n_scored = int(min((~np.isnan(own[qi])).sum() for qi in range(len(concepts))))
+            for qi, q in enumerate(concepts):
+                cell = block["per_question"][q]
+                sham = float(np.nanmean(s * d[(q, f"{sham_prefix}:{q}")])) if (q, f"{sham_prefix}:{q}") in d else np.nan
+                others = [di for di in range(len(concepts)) if di != qi]
+                unint_rows = np.nanmean(A[others, qi, :], axis=0)               # this direction on the other endpoints
+                tgt_rows = A[qi, qi, :] - unint_rows
+                cell.update({"family": fam_name, "sign": s, "value": value, "competitor": comp[q],
+                             "E_sham": sham, "abs_sham": abs(sham) if not np.isnan(sham) else np.nan,
+                             "random_n": int(len(rand[q])),
+                             "random_max": float(rand[q].max()) if len(rand[q]) else None,
+                             "random_mean": float(rand[q].mean()) if len(rand[q]) else None,
+                             "rank_in_random_family": int(1 + (rand[q] >= cell["W_qq"]).sum()) if len(rand[q]) else None,
+                             "intended": float(np.nanmean(A[qi, qi, :])),
+                             "unintended_mean": float(np.nanmean(unint_rows)),
+                             "unintended_max": float(max(np.nanmean(A[di, qi, :]) for di in others)),
+                             "selectivity": float(np.nanmean(tgt_rows)),
+                             "W_qq_core": core_grade[q]["W_qq"], "O_q_core": core_grade[q]["O_q"],
+                             "owned_core": fixed["owned_core"][q], "reference_core": fixed["reference_core"][q],
+                             "probe_selectivity": fixed["probe_selectivity"][q],
+                             "answer_auroc": fixed["answer_auroc"][q]})
+                cell["steering_reference"] = bool(len(rand[q]) == SEMEND_N_RANDOM and cell["W_qq"] > 0
+                                                  and cell["W_qq"] > cell["random_max"] and cell["W_qq"] > abs(sham))
+                cell["owned"] = bool(cell["steering_reference"] and cell["verdict"] == "fixed_family_advantage")
+                target_rows[fam_name].append(tgt_rows)
+                rec = {"concept": q, "endpoint": t, "family": fam_name, "intended": cell["intended"],
+                       "unintended_mean": cell["unintended_mean"], "unintended_max": cell["unintended_max"],
+                       "selectivity": cell["selectivity"], "O_q_endpoint": cell["O_q"], "verdict": cell["verdict"],
+                       "steering_reference": cell["steering_reference"], "owned": cell["owned"],
+                       "owned_core": cell["owned_core"], "reference_core": cell["reference_core"]}
+                cells[fam_name].append(rec)
+                res["cells"].append(rec)
+            block.update({"owned": sorted(q for q in concepts if block["per_question"][q]["owned"]),
+                          "reference_met": sorted(q for q in concepts if block["per_question"][q]["steering_reference"])})
+            ep["families"][fam_name] = block
+        ep["status"] = "COMPLETE" if n_scored == n else "RUNNING"
+        ep["n_scored_rows_min"] = n_scored
+        ep["per_question"] = ep["families"]["label"]["per_question"]        # the label family is the module's primary read
+        ep["owned"] = ep["families"]["label"]["owned"]
+        ep["reference_met"] = ep["families"]["label"]["reference_met"]
+        res["per_endpoint"][t] = ep
+    done = [t for t in SEMEND_TEMPLATES if res["per_endpoint"][t].get("status") in ("COMPLETE", "RUNNING")]
+    res["incremental_validity"] = {
+        f: (_incremental_validity(np.stack(target_rows[f]), cells[f], concepts, done, core_own, core_off, fixed, idx)
+            if target_rows[f] else {"available": False, "reason": "no scored endpoint"})
+        for f in SEMEND_FAMILIES}
+    # negated question: on the RAW p(yes) scale a concept direction must move the negated answer DOWN
+    if "NY" in done:
+        ny = res["per_endpoint"]["NY"]["families"]["label"]["per_question"]
+        raw = {q: -ny[q]["W_qq"] for q in concepts}                              # undo the sign convention
+        aff = {q: core_grade[q]["W_qq"] for q in concepts}
+        x, y = np.array([aff[q] for q in concepts]), np.array([raw[q] for q in concepts])
+        res["negation"] = {"raw_negated_effect": raw, "affirmative_effect_core": aff,
+                           "n_opposite_sign": int(sum((x[i] > 0) != (y[i] > 0) for i in range(len(concepts)))),
+                           "correlation_affirmative_vs_raw_negated":
+                               float(np.corrcoef(x, y)[0, 1]) if np.std(x) > 0 and np.std(y) > 0 else None,
+                           "correlation_affirmative_vs_signed_negated":
+                               float(np.corrcoef(x, -y)[0, 1]) if np.std(x) > 0 and np.std(y) > 0 else None,
+                           "n_reference_met": len(res["per_endpoint"]["NY"]["reference_met"]),
+                           "rule": "a direction that carries the concept raises p(yes) to the affirmative question and "
+                                   "lowers it to the negated one, so the two raw effects must anti-correlate"}
+    # forced choice: the concept option under both orders
+    if "DA" in done and "DB" in done:
+        da = res["per_endpoint"]["DA"]["families"]["label"]["per_question"]
+        db = res["per_endpoint"]["DB"]["families"]["label"]["per_question"]
+        res["forced_choice"] = {q: {"DA": da[q]["W_qq"], "DB": db[q]["W_qq"],
+                                    "mean": 0.5 * (da[q]["W_qq"] + db[q]["W_qq"]),
+                                    "order_gap": da[q]["W_qq"] - db[q]["W_qq"], "competitor": comp[q],
+                                    "both_reference_met": bool(da[q]["steering_reference"] and db[q]["steering_reference"]),
+                                    "both_owned": bool(da[q]["owned"] and db[q]["owned"])} for q in concepts}
+        res["forced_choice"]["n_both_owned"] = int(sum(res["forced_choice"][q]["both_owned"] for q in concepts))
+        res["forced_choice"]["mean_abs_order_gap"] = float(np.mean([abs(res["forced_choice"][q]["order_gap"])
+                                                                    for q in concepts]))
+    if "RF" in done:
+        rf = res["per_endpoint"]["RF"]["families"]["label"]["per_question"]
+        res["report"] = {q: {"delta_logp": rf[q]["W_qq"], "delta_logp_max_competitor": rf[q]["max_other"],
+                             "delta_logp_sham": rf[q]["E_sham"], "finding_word": semend_finding_word(dataset_id, q),
+                             "reference_met": rf[q]["steering_reference"], "owned": rf[q]["owned"]} for q in concepts}
+    res["summary"] = {"endpoints_scored": done, "n_cells": len(concepts) * len(done),
+                      "n_reference_met": {f: sum(c["steering_reference"] for c in cells[f]) for f in SEMEND_FAMILIES},
+                      "n_owned": {f: sum(c["owned"] for c in cells[f]) for f in SEMEND_FAMILIES},
+                      "owned_core": sorted(q for q in concepts if fixed["owned_core"][q]),
+                      "reference_met_not_owned_core": sorted(q for q in concepts if fixed["reference_core"][q]
+                                                             and not fixed["owned_core"][q]),
+                      "owned_on_every_endpoint": {
+                          f: sorted(q for q in concepts
+                                    if all(any(c["concept"] == q and c["endpoint"] == t and c["owned"] for c in cells[f])
+                                           for t in done)) for f in SEMEND_FAMILIES}}
+    return res
+
+
 def _ineligible_prompt_rows(model_key, dataset_id) -> int:
     """Rows the PROMPT block legitimately lacks because templates were INELIGIBLE at preflight."""
     elig = _eligibility(model_key, dataset_id)
@@ -1335,7 +1841,7 @@ if __name__ == "__main__":
     ap.add_argument("--dataset", required=True)
     ap.add_argument("--what", default="calibration,core",
                     help="comma list of calibration,core,shifts,t3,altdir,extcomp,tokenw,precision,ansdir,altdird,attr,ansdirt,"
-                         "valid,validfit,projseed (ATTRRAND is folded into attr)")
+                         "valid,validfit,projseed,towerswap,replay,semend (ATTRRAND is folded into attr)")
     ap.add_argument("--n-boot", type=int, default=None)
     a = ap.parse_args()
     rd = run_dir(a.model_key, a.dataset)
@@ -1371,6 +1877,12 @@ if __name__ == "__main__":
             report["validfit"] = validfit(a.model_key, a.dataset, draws=a.n_boot or BOOT_CALIBRATION_DRAWS)
         elif w == "projseed":
             report["projseed"] = projseed(a.model_key, a.dataset, draws=a.n_boot or BOOT_CALIBRATION_DRAWS)
+        elif w == "towerswap":
+            report["towerswap"] = towerswap(a.model_key, a.dataset, draws=a.n_boot or BOOT_CALIBRATION_DRAWS)
+        elif w == "replay":
+            report["replay"] = replay(a.model_key, a.dataset, draws=a.n_boot or BOOT_CALIBRATION_DRAWS)
+        elif w == "semend":
+            report["semend"] = semend(a.model_key, a.dataset, draws=a.n_boot or BOOT_CALIBRATION_DRAWS)
     report["primary_template"] = primary_template(rd)       # template the single-template statistics above refer to
     (rd / "summary.json").write_text(json.dumps(report, indent=1, default=lambda o: float(o) if isinstance(o, np.floating) else str(o)))
     if "calibration" in report:
@@ -1476,6 +1988,82 @@ if __name__ == "__main__":
                   f"readable={cell['readable']} [{cell['readable_status']}] | test: O_q={t['O_q']:+.4f} verdict={t['verdict']} owned={t['owned']}")
         ag, nc = r["comparison"]["n_agree"], r["comparison"]["n_compared"]
         print("VALID agreement test vs valid: " + ", ".join(f"{k} {ag[k]}/{nc[k]}" for k in ag) + f"; valid features {'present' if r['features_available'] else 'absent'}")
+    if "towerswap" in report and "towerswap" in a.what:
+        r = report["towerswap"]
+        for name, c in r["combinations"].items():
+            if c.get("status") != "COMPLETE":
+                print(f"TOWERSWAP {name:38s} {c.get('status')}"); continue
+            print(f"TOWERSWAP {name:38s} owned {len(c['owned'])}/6 ({', '.join(c['owned']) or '-'}) "
+                  f"directions from {c['directions_from']}")
+        if "swapped_minus_native" in r:
+            sm = r["swapped_minus_native"]
+            for q, cell in sm.items():
+                if not isinstance(cell, dict) or "estimate" not in cell:
+                    continue
+                lo, hi = cell["ci95_percentile"]
+                print(f"TOWERSWAP dW {q:14s} {cell['estimate']:+.4f} [{lo:+.4f},{hi:+.4f}] swapped={cell['W_qq_swapped']:+.4f} "
+                      f"native={cell['W_qq_native']:+.4f} verdict {cell['verdict_native']} -> {cell['verdict_swapped']} "
+                      f"owned {cell['owned_native']} -> {cell['owned_swapped']}")
+        if r.get("crossover_complete"):
+            x = r["crossover"]
+            print(f"TOWERSWAP crossover: mean |reader effect| = {x['mean_abs_reader_effect']:.4f}, "
+                  f"mean |tower effect| = {x['mean_abs_tower_effect']:.4f}, ratio = {x['reader_over_tower']}")
+            print(f"TOWERSWAP ownership follows: {x['ownership_follows']}")
+    if "replay" in report and "replay" in a.what:
+        r = report["replay"]
+        d = r["drift"]
+        print(f"REPLAY reader={r['reader']} source={r['source_block']} group={r['group']}; drift max|.|="
+              f"{d.get('max_abs')} mean|.|={d.get('mean_abs')} against block mean |h|={d.get('block_mean_abs')}")
+        for q in r["replay"]["grade"]:
+            cell, cc = r["replay"]["grade"][q], r["core"]["grade"][q]
+            dd = r["replay_minus_core"][q]
+            lo, hi = dd["ci95_percentile"]
+            print(f"REPLAY {q:14s} W_qq={cell['W_qq']:+.4f} (CORE {cc['W_qq']:+.4f}) d={dd['estimate']:+.4f} "
+                  f"[{lo:+.4f},{hi:+.4f}] owned {cc['owned']} -> {cell['owned']} verdict={cell['verdict']}")
+        for other, blk in r["group_comparison"].items():
+            if blk.get("status") != "COMPLETE":
+                print(f"REPLAY vs {other}: {blk.get('status')}"); continue
+            print(f"REPLAY vs {other}: mean |dW_qq| exact={blk.get('mean_abs_exact')} own towers={blk.get('mean_abs_own_towers')}")
+    if "semend" in report and "semend" in a.what:
+        r = report["semend"]
+        for t in r["endpoints"]:
+            blk = r["per_endpoint"][t]
+            if blk.get("status") == "NOT_STARTED":
+                print(f"SEMEND {t}: NOT_STARTED"); continue
+            print(f"SEMEND {t} ({blk['value']}, sign {blk['sign']:+.0f}, {blk['n_conditions']} conditions):")
+            for fam, fb in blk["families"].items():
+                print(f"  SEMEND {t} {fam:6s}: reference met {len(fb['reference_met'])}/6, owned {len(fb['owned'])}/6 "
+                      f"({', '.join(fb['owned']) or '-'})")
+                for q, cell in fb["per_question"].items():
+                    lo, hi = cell["O_q_ci95_percentile"]
+                    print(f"    {q:14s} E={cell['W_qq']:+.4f} maxother={cell['max_other']:+.4f} sham={cell['E_sham']:+.4f} "
+                          f"randmax={cell['random_max']} rank={cell['rank_in_random_family']} O={cell['O_q']:+.4f} "
+                          f"[{lo:+.4f},{hi:+.4f}] intended={cell['intended']:+.4f} unintended={cell['unintended_mean']:+.4f} "
+                          f"sel={cell['selectivity']:+.4f} ref={cell['steering_reference']} verdict={cell['verdict']}")
+        if "negation" in r:
+            ng = r["negation"]
+            print(f"SEMEND negation: opposite sign {ng['n_opposite_sign']}/6, corr(affirmative, raw negated) = "
+                  f"{ng['correlation_affirmative_vs_raw_negated']}")
+        if "forced_choice" in r:
+            print(f"SEMEND forced choice: both orders owned {r['forced_choice']['n_both_owned']}/6, mean |order gap| = "
+                  f"{r['forced_choice']['mean_abs_order_gap']:.4f}")
+        for fam, iv in r["incremental_validity"].items():
+            if not iv.get("available"):
+                print(f"SEMEND incremental validity [{fam}]: NOT AVAILABLE ({iv.get('reason')})"); continue
+            add = iv["ownership_adds"]
+            print(f"SEMEND incremental validity [{fam}]: base R2 {iv['base_model']['r2']:+.3f} -> full R2 "
+                  f"{iv['full_model']['r2']:+.3f}, dR2 {add['delta_r2']:+.4f} {add['delta_r2_ci95']}; "
+                  f"coef(owned) {add['coef_owned_core']:+.4f} {add['coef_owned_core_ci95']} "
+                  f"excludes 0: {add['owned_core_interval_excludes_zero']}; "
+                  f"coef(O_q) {add['coef_O_q_core']:+.4f} {add['coef_O_q_core_ci95']} "
+                  f"excludes 0: {add['O_q_core_interval_excludes_zero']}")
+            for g, gv in iv["groups"].items():
+                print(f"  group {g:26s} cells={gv['n_cells']:2d} mean selectivity={gv['mean_target']} "
+                      f"(intended {gv['mean_intended']}, unintended {gv['mean_unintended']})")
+            d = iv["owned_minus_reference_met_not_owned"]
+            print(f"  owned minus reference-met-not-owned: {d.get('estimate')} {d.get('ci95_percentile')} "
+                  f"excludes 0: {d.get('interval_excludes_zero', d.get('reason'))}")
+        print(f"SEMEND summary: {r['summary']}")
     if "core" in report and "core" in a.what:
         for q, cell in report["core"]["per_question"].items():
             print(f"CORE {q:14s} W_qq={cell['W_qq']:.4f} O_q={cell['O_q']:.4f} (vs {cell['argmax_other']}) p95rand={cell['random_p95']:.4f} "

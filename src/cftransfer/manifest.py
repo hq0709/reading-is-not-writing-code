@@ -36,6 +36,15 @@ summary.json `attr` (the random p95 that ATTRRAND supplies, the sham-only verdic
 cell used); VALIDFIT rows carry the expert-label refit's ownership and its cosine / held-out AUROC against the
 report-label direction (summary.json `validfit`); PROJSEED rows carry one ownership flag and O_q per further projection
 seed (summary.json `projseed`).
+
+The three modules added for the two reviewer objections about the reader and about the endpoints attach the same way,
+and block_included depends on none of them. TOWERSWAP rows carry the CROSSED arm's grade (this block's reader with the
+partner checkpoint's vision tower) next to the native arm's ownership on the same rows and the paired dW_qq, from
+summary.json `towerswap`. REPLAY rows carry the grade obtained when the consumed block is the shared-tower group's
+stored tensor, next to the block's own CORE grade on those rows and the drift the replacement removed, from
+summary.json `replay`. SEMEND rows are per (question, endpoint) and carry that endpoint's signed effect for both the label and the answer
+family, the own random / sham reference, the five-competitor contrast and verdict, and the spillover of the direction onto
+the other five concepts' endpoints (intended, unintended, selectivity), from summary.json `semend`.
 """
 from __future__ import annotations
 
@@ -46,7 +55,7 @@ import statistics
 import sys
 from pathlib import Path
 
-from .protocol import ALTDIR_FAMILIES, ATTR_CONCEPTS, DATASETS, PROJSEED_SEEDS
+from .protocol import ALTDIR_FAMILIES, ATTR_CONCEPTS, DATASETS, PROJSEED_SEEDS, SEMEND_TEMPLATES, TOWERSWAP_PAIRS
 from .protocol import primary_template as protocol_primary_template
 from .runpaths import RUN_ROOT
 
@@ -62,6 +71,13 @@ VALID_FIELDS = ("readable", "answer_capable", "owned", "O_q", "verdict")
 ATTRRAND_FIELDS = ("random_p95", "steering_reference", "steering_reference_sham_only", "steering_reference_rule", "O_q", "verdict")
 VALIDFIT_FIELDS = ("owned", "O_q", "verdict", "steering_reference", "cos_to_report_model", "cos_to_report_whitened",
                    "auroc_expert_heldout", "auroc_report_labels_heldout")
+TOWERSWAP_FIELDS = ("tower", "reader", "W_qq", "O_q", "verdict", "steering_reference", "owned", "owned_native",
+                    "owned_changed", "dW_qq", "reader_over_tower", "crossover_complete")
+REPLAY_FIELDS = ("source_block", "W_qq", "O_q", "verdict", "steering_reference", "owned", "owned_core", "owned_changed",
+                 "dW_qq", "drift_max_abs")
+SEMEND_FIELDS = ("sign", "value", "competitor", "E_own", "E_max_other", "E_sham", "random_max", "rank_in_random_family",
+                 "O_q", "verdict", "steering_reference", "owned", "owned_core", "intended", "unintended_mean",
+                 "unintended_max", "selectivity", "answer_E_own", "answer_owned", "answer_selectivity")
 COVERAGE_FIELDS = ("expected_rows", "actual_unique_rows", "failed_rows", "execution_status", "reason")
 
 COLUMNS = (["model_key", "dataset", "module", "locus_id", "fit_seed", "template", "concept"]
@@ -73,7 +89,9 @@ COLUMNS = (["model_key", "dataset", "module", "locus_id", "fit_seed", "template"
            + [f"altdir_owned_{f}" for f in ALTDIR_FAMILIES] + [f"altdir_O_q_{f}" for f in ALTDIR_FAMILIES]
            + [f"valid_{f}" for f in VALID_FIELDS]
            + [f"attrrand_{f}" for f in ATTRRAND_FIELDS] + [f"validfit_{f}" for f in VALIDFIT_FIELDS]
-           + [f"projseed_owned_seed{k}" for k in PROJSEED_SEEDS] + [f"projseed_O_q_seed{k}" for k in PROJSEED_SEEDS])
+           + [f"projseed_owned_seed{k}" for k in PROJSEED_SEEDS] + [f"projseed_O_q_seed{k}" for k in PROJSEED_SEEDS]
+           + [f"towerswap_{f}" for f in TOWERSWAP_FIELDS] + [f"replay_{f}" for f in REPLAY_FIELDS]
+           + [f"semend_{f}" for f in SEMEND_FIELDS])
 
 
 # ------------------------------------------------------------------------------------------------ the rule
@@ -139,6 +157,14 @@ def block_rows(run_dir: Path) -> list[dict]:
     vfit_ok = included and "VALIDFIT" in done
     pseed = summary.get("projseed") or {}
     pseed_ok = included and "PROJSEED" in done
+    # the crossed TOWERSWAP arm of this block, the REPLAY arm and the SEMEND endpoints; none enters block_included
+    tsw = summary.get("towerswap") or {}
+    tsw_cross = (tsw.get("combinations") or {}).get(f"tower={TOWERSWAP_PAIRS.get(mk)}|reader={mk}") or {}
+    tsw_ok = included and "TOWERSWAP" in done and tsw_cross.get("status") == "COMPLETE"
+    rep = summary.get("replay") or {}
+    rep_ok = included and "REPLAY" in done and bool(rep.get("replay"))
+    sem = summary.get("semend") or {}
+    sem_ok = included and "SEMEND" in done and bool(sem.get("per_endpoint"))
     block = {"primary_template": primary, "run_status": run.get("status", ""),
              "completed_modules": "|".join(run.get("completed_modules") or []),
              "ineligible_modules": "|".join(run.get("ineligible_modules") or []),
@@ -170,6 +196,12 @@ def block_rows(run_dir: Path) -> list[dict]:
                 row[f"validfit_{k}"] = None
             for k in PROJSEED_SEEDS:
                 row[f"projseed_owned_seed{k}"] = None; row[f"projseed_O_q_seed{k}"] = None
+            for k in TOWERSWAP_FIELDS:
+                row[f"towerswap_{k}"] = None
+            for k in REPLAY_FIELDS:
+                row[f"replay_{k}"] = None
+            for k in SEMEND_FIELDS:
+                row[f"semend_{k}"] = None
             if cell and probe and concept in cal:
                 for k in CAL_FIELDS:
                     row[k] = cal[concept].get(k)
@@ -200,6 +232,44 @@ def block_rows(run_dir: Path) -> list[dict]:
                     c = ((pseed.get(f"seed{k}") or {}).get("per_question") or {}).get(concept)
                     if c and str(seed) == str(k):
                         row[f"projseed_owned_seed{k}"] = c.get("owned"); row[f"projseed_O_q_seed{k}"] = c.get("O_q")
+            if r["module"] == "TOWERSWAP" and seed == "0" and concept and tsw_ok and r.get("execution_status") == "COMPLETE":
+                g = (tsw_cross.get("grade") or {}).get(concept) or {}
+                d = (tsw.get("swapped_minus_native") or {}).get(concept) or {}
+                row.update({"towerswap_tower": tsw_cross.get("tower"), "towerswap_reader": tsw_cross.get("reader"),
+                            "towerswap_W_qq": g.get("W_qq"), "towerswap_O_q": g.get("O_q"),
+                            "towerswap_verdict": g.get("verdict"), "towerswap_steering_reference": g.get("steering_reference"),
+                            "towerswap_owned": g.get("owned"), "towerswap_owned_native": d.get("owned_native"),
+                            "towerswap_owned_changed": d.get("owned_changed"), "towerswap_dW_qq": d.get("estimate"),
+                            "towerswap_reader_over_tower": (tsw.get("crossover") or {}).get("reader_over_tower"),
+                            "towerswap_crossover_complete": tsw.get("crossover_complete")})
+            if r["module"] == "REPLAY" and seed == "0" and concept and rep_ok and r.get("execution_status") == "COMPLETE":
+                g = ((rep.get("replay") or {}).get("grade") or {}).get(concept) or {}
+                c = ((rep.get("core") or {}).get("grade") or {}).get(concept) or {}
+                d = (rep.get("replay_minus_core") or {}).get(concept) or {}
+                row.update({"replay_source_block": rep.get("source_block"), "replay_W_qq": g.get("W_qq"),
+                            "replay_O_q": g.get("O_q"), "replay_verdict": g.get("verdict"),
+                            "replay_steering_reference": g.get("steering_reference"), "replay_owned": g.get("owned"),
+                            "replay_owned_core": c.get("owned"), "replay_owned_changed": d.get("owned_changed"),
+                            "replay_dW_qq": d.get("estimate"), "replay_drift_max_abs": (rep.get("drift") or {}).get("max_abs")})
+            if r["module"] == "SEMEND" and concept and template in SEMEND_TEMPLATES and sem_ok \
+                    and r.get("execution_status") == "COMPLETE":
+                blk = (sem.get("per_endpoint") or {}).get(template) or {}
+                fams = blk.get("families") or {}
+                c = ((fams.get("label") or {}).get("per_question") or {}).get(concept) or {}
+                a = ((fams.get("answer") or {}).get("per_question") or {}).get(concept) or {}
+                if c:
+                    row.update({"semend_sign": blk.get("sign"), "semend_value": blk.get("value"),
+                                "semend_competitor": c.get("competitor"), "semend_E_own": c.get("W_qq"),
+                                "semend_E_max_other": c.get("max_other"), "semend_E_sham": c.get("E_sham"),
+                                "semend_random_max": c.get("random_max"),
+                                "semend_rank_in_random_family": c.get("rank_in_random_family"),
+                                "semend_O_q": c.get("O_q"), "semend_verdict": c.get("verdict"),
+                                "semend_steering_reference": c.get("steering_reference"), "semend_owned": c.get("owned"),
+                                "semend_owned_core": c.get("owned_core"), "semend_intended": c.get("intended"),
+                                "semend_unintended_mean": c.get("unintended_mean"),
+                                "semend_unintended_max": c.get("unintended_max"),
+                                "semend_selectivity": c.get("selectivity"), "semend_answer_E_own": a.get("W_qq"),
+                                "semend_answer_owned": a.get("owned"), "semend_answer_selectivity": a.get("selectivity")})
             rows.append(row)
     return rows
 
