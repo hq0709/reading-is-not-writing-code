@@ -5,7 +5,7 @@ import argparse
 import json
 from pathlib import Path
 
-from .protocol import ANSDIR_N_TRAIN, MODULE_SETTINGS, MODULES, expected_rows
+from .protocol import ANSDIR_N_TRAIN, MODULE_SETTINGS, MODULES, PROJSEED_SEEDS, expected_rows
 from .runpaths import run_dir, valid_features_dir
 from .worker import QUEUE
 
@@ -26,20 +26,42 @@ def batch_for(model_key: str, lane: str) -> int:
 # shards per module for a 600-row test block (row budget relative to CORE); calibration modules are single tasks
 SHARDS = {"CORE": 4, "LOCUS": 4, "PROMPT": 7, "DOSE": 2, "REFIT": 1, "CALIBRATION": 1, "LOCUS_CALIBRATION": 1, "ALTDIR": 1,
           "EXTCOMP": 1, "TOKENW": 1, "PRECISION": 1, "ANSDIR": 1, "ALTDIRD": 1, "ATTR": 1, "ANSDIRT": 2,
-          "VALID": 1}   # PRECISION: one shard per setting; VALID: 152,400 outcomes on 200 rows, one third of a CORE shard budget
+          "VALID": 1, "ATTRRAND": 2, "VALIDFIT": 1,
+          "PROJSEED": 1}   # PRECISION: one shard per setting; VALID: 152,400 outcomes on 200 rows, one third of a CORE shard
+# budget; ATTRRAND: 214,200 outcomes, two shards keep a shard near CORE's 114,300; VALIDFIT: 21,600 outcomes, one shard;
+# PROJSEED: one shard PER PROJECTION SEED (MODULE_SEED_TASKS), i.e. 453,600 outcomes per task, and the module is meant
+# for a handful of representative blocks rather than the whole grid.
+# Modules whose fit seeds are independent grids and are therefore emitted as one task per seed (runner --fit-seed).
+MODULE_SEED_TASKS = {"PROJSEED": PROJSEED_SEEDS}
 # The addendum modules are not in the default order: they are enqueued explicitly (--modules ...). ALTDIR / EXTCOMP need a
 # CPU prep run by hand (python -m cftransfer.altdir / cftransfer.extcomp) whose file the task requires; ANSDIR's prep is a
 # GPU task (python -m cftransfer.ansdir) that enqueue emits itself, with the module task requiring its file.
+# One value per module: the prep file(s) under fits/vis.last/ the module task must wait for (a tuple when a module has
+# more than one, e.g. PROJSEED's file per projection seed).
 PREP_FILE = {"ALTDIR": "altdir_seed0.npz", "EXTCOMP": "extcomp_seed0.npz", "ANSDIR": "ansdir_seed0.npz",
-             "ALTDIRD": "altdir_seed0.npz", "ATTR": "attr_seed0.npz", "ANSDIRT": "ansdir_seed0.npz"}
+             "ALTDIRD": "altdir_seed0.npz", "ATTR": "attr_seed0.npz", "ANSDIRT": "ansdir_seed0.npz",
+             "ATTRRAND": "attr_seed0.npz", "VALIDFIT": "validfit_seed0.npz",
+             "PROJSEED": tuple(f"projseed_seed{k}.npz" for k in PROJSEED_SEEDS)}
 PREP_TASK = {"ANSDIR": ["python", "-m", "cftransfer.ansdir", "--n-train", str(ANSDIR_N_TRAIN)],
-             "ANSDIRT": ["python", "-m", "cftransfer.ansdir", "--n-train", str(ANSDIR_N_TRAIN)]}
+             "ANSDIRT": ["python", "-m", "cftransfer.ansdir", "--n-train", str(ANSDIR_N_TRAIN)],
+             "VALIDFIT": ["python", "-m", "cftransfer.validfit"], "PROJSEED": ["python", "-m", "cftransfer.projseed"]}
+# Preps that never touch a GPU: the task is emitted without --device-map and may run on any lane.
+PREP_TASK_CPU = {"VALIDFIT", "PROJSEED"}
+
+
+def prep_files(mod: str) -> list[str]:
+    """The prep file names of a module (PREP_FILE takes a string or a tuple)."""
+    v = PREP_FILE.get(mod)
+    return [] if v is None else ([v] if isinstance(v, str) else list(v))
 # VALID scores the images of the `valid` role (scripts/mayo/extract_chexpert_valid.py writes the marker) and needs no prep of
 # its own (the seed-0 fit is CORE's). enqueue also emits a GPU task extracting the valid rows' features into
 # features/valid/ (python -m cftransfer.features --roles valid) so analysis.valid can grade probe readability against the
 # radiologist labels; the module task does not wait for it (the analysis runs without it, readability "not available").
 VALID_IMAGES = "/rodata/azradonc_dev/m253405/cf-transfer/data/chexpert/images/valid/.complete"
 MODULE_DATA = {"VALID": [VALID_IMAGES]}
+# VALIDFIT refits the six directions on the radiologist-labelled valid rows, so its CPU prep needs the valid-role
+# features the VALID feature task writes (features/valid/<locus>.npz); the module task itself waits only for the prep file.
+PREP_DATA = {"VALIDFIT": lambda mk, ds: [str(valid_features_dir(mk, ds) / "vis.last.npz")]}
 MODULE_ORDER = ["CALIBRATION", "CORE", "LOCUS_CALIBRATION", "DOSE", "REFIT", "LOCUS", "PROMPT"]
 MODEL_PRIORITY = ["q25-7", "llava15-7", "lingshu-7", "llavamed-7", "q3-8", "iv35-8", "medgemma-4", "q25-3", "q3-4", "iv35-14",
                   "llava15-13", "gemma3-4", "gemma3-12", "llama32-11", "q25-32", "q3-32", "lingshu-32", "medgemma-27",
@@ -68,7 +90,7 @@ def enqueue(model_key: str, dataset_id: str, modules: list[str] | None = None, p
         if dataset_id not in spec.datasets or expected_rows(mod, dataset_id) == 0:
             continue
         n = SHARDS[mod]
-        requires = prep_out + ([str(rd / "fits" / "vis.last" / PREP_FILE[mod])] if mod in PREP_FILE else []) + MODULE_DATA.get(mod, [])
+        requires = prep_out + [str(rd / "fits" / "vis.last" / f) for f in prep_files(mod)] + MODULE_DATA.get(mod, [])
         if mod == "VALID":
             name = f"{prefix}{prio_m:02d}{prio_d}-{mi + 1:02d}-{mod}-features-{model_key}-{dataset_id}"
             vf = valid_features_dir(model_key, dataset_id)
@@ -80,25 +102,34 @@ def enqueue(model_key: str, dataset_id: str, modules: list[str] | None = None, p
             names.append(name)
         if mod in PREP_TASK:                      # the module's own prep as a queue task; the module task waits for its file
             name = f"{prefix}{prio_m:02d}{prio_d}-{mi + 1:02d}-{mod}-prep-{model_key}-{dataset_id}"
+            cmd = PREP_TASK[mod] + ["--model-key", model_key, "--dataset", dataset_id]
+            if mod not in PREP_TASK_CPU:
+                cmd += ["--device-map", dm]
             (QUEUE / "pending" / f"{name}.json").write_text(json.dumps({
-                "name": name, "lane": lane,
-                "cmd": PREP_TASK[mod] + ["--model-key", model_key, "--dataset", dataset_id, "--device-map", dm],
-                "requires": prep_out, "produces": [str(rd / "fits" / "vis.last" / PREP_FILE[mod])], "env": env}, indent=1))
+                "name": name, "lane": lane, "cmd": cmd,
+                "requires": prep_out + (PREP_DATA[mod](model_key, dataset_id) if mod in PREP_DATA else []),
+                "produces": [str(rd / "fits" / "vis.last" / f) for f in prep_files(mod)], "env": env}, indent=1))
             names.append(name)
+        # per-setting tasks (PRECISION: numerics) and per-seed tasks (PROJSEED: one projection seed each)
         for setting in MODULE_SETTINGS.get(mod, (None,)):
-            label = mod if setting is None else f"{mod}-{setting}"
-            for s in range(n):
-                tag = f"{s:03d}of{n:03d}"
-                meta_tag = tag if setting is None else f"{setting}-{tag}"
-                name = f"{prefix}{prio_m:02d}{prio_d}-{mi + 1:02d}-{label}-{model_key}-{dataset_id}-{tag}"
-                cmd = ["python", "-m", "cftransfer.runner", "--model-key", model_key, "--dataset", dataset_id, "--module", mod,
-                       "--shard", str(s), "--n-shards", str(n), "--batch", str(batch_for(model_key, lane)), "--device-map", dm]
-                if setting is not None:
-                    cmd += ["--numerics", setting]
-                (QUEUE / "pending" / f"{name}.json").write_text(json.dumps({
-                    "name": name, "lane": lane, "cmd": cmd,
-                    "requires": requires, "produces": [str(rd / "outcomes" / mod / f"meta-{meta_tag}-*.json")], "env": env}, indent=1))
-                names.append(name)
+            for seed in MODULE_SEED_TASKS.get(mod, (None,)):
+                label = mod if setting is None else f"{mod}-{setting}"
+                label = label if seed is None else f"{label}-s{seed}"
+                for s in range(n):
+                    tag = f"{s:03d}of{n:03d}"
+                    meta_tag = tag if setting is None else f"{setting}-{tag}"
+                    meta_tag = meta_tag if seed is None else f"s{seed}-{meta_tag}"
+                    name = f"{prefix}{prio_m:02d}{prio_d}-{mi + 1:02d}-{label}-{model_key}-{dataset_id}-{tag}"
+                    cmd = ["python", "-m", "cftransfer.runner", "--model-key", model_key, "--dataset", dataset_id, "--module", mod,
+                           "--shard", str(s), "--n-shards", str(n), "--batch", str(batch_for(model_key, lane)), "--device-map", dm]
+                    if setting is not None:
+                        cmd += ["--numerics", setting]
+                    if seed is not None:
+                        cmd += ["--fit-seed", str(seed)]
+                    (QUEUE / "pending" / f"{name}.json").write_text(json.dumps({
+                        "name": name, "lane": lane, "cmd": cmd,
+                        "requires": requires, "produces": [str(rd / "outcomes" / mod / f"meta-{meta_tag}-*.json")], "env": env}, indent=1))
+                    names.append(name)
     return names
 
 

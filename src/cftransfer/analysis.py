@@ -22,6 +22,12 @@ Implemented:
   ansdirt(model, dataset)             -> ANSDIRT: per template O^a with interval / verdict, PROMPT cross reference, transfer counts
   valid(model, dataset)               -> VALID: the CORE grade on the radiologist-labelled CheXpert valid rows, answer capability and
                                          probe readability against those labels, paired comparison with the block's CORE grade on test
+  attr(model, dataset)                -> also folds in ATTRRAND when its outcomes exist: the attribute cells then carry the SAME
+                                         random p95 reference as the clinical cells (sham-only and matched verdicts both recorded)
+  validfit(model, dataset)            -> VALIDFIT: W / O of the expert-label (radiologist) refits against CORE's competitor family,
+                                         random p95 and sham, plus the CPU cosines and cross-fitted AUROCs of the prep
+  projseed(model, dataset)            -> PROJSEED: per projection seed the 6x6 write matrix, O_q with that projection's own
+                                         119-random p95 and sham, interval, max-T verdict, and agreement with the seed-0 grade
 """
 from __future__ import annotations
 
@@ -36,15 +42,17 @@ from sklearn.metrics import roc_auc_score
 
 from .altdir import gram_spectrum_summary, load_altdir
 from .ansdir import load_ansdir
-from .attr import attribute_labels, load_attr
+from .attr import attribute_labels, attribute_value, load_attr
 from .extcomp import load_extcomp
 from .fit import load_fit
+from .projseed import load_projseed
 from .images import DATA_ROOT, load_cohort, load_labels
 from .protocol import (ALTDIR_FAMILIES, ALTDIRD_FAMILIES, ANSDIRT_TEMPLATES, ATTR_CONCEPTS, BOOT_CALIBRATION_DRAWS,
                        BOOT_CALIBRATION_SEED, BOOT_CORE_DRAWS, BOOT_CORE_SEED, BOOT_DIAGNOSTIC_SEED, CONCEPTS, CONTROL_SEEDS, DATASETS,
                        EXTCOMP_LABELS, LOCI, MODULE_SETTINGS, MODULES, N_RANDOM, NUMERICS_DEFAULT, PRECISION_SETTINGS, PRIMARY_ALPHA,
-                       PROMPT_CONCEPTS, TOKENW_VARIANTS, expected_rows, primary_template)
+                       PROJSEED_SEEDS, PROMPT_CONCEPTS, TOKENW_VARIANTS, expected_rows, primary_template)
 from .runpaths import outcomes_dir, run_dir, valid_features_dir
+from .validfit import load_validfit
 
 DATASET_ORDER = ["nih", "chexpert", "coco"]
 MIN_CONTROLS_PER_DRAW = 10      # declared: a draw counts when at least half the 20 control AUROCs are estimable
@@ -819,15 +827,37 @@ def _answer_cell(y: np.ndarray, margin: np.ndarray, idx: np.ndarray) -> dict:
     return cell
 
 
+def _attrrand_deltas(model_key: str, dataset_id: str, attr_df, order: dict, alpha: float, primary: str):
+    """Per-sample deltas of the 119 protocol random directions on the three attribute questions (ATTRRAND) against
+    ATTR's own attribute baseline, or None when the module has not been scored for this block."""
+    ar = _load_module(model_key, dataset_id, "ATTRRAND")
+    if ar is None or len(ar) == 0:
+        return None
+    ar = ar[ar.template_id == primary]
+    if ar.empty:
+        return None
+    return _matrix(ar, list(ATTR_CONCEPTS), order, alpha, template_id=primary,
+                   baseline=attr_df[attr_df.direction_id == "baseline"])
+
+
 def attr(model_key: str, dataset_id: str, template_id: str | None = None, alpha: float = PRIMARY_ALPHA,
          draws: int = BOOT_CALIBRATION_DRAWS) -> dict:
     """ATTR statistics. Questions Q = 3 attributes + 6 clinical, directions = 3 attribute directions + 6 clinical normals:
       W[q][d] (9x9) against the question's clean baseline (attribute questions: ATTR's own; clinical: CORE's)
       ownership of every question over the 9-direction family (8 competitors): O_q with percentile interval and max-T
-      verdict; steering reference W_qq > 0, > |sham_q| (the question's sham scored in ATTR) and, for clinical questions,
-      > the CORE random p95 on the same rows (attribute questions have no random family: random_reference false)
+      verdict; steering reference W_qq > 0, > |sham_q| (the question's sham scored in ATTR) and > the random p95 on the
+      same rows -- CORE's 119-random family for a clinical question, and, once ATTRRAND has been scored, the SAME
+      119-direction family written on the attribute questions (module ATTRRAND) for an attribute question, so both kinds
+      of cell are graded against one reference. Every cell records `steering_reference_sham_only` (the sham-only rule,
+      which is all an attribute cell had before ATTRRAND), `steering_reference_matched` (the matched random-p95 + sham
+      rule, None when no random family is available for that cell) and `steering_reference_rule`, which names the
+      reference the cell's `steering_reference` actually used. Clinical cells are unchanged by ATTRRAND.
       readability of the attribute probes on the calibration rows (selectivity against the 20 type->random-label controls,
-      campaign rule) and answer capability of the clean attribute questions on the test rows (answer AUROC vs the label)."""
+      campaign rule) and answer capability of the clean attribute questions on the test rows, reported twice: the
+      `answer_*` fields as the module has recorded them since its first run (labels from the prep file's stored test
+      labels), and the `label_answer_*` / `label_n_*` fields recomputed here from the outcomes on disk against the
+      attribute's manifest ground-truth label with exactly the clinical answerability definition of core()/calibration
+      (>= 10 positives and negatives, `draws` unit-bootstrap draws, one-sided 95% lower AUROC bound > 0.5)."""
     primary = _primary(model_key, dataset_id, template_id)
     clin = CONCEPTS[dataset_id]
     Q = list(ATTR_CONCEPTS) + list(clin)
@@ -842,6 +872,7 @@ def attr(model_key: str, dataset_id: str, template_id: str | None = None, alpha:
     base = pd.concat([base_core[base_core.concept.isin(clin)], attr_df[attr_df.direction_id == "baseline"]], ignore_index=True)
     d = _matrix(attr_df, Q, order, alpha, template_id=primary, baseline=base)
     d_log = _matrix(core_df, clin, order, alpha, template_id=primary, baseline=base_core)
+    d_ar = _attrrand_deltas(model_key, dataset_id, attr_df, order, alpha, primary)
     dir_names = [f"attr:{a}" for a in ATTR_CONCEPTS] + [f"concept:{c}" for c in clin]
     own_names = {q: (f"attr:{q}" if q in ATTR_CONCEPTS else f"concept:{q}") for q in Q}
     fam = {nm: _direction_rows(d, Q, nm, n) for nm in dir_names}
@@ -849,17 +880,31 @@ def attr(model_key: str, dataset_id: str, template_id: str | None = None, alpha:
     idx = core_bootstrap_indices(dataset_id, n, draws)
     block = _ownership_block(own, fam, Q, idx, own_names)
     block.pop("own_boot")
+    n_attr_random = 0
     for q in Q:
         cell = block["per_question"][q]
         attribute = q in ATTR_CONCEPTS
         sk = f"attrsham:{q}" if attribute else f"sham:{q}"
         sham = float(np.nanmean(d[(q, sk)])) if (q, sk) in d else np.nan
-        rand = np.array([np.nanmean(d_log[(q, f"random:{i:03d}")]) for i in range(N_RANDOM) if (q, f"random:{i:03d}") in d_log]) if not attribute else np.array([])
-        cell.update({"question_kind": "attribute" if attribute else "clinical", "abs_sham": abs(sham) if not np.isnan(sham) else np.nan,
-                     "random_reference": bool(len(rand) == N_RANDOM), "random_p95": float(np.percentile(rand, 95)) if len(rand) else None,
-                     "own_direction": own_names[q]})
+        src = d_ar if attribute else d_log
+        rand = np.array([]) if src is None else \
+            np.array([np.nanmean(src[(q, f"random:{i:03d}")]) for i in range(N_RANDOM) if (q, f"random:{i:03d}") in src])
+        if attribute:
+            n_attr_random = max(n_attr_random, len(rand))
         w = cell["W_qq"]
-        cell["steering_reference"] = bool(w > 0 and w > cell["abs_sham"] and (not cell["random_reference"] or w > cell["random_p95"]))
+        p95 = float(np.percentile(rand, 95)) if len(rand) == N_RANDOM else None
+        cell.update({"question_kind": "attribute" if attribute else "clinical", "abs_sham": abs(sham) if not np.isnan(sham) else np.nan,
+                     "random_reference": bool(len(rand) == N_RANDOM), "random_p95": p95, "random_n": int(len(rand)),
+                     "random_max": float(rand.max()) if len(rand) else None,
+                     "random_source": (("ATTRRAND" if attribute else "CORE") if len(rand) == N_RANDOM else None),
+                     "rank_in_random_family": int(1 + (rand >= w).sum()) if len(rand) == N_RANDOM else None,
+                     "own_direction": own_names[q]})
+        sham_only = bool(w > 0 and w > cell["abs_sham"])
+        matched = bool(sham_only and w > p95) if cell["random_reference"] else None
+        cell.update({"steering_reference_sham_only": sham_only, "steering_reference_matched": matched,
+                     "steering_reference": bool(matched) if matched is not None else sham_only,
+                     "steering_reference_rule": ("random_p95_and_sham (%s 119-random family)" % cell["random_source"])
+                     if cell["random_reference"] else "sham_only (no random family scored for this cell)"})
     # attribute readability (calibration rows) and answer capability (test rows) from the prep file and ATTR baselines
     arr = load_attr(model_key, dataset_id, LOCI["primary"])
     an = list(arr["attr_names"].astype(str))
@@ -867,6 +912,8 @@ def attr(model_key: str, dataset_id: str, template_id: str | None = None, alpha:
     idx_cal = bootstrap_indices(dataset_id, n_cal, BOOT_CALIBRATION_SEED, draws)
     idx_test = bootstrap_indices(dataset_id, n, BOOT_CALIBRATION_SEED, draws)
     test_pos = {r: i for i, r in enumerate(arr["test_row_ids"].astype(str))}
+    labels = load_labels(dataset_id)
+    c0 = CONCEPTS[dataset_id][0]
     attributes = {}
     for a in ATTR_CONCEPTS:
         k = an.index(a)
@@ -881,12 +928,26 @@ def attr(model_key: str, dataset_id: str, template_id: str | None = None, alpha:
         g = attr_df[(attr_df.direction_id == "baseline") & (attr_df.concept == a)]
         m_test[[order[r] for r in g.row_id if r in order]] = g.semantic_margin.values[[i for i, r in enumerate(g.row_id) if r in order]]
         cell.update(_answer_cell(y_test, m_test, idx_test))
+        # the quantity a reviewer expects, recomputed from the outcomes on disk against the MANIFEST attribute label,
+        # with the clinical answerability definition of core()/calibration (10 positives / 10 negatives, lower bound > .5)
+        y_manifest = np.array([attribute_value(a, labels[(r["row_id"], c0)]) for r in rows], int)
+        cell.update({f"label_{kk}": vv for kk, vv in _answer_cell(y_manifest, m_test, idx_test).items()})
+        cell["answer_reference"] = ("answer_*: clean answer margin of the attribute question vs the attribute label stored in "
+                                    "fits/<locus>/attr_seed0.npz (test_labels). label_answer_*: the same margins vs the attribute's "
+                                    "manifest ground-truth label read here from labels.csv, clinical answerability rule.")
         cell.update({"auroc_calibration_prep": float(arr["auroc_calibration"][k]), "auroc_test_prep": float(arr["auroc_test"][k]),
                      "n_train_pos": int(arr["n_pos"][k]), "n_train_neg": int(arr["n_neg"][k]),
                      "cos_model_to_clinical": {c: float(arr["cos_model"][k, ci]) for ci, c in enumerate(clin)}})
         attributes[a] = cell
+    attrrand = {"available": d_ar is not None, "n_random": int(n_attr_random), "expected_random": N_RANDOM,
+                "questions": list(ATTR_CONCEPTS), "baseline_module": "ATTR",
+                "note": ("the three attribute questions carry the protocol's own 119-direction random family (module ATTRRAND), "
+                         "so an attribute cell is graded against the same random p95 bar as a clinical cell")
+                if d_ar is not None else
+                ("ATTRRAND not scored for this block: attribute cells fall back to the sham-only reference "
+                 "(steering_reference_rule records this per cell)")}
     return {"n_rows": n, "alpha": alpha, "template_id": primary, "draws": int(idx.shape[0]), "questions": Q, "directions": dir_names,
-            "attributes": attributes, **block}
+            "attributes": attributes, "attrrand": attrrand, **block}
 
 
 # --------------------------------------------------------------------------------------------- ANSDIRT
@@ -1155,6 +1216,112 @@ def valid(model_key: str, dataset_id: str, template_id: str | None = None, alpha
             "per_question": per, "comparison": comparison}
 
 
+# --------------------------------------------------------------------------------------------- VALIDFIT
+def validfit(model_key: str, dataset_id: str, template_id: str | None = None, alpha: float = PRIMARY_ALPHA,
+             draws: int = BOOT_CALIBRATION_DRAWS) -> dict:
+    """VALIDFIT statistics: the six concept directions REFITTED on the radiologist-labelled valid rows, written on the
+    600 test rows at the primary template and dose against the CORE clean baseline, i.e. the same rows / dose / locus /
+    competitor protocol as CORE, so only the LABEL SOURCE of the fit differs.
+      W^e_qd (6x6), O^e_q = W^e_qq - max_{d != q} W^e_qd with the percentile interval (max recomputed per draw) and the
+      CORE-style verdict over the 6x5 max-T family; the steering reference is CORE's own on these rows (W^e_qq > 0,
+      > the 119-random p95, > |sham_q|), so ownership is graded against exactly the references the report-label
+      directions are graded against; own expert write minus the strongest LOGISTIC competitor of CORE (paired interval).
+    Per concept the CPU quantities of the prep are attached: the raw (model-space and projected) and covariance-whitened
+    cosines to the report-label direction, the cross-fitted held-out probe AUROC against the expert labels and against
+    the report-derived labels of the same rows, and the report-label direction's AUROC on those rows."""
+    primary, concepts, n, d_log, d_vf, idx, Wlog, comp_boot, log_ref = _module_deltas(model_key, dataset_id, "VALIDFIT", alpha,
+                                                                                     template_id, draws)
+    A = _family_stack(d_vf, concepts, "vfit", n)
+    block = _ownership_block(np.stack([A[qi, qi] for qi in range(len(concepts))]),
+                             {d: A[:, di, :] for di, d in enumerate(concepts)}, concepts, idx)
+    own_b = block.pop("own_boot")
+    arr = load_validfit(model_key, dataset_id, LOCI["primary"])
+    names = list(arr["concept_names"].astype(str))
+    for qi, q in enumerate(concepts):
+        cell = block["per_question"][q]
+        _cross_reference(cell, own_b[:, qi], comp_boot[:, qi], log_ref[q])
+        k = names.index(q)
+        cell.update({"cos_to_report_model": float(arr["cos_model"][k]), "cos_to_report_projected": float(arr["cos_projected"][k]),
+                     "cos_to_report_whitened": float(arr["cos_whitened"][k]),
+                     "auroc_expert_heldout": float(arr["auroc_expert_heldout"][k]),
+                     "auroc_report_labels_heldout": float(arr["auroc_report_labels_heldout"][k]),
+                     "auroc_expert_in_sample": float(arr["auroc_expert_in_sample"][k]),
+                     "report_direction_auroc_expert": float(arr["report_direction_auroc_expert"][k]),
+                     "report_direction_auroc_report_labels": float(arr["report_direction_auroc_report_labels"][k]),
+                     "n_valid_pos": int(arr["n_pos"][k]), "n_valid_neg": int(arr["n_neg"][k]),
+                     "n_report_pos": int(arr["n_pos_report"][k]), "n_report_neg": int(arr["n_neg_report"][k]),
+                     "folds_used": int(arr["folds_used"][k]), "n_heldout_rows": int(arr["n_heldout_rows"][k])})
+        cell["owned"] = bool(cell["steering_reference"] and cell["verdict"] == "fixed_family_advantage")
+        cell["owned_report_labels"] = bool(log_ref[q]["W_logistic_qq"] > 0 and log_ref[q]["O_logistic_q"] > 0)
+    return {"n_rows": n, "alpha": alpha, "template_id": primary, "baseline_module": "CORE", "draws": int(idx.shape[0]),
+            "label_source": "radiologist", "fit_rows": int(arr["n_valid_rows"]), "n_folds": int(arr["n_folds"]),
+            "cv_seed": int(arr["cv_seed"]), "report_label_source": str(arr["report_label_source"]),
+            "logistic_reference": log_ref, **block}
+
+
+# --------------------------------------------------------------------------------------------- PROJSEED
+def projseed(model_key: str, dataset_id: str, template_id: str | None = None, alpha: float = PRIMARY_ALPHA,
+             draws: int = BOOT_CALIBRATION_DRAWS) -> dict:
+    """PROJSEED statistics: one complete ownership grade per further projection seed. For each k in PROJSEED_SEEDS (the
+    outcomes carry k in the fit_seed column):
+      W^k_qd (6x6) against the CORE clean baseline, O^k_q with the percentile interval and the 6x5 max-T verdict;
+      the steering reference is that projection's OWN family: W^k_qq > 0, > the p95 of its 119 re-drawn random
+      directions and > |W(q, projsham_q)|; and the own write minus the strongest logistic competitor of the seed-0 CORE
+      family (paired interval), plus the model-space cosine between the seed-k and seed-0 direction of the concept.
+    `agreement` counts, over the six concepts, how many verdicts / ownership decisions match CORE's on the same rows."""
+    primary, concepts, n, d_log, _d_mod, idx, Wlog, comp_boot, log_ref = _module_deltas(model_key, dataset_id, "PROJSEED", alpha,
+                                                                                       template_id, draws)
+    core_df = _load_module(model_key, dataset_id, "CORE")
+    mod_df = _load_module(model_key, dataset_id, "PROJSEED")
+    base_core = core_df[core_df.direction_id == "baseline"]
+    rows = load_cohort(dataset_id, ("test",))
+    order = {r["row_id"]: i for i, r in enumerate(rows)}
+    core_grade = core(model_key, dataset_id, "CORE", template_id=primary, alpha=alpha, n_boot=draws)
+    res = {"n_rows": n, "alpha": alpha, "template_id": primary, "baseline_module": "CORE", "draws": int(idx.shape[0]),
+           "seeds": list(PROJSEED_SEEDS), "not_started_seeds": [], "logistic_reference": log_ref,
+           "core": {"projection_seed": 0, "grade": _grade_cells(core_grade), "max_t_critical": core_grade.get("max_t_critical")}}
+    for k in PROJSEED_SEEDS:
+        dk = mod_df[mod_df.fit_seed == k]
+        if dk.empty:
+            res["not_started_seeds"].append(k)
+            continue
+        d = _matrix(dk, concepts, order, alpha, template_id=primary, fit_seed=k, baseline=base_core)
+        A = _family_stack(d, concepts, "proj", n)
+        block = _ownership_block(np.stack([A[qi, qi] for qi in range(len(concepts))]),
+                                 {c: A[:, ci, :] for ci, c in enumerate(concepts)}, concepts, idx)
+        own_b = block.pop("own_boot")
+        arr = load_projseed(model_key, dataset_id, LOCI["primary"], k)
+        names = list(arr["concept_names"].astype(str))
+        agree = {"verdict": 0, "owned": 0}
+        for qi, q in enumerate(concepts):
+            cell = block["per_question"][q]
+            _cross_reference(cell, own_b[:, qi], comp_boot[:, qi], log_ref[q])
+            rand = np.array([np.nanmean(d[(q, f"projrand:{i:03d}")]) for i in range(N_RANDOM) if (q, f"projrand:{i:03d}") in d])
+            sham = float(np.nanmean(d[(q, f"projsham:{q}")])) if (q, f"projsham:{q}") in d else np.nan
+            w = cell["W_qq"]
+            # this projection's own references replace CORE's (which _cross_reference stored under the *_logistic names)
+            cell["random_p95_logistic"] = cell["random_p95"]; cell["abs_sham_logistic"] = cell["abs_sham"]
+            cell.update({"random_p95": float(np.percentile(rand, 95)) if len(rand) == N_RANDOM else None,
+                         "random_n": int(len(rand)), "random_max": float(rand.max()) if len(rand) else None,
+                         "random_reference": bool(len(rand) == N_RANDOM), "abs_sham": abs(sham) if not np.isnan(sham) else np.nan,
+                         "rank_in_random_family": int(1 + (rand >= w).sum()) if len(rand) == N_RANDOM else None,
+                         "cos_to_seed0_model": float(arr["cos_model_to_seed0"][names.index(q)]),
+                         "auroc_test_probe": float(arr["auroc_test"][names.index(q)])})
+            cell["steering_reference"] = bool(cell["random_reference"] and w > 0 and w > cell["random_p95"] and w > cell["abs_sham"])
+            cell["owned"] = bool(cell["steering_reference"] and cell["verdict"] == "fixed_family_advantage")
+            cg = res["core"]["grade"][q]
+            core_owned = bool(cg["steering_reference"] and cg["verdict"] == "fixed_family_advantage")
+            cell.update({"verdict_core": cg["verdict"], "verdict_changed": cell["verdict"] != cg["verdict"],
+                         "owned_core": core_owned, "owned_changed": cell["owned"] != core_owned,
+                         "dO_q": (cell["O_q"] - cg["O_q"]) if cg["O_q"] is not None else None})
+            agree["verdict"] += int(not cell["verdict_changed"]); agree["owned"] += int(not cell["owned_changed"])
+        block.update({"projection_seed": k, "n_agree": agree, "n_compared": len(concepts),
+                      "owned": sorted(q for q in concepts if block["per_question"][q]["owned"]),
+                      "median_abs_cos_to_seed0": float(np.median(np.abs(arr["cos_model_to_seed0"])))})
+        res[f"seed{k}"] = block
+    return res
+
+
 def _ineligible_prompt_rows(model_key, dataset_id) -> int:
     """Rows the PROMPT block legitimately lacks because templates were INELIGIBLE at preflight."""
     elig = _eligibility(model_key, dataset_id)
@@ -1167,7 +1334,8 @@ if __name__ == "__main__":
     ap.add_argument("--model-key", required=True)
     ap.add_argument("--dataset", required=True)
     ap.add_argument("--what", default="calibration,core",
-                    help="comma list of calibration,core,shifts,t3,altdir,extcomp,tokenw,precision,ansdir,altdird,attr,ansdirt,valid")
+                    help="comma list of calibration,core,shifts,t3,altdir,extcomp,tokenw,precision,ansdir,altdird,attr,ansdirt,"
+                         "valid,validfit,projseed (ATTRRAND is folded into attr)")
     ap.add_argument("--n-boot", type=int, default=None)
     a = ap.parse_args()
     rd = run_dir(a.model_key, a.dataset)
@@ -1199,6 +1367,10 @@ if __name__ == "__main__":
             report["ansdirt"] = ansdirt(a.model_key, a.dataset, draws=a.n_boot or BOOT_CALIBRATION_DRAWS)
         elif w == "valid":
             report["valid"] = valid(a.model_key, a.dataset, draws=a.n_boot or BOOT_CALIBRATION_DRAWS)
+        elif w == "validfit":
+            report["validfit"] = validfit(a.model_key, a.dataset, draws=a.n_boot or BOOT_CALIBRATION_DRAWS)
+        elif w == "projseed":
+            report["projseed"] = projseed(a.model_key, a.dataset, draws=a.n_boot or BOOT_CALIBRATION_DRAWS)
     report["primary_template"] = primary_template(rd)       # template the single-template statistics above refer to
     (rd / "summary.json").write_text(json.dumps(report, indent=1, default=lambda o: float(o) if isinstance(o, np.floating) else str(o)))
     if "calibration" in report:
@@ -1251,13 +1423,42 @@ if __name__ == "__main__":
                 print(f"ALTDIRD {fam:12s} {q:14s} W_qq={cell['W_qq']:+.4f} O_q={cell['O_q']:+.4f} [{lo:+.4f},{hi:+.4f}] "
                       f"own-maxlog={cell['own_minus_max_logistic_competitor']:+.4f} cos_log={cell['cos_to_logistic_model']:+.3f} ref={cell['steering_reference']} verdict={cell['verdict']}")
     if "attr" in report and "attr" in a.what:
+        ar = report["attr"].get("attrrand") or {}
+        print(f"ATTR attribute random family (ATTRRAND): available={ar.get('available')} n_random={ar.get('n_random')}")
         for a_name, cell in report["attr"]["attributes"].items():
             print(f"ATTR probe {a_name:8s} auroc={cell['auroc_real']:.4f} S={cell['selectivity']:+.4f} readable={cell['readable']} "
-                  f"answer_auroc={cell.get('answer_auroc', float('nan')):.4f} capable={cell.get('answer_capable')}")
+                  f"answer_auroc={cell.get('answer_auroc', float('nan')):.4f} capable={cell.get('answer_capable')} | "
+                  f"label_answer_auroc={cell.get('label_answer_auroc', float('nan')):.4f} "
+                  f"label_capable={cell.get('label_answer_capable')} (pos/neg {cell.get('label_n_pos')}/{cell.get('label_n_neg')})")
         for q, cell in report["attr"]["per_question"].items():
             lo, hi = cell["O_q_ci95_percentile"]
             print(f"ATTR {cell['question_kind']:9s} {q:14s} W_qq={cell['W_qq']:+.4f} O_q={cell['O_q']:+.4f} [{lo:+.4f},{hi:+.4f}] (vs {cell['argmax_other']}) "
-                  f"ref={cell['steering_reference']} verdict={cell['verdict']}")
+                  f"ref={cell['steering_reference']} (sham_only={cell['steering_reference_sham_only']}, matched={cell['steering_reference_matched']}, "
+                  f"{cell['steering_reference_rule']}) verdict={cell['verdict']}")
+    if "validfit" in report and "validfit" in a.what:
+        r = report["validfit"]
+        print(f"VALIDFIT fitted on {r['fit_rows']} radiologist-labelled rows, {r['n_folds']}-fold cross-fitting; "
+              f"report labels: {r['report_label_source']}")
+        for q, cell in r["per_question"].items():
+            lo, hi = cell["O_q_ci95_percentile"]
+            print(f"VALIDFIT {q:14s} W_qq={cell['W_qq']:+.4f} O_q={cell['O_q']:+.4f} [{lo:+.4f},{hi:+.4f}] (vs {cell['argmax_other']}) "
+                  f"cos_report={cell['cos_to_report_model']:+.4f} (whitened {cell['cos_to_report_whitened']:+.4f}) "
+                  f"auroc_expert_heldout={cell['auroc_expert_heldout']:.4f} auroc_report_heldout={cell['auroc_report_labels_heldout']:.4f} "
+                  f"ref={cell['steering_reference']} verdict={cell['verdict']} owned={cell['owned']}")
+    if "projseed" in report and "projseed" in a.what:
+        r = report["projseed"]
+        for k in r["seeds"]:
+            blk = r.get(f"seed{k}")
+            if blk is None:
+                print(f"PROJSEED seed{k} NOT_STARTED"); continue
+            print(f"PROJSEED seed{k}: owned {len(blk['owned'])}/6 ({', '.join(blk['owned']) or '-'}); agrees with CORE on "
+                  f"{blk['n_agree']['verdict']}/6 verdicts, {blk['n_agree']['owned']}/6 ownership decisions; "
+                  f"median |cos| to seed 0 = {blk['median_abs_cos_to_seed0']:.4f}")
+            for q, cell in blk["per_question"].items():
+                lo, hi = cell["O_q_ci95_percentile"]
+                print(f"PROJSEED seed{k} {q:14s} W_qq={cell['W_qq']:+.4f} O_q={cell['O_q']:+.4f} [{lo:+.4f},{hi:+.4f}] "
+                      f"p95rand={cell['random_p95']:+.4f} |sham|={cell['abs_sham']:.4f} cos_seed0={cell['cos_to_seed0_model']:+.4f} "
+                      f"ref={cell['steering_reference']} verdict={cell['verdict']} (core {cell['verdict_core']})")
     if "ansdirt" in report and "ansdirt" in a.what:
         r = report["ansdirt"]
         for t in r["templates"]:

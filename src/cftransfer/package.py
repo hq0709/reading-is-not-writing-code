@@ -24,6 +24,11 @@ from .protocol import (CONCEPTS, LOCI, MODULE_SETTINGS, MODULES, MODULES_ADDED_L
 from .runner import KEY, SCHEMA
 from .runpaths import outcomes_dir, run_dir
 
+# Role sizes the coverage expectation is computed against. protocol.expected_rows() carries the same three numbers for
+# the whole-campaign totals; this is the block-level copy, named so a synthetic run can override it.
+TEST_ROWS = 600
+CALIBRATION_ROWS = 400
+
 COVERAGE_COLS = ["run_id", "model_key", "dataset_id", "module", "locus_id", "fit_seed", "template_id", "concept",
                  "expected_rows", "actual_unique_rows", "failed_rows", "execution_status", "baseline_module",
                  "baseline_fit_seed", "reason"]
@@ -74,7 +79,7 @@ def coverage_rows(model_key: str, dataset_id: str, module: str, merged: Path | N
     run_id = run_id_for(model_key, dataset_id)
     primary = primary or primary_template(run_dir(model_key, dataset_id))
     rows = []
-    n_role = {"test": 600, "calibration": 400, "valid": VALID_ROWS}[spec.role]
+    n_role = {"test": TEST_ROWS, "calibration": CALIBRATION_ROWS, "valid": VALID_ROWS}[spec.role]
     n_rows = min(n_role, spec.row_limit) if spec.row_limit else n_role
     if dataset_id not in spec.datasets:
         return [{"run_id": run_id, "model_key": model_key, "dataset_id": dataset_id, "module": module, "locus_id": LOCI[spec.locus],

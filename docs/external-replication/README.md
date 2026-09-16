@@ -165,6 +165,9 @@ REFIT seed1/2改变的是训练独立单元的bootstrap重抽样（胸片患者�
 | ATTR | NIH/CheXpert，IY，+.25，600图；3个非临床属性问题（AP投照、女性、年龄≥60，协议模板+属性短语）加6个临床问题；方向=3属性方向（按协议normal同法拟合）+6临床normal+该问题sham；属性问题自带baseline（11条件），临床问题复用CORE baseline（10条件）；无random族；后加模块，仅显式入队 | 每数据集55,800 |
 | ANSDIRT | 三数据集全部6概念，IY之外5模板，+.25，600图；IY上拟合的回答方向a_d（6个）加a_q的sham，另带每（问题,模板）自身baseline，共8条件；不合格模板同PROMPT规则跳过；后加模块，仅显式入队 | 每数据集144,000 |
 | VALID | 仅CheXpert，全部6概念，IY，+.25，官方valid集200例患者各一张正位片（`valid`角色；标签为CheXpert-v1.0 valid.csv放射科医生共识标签，非labeler输出）；完整CORE网格127配置（自带baseline），方向沿用该块seed0拟合，不另拟合；按CORE规则评分（n=200配对bootstrap 2,000次），并与该块600张labeler标签test图的CORE评分逐概念配对比较；后加模块，仅显式入队 | 152,400 |
+| ATTRRAND | NIH/CheXpert，IY，+.25，600图；只写ATTR的3个属性问题（AP投照、女性、年龄≥60）；方向=协议自身的119条random方向（fits/vis.last/seed0.npz的random_vectors，与CORE同一seed同一构造），无新方向、无baseline行、无自身prep；baseline复用ATTR。补此模块前属性cell只有sham参照而临床cell有119random的p95，属性与病灶的ownership比较因此用了两把不同的尺；analysis --what attr 会同时记录sham-only判定与匹配判定，并注明每个cell用的是哪个参照；后加模块，仅显式入队（2个shard） | 每数据集214,200 |
+| VALIDFIT | 仅CheXpert，全部6概念，IY，+.25，600test图；方向为在200张放射科医生标注的`valid`行上**重新拟合**的6个概念方向（vfit:<concept>）：沿用该块seed0的投影R与**训练集scaler**（mu/s不在200行上重拟合），LogisticRegression(C=1, lbfgs, 2000, seed0)，同一映射规则；按患者5折交叉拟合，使每个valid行由未见过它的方向打分。CPU侧报告与report标签方向的原始余弦（模型空间/投影空间）与训练协方差白化后的余弦、对专家标签的留出AUROC、对同一批行的report（labeler）标签的留出AUROC；GPU侧把6个专家标签方向写在test行上，baseline与119random、sham参照全部复用CORE，故ownership与report标签方向同尺比较；后加模块，仅显式入队 | 21,600 |
+| PROJSEED | 三数据集全部6概念，IY，+.25，600图；整个活动共用一个512维PCG64(0)投影，本模块在投影seed 1、2下重新拟合6个临床方向：R_k=PCG64(k)标准正态/sqrt(512)，在该投影空间重算训练集scaler，训练行、已知标签掩码与探针超参完全不变；random族与sham按同一构造在该投影下重抽（PCG64(k)：119×D行归一化正态，再每概念一个坐标置换）。每seed给出完整ownership评级（6方向族+自身119random的p95+自身sham），每问题每seed 126个条件；baseline复用CORE；outcomes的fit_seed列记录投影seed；后加模块，仅显式入队，**每seed一个shard**，只在少数代表性块上运行，不铺满整个网格 | 每数据集907,200（每seed 453,600） |
 
 训练/测试pooled features不包含在以上计数。正向+.25全随机主比较和其他剂量20random敏感性是不同证据规格，不能拼起来声称整个dose sweep均做过119随机校正。
 

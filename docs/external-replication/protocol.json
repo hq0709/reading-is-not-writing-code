@@ -543,6 +543,80 @@
       ],
       "added": "2026-09-15; addendum, enqueued explicitly; images PNG/valid/* of the CheXpert Plus zips (scripts/mayo/extract_chexpert_valid.py); enqueue also emits a features task for the valid rows (features/valid/<locus>.npz) that the module task does not wait for",
       "analysis": "cftransfer.analysis --what valid: the CORE grade on the valid rows (W_qq, strongest competitor, O_q with interval, 6x5 max-T verdict from 2,000 paired draws at n = 200, random p95 / |sham| reference on those rows), answer capability of the clean answers against the radiologist labels (campaign rule), probe readability on the valid features against the 20 control probes when extracted, and the paired comparison with the block's CORE grade on the 600 labeler-labelled test rows (per-concept readable / answer-capable / owned, O_q on both, counts of agreeing verdicts)"
+    },
+    "ATTRRAND": {
+      "cohort": "test",
+      "questions": "the 3 attribute questions of ATTR only (view_AP, sex_F, age_60)",
+      "templates": [
+        "IY"
+      ],
+      "alpha": [
+        0.25
+      ],
+      "locus": "primary (vis.last)",
+      "fit_seed": 0,
+      "directions": "the protocol's own 119 random directions (fits/vis.last/seed0.npz random_vectors, the PCG64(0) draw CORE scores); no new directions, no baseline rows, no prep of its own",
+      "rationale": "ATTR referenced attribute cells against their sham alone while clinical cells had the 119-random p95, so the attribute-versus-finding ownership comparison used two different steering references; ATTRRAND gives an attribute cell the same random p95 bar as a clinical cell",
+      "expected_rows": 214200,
+      "baseline": "reuse ATTR (the attribute questions' own clean baseline)",
+      "datasets": [
+        "nih",
+        "chexpert"
+      ],
+      "added": "2026-09-16; addendum, enqueued explicitly (two shards)",
+      "analysis": "folded into cftransfer.analysis --what attr: each attribute cell gains random_p95 / random_n / rank_in_random_family from this module and records steering_reference_sham_only (the old rule), steering_reference_matched (W_qq > 0, > random p95, > |sham|) and steering_reference_rule, which names the reference the cell used; clinical cells are unchanged"
+    },
+    "VALIDFIT": {
+      "cohort": "test (the write); the FIT uses the 200 radiologist-labelled `valid` rows",
+      "concepts": "all",
+      "templates": [
+        "IY"
+      ],
+      "alpha": [
+        0.25
+      ],
+      "locus": "primary (vis.last)",
+      "fit_seed": 0,
+      "directions": "6 expert-label directions (vfit:<concept>); no baseline rows, no random family and no sham of its own -- CORE's baseline, 119-random family and question sham are the references",
+      "fit": "the six concept probes refitted on the known-label `valid` rows (role valid, label_source radiologist) with the protocol's own probe settings: the block's seed-0 projection R and its TRAIN-ONLY scaler mu/s (never refitted on 200 rows), LogisticRegression(C=1, lbfgs, 2000 iterations, random_state 0), lifted with normalize(R @ (w / max(s, 1e-8))); features from features/valid/<locus>.npz (the VALID feature task)",
+      "cross_fitting": "5 folds over PATIENTS (KFold shuffled, seed 0, over the sorted unit ids), so every valid row is scored by a direction not fitted on it",
+      "cpu_report": "raw cosine (model space and projected 512-d) and covariance-whitened cosine (<a,b>_Sigma / sqrt(<a,a>_Sigma <b,b>_Sigma), Sigma = covariance of the projected, train-scaled TRAINING features) between each expert-label direction and the corresponding report-label direction; held-out probe AUROC against the expert labels and against the report-derived (labeler) labels of the same rows; the seed-0 report-label direction's AUROC on those rows for reference",
+      "prep": "python -m cftransfer.validfit --model-key K --dataset chexpert  (CPU; writes fits/vis.last/validfit_seed0.npz)",
+      "expected_rows": 21600,
+      "baseline": "reuse CORE",
+      "datasets": [
+        "chexpert"
+      ],
+      "added": "2026-09-16; addendum, enqueued explicitly",
+      "analysis": "cftransfer.analysis --what validfit: W^e (6x6), O^e_q with the 2,000-draw percentile interval and the 6x5 max-T verdict, CORE's steering reference (W^e_qq > 0, > the 119-random p95, > |sham|), own expert write minus the strongest logistic competitor of CORE, and the prep's cosines / AUROCs per concept"
+    },
+    "PROJSEED": {
+      "cohort": "test",
+      "concepts": "all",
+      "templates": [
+        "IY"
+      ],
+      "alpha": [
+        0.25
+      ],
+      "locus": "primary (vis.last)",
+      "projection_seeds": [
+        1,
+        2
+      ],
+      "directions": "per projection seed: 6 refit directions (proj:<concept>) + that projection's own 119 random directions (projrand:###) + the question's sham (projsham:<concept>) = 126 conditions per question and seed; no baseline rows",
+      "fit": "R_k = PCG64(k).standard_normal((D, 512)) / sqrt(512) (the protocol's projection construction with the seed replaced); the train-only scaler is recomputed in that projected space; the six probes are refitted on the SAME training rows and known-label masks with the same hyperparameters (C=1, lbfgs, 2000 iterations, random_state 0); the random family and shams are the same construction re-drawn from PCG64(k) in that projection",
+      "fit_seed_column": "the outcomes carry the PROJECTION seed (1 or 2) in the fit_seed column; direction ids are seed-independent",
+      "prep": "python -m cftransfer.projseed --model-key K --dataset D  (CPU; writes fits/vis.last/projseed_seed1.npz and projseed_seed2.npz with the model-space cosines to the seed-0 directions)",
+      "expected_rows": 907200,
+      "baseline": "reuse CORE",
+      "datasets": [
+        "nih",
+        "chexpert",
+        "coco"
+      ],
+      "added": "2026-09-16; addendum, enqueued explicitly, ONE SHARD PER PROJECTION SEED (runner --fit-seed); intended for a handful of representative blocks, not the whole grid",
+      "analysis": "cftransfer.analysis --what projseed: per seed W^k (6x6), O^k_q with the 2,000-draw percentile interval and the 6x5 max-T verdict, that projection's OWN random p95 and sham as the steering reference, the model-space cosine to the seed-0 direction, and the count of verdicts / ownership decisions that agree with the block's CORE grade on the same rows"
     }
   },
   "numerics": {
@@ -768,7 +842,7 @@
     "all_test_and_calibration_rows": 125153600,
     "excludes": "feature extraction, interface preflight and retries",
     "ALTDIR_rows_addendum": 5702400,
-    "ALTDIR_note": "addenda rows (ALTDIR, EXTCOMP, TOKENW, PRECISION, ANSDIR, ALTDIRD, ATTR, ANSDIRT, VALID) are outside all_test_and_calibration_rows, which keeps the planned total of the original seven modules",
+    "ALTDIR_note": "addenda rows (ALTDIR, EXTCOMP, TOKENW, PRECISION, ANSDIR, ALTDIRD, ATTR, ANSDIRT, VALID, ATTRRAND, VALIDFIT, PROJSEED) are outside all_test_and_calibration_rows, which keeps the planned total of the original seven modules",
     "addenda": {
       "ALTDIR": 5702400,
       "EXTCOMP": 712800,
@@ -778,7 +852,15 @@
       "ALTDIRD": 2851200,
       "ATTR": 2455200,
       "ANSDIRT": 9504000,
-      "VALID": 3352800
+      "VALID": 3352800,
+      "ATTRRAND": 9424800,
+      "VALIDFIT": 475200,
+      "PROJSEED": 59875200
+    },
+    "addenda_notes": {
+      "PROJSEED": "907,200 rows per block (453,600 per projection seed). The addenda table states the whole-grid figure by its own convention (per model over all datasets x 22 models); the module is intended for a handful of representative blocks, not the whole grid.",
+      "ATTRRAND": "214,200 rows per chest block (NIH + CheXpert x 22 models)",
+      "VALIDFIT": "21,600 rows per CheXpert block (22 models)"
     }
   }
 }

@@ -29,6 +29,13 @@ flags of the alternative-direction module for included blocks whose ALTDIR is CO
 carry the grade of the same concept on the radiologist-labelled CheXpert valid rows (summary.json `valid`: readable,
 answer-capable, owned, O_q, verdict) for included blocks whose VALID is COMPLETE for that concept; block_included
 never depends on VALID.
+
+The three control modules added for the reviewer's remaining requests attach the same way, and block_included depends on
+none of them: ATTRRAND rows (one per attribute question) carry the attribute cell's matched-reference grade from
+summary.json `attr` (the random p95 that ATTRRAND supplies, the sham-only verdict it replaces, and which reference the
+cell used); VALIDFIT rows carry the expert-label refit's ownership and its cosine / held-out AUROC against the
+report-label direction (summary.json `validfit`); PROJSEED rows carry one ownership flag and O_q per further projection
+seed (summary.json `projseed`).
 """
 from __future__ import annotations
 
@@ -39,7 +46,7 @@ import statistics
 import sys
 from pathlib import Path
 
-from .protocol import ALTDIR_FAMILIES, DATASETS
+from .protocol import ALTDIR_FAMILIES, ATTR_CONCEPTS, DATASETS, PROJSEED_SEEDS
 from .protocol import primary_template as protocol_primary_template
 from .runpaths import RUN_ROOT
 
@@ -52,6 +59,9 @@ CAL_FIELDS = ("readable", "n_pos", "n_neg", "selectivity")
 ANS_FIELDS = ("answer_capable", "answer_auroc")
 CORE_FIELDS = ("W_qq", "O_q", "verdict", "steering_reference")
 VALID_FIELDS = ("readable", "answer_capable", "owned", "O_q", "verdict")
+ATTRRAND_FIELDS = ("random_p95", "steering_reference", "steering_reference_sham_only", "steering_reference_rule", "O_q", "verdict")
+VALIDFIT_FIELDS = ("owned", "O_q", "verdict", "steering_reference", "cos_to_report_model", "cos_to_report_whitened",
+                   "auroc_expert_heldout", "auroc_report_labels_heldout")
 COVERAGE_FIELDS = ("expected_rows", "actual_unique_rows", "failed_rows", "execution_status", "reason")
 
 COLUMNS = (["model_key", "dataset", "module", "locus_id", "fit_seed", "template", "concept"]
@@ -61,7 +71,9 @@ COLUMNS = (["model_key", "dataset", "module", "locus_id", "fit_seed", "template"
               "block_included", "probe_graded", "cell"]
            + list(CAL_FIELDS) + list(ANS_FIELDS) + list(CORE_FIELDS) + ["owned"]
            + [f"altdir_owned_{f}" for f in ALTDIR_FAMILIES] + [f"altdir_O_q_{f}" for f in ALTDIR_FAMILIES]
-           + [f"valid_{f}" for f in VALID_FIELDS])
+           + [f"valid_{f}" for f in VALID_FIELDS]
+           + [f"attrrand_{f}" for f in ATTRRAND_FIELDS] + [f"validfit_{f}" for f in VALIDFIT_FIELDS]
+           + [f"projseed_owned_seed{k}" for k in PROJSEED_SEEDS] + [f"projseed_O_q_seed{k}" for k in PROJSEED_SEEDS])
 
 
 # ------------------------------------------------------------------------------------------------ the rule
@@ -117,7 +129,16 @@ def block_rows(run_dir: Path) -> list[dict]:
     alt = summary.get("altdir") or {}
     alt_ok = included and "ALTDIR" in set(run.get("completed_modules") or []) and all(f in alt for f in ALTDIR_FAMILIES)
     val = (summary.get("valid") or {}).get("per_question") or {}
-    val_ok = included and "VALID" in set(run.get("completed_modules") or [])
+    done = set(run.get("completed_modules") or [])
+    val_ok = included and "VALID" in done
+    # attribute cells of summary.json `attr` (ATTRRAND supplies their random p95), the expert-label refit grade, and the
+    # per-projection-seed grades; each attaches only to its own module's rows and never enters block_included
+    att = ((summary.get("attr") or {}).get("per_question") or {})
+    att_ok = included and "ATTRRAND" in done and ((summary.get("attr") or {}).get("attrrand") or {}).get("available") is True
+    vfit = ((summary.get("validfit") or {}).get("per_question") or {})
+    vfit_ok = included and "VALIDFIT" in done
+    pseed = summary.get("projseed") or {}
+    pseed_ok = included and "PROJSEED" in done
     block = {"primary_template": primary, "run_status": run.get("status", ""),
              "completed_modules": "|".join(run.get("completed_modules") or []),
              "ineligible_modules": "|".join(run.get("ineligible_modules") or []),
@@ -143,6 +164,12 @@ def block_rows(run_dir: Path) -> list[dict]:
                 row[f"altdir_owned_{fam}"] = None; row[f"altdir_O_q_{fam}"] = None
             for k in VALID_FIELDS:
                 row[f"valid_{k}"] = None
+            for k in ATTRRAND_FIELDS:
+                row[f"attrrand_{k}"] = None
+            for k in VALIDFIT_FIELDS:
+                row[f"validfit_{k}"] = None
+            for k in PROJSEED_SEEDS:
+                row[f"projseed_owned_seed{k}"] = None; row[f"projseed_O_q_seed{k}"] = None
             if cell and probe and concept in cal:
                 for k in CAL_FIELDS:
                     row[k] = cal[concept].get(k)
@@ -161,6 +188,18 @@ def block_rows(run_dir: Path) -> list[dict]:
             if r["module"] == "VALID" and seed == "0" and concept in val and val_ok and r.get("execution_status") == "COMPLETE":
                 for k in VALID_FIELDS:
                     row[f"valid_{k}"] = val[concept].get(k)
+            if r["module"] == "ATTRRAND" and concept in ATTR_CONCEPTS and concept in att and att_ok \
+                    and r.get("execution_status") == "COMPLETE":
+                for k in ATTRRAND_FIELDS:
+                    row[f"attrrand_{k}"] = att[concept].get(k)
+            if r["module"] == "VALIDFIT" and seed == "0" and concept in vfit and vfit_ok and r.get("execution_status") == "COMPLETE":
+                for k in VALIDFIT_FIELDS:
+                    row[f"validfit_{k}"] = vfit[concept].get(k)
+            if r["module"] == "PROJSEED" and pseed_ok and r.get("execution_status") == "COMPLETE":
+                for k in PROJSEED_SEEDS:
+                    c = ((pseed.get(f"seed{k}") or {}).get("per_question") or {}).get(concept)
+                    if c and str(seed) == str(k):
+                        row[f"projseed_owned_seed{k}"] = c.get("owned"); row[f"projseed_O_q_seed{k}"] = c.get("O_q")
             rows.append(row)
     return rows
 

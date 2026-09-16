@@ -28,8 +28,10 @@ from .fit import load_fit, run_id_for
 from .hooks import LocusHook
 from .images import image_path, load_cohort, open_rgb
 from .hooks import MODE_SOFTMAX, MODE_TOPQ
+from .projseed import load_projseed
 from .protocol import (ALTDIR_FAMILIES, ALTDIRD_FAMILIES, ATTR_CONCEPTS, CONCEPTS, LOCI, MODULE_SETTINGS, MODULES, NUMERICS_DEFAULT,
                        PROTOCOL_ID, TOKENW_VARIANTS, conditions_for, direction_kind, primary_template, question_list, render_question)
+from .validfit import load_validfit
 from .runpaths import outcomes_dir, run_dir
 from .scoring import score_logits
 
@@ -57,7 +59,8 @@ class DirectionBank:
     step `python -m cftransfer.altdir`; a missing file fails here with that command, before any model is loaded."""
 
     def __init__(self, model_key, dataset_id, locus_id, seeds, altdir: bool = False, extcomp: bool = False, tokenw: bool = False,
-                 ansdir: bool = False, altdird: bool = False, attr: bool = False):
+                 ansdir: bool = False, altdird: bool = False, attr: bool = False, validfit: bool = False,
+                 projseed: tuple[int, ...] | None = None):
         self.fits = {s: load_fit(model_key, dataset_id, locus_id, s) for s in seeds}
         if 0 not in self.fits:
             self.fits[0] = load_fit(model_key, dataset_id, locus_id, 0)
@@ -79,6 +82,17 @@ class DirectionBank:
         if self.attr is not None and (list(self.attr["attr_names"].astype(str)) != list(ATTR_CONCEPTS)
                                       or self.attr["attr_vectors"].shape != (len(ATTR_CONCEPTS), self.D)):
             raise RuntimeError("attr_seed0.npz attribute order or width differs from the protocol / fit")
+        self.validfit = load_validfit(model_key, dataset_id, locus_id) if validfit else None
+        if self.validfit is not None and (list(self.validfit["concept_names"].astype(str)) != self.concepts
+                                          or self.validfit["expert_vectors"].shape != (len(self.concepts), self.D)):
+            raise RuntimeError("validfit_seed0.npz concept order or width differs from seed0.npz")
+        # PROJSEED: one refit file per PROJECTION seed; the seed travels in the condition's seed slot (the fit_seed column)
+        self.projseed = {k: load_projseed(model_key, dataset_id, locus_id, k) for k in (projseed or ())}
+        for k, arr in self.projseed.items():
+            if list(arr["concept_names"].astype(str)) != self.concepts or arr["clinical_vectors"].shape != (len(self.concepts), self.D):
+                raise RuntimeError(f"projseed_seed{k}.npz concept order or width differs from seed0.npz")
+            if arr["random_vectors"].shape[1] != self.D or int(arr["projection_seed"]) != k:
+                raise RuntimeError(f"projseed_seed{k}.npz random family width or projection seed is wrong")
         self.altdir = load_altdir(model_key, dataset_id, locus_id) if (altdir or altdird) else None
         if altdird and any(f"{fam}_vectors" not in self.altdir for fam in ALTDIRD_FAMILIES):
             raise FileNotFoundError(f"ALTDIRD needs the displacement families in altdir_seed0.npz; re-run "
@@ -118,6 +132,17 @@ class DirectionBank:
             if self.ansdir is None:
                 raise KeyError(f"{direction_id}: answer directions are only loaded for the ANSDIR module")
             return self.ansdir["answer_vectors" if kind == "ans" else "answer_sham_vectors"][self.concepts.index(name)]
+        if kind == "vfit":
+            if self.validfit is None:
+                raise KeyError(f"{direction_id}: expert-label directions are only loaded for the VALIDFIT module")
+            return self.validfit["expert_vectors"][self.concepts.index(name)]
+        if kind in ("proj", "projrand", "projsham"):
+            if seed not in self.projseed:
+                raise KeyError(f"{direction_id}: projection-seed directions are only loaded for the PROJSEED module (seed {seed})")
+            arr = self.projseed[seed]
+            if kind == "projrand":
+                return arr["random_vectors"][int(name)]
+            return arr["clinical_vectors" if kind == "proj" else "sham_vectors"][self.concepts.index(name)]
         raise KeyError(direction_id)
 
     def scorer(self, direction_id: str, seed: int) -> np.ndarray:
@@ -144,7 +169,7 @@ def completed_rows(part_dir: Path, shard_tag: str, expected_per_row: int | None 
 
 def run_block(model_key: str, dataset_id: str, module: str, shard: int, n_shards: int, batch: int, device_map: str,
               rows_per_part: int = 10, limit_rows: int | None = None, revision: str | None = None,
-              numerics: str | None = None) -> dict:
+              numerics: str | None = None, fit_seed: int | None = None) -> dict:
     spec = MODULES[module]
     if dataset_id not in spec.datasets:
         raise SystemExit(f"{module} is NOT_REQUESTED for {dataset_id}")
@@ -157,11 +182,19 @@ def run_block(model_key: str, dataset_id: str, module: str, shard: int, n_shards
         raise ValueError(f"{module} runs only under {NUMERICS_DEFAULT}; --numerics {numerics} is a PRECISION setting")
     else:
         numerics = NUMERICS_DEFAULT
+    # fit-seed selection: a module whose seeds are independent grids (PROJSEED: one projection seed each) can be run one
+    # seed per task, so a block costs one shard per seed; without the flag every seed of the spec is scored in one pass.
+    if fit_seed is not None and fit_seed not in spec.fit_seeds:
+        raise ValueError(f"{module} has fit seeds {spec.fit_seeds}; --fit-seed {fit_seed} is not one of them")
+    seeds = spec.fit_seeds if fit_seed is None else (fit_seed,)
     locus_id = LOCI[spec.locus]
     # directions first: a missing fit or altdir/extcomp prep file fails before the outcomes directory or the model exist
-    bank = DirectionBank(model_key, dataset_id, locus_id, spec.fit_seeds, altdir=spec.directions == "altdir",
+    bank = DirectionBank(model_key, dataset_id, locus_id, (0,) if spec.directions == "projseed" else spec.fit_seeds,
+                         altdir=spec.directions == "altdir",
                          extcomp=spec.directions == "extcomp", tokenw=spec.directions == "tokenw",
-                         ansdir=spec.directions in ("ansdir", "ansdirt"), altdird=spec.directions == "altdird", attr=spec.directions == "attr")
+                         ansdir=spec.directions in ("ansdir", "ansdirt"), altdird=spec.directions == "altdird",
+                         attr=spec.directions == "attr", validfit=spec.directions == "validfit",
+                         projseed=seeds if spec.directions == "projseed" else None)
     rows = load_cohort(dataset_id, (spec.role,))
     if spec.row_limit:
         rows = rows[:spec.row_limit]
@@ -171,6 +204,8 @@ def run_block(model_key: str, dataset_id: str, module: str, shard: int, n_shards
     part_dir = outcomes_dir(model_key, dataset_id) / module
     part_dir.mkdir(parents=True, exist_ok=True)
     shard_tag = f"{shard:03d}of{n_shards:03d}" if not settings else f"{numerics}-{shard:03d}of{n_shards:03d}"   # parts per setting
+    if fit_seed is not None:
+        shard_tag = f"s{fit_seed}-{shard_tag}"        # one part / meta stream per seed, so resume never mixes seeds
     # Questions: the block's primary template stands in for IY (protocol.primary_template: IB when preflight check E
     # marked IY INELIGIBLE). Templates still INELIGIBLE are dropped; a module left with no question closes as terminal
     # before the model is loaded.
@@ -191,14 +226,14 @@ def run_block(model_key: str, dataset_id: str, module: str, shard: int, n_shards
         print(f"[{model_key}/{dataset_id}/{module}] no eligible questions; nothing to score", flush=True)
         meta = {"model_key": model_key, "dataset_id": dataset_id, "module": module, "shard": shard, "n_shards": n_shards,
                 "rows": len(rows), "scored_rows": 0, "outcomes": 0, "seconds": 0.0, "throughput_per_s": 0.0, "batch": batch,
-                "primary_template": primary, "ineligible_templates": skipped, "numerics": numerics,
+                "primary_template": primary, "ineligible_templates": skipped, "numerics": numerics, "fit_seed": fit_seed,
                 "note": "every template of this module is INELIGIBLE by preflight check E; "
                 "the shard is terminal with no outcomes (coverage records the disposition)",
                 "ended_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())}
         part_dir.mkdir(parents=True, exist_ok=True)
         (part_dir / f"meta-{shard_tag}-{int(time.time())}.json").write_text(json.dumps(meta, indent=1))
         return meta
-    expected_per_row = sum(len(conditions_for(module, dataset_id, c)) for c, _t in questions) * len(spec.fit_seeds)
+    expected_per_row = sum(len(conditions_for(module, dataset_id, c)) for c, _t in questions) * len(seeds)
     done = completed_rows(part_dir, shard_tag, expected_per_row)
     todo = [r for r in rows if r["row_id"] not in done]
     print(f"[{model_key}/{dataset_id}/{module} shard {shard_tag}] {len(rows)} rows, {len(done)} done, {len(todo)} todo "
@@ -206,7 +241,7 @@ def run_block(model_key: str, dataset_id: str, module: str, shard: int, n_shards
     if not todo:
         meta = {"model_key": model_key, "dataset_id": dataset_id, "module": module, "shard": shard, "n_shards": n_shards,
                 "rows": len(rows), "todo": 0, "scored_rows": 0, "outcomes": 0, "seconds": 0.0, "throughput_per_s": 0.0, "batch": batch,
-                "primary_template": primary, "note": "every row of the shard was already fully scored; nothing to do",
+                "primary_template": primary, "fit_seed": fit_seed, "note": "every row of the shard was already fully scored; nothing to do",
                 "ended_utc": time.strftime("%Y-%m-%dT%T", time.gmtime()) + "Z"}
         (part_dir / f"meta-{shard_tag}-{int(time.time())}.json").write_text(json.dumps(meta, indent=1))
         return meta
@@ -240,7 +275,7 @@ def run_block(model_key: str, dataset_id: str, module: str, shard: int, n_shards
             for concept, template_id in questions:
                 question = render_question(dataset_id, concept, template_id)
                 cands = ad.candidates[template_id]
-                conds = [(d, a, s) for s in spec.fit_seeds for d, a in conditions_for(module, dataset_id, concept)]
+                conds = [(d, a, s) for s in seeds for d, a in conditions_for(module, dataset_id, concept)]
                 base = dict(protocol_id=PROTOCOL_ID, run_id=run_id, model_key=model_key, dataset_id=dataset_id,
                             module=module, role=row["role"], row_id=row["row_id"], unit_id=row["unit_id"],
                             concept=concept, template_id=template_id, locus_id=locus_id, numerics=numerics,
@@ -312,6 +347,7 @@ def run_block(model_key: str, dataset_id: str, module: str, shard: int, n_shards
     meta = {"model_key": model_key, "dataset_id": dataset_id, "module": module, "shard": shard, "n_shards": n_shards,
             "rows": len(rows), "scored_rows": len(todo), "outcomes": n_out, "seconds": round(el, 1),
             "throughput_per_s": round(n_out / max(el, 1e-9), 2), "batch": batch, "primary_template": primary, "numerics": numerics,
+            "fit_seed": fit_seed,
             "batch_policy": "fixed composition per question: clean replicated baseline batch + padded steered batches",
             "peak_gpu_memory_bytes": int(torch.cuda.max_memory_allocated()), "gpu_count": torch.cuda.device_count(),
             "gpu_models": sorted({torch.cuda.get_device_name(i) for i in range(torch.cuda.device_count())}),
@@ -333,6 +369,7 @@ if __name__ == "__main__":
     ap.add_argument("--rows-per-part", type=int, default=10)
     ap.add_argument("--limit-rows", type=int, default=None, help="debug: first N rows only")
     ap.add_argument("--numerics", default=None, help="PRECISION only: fp32 | batch1")
+    ap.add_argument("--fit-seed", type=int, default=None, help="score only this fit seed of the module (PROJSEED: the projection seed)")
     a = ap.parse_args()
     run_block(a.model_key, a.dataset, a.module, a.shard, a.n_shards, a.batch, a.device_map, a.rows_per_part, a.limit_rows,
-              numerics=a.numerics)
+              numerics=a.numerics, fit_seed=a.fit_seed)

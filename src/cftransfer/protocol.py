@@ -51,10 +51,11 @@ CALIBRATION_PROMPT_DATASETS = ("nih", "coco")
 # ALTDIR (alternative direction estimators, reviewer objection on estimator dependence) was added to every dataset
 # after the campaign's blocks were packaged; it is enqueued explicitly (enqueue --modules ALTDIR) and its coverage is
 # requested only once its outcomes directory exists, so packaged blocks keep COMPLETE until it starts.
-MODULES_ADDED_LATER = {"nih": ("ALTDIR", "EXTCOMP", "TOKENW", "PRECISION", "ANSDIR", "ALTDIRD", "ATTR", "ANSDIRT"),
-                       "coco": ("ALTDIR", "TOKENW", "PRECISION", "ANSDIR", "ALTDIRD", "ANSDIRT"),
+MODULES_ADDED_LATER = {"nih": ("ALTDIR", "EXTCOMP", "TOKENW", "PRECISION", "ANSDIR", "ALTDIRD", "ATTR", "ANSDIRT",
+                               "ATTRRAND", "PROJSEED"),
+                       "coco": ("ALTDIR", "TOKENW", "PRECISION", "ANSDIR", "ALTDIRD", "ANSDIRT", "PROJSEED"),
                        "chexpert": ("PROMPT", "DOSE", "REFIT", "LOCUS", "LOCUS_CALIBRATION", "ALTDIR", "EXTCOMP", "TOKENW", "ANSDIR",
-                                    "ALTDIRD", "ATTR", "ANSDIRT", "VALID")}
+                                    "ALTDIRD", "ATTR", "ANSDIRT", "VALID", "ATTRRAND", "VALIDFIT", "PROJSEED")}
 # ALTDIR direction families, in condition order: difference of means, Haufe pattern, orthogonalised logistic normal,
 # logistic normal refitted on label-residualised features (altdir.py); every family is lifted with the logistic rule.
 ALTDIR_FAMILIES = ("dom", "pattern", "orth", "resid")
@@ -70,6 +71,12 @@ ATTR_PHRASES = {"view_AP": "an anteroposterior (portable) projection", "sex_F": 
                 "age_60": "a patient aged sixty or older"}
 ATTR_MIN_CLASS_ROWS = 100
 ATTR_SHAM_SEED = 1                 # PCG64(1): one coordinate permutation per attribute, in ATTR_CONCEPTS order
+# ATTRRAND: the protocol's own 119-direction random family (fits/<locus>/seed0.npz random_vectors, the seed-0 draw of
+# PCG64(RANDOM_SEED) that CORE scores) written on the THREE ATTRIBUTE QUESTIONS only, at the primary template and dose,
+# on the same 600 test rows, against ATTR's own attribute baseline (no new baseline rows, no new directions, no prep of
+# its own). It exists so an attribute cell gets the same random p95 bar as a clinical cell: before it, attribute cells
+# were referenced against their sham alone while clinical cells had the 119-random p95, so the attribute-versus-finding
+# ownership comparison used two different steering references. analysis.attr() folds it in and reports both verdicts.
 # ANSDIRT: the IY-fitted answer directions written under the five other templates (own clean baseline per template)
 ANSDIRT_TEMPLATES = ("WY", "IA", "IB", "WA", "WB")
 # VALID: the CORE grid (primary template, PRIMARY_ALPHA, the 127-direction core family of the seed-0 fit) on the `valid`
@@ -77,6 +84,25 @@ ANSDIRT_TEMPLATES = ("WY", "IA", "IB", "WA", "WB")
 # whose labels are the radiologist consensus rather than the labeler output of every other role. Graded with the CORE rules
 # on those rows and compared with the block's CORE grade on the labeler-labelled test rows (analysis.valid).
 VALID_ROWS = 200
+# VALIDFIT: the six CheXpert concept directions REFITTED on the 200 radiologist-labelled `valid` rows (role `valid`,
+# label_source radiologist in manifests/release.json) instead of the report-derived labeler labels every other role
+# carries, using the protocol's own probe settings: the block's seed-0 projection R and its TRAIN-ONLY scaler (mu, s are
+# the stored ones -- the scaler is never refitted on 200 rows), LogisticRegression(C=1, lbfgs, 2000 iterations,
+# random_state 0), lifted with fit.direction_from_projected. VALIDFIT_FOLDS-fold cross-fitting over PATIENTS
+# (KFold shuffled, seed VALIDFIT_CV_SEED, over the sorted unit ids) gives every valid row a score from a direction not
+# fitted on it. The GPU part writes the six full-fit expert directions on the 600 TEST rows at the primary dose and
+# template, CORE baseline reused, so their ownership is graded against exactly CORE's 119-random and sham references.
+VALIDFIT_FOLDS = 5
+VALIDFIT_CV_SEED = 0
+# PROJSEED: the six clinical logistic directions refitted under two FURTHER PROJECTION SEEDS (the campaign otherwise
+# shares one 512-d PCG64(0) projection R). For k in PROJSEED_SEEDS: R_k = PCG64(k).standard_normal((D, 512)) / sqrt(512)
+# (the construction of fit.fit_locus with PROJECTION_SEED replaced by k), the train-only scaler is recomputed in that
+# projected space, and the six probes are refitted on the SAME training rows and known-label masks with the same
+# hyperparameters. The random family and the shams are the same construction re-drawn in that projection:
+# PCG64(k) -> 119 x D row-normalised normals, then one coordinate permutation per concept, exactly as the seed-0 file
+# draws its family from PCG64(RANDOM_SEED). Each seed therefore yields a full ownership grade (own write, six-direction
+# family, its own 119-random p95 and its own sham). Outcomes carry the projection seed in the fit_seed column.
+PROJSEED_SEEDS = (1, 2)
 # EXTCOMP: extra dataset labels fitted like the protocol normals (extcomp.py) and added to the competitor family. The
 # frozen lists are the manifest labels with at least EXTCOMP_MIN_SUPPORT known positives AND negatives in the training
 # rows (counts checked again by the prep); the excluded labels and the reason are recorded next to them.
@@ -101,7 +127,8 @@ MODULE_SETTINGS = {"PRECISION": PRECISION_SETTINGS}       # modules scored once 
 # The seven modules of the planned campaign (protocol.json total_planned_outcomes) and the modules added afterwards as
 # addenda (each enqueued explicitly, each counted in total_planned_outcomes.addenda, each in MODULES_ADDED_LATER).
 PLANNED_MODULES = ("CORE", "CALIBRATION", "PROMPT", "DOSE", "REFIT", "LOCUS", "LOCUS_CALIBRATION")
-ADDENDUM_MODULES = ("ALTDIR", "EXTCOMP", "TOKENW", "PRECISION", "ANSDIR", "ALTDIRD", "ATTR", "ANSDIRT", "VALID")
+ADDENDUM_MODULES = ("ALTDIR", "EXTCOMP", "TOKENW", "PRECISION", "ANSDIR", "ALTDIRD", "ATTR", "ANSDIRT", "VALID",
+                    "ATTRRAND", "VALIDFIT", "PROJSEED")
 # ANSDIR (answer-direction oracle, ansdir.py): per question q a ridge regression of the clean answer margin on the
 # projected, train-scaled features of the first ANSDIR_N_TRAIN training rows (alpha by 5-fold CV over ANSDIR_ALPHAS),
 # lifted like the logistic normals; written with the six a_d plus the coordinate-permutation sham of a_q.
@@ -178,10 +205,11 @@ class ModuleSpec:
     role: str                       # cohort role scored
     row_limit: int | None           # first N rows of the role in cohorts order (DOSE)
     templates: tuple[str, ...]
-    concepts_rule: str              # "all" | "prompt" | "attr" (three attribute questions + the six clinical ones)
+    concepts_rule: str              # "all" | "prompt" | "attr" (3 attribute + 6 clinical) | "attrrand" (the 3 attribute questions)
     alphas: tuple[float, ...]
-    directions: str                 # "core" | "clean" | "dose" | "refit" | "altdir" | "extcomp" | "tokenw" | "ansdir" | "altdird" | "attr" | "ansdirt"
-    fit_seeds: tuple[int, ...]
+    directions: str                 # "core" | "clean" | "dose" | "refit" | "altdir" | "extcomp" | "tokenw" | "ansdir" | "altdird"
+                                    # | "attr" | "ansdirt" | "attrrand" | "validfit" | "projseed"
+    fit_seeds: tuple[int, ...]      # PROJSEED: the PROJECTION seeds (1, 2); every other module: probe fit seeds
     locus: str                      # "primary" | "connector"
     baseline_module: str | None     # module whose clean baseline is reused (DOSE/REFIT)
     datasets: tuple[str, ...]
@@ -228,6 +256,17 @@ MODULES: dict[str, ModuleSpec] = {
                           ("nih", "chexpert", "coco")),
     # the CORE grid (own baseline) on the radiologist-labelled valid rows of CheXpert
     "VALID": ModuleSpec("VALID", "valid", None, ("IY",), "all", (PRIMARY_ALPHA,), "core", (0,), "primary", None, ("chexpert",)),
+    # the 119-direction random family on the THREE ATTRIBUTE questions, ATTR baseline reused: the random p95 an
+    # attribute cell was missing (ATTR referenced attribute cells against their sham alone)
+    "ATTRRAND": ModuleSpec("ATTRRAND", "test", None, ("IY",), "attrrand", (PRIMARY_ALPHA,), "attrrand", (0,), "primary", "ATTR",
+                           ("nih", "chexpert")),
+    # the six concept directions refitted on the radiologist-labelled valid rows, written on the test rows, CORE baseline
+    # and CORE's random / sham references reused
+    "VALIDFIT": ModuleSpec("VALIDFIT", "test", None, ("IY",), "all", (PRIMARY_ALPHA,), "validfit", (0,), "primary", "CORE",
+                           ("chexpert",)),
+    # the six clinical directions refitted under projection seeds 1 and 2, each with its own random family and sham
+    "PROJSEED": ModuleSpec("PROJSEED", "test", None, ("IY",), "all", (PRIMARY_ALPHA,), "projseed", PROJSEED_SEEDS, "primary", "CORE",
+                           ("nih", "chexpert", "coco")),
 }
 
 
@@ -242,6 +281,8 @@ def question_list(dataset_id: str, module: str, primary: str = "IY") -> list[tup
         concepts = PROMPT_CONCEPTS[dataset_id]
     elif spec.concepts_rule == "attr":
         concepts = ATTR_CONCEPTS + list(concepts)
+    elif spec.concepts_rule == "attrrand":
+        concepts = list(ATTR_CONCEPTS)
     out = [(c, primary if t == "IY" else t) for t in spec.templates for c in concepts]
     if module == "CALIBRATION" and dataset_id in CALIBRATION_PROMPT_DATASETS:
         # NIH/COCO calibration also scores the two PROMPT concepts under the five other templates (README 5.4)
@@ -285,6 +326,16 @@ def conditions_for(module: str, dataset_id: str, concept: str) -> list[tuple[str
         return [(d, spec.alphas[0]) for d in dirs] + [(sham, spec.alphas[0])]
     if spec.directions == "ansdirt":
         return [("baseline", 0.0)] + [(f"ans:{c}", spec.alphas[0]) for c in CONCEPTS[dataset_id]] + [(f"anssham:{concept}", spec.alphas[0])]
+    if spec.directions == "attrrand":
+        # the 119 protocol random directions only; the attribute question's clean baseline is ATTR's
+        return [(f"random:{i:03d}", spec.alphas[0]) for i in range(N_RANDOM)]
+    if spec.directions == "validfit":
+        # the six expert-label (radiologist) refits; CORE baseline, CORE random family and CORE sham are the references
+        return [(f"vfit:{c}", spec.alphas[0]) for c in CONCEPTS[dataset_id]]
+    if spec.directions == "projseed":
+        # one projection seed per fit_seed: six refit directions, that projection's own 119 random directions and its sham
+        ids = [f"proj:{c}" for c in CONCEPTS[dataset_id]] + [f"projrand:{i:03d}" for i in range(N_RANDOM)] + [f"projsham:{concept}"]
+        return [(d, spec.alphas[0]) for d in ids]
     raise ValueError(spec.directions)
 
 
