@@ -3,10 +3,14 @@ from __future__ import annotations
 
 from ..protocol import MODELS
 from .chexagent import CheXagentAdapter
+from .chexagent8 import CheXagent8Adapter
 from .gemma import Gemma3Adapter
+from .huatuo import HuatuoAdapter
 from .internvl import InternVLAdapter
 from .llava import LlavaAdapter
 from .llavamed import LlavaMedAdapter
+from .llavarad import LlavaRadAdapter
+from .maira2 import Maira2Adapter
 from .mllama import MllamaAdapter
 from .qwen import Qwen3VLAdapter, QwenVLAdapter
 
@@ -30,6 +34,12 @@ REVISIONS = {
     "lingshu-32": "36b98277cacb60db86f34b75ce0540b1ea35183c",
     "llavamed-7": "91bb16c122001ddc9cf1fd36ce1dae09448943a2",
     "chexagent-3": "8f19b53a2eceda4c33b0acec6c81fbc293ad80d0",
+    # addendum checkpoints staged after the locked config; the revision is the SOURCE repository's, as for
+    # llavamed-7, because the adapter loads a native conversion of it (see the block's conversion.json receipt)
+    "huatuo-7": "34dfcdbb7728ff38da865839f342b88c4cf6ef39",
+    "chexagent-8": "4934e91451945c8218c267aae9c34929a7677829",
+    "llavarad-7": "dcdbc6caf6806c9acb66e12a827a39c86e00f6a7",
+    "maira2-7": "795a2b1cd4a310624b4e3d14b5a23e41fd273deb",
 }
 
 FAMILY_ADAPTER = {
@@ -41,7 +51,11 @@ FAMILY_ADAPTER = {
     "iv35-8": InternVLAdapter, "iv35-14": InternVLAdapter, "iv35-38": InternVLAdapter,
     "llava15-7": LlavaAdapter, "llava15-13": LlavaAdapter,
     "llavamed-7": LlavaMedAdapter,
+    "huatuo-7": HuatuoAdapter,
+    "llavarad-7": LlavaRadAdapter,
+    "maira2-7": Maira2Adapter,
     "chexagent-3": CheXagentAdapter,
+    "chexagent-8": CheXagent8Adapter,
     "llama32-11": MllamaAdapter, "llama32-90": MllamaAdapter,
 }
 

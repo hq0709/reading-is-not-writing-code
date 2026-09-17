@@ -1019,6 +1019,46 @@
       "processor_revision": "8f19b53a2eceda4c33b0acec6c81fbc293ad80d0",
       "execution_state": "NOT_STARTED",
       "note": "addendum checkpoint added after the 22-model campaign was planned: the only grid member whose vision tower (StanfordAIMI/XraySigLIP__vit-l-16-siglip-384__webli, revision f0edbf5d90dba44edb7f4f96d8663537cb0749bf) was trained on chest radiographs. It is outside total_planned_outcomes, which stays the 22-model plan."
+    },
+    {
+      "model_key": "huatuo-7",
+      "model_id": "FreedomIntelligence/HuatuoGPT-Vision-7B",
+      "batch": "addendum",
+      "required_for_full_package": false,
+      "model_revision": "34dfcdbb7728ff38da865839f342b88c4cf6ef39",
+      "processor_revision": "34dfcdbb7728ff38da865839f342b88c4cf6ef39",
+      "execution_state": "NOT_STARTED",
+      "note": "addendum checkpoint: a medical VLM trained on PubMedVision with the LLaVA-1.5 architecture over a Qwen2-7B language model. Its model_type llava_qwen2 exists only in the HuatuoGPT-Vision repository, so it enters the grid through the native conversion scripts/mayo/convert_huatuo.py (receipt at cache/converted/HuatuoGPT-Vision-7B-hf/conversion.json), as llavamed-7 does. It shares llava15-7's CLIP ViT-L/14-336 tower and llavamed-7's medical domain with a third language model, so it separates the tower from the reader once more. Outside total_planned_outcomes, which stays the 22-model plan."
+    },
+    {
+      "model_key": "chexagent-8",
+      "model_id": "StanfordAIMI/CheXagent-8b",
+      "batch": "addendum",
+      "required_for_full_package": false,
+      "model_revision": "4934e91451945c8218c267aae9c34929a7677829",
+      "processor_revision": "4934e91451945c8218c267aae9c34929a7677829",
+      "execution_state": "NOT_STARTED",
+      "note": "addendum checkpoint: the checkpoint of the CheXagent paper (arXiv:2401.12208). It is BLIP-2, not LLaVA, and not the architecture of chexagent-3: a 40-layer EVA-CLIP-shaped ViT at 448 px trained on chest radiographs, a 12-layer Q-Former with 128 query tokens, a linear projection and Mistral-7B. It is the grid's only perceiver-resampler connector with a fixed 128-token visual interface. Outside total_planned_outcomes, which stays the 22-model plan."
+    },
+    {
+      "model_key": "llavarad-7",
+      "model_id": "microsoft/llava-rad",
+      "batch": "addendum",
+      "required_for_full_package": false,
+      "model_revision": "dcdbc6caf6806c9acb66e12a827a39c86e00f6a7",
+      "processor_revision": "dcdbc6caf6806c9acb66e12a827a39c86e00f6a7",
+      "execution_state": "NOT_STARTED",
+      "note": "addendum checkpoint: a chest-radiograph LLaVA whose published repository carries no language-model weights -- a LoRA over lmsys/vicuna-7b-v1.5 (revision resolved at staging), the two mm_projector tensors, and a BiomedCLIP-CXR-518 vision tower in an open_clip training checkpoint. It enters the grid through the assembly scripts/mayo/convert_llavarad.py (receipt at cache/converted/llava-rad-hf/conversion.json). Its tower is a timm vit_base_patch14_dinov2 at 518 px, so it consumes 1,369 visual tokens, 2.4x LLaVA-1.5's 576. Outside total_planned_outcomes, which stays the 22-model plan."
+    },
+    {
+      "model_key": "maira2-7",
+      "model_id": "microsoft/maira-2",
+      "batch": "addendum",
+      "required_for_full_package": false,
+      "model_revision": "795a2b1cd4a310624b4e3d14b5a23e41fd273deb",
+      "processor_revision": "795a2b1cd4a310624b4e3d14b5a23e41fd273deb",
+      "execution_state": "NOT_STARTED",
+      "note": "addendum checkpoint: Microsoft's chest-radiograph report-generation model. LLaVA-shaped with a DINOv2 ViT-B/14 backbone at 518 px (1,369 consumed tokens), a FOUR-layer projector -- the deepest connector of the grid -- and a Vicuna-7B-shaped Llama with a 32,207-token vocabulary. Its remote code targets the transformers 4.51 module layout and cannot run on the campaign's 5.15, so it enters through the layout assembly scripts/mayo/convert_maira2.py (receipt at cache/converted/maira-2-hf/conversion.json); no tensor value is changed. Outside total_planned_outcomes, which stays the 22-model plan."
     }
   ],
   "total_planned_outcomes": {
@@ -1064,9 +1104,13 @@
       "FGOBJ_CALIBRATION": "2,400 clean forwards per COCO block (6 fine-grained questions x 400 calibration rows); the table follows the campaign convention (COCO x 22 models). It is 3/8 of the COCO CALIBRATION module, i.e. 0.02-0.14 GPU-h per block on the measured CALIBRATION throughput, under 2% of the FGOBJ block it accompanies."
     },
     "addendum_models": [
-      "chexagent-3"
+      "chexagent-3",
+      "huatuo-7",
+      "chexagent-8",
+      "llavarad-7",
+      "maira2-7"
     ],
-    "addendum_models_note": "chexagent-3 (StanfordAIMI/CheXagent-2-3b) is an addendum checkpoint enqueued explicitly; the planned totals above remain those of the 22-model campaign."
+    "addendum_models_note": "chexagent-3 (StanfordAIMI/CheXagent-2-3b), huatuo-7 (FreedomIntelligence/HuatuoGPT-Vision-7B) chexagent-8 (StanfordAIMI/CheXagent-8b) llavarad-7 (microsoft/llava-rad) and maira2-7 (microsoft/maira-2) are addendum checkpoints enqueued explicitly; the planned totals above remain those of the 22-model campaign."
   },
   "semend": {
     "purpose": "semantic endpoints outside the six yes/no / A-B templates, so ownership is not validated only against the model's own answers under those six prompts",

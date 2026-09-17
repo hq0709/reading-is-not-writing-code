@@ -15,6 +15,7 @@ PREP = "/rodata/azradonc_dev/m253405/concept-flow/scripts/mayo/prep_model.sh"
 LANE = {"q25-3": "gpu1", "q25-7": "gpu1", "q3-4": "gpu1", "q3-8": "gpu1", "iv35-8": "gpu1", "iv35-14": "gpu1",
         "gemma3-4": "gpu1", "gemma3-12": "gpu1", "medgemma-4": "gpu1", "llama32-11": "gpu1", "llava15-7": "gpu1",
         "llava15-13": "gpu1", "lingshu-7": "gpu1", "llavamed-7": "gpu1", "chexagent-3": "gpu1",
+        "huatuo-7": "gpu1", "chexagent-8": "gpu1", "llavarad-7": "gpu1", "maira2-7": "gpu1",
         "q25-32": "gpu2", "q3-32": "gpu2", "iv35-38": "gpu2", "gemma3-27": "gpu2", "medgemma-27": "gpu2", "lingshu-32": "gpu2",
         "q25-72": "gpu3", "llama32-90": "gpu3"}
 BATCH = {"gpu1": 32, "gpu2": 16, "gpu3": 8, "gpu4": 8}
@@ -28,7 +29,34 @@ BATCH = {"gpu1": 32, "gpu2": 16, "gpu3": 8, "gpu4": 8}
 # larger batch makes the baselines and the whole CALIBRATION module proportionally more expensive. NIH
 # CORE + CALIBRATION costs 12.55 / 12.81 / 14.26 GPU-h at batch 4 / 8 / 16. 8 is the flat part of that curve
 # with the smaller memory footprint.
-BATCH_MODEL = {"llama32-11": 16, "llama32-90": 4, "chexagent-3": 8}
+# huatuo-7 is LLaVA-1.5 (576 visual tokens, 605-token prompt) over a Qwen2-7B reader. Measured on one
+# A100-80GB (scripts/mayo/batch_timing.py, runs/huatuo-7/nih/batch_timing.vis.last.json), steered forwards of
+# the runner's replicated-image composition: 0.0596 s at batch 1 (18.2 GB peak), 0.332 at 8 (18.8), 0.643 at
+# 16 (19.5), 1.265 at 32 (21.0) -- per condition 0.0596 / 0.0415 / 0.0402 / 0.0395, i.e. flat from 8 upward.
+# NIH CORE + CALIBRATION costs 7.67 / 5.75 / 5.89 / 6.43 GPU-h at batch 1 / 8 / 16 / 32: the runner spends one
+# FULL batch forward on every clean baseline condition, so the curve turns back up above 16. 16 is on the flat
+# part, 2.4% above the measured minimum, and 12% cheaper than the lane default of 32.
+# chexagent-8 is BLIP-2: a 40-layer ViT at 448 px over 1,025 tokens with the remote code's own eager attention,
+# a 12-layer Q-Former and Mistral-7B, but only a 30-token prompt and 128 visual embeddings reaching the reader,
+# so the cost is almost entirely the tower and it amortises well. Measured on one A100-80GB
+# (runs/chexagent-8/nih/batch_timing.vis.last.json): 0.0722 s at batch 1 (17.4 GB peak), 0.162 at 4 (17.6),
+# 0.303 at 8 (18.0), 0.568 at 16 (18.8) -- per condition 0.0722 / 0.0406 / 0.0379 / 0.0355. NIH
+# CORE + CALIBRATION costs 9.30 / 5.49 / 5.28 / 5.24 GPU-h at batch 1 / 4 / 8 / 16; 16 is the measured minimum
+# and the largest composition measured.
+# llavarad-7 is the most expensive 7B block of the grid per row: a DINOv2 ViT-B/14 at 518 px emits 1,369
+# consumed visual tokens (2.4x LLaVA-1.5's 576), so the language model reads a 1,430-token prompt on every
+# condition. Measured on one A100-80GB (runs/llavarad-7/nih/batch_timing.vis.last.json): 0.162 s at batch 1
+# (14.4 GB peak), 0.582 at 4 (14.9), 1.158 at 8 (15.5), 2.175 at 16 (16.7) -- per condition 0.162 / 0.146 /
+# 0.145 / 0.136. NIH CORE + CALIBRATION costs 20.85 / 19.49 / 19.95 / 19.88 GPU-h at batch 1 / 4 / 8 / 16,
+# i.e. flat within 2% from 4 upward; 8 sits in that band with a 15.5 GB footprint.
+# maira2-7 has llavarad-7's shape (DINOv2 ViT-B/14 at 518 px, 1,369 consumed tokens, a 1,421-token prompt) with
+# a deeper projector. Measured on one A100-80GB (runs/maira2-7/nih/batch_timing.vis.last.json): 0.158 s at batch
+# 1 (14.5 GB peak), 0.543 at 4 (14.9), 1.061 at 8 (15.5), 2.115 at 16 (16.8) -- per condition 0.158 / 0.136 /
+# 0.133 / 0.132. NIH CORE + CALIBRATION costs 20.32 / 18.18 / 18.36 / 19.32 GPU-h at batch 1 / 4 / 8 / 16, flat
+# within 1% from 4 to 8. NOTE the block is NOT eligible for the yes/no grid: all six templates failed preflight
+# check E (see runs/maira2-7/nih/template_eligibility.json), so every module would close with no outcomes.
+BATCH_MODEL = {"llama32-11": 16, "llama32-90": 4, "chexagent-3": 8, "huatuo-7": 16, "chexagent-8": 16,
+               "llavarad-7": 8, "maira2-7": 8}
 
 
 def batch_for(model_key: str, lane: str) -> int:
@@ -108,7 +136,7 @@ MODULE_ORDER = ["CALIBRATION", "CORE", "LOCUS_CALIBRATION", "DOSE", "REFIT", "LO
 MODEL_PRIORITY = ["q25-7", "llava15-7", "lingshu-7", "llavamed-7", "q3-8", "iv35-8", "medgemma-4", "q25-3", "q3-4", "iv35-14",
                   "llava15-13", "gemma3-4", "gemma3-12", "llama32-11", "q25-32", "q3-32", "lingshu-32", "medgemma-27",
                   "gemma3-27", "iv35-38", "q25-72", "llama32-90",
-                  "chexagent-3"]   # addendum checkpoint, appended so no existing block's task names change
+                  "chexagent-3", "huatuo-7", "chexagent-8", "llavarad-7", "maira2-7"]   # addendum checkpoints, appended so no existing block's task names change
 
 
 def enqueue(model_key: str, dataset_id: str, modules: list[str] | None = None, prep: bool = True, prefix: str = "") -> list[str]:

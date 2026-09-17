@@ -22,3 +22,7 @@ lingshu-7,lingshu-medical-mllm/Lingshu-7B,lingshu,7,phase1,1x80GB,medical-family
 llavamed-7,microsoft/llava-med-v1.5-mistral-7b,llava-med,7,phase2,1x80GB,medical-runtime,https://huggingface.co/microsoft/llava-med-v1.5-mistral-7b
 lingshu-32,lingshu-medical-mllm/Lingshu-32B,lingshu,32,phase2,2x80GB,external-medical-pair,https://huggingface.co/lingshu-medical-mllm/Lingshu-32B
 chexagent-3,StanfordAIMI/CheXagent-2-3b,chexagent-2,3,addendum,1x48GB,medical-chest-tower,https://huggingface.co/StanfordAIMI/CheXagent-2-3b
+huatuo-7,FreedomIntelligence/HuatuoGPT-Vision-7B,huatuo-vision,7,addendum,1x48GB,medical-llava-qwen2,https://huggingface.co/FreedomIntelligence/HuatuoGPT-Vision-7B
+chexagent-8,StanfordAIMI/CheXagent-8b,chexagent-1,8,addendum,1x80GB,medical-chest-qformer,https://huggingface.co/StanfordAIMI/CheXagent-8b
+llavarad-7,microsoft/llava-rad,llava-rad,7,addendum,1x80GB,medical-chest-llava,https://huggingface.co/microsoft/llava-rad
+maira2-7,microsoft/maira-2,maira-2,7,addendum,1x80GB,medical-chest-report,https://huggingface.co/microsoft/maira-2
