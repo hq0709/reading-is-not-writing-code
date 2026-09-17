@@ -26,7 +26,7 @@ def partial(a, n=None):
 MODS = {"ANSDIR": "ansdir", "EXTCOMP": "extcomp", "TOKENW": "tokenw", "PRECISION": "precision", "ALTDIRD": "altdird",
         "ATTRQ": "attrq", "ATTR": "attr", "ANSDIRT": "ansdirt",
         "VALID": "valid", "ATTRRAND": "attr", "VALIDFIT": "validfit", "PROJSEED": "projseed",
-        "TOWERSWAP": "towerswap", "REPLAY": "replay", "SEMEND": "semend"}
+        "TOWERSWAP": "towerswap", "TOWERSWAPD": "towerswapd", "REPLAY": "replay", "SEMEND": "semend"}
 # ATTRRAND has no analysis key of its own: it is folded into `attr`, so a block whose stored `attr` was computed before
 # ATTRRAND landed (no attribute random family in it) is reported as needing the analysis again. ATTRQ is listed BEFORE
 # ATTR so that in one pass the attribute answerability is computed first and `attr` can read it; an `attr` computed

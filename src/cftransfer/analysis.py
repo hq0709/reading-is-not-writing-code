@@ -1525,6 +1525,62 @@ def _paired_contrast(a: np.ndarray, b: np.ndarray, concepts: list[str], idx: np.
             for qi, q in enumerate(concepts)} | {"max_t_critical": mt["critical"], "contrast": names}
 
 
+def towerswapd(model_key: str, dataset_id: str, template_id: str | None = None, alpha: float = PRIMARY_ALPHA,
+               draws: int = BOOT_CALIBRATION_DRAWS) -> dict:
+    """TOWERSWAPD: the partner's tower behind this reader, written with THIS block's own directions.
+
+    A tower swap replaces the representation and the directions fitted on it at once. This arm holds the directions
+    fixed, so the three paired contrasts on the same rows separate the two factors:
+      native vs TOWERSWAPD   the representation alone (same directions, same reader)
+      TOWERSWAPD vs TOWERSWAP the directions alone (same tower, same reader)
+      native vs TOWERSWAP    both together, which is what the crossover reports
+    """
+    partner = TOWERSWAP_PAIRS.get(model_key)
+    if partner is None:
+        raise KeyError(f"{model_key}: not a TOWERSWAP pair member ({sorted(TOWERSWAP_PAIRS)})")
+    primary = _primary(model_key, dataset_id, template_id)
+    concepts = CONCEPTS[dataset_id]
+    n_rows = MODULES["TOWERSWAPD"].row_limit
+    rows = load_cohort(dataset_id, ("test",))[:n_rows]
+    order = {r["row_id"]: i for i, r in enumerate(rows)}
+    idx = core_bootstrap_indices(dataset_id, len(rows), draws)
+    res = {"n_rows": len(rows), "alpha": alpha, "template_id": primary, "draws": int(idx.shape[0]),
+           "reader": model_key, "partner": partner, "arms": {}, "contrasts": {}}
+    swaps = sorted((outcomes_dir(model_key, dataset_id) / "TOWERSWAPD").glob("swap-*.json"))
+    res["swap_receipt"] = json.loads(swaps[-1].read_text()) if swaps else None
+    arms = {}
+    for name, module, row_limit in (("native", "CORE", n_rows), ("tower_swapped_same_directions", "TOWERSWAPD", None),
+                                    ("tower_swapped_partner_directions", "TOWERSWAP", None)):
+        try:
+            d = _arm_deltas(model_key, dataset_id, module, concepts, order, alpha, primary)
+        except (FileNotFoundError, RuntimeError, KeyError):
+            d = None
+        if d is None or any((q, f"concept:{q}") not in d for q in concepts):
+            res["arms"][name] = {"status": "NOT_STARTED", "module": module}
+            continue
+        g = core(model_key, dataset_id, module, template_id=primary, alpha=alpha, n_boot=draws, row_limit=row_limit)
+        cell = _grade_cells(g)
+        for q in concepts:
+            cell[q]["owned"] = bool(cell[q]["steering_reference"] and cell[q]["verdict"] == "fixed_family_advantage")
+        res["arms"][name] = {"status": "COMPLETE", "module": module, "grade": cell,
+                             "directions_from": model_key if module != "TOWERSWAP" else partner,
+                             "tower": model_key if module == "CORE" else partner,
+                             "owned": sorted(q for q in concepts if cell[q]["owned"])}
+        arms[name] = _own_rows(d, concepts, len(rows))
+    for label, a, b in (("representation_alone", "tower_swapped_same_directions", "native"),
+                        ("directions_alone", "tower_swapped_partner_directions", "tower_swapped_same_directions"),
+                        ("both", "tower_swapped_partner_directions", "native")):
+        if a in arms and b in arms:
+            c = _paired_contrast(arms[a], arms[b], concepts, idx, [a, b])
+            c["mean_abs_effect"] = float(np.mean([abs(c[q]["estimate"]) for q in concepts]))
+            c["n_simultaneously_nonzero"] = int(sum(c[q]["nonzero_simultaneous"] for q in concepts))
+            for q in concepts:
+                c[q]["dO_q"] = res["arms"][a]["grade"][q]["O_q"] - res["arms"][b]["grade"][q]["O_q"]
+                c[q]["owned_a"], c[q]["owned_b"] = res["arms"][a]["grade"][q]["owned"], res["arms"][b]["grade"][q]["owned"]
+            res["contrasts"][label] = c
+    return res
+
+
 def towerswap(model_key: str, dataset_id: str, template_id: str | None = None, alpha: float = PRIMARY_ALPHA,
               draws: int = BOOT_CALIBRATION_DRAWS) -> dict:
     """TOWERSWAP: the write matrix of the same reader under two towers, and of the same tower under two readers.
@@ -2202,6 +2258,8 @@ if __name__ == "__main__":
             report["projseed"] = projseed(a.model_key, a.dataset, draws=a.n_boot or BOOT_CALIBRATION_DRAWS)
         elif w == "towerswap":
             report["towerswap"] = towerswap(a.model_key, a.dataset, draws=a.n_boot or BOOT_CALIBRATION_DRAWS)
+        elif w == "towerswapd":
+            report["towerswapd"] = towerswapd(a.model_key, a.dataset, draws=a.n_boot or BOOT_CALIBRATION_DRAWS)
         elif w == "replay":
             report["replay"] = replay(a.model_key, a.dataset, draws=a.n_boot or BOOT_CALIBRATION_DRAWS)
         elif w == "semend":

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Round-2 robustness modules over the cf-transfer campaign grid: VALID, ALTDIRD, ANSDIRT, ATTR, PRECISION (full grade).
+"""Round-2 robustness modules over the cf-transfer campaign grid: VALID, ALTDIRD, ANSDIRT, ATTR, FGOBJ, STRATIFIED, SEMEND, PRECISION (full grade).
 
 Read-only over <RUN_ROOT>/<model_key>/<dataset>/{run.json,summary.json}. Only blocks under the paper's one inclusion rule
 (cftransfer.manifest.block_included: CORE and CALIBRATION in run.json completed_modules) enter; within them a module
@@ -55,6 +55,15 @@ Ownership everywhere: owned = steering_reference and verdict == "fixed_family_ad
              block within the prespecified window, under three matchings (both variables, clean-answer AUROC alone, probe
              selectivity alone) and, for reference, the same matching with only the easy COCO cells as partners, which is
              the starved comparison FGOBJ exists to un-starve.
+  stratified Ownership by how well the model already answers the question, over bin edges fixed in this file
+             (STRAT_BIN_EDGES; chance, 0.7, 0.8, 0.9) and printed in the caption of the table that reports them. Two
+             comparisons, each per dataset and pooled: the FGOBJ pooled cells (every included primary CORE cell plus the
+             fine-grained COCO cells) split into chest and natural-image groups, and the ATTR nine-direction cells split
+             into non-clinical attributes and clinical findings. No cell is dropped -- every cell lands in exactly one
+             bin -- which is what separates this from the matched estimator beside it: matching on both difficulty
+             variables can pair only part of the chest pool, while the stratification keeps all of it and reports the
+             comparison inside each bin. The top bin also carries the two rates, their difference and a cluster
+             bootstrap over models of that difference.
   precision  summary.json `precision` settings (fp32, batch1) with status COMPLETE and a full grade: verdict changes,
              steering-reference changes, cells whose verdict or reference changes, and ownership changes against CORE on the same 200 rows, max |dW| over all
              6 x 126 written cells (clinical, random, sham), max |d contrast|; pooled over blocks and settings.
@@ -910,6 +919,130 @@ def fgobj_section(blocks: dict) -> dict:
                                                         "every group"}}
 
 
+# ------------------------------------------------------------------------------------------------ STRATIFIED
+# Ownership stratified by how well the model already answers the question. The matched estimator of the FGOBJ section
+# answers "what is the ownership difference between two cells of equal difficulty", and it pays for that with the cells
+# it cannot pair: matching on both variables keeps 99 of the 246 chest cells. This section asks the same question
+# without discarding a cell: it bins every cell by its clean-answer AUROC and reports the ownership rate inside each
+# bin, so the comparison at high answer ability -- the bin a reader cares about, because a cell the model answers badly
+# gives a write nothing to move -- rests on every cell that qualifies.
+#
+# PRESPECIFICATION: the bin edges below are fixed HERE, in the code, and are stated in the caption of the table that
+# prints them. They are the conventional AUROC reading points (chance, 0.7, 0.8, 0.9); nothing about them was chosen
+# from an ownership outcome, and the section reports every bin whatever it shows, including the bins with one cell.
+STRAT_BIN_EDGES = (0.0, 0.5, 0.7, 0.8, 0.9, 1.0)
+STRAT_BIN_LABELS = ("< 0.50", "0.50-0.70", "0.70-0.80", "0.80-0.90", ">= 0.90")
+STRAT_TOP_BIN = 4                       # index of ">= 0.90" in STRAT_BIN_LABELS
+STRAT_BOOT_DRAWS = 5000
+STRAT_BOOT_SEED = 2026091702
+
+
+def strat_bin(auroc) -> int | None:
+    """Index of the fixed bin a clean-answer AUROC falls in; the last bin is closed on the right. None when the cell
+    carries no clean-answer AUROC (no cell of either family does, and the count is reported so a reader can see that)."""
+    if auroc is None or not np.isfinite(auroc):
+        return None
+    for i in range(len(STRAT_BIN_LABELS)):
+        lo, hi = STRAT_BIN_EDGES[i], STRAT_BIN_EDGES[i + 1]
+        if lo <= auroc < hi or (i == len(STRAT_BIN_LABELS) - 1 and auroc >= lo):
+            return i
+    return None
+
+
+def strat_profile(cells: list) -> dict:
+    """One group's ownership profile over the fixed bins: counts, owned counts and rates, per bin and overall."""
+    idx = [strat_bin(c["answer_auroc"]) for c in cells]
+    bins = []
+    for i, lab in enumerate(STRAT_BIN_LABELS):
+        sel = [c for c, b in zip(cells, idx) if b == i]
+        o = sum(bool(c["owned"]) for c in sel)
+        bins.append({"bin": lab, "lo": STRAT_BIN_EDGES[i], "hi": STRAT_BIN_EDGES[i + 1],
+                     "cells": len(sel), "owned": o, "rate": (o / len(sel)) if sel else None})
+    o = sum(bool(c["owned"]) for c in cells)
+    return {"cells": len(cells), "owned": o, "rate": (o / len(cells)) if cells else None,
+            "blocks": len({c["block"] for c in cells}), "bins": bins,
+            "cells_without_answer_auroc": sum(b is None for b in idx),
+            "median_answer_auroc": med([c["answer_auroc"] for c in cells])}
+
+
+def strat_contrast(a_cells: list, b_cells: list, a_name: str, b_name: str, bin_index: int = STRAT_TOP_BIN,
+                   draws: int = STRAT_BOOT_DRAWS, seed: int = STRAT_BOOT_SEED) -> dict:
+    """Ownership rates of two groups inside ONE bin, their difference, and a cluster bootstrap over models of that
+    difference. The unit is the model for the same reason as in the FGOBJ section: a cell's ownership is already a
+    600-patient statistic, and what clusters cells is the checkpoint they come from."""
+    A = [c for c in a_cells if strat_bin(c["answer_auroc"]) == bin_index]
+    B = [c for c in b_cells if strat_bin(c["answer_auroc"]) == bin_index]
+    oa = np.array([float(bool(c["owned"])) for c in A]) if A else np.zeros(0)
+    ob = np.array([float(bool(c["owned"])) for c in B]) if B else np.zeros(0)
+    ra = float(oa.mean()) if len(oa) else None
+    rb = float(ob.mean()) if len(ob) else None
+    models = sorted({c["model"] for c in A} | {c["model"] for c in B})
+    mia = np.array([models.index(c["model"]) for c in A], int)
+    mib = np.array([models.index(c["model"]) for c in B], int)
+    rng = np.random.Generator(np.random.PCG64(seed))
+    d = []
+    for _ in range(draws if (len(oa) and len(ob)) else 0):
+        mult = np.bincount(rng.integers(0, len(models), len(models)), minlength=len(models)).astype(float)
+        wa, wb = mult[mia], mult[mib]
+        if wa.sum() <= 0 or wb.sum() <= 0:
+            continue
+        d.append(float((wa * oa).sum() / wa.sum() - (wb * ob).sum() / wb.sum()))
+    return {"bin": STRAT_BIN_LABELS[bin_index], "a": a_name, "b": b_name,
+            "a_owned": int(oa.sum()), "a_cells": len(A), "a_rate": ra,
+            "b_owned": int(ob.sum()), "b_cells": len(B), "b_rate": rb,
+            "difference": None if (ra is None or rb is None) else ra - rb,
+            "difference_ci95": [float(np.percentile(d, 2.5)), float(np.percentile(d, 97.5))] if d else None,
+            "bootstrap_valid_draws": len(d), "bootstrap_draws": draws,
+            "bootstrap_unit": "model (cluster bootstrap; a model carries every cell it contributes to either group)"}
+
+
+def stratified_section(fgobj: dict, attr: dict) -> dict:
+    """Ownership by clean-answer AUROC, for the two comparisons the paper makes: chest against natural-image cells
+    (the FGOBJ pool -- every included primary CORE cell plus the fine-grained COCO cells), and non-clinical attributes
+    against clinical findings inside the one nine-direction family of the ATTR module. Per dataset and pooled, over
+    the bin edges fixed above. No cell is dropped: every cell of each pool lands in exactly one bin."""
+    cells = fgobj["cells"]
+    groups = {
+        "nih": [c for c in cells if c["dataset"] == "nih"],
+        "chexpert": [c for c in cells if c["dataset"] == "chexpert"],
+        "chest": [c for c in cells if c["group"] == "chest"],
+        "coco_easy": [c for c in cells if c["group"] == "coco_easy"],
+        "coco_fine": [c for c in cells if c["group"] == "coco_fine"],
+        "natural": [c for c in cells if c["group"] in ("coco_easy", "coco_fine")]}
+    cvn = {"groups": {g: strat_profile(cs) for g, cs in groups.items()},
+           "contrast": strat_contrast(groups["chest"], groups["natural"], "chest", "natural"),
+           "contrast_easy_partners_only": strat_contrast(groups["chest"], groups["coco_easy"], "chest", "coco_easy"),
+           "source": "the FGOBJ pooled cells: every included primary CORE cell of the grid plus the fine-grained COCO "
+                     "cells, each with the clean-answer AUROC of its own block's calibration rows",
+           "group_definitions": {"chest": "nih and chexpert CORE cells", "natural": "easy and fine-grained COCO cells",
+                                 "coco_easy": "the six easy COCO objects of every COCO block",
+                                 "coco_fine": "the six fine-grained COCO objects of the FGOBJ blocks"}}
+    acells, ccells = [], []
+    for r in attr["blocks"]:
+        for q, c in r["attributes"].items():
+            acells.append({"block": r["block"], "model": r["model"], "dataset": r["dataset"], "concept": q,
+                           "owned": bool(c["owned"]), "answer_auroc": cell_auroc(c)})
+        for q, c in r["clinical"].items():
+            ccells.append({"block": r["block"], "model": r["model"], "dataset": r["dataset"], "concept": q,
+                           "owned": bool(c["owned"]), "answer_auroc": cell_auroc(c)})
+    ag = {"attribute_" + g: [c for c in acells if g == "chest" or c["dataset"] == g] for g in ("nih", "chexpert", "chest")}
+    cg = {"finding_" + g: [c for c in ccells if g == "chest" or c["dataset"] == g] for g in ("nih", "chexpert", "chest")}
+    avf = {"groups": {g: strat_profile(cs) for g, cs in list(ag.items()) + list(cg.items())},
+           "contrast": strat_contrast(acells, ccells, "attribute", "finding"),
+           "source": "the ATTR nine-direction family: three non-clinical attributes of the same radiographs and the six "
+                     "clinical findings, written together at the same dose and template and graded by the same rule, "
+                     "each cell with the clean-answer AUROC analysis.attr recorded for it",
+           "group_definitions": {"attribute": "AP (portable) projection, female sex, age at least 60",
+                                 "finding": "the six clinical findings of the same nine-direction family"}}
+    return {"bin_edges": list(STRAT_BIN_EDGES), "bin_labels": list(STRAT_BIN_LABELS),
+            "top_bin": STRAT_BIN_LABELS[STRAT_TOP_BIN], "top_bin_index": STRAT_TOP_BIN,
+            "chest_vs_natural": cvn, "attribute_vs_finding": avf, "skipped": [],
+            "prespecification": f"the bin edges {list(STRAT_BIN_EDGES)} are fixed in robustness_round2.py and printed "
+                                f"in the caption of the table that reports them; no ownership outcome enters them, and "
+                                f"every bin is reported"}
+
+
+
 # ------------------------------------------------------------------------------------------------ SEMEND (held out)
 # Whether the ownership grade carries information about endpoint behaviour BEYOND the write magnitude, the probe
 # selectivity and the clean-answer AUROC is a prediction question, so it is answered out of sample. Adding predictors
@@ -1303,6 +1436,30 @@ def write_md(R: dict, path: Path) -> None:
                      + (f"[{ci[0]:+.3f}, {ci[1]:+.3f}]" if ci else "n/a")
                      + f" | {f3(m.get('pooled_ownership_difference'))} | "
                      + (f"[{pci[0]:+.3f}, {pci[1]:+.3f}] |" if pci else "n/a |"))
+    ST = R.get("stratified")
+    if ST:
+        L += ["", "## Ownership stratified by clean-answer AUROC", "",
+              "Bin edges " + ", ".join(str(e) for e in ST["bin_edges"]) + ", fixed in robustness_round2.py; the last "
+              "bin is closed on the right and every cell of each pool lands in exactly one bin. "
+              + ST["prespecification"][0].upper() + ST["prespecification"][1:] + "."]
+        for fam, title in (("chest_vs_natural", "Chest findings against natural-image objects"),
+                           ("attribute_vs_finding", "Non-clinical attributes against clinical findings, one family")):
+            F = ST[fam]
+            L += ["", f"### {title}", "", F["source"][0].upper() + F["source"][1:] + ".", "",
+                  "| group | blocks | " + " | ".join(ST["bin_labels"]) + " | all cells |",
+                  "|---|---|" + "---|" * (len(ST["bin_labels"]) + 1)]
+            for g, d in F["groups"].items():
+                L.append(f"| {g} | {d['blocks']} | " + " | ".join(f"{b['owned']}/{b['cells']}" for b in d["bins"])
+                         + f" | {d['owned']}/{d['cells']} |")
+            for key in ("contrast", "contrast_easy_partners_only"):
+                c = F.get(key)
+                if not c:
+                    continue
+                ci = c["difference_ci95"]
+                L += ["", f"In the {c['bin']} bin ({key}): {c['a']} {c['a_owned']}/{c['a_cells']} = {f3(c['a_rate'])} "
+                      f"against {c['b']} {c['b_owned']}/{c['b_cells']} = {f3(c['b_rate'])}; difference "
+                      f"{f3(c['difference'])} " + (f"[{ci[0]:+.3f}, {ci[1]:+.3f}]" if ci else "(no interval)")
+                      + f", {c['bootstrap_valid_draws']} valid draws of a cluster bootstrap over models."]
     S = R.get("semend")
     if S and S.get("leave_one_concept_out"):
         L += ["", "## SEMEND: does ownership add anything about endpoint behaviour OUT OF SAMPLE?", "",
@@ -1353,6 +1510,9 @@ def main():
          "valid": valid_section(blocks), "altdird": altdird_section(blocks), "ansdirt": ansdirt_section(blocks),
          "attr": attr_section(blocks), "precision": precision_section(blocks), "fgobj": fgobj_section(blocks),
          "semend": semend_section(blocks)}
+    R["stratified"] = stratified_section(R["fgobj"], R["attr"])
+    R["meta"]["rules"]["stratified"] = ("no rule of its own: the FGOBJ pooled cells and the ATTR nine-direction cells, "
+                                        "binned by clean-answer AUROC at the edges fixed in robustness_round2.py")
     R["meta"]["rules"]["fgobj"] = ("FGOBJ completed; the six-direction write matrix scored on every test row; "
                                    "FGOBJ_CALIBRATION scored, so the fine-grained cells carry a clean-answer AUROC "
                                    "measured on the same calibration rows and by the same rule as every other cell")
@@ -1398,6 +1558,22 @@ def main():
               f"{m.get('partner_composition_used')}, rates {m.get('chest_owned_rate_matched')} vs {m.get('natural_owned_rate_used')}")
         print(f"      matched d={None if d is None else round(d, 4)} " + (f"[{ci[0]:+.4f}, {ci[1]:+.4f}]" if ci else "no interval")
               + f" | pooled d={None if pd is None else round(pd, 4)} " + (f"[{pci[0]:+.4f}, {pci[1]:+.4f}]" if pci else "no interval"))
+    ST = R["stratified"]
+    print(f"stratified by clean-answer AUROC, bins {ST['bin_labels']}:")
+    for fam in ("chest_vs_natural", "attribute_vs_finding"):
+        for g, d in ST[fam]["groups"].items():
+            print(f"  {fam[:14]:14s} {g:16s} " + "  ".join(f"{b['bin']}: {b['owned']}/{b['cells']}" for b in d["bins"])
+                  + f"  | all {d['owned']}/{d['cells']}")
+        for key in ("contrast", "contrast_easy_partners_only"):
+            c = ST[fam].get(key)
+            if not c:
+                continue
+            ci = c["difference_ci95"]
+            print(f"  {fam[:14]:14s} {key:26s} bin {c['bin']}: {c['a']} {c['a_owned']}/{c['a_cells']} "
+                  f"({'n/a' if c['a_rate'] is None else round(c['a_rate'], 3)}) vs {c['b']} {c['b_owned']}/{c['b_cells']} "
+                  f"({'n/a' if c['b_rate'] is None else round(c['b_rate'], 3)}), difference "
+                  f"{'n/a' if c['difference'] is None else round(c['difference'], 3)} "
+                  + (f"[{ci[0]:+.3f}, {ci[1]:+.3f}]" if ci else "no interval"))
     S = R["semend"]
     if S.get("leave_one_concept_out"):
         print(f"semend held-out incremental validity ({S['n_blocks']} blocks, {S['permutations']} permutations):")
