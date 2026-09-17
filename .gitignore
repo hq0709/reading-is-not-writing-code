@@ -35,3 +35,4 @@ models/
 scratch/
 # cf-transfer (Mayo executor) local run state lives outside the repo
 /cf-transfer-local/
+.claude/worktrees/
