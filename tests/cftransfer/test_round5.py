@@ -23,6 +23,14 @@ N_EVAL = 40                      # calibration / test rows of the synthetic coho
 JSON = dict(default=lambda o: float(o) if isinstance(o, np.floating) else str(o))
 
 
+def _cli(monkeypatch, model_key, dataset_id, what, n_boot=50):
+    """Run the analysis CLI in process, so the --what dispatch and the printing are covered too."""
+    import runpy
+    monkeypatch.setattr(sys, "argv", ["analysis", "--model-key", model_key, "--dataset", dataset_id,
+                                      "--what", what, "--n-boot", str(n_boot)])
+    runpy.run_module("cftransfer.analysis", run_name="__main__")
+
+
 def r2():
     """scripts/mayo/robustness_round2.py loaded by path (it is a script, not a package module)."""
     path = Path(__file__).resolve().parents[2] / "scripts" / "mayo" / "robustness_round2.py"
@@ -182,6 +190,11 @@ def test_attrq_runner_and_phrasing_selection(tmp_path, monkeypatch):
         for c in res["per_attribute"][a]["phrasings"].values():
             assert c["answer_capable"] == bool(c["n_pos"] >= 10 and c["n_neg"] >= 10 and c["answer_valid_draws"] >= 1900
                                                and c.get("answer_auroc_lower95_one_sided", 0) > 0.5)
+    # the CLI dispatch and its printing, which is what the watcher runs
+    _cli(monkeypatch, "m", "nih", "attrq", n_boot=2000)
+    stored = json.loads((rd / "summary.json").read_text())["attrq"]
+    assert stored["written_phrasing"] == "AQ0" and stored["per_attribute"]["view_AP"]["selected"] == "AQ2"
+    assert stored["per_attribute"]["age_60"]["selection_status"] == "no_eligible_phrasing"
 
 
 def test_attrq_selection_prefers_the_higher_lower_bound_not_the_order(tmp_path, monkeypatch):
@@ -357,6 +370,26 @@ def test_comparison_patient_bootstrap_over_shared_draws():
     res3 = M.attr_comparison([_row("m/nih", attrs, clins, draws=B), _row("m/chexpert", attrs, clins, draws=B + 1)])
     assert res3["draws"] is None and "disagree" in res3["draws_note"]
     assert res3["all_cells"]["bootstrap"]["available"] is False
+    # the block bootstrap needs no per-draw ownership: it resamples the (model, dataset) blocks
+    assert res3["all_cells"]["block_bootstrap"]["available"] is True
+    assert res3["all_cells"]["block_bootstrap"]["n_blocks"] == 2
+
+
+def test_block_bootstrap_widens_when_blocks_disagree():
+    """One block where the attributes win and one where the findings do: the block interval must straddle zero even
+    though each block on its own is decisive. This is the variation a patient bootstrap inside a block cannot see."""
+    M = r2()
+    a_win = _row("m/nih", {a: _cell(True, 0.7, True) for a in P.ATTR_CONCEPTS},
+                 {c: _cell(False, 0.7, True) for c in CONCEPTS})
+    c_win = _row("n/nih", {a: _cell(False, 0.7, True) for a in P.ATTR_CONCEPTS},
+                 {c: _cell(True, 0.7, True) for c in CONCEPTS})
+    one = M.attr_comparison([a_win])["all_cells"]["block_bootstrap"]
+    assert one["available"] is True and one["difference_ci95_percentile"] == [1.0, 1.0] and one["n_blocks"] == 1
+    both = M.attr_comparison([a_win, c_win])["all_cells"]
+    assert both["difference"] == 0.0
+    lo, hi = both["block_bootstrap"]["difference_ci95_percentile"]
+    assert lo <= -0.9 and hi >= 0.9 and both["block_bootstrap"]["difference_excludes_zero"] is False
+    assert both["block_bootstrap"]["seed"] == P.BOOT_CORE_SEED
 
 
 def test_attr_section_carries_the_comparisons_and_tolerates_old_summaries(tmp_path):

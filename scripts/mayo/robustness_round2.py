@@ -77,8 +77,8 @@ if str(REPO / "src") not in sys.path:
     sys.path.insert(0, str(REPO / "src"))
 from cftransfer.analysis import unpack_draw_flags                                             # noqa: E402
 from cftransfer.manifest import block_included, owned                                          # noqa: E402
-from cftransfer.protocol import (ALTDIRD_FAMILIES, ANSDIRT_TEMPLATES, ATTR_CONCEPTS, ATTR_MATCH_WINDOW, CONCEPTS,  # noqa: E402
-                                 DATASETS, FGOBJ_CONCEPTS, MODEL_ORDER, PRECISION_SETTINGS)
+from cftransfer.protocol import (ALTDIRD_FAMILIES, ANSDIRT_TEMPLATES, ATTR_CONCEPTS, ATTR_MATCH_WINDOW, BOOT_CORE_SEED,  # noqa: E402
+                                 CONCEPTS, DATASETS, FGOBJ_CONCEPTS, MODEL_ORDER, PRECISION_SETTINGS)
 from cftransfer.runpaths import RUN_ROOT                                                        # noqa: E402
 
 OUT_DIR = RUN_ROOT / "robustness"
@@ -330,6 +330,47 @@ def draw_flags(cell: dict, draws):
         return None
 
 
+BLOCK_BOOT_DRAWS = 2000
+
+
+def block_bootstrap(attr_items: list, clin_items: list, blocks: list, draws: int = BLOCK_BOOT_DRAWS,
+                    seed: int = BOOT_CORE_SEED) -> dict:
+    """Cluster bootstrap over BLOCKS of the two ownership rates and their difference.
+
+    The patient bootstrap resamples the rows inside a block, and at these effect sizes a cell's ownership almost never
+    flips when it does, so that interval is near-degenerate: it says the per-cell decisions are stable, not that the
+    RATE over cells is precise. The uncertainty that matters for "are attribute cells owned as often as finding cells"
+    is which (model, dataset) blocks happen to be in the grid, so the same rates are also resampled over blocks, paired
+    (one resample of blocks used for both kinds in every draw)."""
+    if not blocks or not attr_items or not clin_items:
+        return {"available": False, "reason": "no blocks or no cells on one side"}
+    order = {b: i for i, b in enumerate(blocks)}
+    na = np.zeros(len(blocks)); oa = np.zeros(len(blocks))
+    nc = np.zeros(len(blocks)); oc = np.zeros(len(blocks))
+    for b, c in attr_items:
+        na[order[b]] += 1; oa[order[b]] += bool(c["owned"])
+    for b, c in clin_items:
+        nc[order[b]] += 1; oc[order[b]] += bool(c["owned"])
+    rng = np.random.default_rng(seed)
+    idx = rng.integers(0, len(blocks), size=(draws, len(blocks)))
+    W = np.zeros((draws, len(blocks)))
+    np.add.at(W, (np.repeat(np.arange(draws), len(blocks)), idx.ravel()), 1.0)
+    dna, dnc = W @ na, W @ nc
+    ok = (dna > 0) & (dnc > 0)
+    if not ok.any():
+        return {"available": False, "reason": "every draw is missing one kind of cell"}
+    ra = (W @ oa)[ok] / dna[ok]
+    rc = (W @ oc)[ok] / dnc[ok]
+    d = ra - rc
+    lo, hi = float(np.percentile(d, 2.5)), float(np.percentile(d, 97.5))
+    return {"available": True, "draws": int(draws), "valid_draws": int(ok.sum()), "n_blocks": len(blocks), "seed": int(seed),
+            "attr_owned_share_ci95": [float(np.percentile(ra, 2.5)), float(np.percentile(ra, 97.5))],
+            "clin_owned_share_ci95": [float(np.percentile(rc, 2.5)), float(np.percentile(rc, 97.5))],
+            "difference_mean": float(d.mean()), "difference_ci95_percentile": [lo, hi],
+            "difference_excludes_zero": bool(lo > 0 or hi < 0),
+            "unit": "one (model, dataset) block = one cluster; the same resample of blocks is used for both kinds in a draw"}
+
+
 def rate_difference(attr_cells: list, clin_cells: list, draws) -> dict:
     """Ownership rate of each kind over two LISTS of graded cells (a cell may repeat: the matched mode lists one entry
     per pair), their difference, and the percentile interval of the difference over the shared patient-bootstrap draws.
@@ -404,13 +445,16 @@ def _print_comparison(label: str, cmp: dict) -> None:
     for mode in ("all_cells", "answer_capable_cells", "answerability_matched"):
         m = cmp[mode]
         b = m.get("bootstrap") or {}
-        ci = (f"[{b['difference_ci95_percentile'][0]:+.4f}, {b['difference_ci95_percentile'][1]:+.4f}]"
-              if b.get("available") else "no interval")
+        k = m.get("block_bootstrap") or {}
+        ci = (f"patient [{b['difference_ci95_percentile'][0]:+.3f}, {b['difference_ci95_percentile'][1]:+.3f}]"
+              if b.get("available") else "patient n/a")
+        cib = (f"block [{k['difference_ci95_percentile'][0]:+.3f}, {k['difference_ci95_percentile'][1]:+.3f}]"
+               if k.get("available") else "block n/a")
         extra = (f" pairs={m['n_pairs']} unmatched={m['n_attr_cells_unmatched']}/{m['n_attr_cells']}"
                  if mode == "answerability_matched" else "")
         print(f"  attr-compare {label:18s} {mode:22s} attr {m['attr_owned']}/{m['attr_cells']} "
               f"clinical {m['clin_owned']}/{m['clin_cells']} "
-              f"d={m['difference'] if m['difference'] is None else round(m['difference'], 4)} {ci}{extra}")
+              f"d={m['difference'] if m['difference'] is None else round(m['difference'], 4)} {ci} {cib}{extra}")
 
 
 def attr_comparison(rows: list, window: float = ATTR_MATCH_WINDOW) -> dict:
@@ -430,10 +474,15 @@ def attr_comparison(rows: list, window: float = ATTR_MATCH_WINDOW) -> dict:
                "clinical": med([sum(x for x in ((c.get("answerability") or {}).get("n_pos"),
                                                 (c.get("answerability") or {}).get("n_neg")) if x is not None) or None
                                 for _r, _q, c in C])}}
+    blist = [r["block"] for r in rows]
     res["all_cells"] = rate_difference([c for _r, _q, c in A], [c for _r, _q, c in C], draws)
+    res["all_cells"]["block_bootstrap"] = block_bootstrap([(r["block"], c) for r, _q, c in A],
+                                                          [(r["block"], c) for r, _q, c in C], blist)
     Ak = [t for t in A if cell_capable(t[2]) is True]
     Ck = [t for t in C if cell_capable(t[2]) is True]
     cap = rate_difference([c for _r, _q, c in Ak], [c for _r, _q, c in Ck], draws)
+    cap["block_bootstrap"] = block_bootstrap([(r["block"], c) for r, _q, c in Ak],
+                                             [(r["block"], c) for r, _q, c in Ck], blist)
     cap.update({"attr_cells_excluded": len(A) - len(Ak), "clin_cells_excluded": len(C) - len(Ck),
                 "attr_cells_without_answer_number": sum(cell_capable(c) is None for _r, _q, c in A),
                 "clin_cells_without_answer_number": sum(cell_capable(c) is None for _r, _q, c in C),
@@ -448,6 +497,8 @@ def attr_comparison(rows: list, window: float = ATTR_MATCH_WINDOW) -> dict:
     by_pair_attr = [by_block[p["block"]]["attributes"][p["attribute"]] for p in pairs]
     by_pair_clin = [by_block[p["block"]]["clinical"][p["clinical"]] for p in pairs]
     m = rate_difference(by_pair_attr, by_pair_clin, draws)
+    m["block_bootstrap"] = block_bootstrap([(p["block"], a) for p, a in zip(pairs, by_pair_attr)],
+                                           [(p["block"], c) for p, c in zip(pairs, by_pair_clin)], blist)
     m.update({"n_pairs": len(pairs), "n_attr_cells": len(A),
               "n_attr_cells_matched": len({(p["block"], p["attribute"]) for p in pairs}),
               "n_attr_cells_unmatched": len(unmatched), "unmatched": unmatched,
@@ -896,8 +947,12 @@ def write_md(R: dict, path: Path) -> None:
               f"attribute questions carry a random family: {ch['attribute_random_reference']}."]
     L += ["", "### The attribute-versus-finding comparison, three ways", "",
           f"Window for the answerability match: {B['match_window']} of clean-answer AUROC, inside one block.", "",
-          "| group | mode | attr owned | clinical owned | difference | patient-bootstrap CI | excludes 0 |",
-          "|---|---|---|---|---|---|---|"]
+          "Two intervals: the patient bootstrap resamples the rows inside a block (it is near-degenerate here, because a "
+          "cell's ownership almost never flips when the rows are resampled); the block bootstrap resamples the "
+          "(model, dataset) blocks, which is the variation that decides whether attribute and finding cells are owned "
+          "at the same rate.", "",
+          "| group | mode | attr owned | clinical owned | difference | patient CI | block CI | block CI excludes 0 |",
+          "|---|---|---|---|---|---|---|---|"]
     for g, d in B["per_dataset"].items():
         if not d["blocks"]:
             continue
@@ -907,11 +962,14 @@ def write_md(R: dict, path: Path) -> None:
             for mode in ("all_cells", "answer_capable_cells", "answerability_matched"):
                 m = d[key][mode]
                 bt = m.get("bootstrap") or {}
+                bk = m.get("block_bootstrap") or {}
                 ci = (f"[{bt['difference_ci95_percentile'][0]:+.3f}, {bt['difference_ci95_percentile'][1]:+.3f}]"
                       if bt.get("available") else "n/a")
+                cib = (f"[{bk['difference_ci95_percentile'][0]:+.3f}, {bk['difference_ci95_percentile'][1]:+.3f}]"
+                       if bk.get("available") else "n/a")
                 L.append(f"| {g}{tag} | {mode} | {m['attr_owned']}/{m['attr_cells']} ({f3(m['attr_owned_share'])}) | "
                          f"{m['clin_owned']}/{m['clin_cells']} ({f3(m['clin_owned_share'])}) | {f3(m['difference'])} | {ci} | "
-                         f"{bt.get('difference_excludes_zero') if bt.get('available') else 'n/a'} |")
+                         f"{cib} | {bk.get('difference_excludes_zero') if bk.get('available') else 'n/a'} |")
     if ch["blocks"] and ch["blocks_matched_reference"]:
         L += ["", f"Attribute and clinical cells are graded against one steering reference only where ATTRRAND has been "
               f"scored: {len(ch['blocks_matched_reference'])} of {ch['blocks']} chest blocks "
