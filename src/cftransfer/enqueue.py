@@ -27,9 +27,11 @@ def batch_for(model_key: str, lane: str) -> int:
 # shards per module for a 600-row test block (row budget relative to CORE); calibration modules are single tasks
 SHARDS = {"CORE": 4, "LOCUS": 4, "PROMPT": 7, "DOSE": 2, "REFIT": 1, "CALIBRATION": 1, "LOCUS_CALIBRATION": 1, "ALTDIR": 1,
           "EXTCOMP": 1, "TOKENW": 1, "PRECISION": 1, "ANSDIR": 1, "ALTDIRD": 1, "ATTR": 1, "ANSDIRT": 2,
-          "VALID": 1, "ATTRRAND": 2, "VALIDFIT": 1,
+          "VALID": 1, "ATTRRAND": 2, "VALIDFIT": 1, "ATTRQ": 1,
           "PROJSEED": 1, "TOWERSWAP": 1, "REPLAY": 1, "SEMEND": 4}   # PRECISION: one shard per setting; VALID: 152,400 outcomes on 200 rows, one third of a CORE shard
 # budget; ATTRRAND: 214,200 outcomes, two shards keep a shard near CORE's 114,300; VALIDFIT: 21,600 outcomes, one shard;
+# ATTRQ: 3,600 clean forwards on the calibration rows (3 attributes x 3 phrasings x 400), one shard, no prep of its own --
+# it writes nothing, so it needs no directions beyond the standard fit the prep already produces;
 # PROJSEED: one shard PER PROJECTION SEED (MODULE_SEED_TASKS), i.e. 453,600 outcomes per task, and the module is meant
 # for a handful of representative blocks rather than the whole grid.
 # TOWERSWAP / REPLAY: 152,400 outcomes on 200 rows, one shard each (VALID's budget); SEMEND: 475,200 outcomes over 600
@@ -62,6 +64,17 @@ MODULE_DATA_FN = {
                               str(fits_dir(REPLAY_SOURCE[mk], ds, "vis.last") / "seed0.npz")]}
 # Models a module can be enqueued for at all (the pair / group tables of the protocol).
 MODULE_MODELS = {"TOWERSWAP": set(TOWERSWAP_PAIRS), "REPLAY": set(REPLAY_SOURCE)}
+# FGOBJ (fine-grained COCO objects): CORE's grid on six new questions, 457,200 outcomes over 600 rows, so CORE's four
+# shards. Its CPU prep (python -m cftransfer.fgobj) fits the six probes and draws the family's own 119 random
+# directions; the module task waits for fgobj_seed0.npz. FGOBJ_CALIBRATION is 2,400 clean forwards on the calibration
+# rows and needs no directions at all, so it has no prep file and can run before the prep.
+# The six concepts must already be appended to the COCO label manifest (python -m cftransfer.fgobj --build-labels,
+# once per data root) -- the prep fails with that command when they are not.
+SHARDS["FGOBJ"] = 4
+SHARDS["FGOBJ_CALIBRATION"] = 1
+PREP_FILE["FGOBJ"] = "fgobj_seed0.npz"
+PREP_TASK["FGOBJ"] = ["python", "-m", "cftransfer.fgobj"]
+PREP_TASK_CPU.add("FGOBJ")
 
 
 def prep_files(mod: str) -> list[str]:

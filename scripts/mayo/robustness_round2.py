@@ -32,8 +32,29 @@ Ownership everywhere: owned = steering_reference and verdict == "fixed_family_ad
              owned clinical cells inside that family, per-attribute ownership, probe AUROC, selectivity, answer AUROC, and the
              median |cosine| of the attribute direction to the six clinical normals. Per dataset (+ chest, all): blocks, cells and
              owned counts for both kinds with their shares, per-attribute owned counts, medians of probe AUROC / selectivity /
-             answer AUROC / |W_qq|, and the median |cosine| between attribute and clinical directions. Attribute questions carry no
-             random family (random_reference false): their steering reference is the sham alone.
+             answer AUROC / |W_qq|, and the median |cosine| between attribute and clinical directions.
+             The attribute-versus-finding ownership comparison is reported THREE ways (protocol.json attr_comparison), all
+             prespecified and all reported whatever they show: `all_cells` (every cell, the comparison as it stood),
+             `answer_capable_cells` (only cells whose clean answer clears the campaign's answer-capable rule, applied to
+             attributes and findings alike) and `answerability_matched` (each attribute cell paired with the clinical cells
+             of the SAME block whose clean-answer AUROC is within ATTR_MATCH_WINDOW of it, with the unmatched attribute
+             cells named). Each mode carries the two ownership rates, their difference and a patient-bootstrap interval of
+             that difference over the campaign's shared draws; the per-block rows carry every cell's answer AUROC and its
+             source, so the matching is auditable. The clinical answer AUROC is READ from the block's own summary.json
+             `calibration` and the attribute one from `attrq` (or, until ATTRQ is scored for the block, from the ATTR
+             module's own test-row measurement) -- every cell records which, and on which rows.
+  fgobj      summary.json `fgobj` of COCO blocks with FGOBJ in run.json completed_modules, the six-direction write matrix
+             scored on every test row, and FGOBJ_CALIBRATION scored (so the fine-grained cells carry a clean-answer AUROC
+             from the same calibration rows and the same rule as every other cell). Six COCO categories that are small,
+             often occluded or fine-grained, built from the same instance annotations by the same rule, fitted with the
+             same projection / scaler / probe settings on the same training rows, and written as a self-contained
+             127-condition family with its own 119 random directions and its own shams. Per block: fine-grained and easy
+             COCO owned cells, readability, answerability, median clean-answer AUROC and median probe selectivity for both
+             families. Pooled over chest cells, easy COCO cells and fine-grained COCO cells: ownership rate and the two
+             medians; then the DIFFICULTY-MATCHED comparison -- every chest cell paired with the natural-image cells of any
+             block within the prespecified window, under three matchings (both variables, clean-answer AUROC alone, probe
+             selectivity alone) and, for reference, the same matching with only the easy COCO cells as partners, which is
+             the starved comparison FGOBJ exists to un-starve.
   precision  summary.json `precision` settings (fp32, batch1) with status COMPLETE and a full grade: verdict changes,
              steering-reference changes, cells whose verdict or reference changes, and ownership changes against CORE on the same 200 rows, max |dW| over all
              6 x 126 written cells (clinical, random, sham), max |d contrast|; pooled over blocks and settings.
@@ -54,9 +75,10 @@ import numpy as np
 REPO = Path(__file__).resolve().parents[2]
 if str(REPO / "src") not in sys.path:
     sys.path.insert(0, str(REPO / "src"))
+from cftransfer.analysis import unpack_draw_flags                                             # noqa: E402
 from cftransfer.manifest import block_included, owned                                          # noqa: E402
-from cftransfer.protocol import (ALTDIRD_FAMILIES, ANSDIRT_TEMPLATES, ATTR_CONCEPTS, CONCEPTS, DATASETS, MODEL_ORDER,  # noqa: E402
-                                 PRECISION_SETTINGS)
+from cftransfer.protocol import (ALTDIRD_FAMILIES, ANSDIRT_TEMPLATES, ATTR_CONCEPTS, ATTR_MATCH_WINDOW, CONCEPTS,  # noqa: E402
+                                 DATASETS, FGOBJ_CONCEPTS, MODEL_ORDER, PRECISION_SETTINGS)
 from cftransfer.runpaths import RUN_ROOT                                                        # noqa: E402
 
 OUT_DIR = RUN_ROOT / "robustness"
@@ -287,6 +309,157 @@ ATTR_FIELDS = ("auroc_real", "selectivity", "selectivity_lower95_one_sided", "an
                "readable", "readable_status", "answer_capable", "n_pos", "n_neg", "n_train_pos", "n_train_neg")
 
 
+# --- the attribute-versus-finding comparison, three ways (protocol.json attr_comparison) -------------------
+def cell_auroc(cell: dict):
+    """The clean-answer AUROC of one graded cell, as analysis.attr recorded it (None when the block carries none)."""
+    return (cell.get("answerability") or {}).get("answer_auroc")
+
+
+def cell_capable(cell: dict):
+    return (cell.get("answerability") or {}).get("answer_capable")
+
+
+def draw_flags(cell: dict, draws):
+    """Per-draw ownership of one cell over the campaign's shared unit (patient) bootstrap, or None."""
+    h = cell.get("owned_draws_hex")
+    if not h or not draws:
+        return None
+    try:
+        return unpack_draw_flags(h, int(draws))
+    except (ValueError, TypeError):
+        return None
+
+
+def rate_difference(attr_cells: list, clin_cells: list, draws) -> dict:
+    """Ownership rate of each kind over two LISTS of graded cells (a cell may repeat: the matched mode lists one entry
+    per pair), their difference, and the percentile interval of the difference over the shared patient-bootstrap draws.
+    The point rates use the campaign's owned() rule; the interval re-decides ownership inside every draw as
+    steering_reference and O_q > 0, which is what analysis.attr stores per cell, so the per-draw rates are reported
+    beside the point rates rather than instead of them."""
+    na, nc = len(attr_cells), len(clin_cells)
+    oa = sum(bool(c["owned"]) for c in attr_cells)
+    oc = sum(bool(c["owned"]) for c in clin_cells)
+    ra = (oa / na) if na else None
+    rc = (oc / nc) if nc else None
+    out = {"attr_cells": na, "attr_owned": oa, "attr_owned_share": ra,
+           "clin_cells": nc, "clin_owned": oc, "clin_owned_share": rc,
+           "difference": (ra - rc) if (ra is not None and rc is not None) else None}
+    fa = [draw_flags(c, draws) for c in attr_cells]
+    fc = [draw_flags(c, draws) for c in clin_cells]
+    missing = sum(f is None for f in fa) + sum(f is None for f in fc)
+    if not (na and nc) or missing:
+        out["bootstrap"] = {"available": False,
+                            "reason": ("no cells on one side" if not (na and nc) else
+                                       f"{missing} of {na + nc} listed cells carry no per-draw ownership "
+                                       f"(summary.json attr predates owned_draws_hex; rerun "
+                                       f"python -m cftransfer.analysis --what attr for those blocks)")}
+        return out
+    A = np.stack(fa).mean(axis=0)
+    C = np.stack(fc).mean(axis=0)
+    D = A - C
+    lo, hi = float(np.percentile(D, 2.5)), float(np.percentile(D, 97.5))
+    out["bootstrap"] = {"available": True, "draws": int(draws),
+                        "attr_owned_share_per_draw": float(A.mean()), "clin_owned_share_per_draw": float(C.mean()),
+                        "attr_owned_share_ci95": [float(np.percentile(A, 2.5)), float(np.percentile(A, 97.5))],
+                        "clin_owned_share_ci95": [float(np.percentile(C, 2.5)), float(np.percentile(C, 97.5))],
+                        "difference_per_draw": float(D.mean()), "difference_ci95_percentile": [lo, hi],
+                        "difference_excludes_zero": bool(lo > 0 or hi < 0),
+                        "unit": "test row = one unit (patient on NIH / CheXpert); the campaign's shared draws, "
+                                "combined across datasets by draw number",
+                        "per_draw_rule": "steering_reference (point estimate) and O_q > 0 inside the draw"}
+    return out
+
+
+def match_block(row: dict, window: float = ATTR_MATCH_WINDOW) -> tuple[list, list]:
+    """Pair every attribute cell of one block with the clinical cells of the SAME block whose clean-answer AUROC is
+    within `window` of it. Returns (pairs, unmatched); an attribute cell with no answer AUROC, or none within the
+    window, is unmatched and named with its nearest clinical cell."""
+    pairs, unmatched = [], []
+    clin = [(q, c, cell_auroc(c)) for q, c in row["clinical"].items()]
+    for q, ca in row["attributes"].items():
+        aa = cell_auroc(ca)
+        if aa is None:
+            unmatched.append({"block": row["block"], "attribute": q, "answer_auroc": None, "nearest_clinical": None,
+                              "reason": "no clean-answer AUROC recorded for this attribute cell"})
+            continue
+        near = [(qc, cc, abs(aa - ac)) for qc, cc, ac in clin if ac is not None]
+        inside = [t for t in near if t[2] <= window]
+        if not inside:
+            n0 = min(near, key=lambda t: t[2], default=None)
+            unmatched.append({"block": row["block"], "attribute": q, "answer_auroc": aa,
+                              "nearest_clinical": ({"concept": n0[0], "answer_auroc": cell_auroc(n0[1]), "gap": n0[2]}
+                                                   if n0 else None),
+                              "reason": ("no clinical cell of this block within the window" if near else
+                                         "no clinical cell of this block carries a clean-answer AUROC")})
+            continue
+        for qc, cc, gap in inside:
+            pairs.append({"block": row["block"], "attribute": q, "clinical": qc, "abs_answer_auroc_gap": gap,
+                          "attr_answer_auroc": aa, "clin_answer_auroc": cell_auroc(cc),
+                          "attr_owned": bool(ca["owned"]), "clin_owned": bool(cc["owned"])})
+    return pairs, unmatched
+
+
+def _print_comparison(label: str, cmp: dict) -> None:
+    """One stdout line per comparison mode: the two ownership rates, their difference and the bootstrap interval."""
+    for mode in ("all_cells", "answer_capable_cells", "answerability_matched"):
+        m = cmp[mode]
+        b = m.get("bootstrap") or {}
+        ci = (f"[{b['difference_ci95_percentile'][0]:+.4f}, {b['difference_ci95_percentile'][1]:+.4f}]"
+              if b.get("available") else "no interval")
+        extra = (f" pairs={m['n_pairs']} unmatched={m['n_attr_cells_unmatched']}/{m['n_attr_cells']}"
+                 if mode == "answerability_matched" else "")
+        print(f"  attr-compare {label:18s} {mode:22s} attr {m['attr_owned']}/{m['attr_cells']} "
+              f"clinical {m['clin_owned']}/{m['clin_cells']} "
+              f"d={m['difference'] if m['difference'] is None else round(m['difference'], 4)} {ci}{extra}")
+
+
+def attr_comparison(rows: list, window: float = ATTR_MATCH_WINDOW) -> dict:
+    """The three prespecified attribute-versus-finding comparisons over a set of block rows."""
+    A = [(r, q, c) for r in rows for q, c in r["attributes"].items()]
+    C = [(r, q, c) for r in rows for q, c in r["clinical"].items()]
+    dset = sorted({r.get("draws") for r in rows if r.get("draws")})
+    draws = dset[0] if len(dset) == 1 else None
+    res = {"window": window, "blocks": len(rows), "draws": draws,
+           "draws_note": None if draws else f"blocks disagree on the bootstrap draw count {dset}; no pooled interval",
+           "answer_auroc_rows": {"attribute": sorted({(c.get("answerability") or {}).get("rows") for _r, _q, c in A} - {None}),
+                                 "clinical": sorted({(c.get("answerability") or {}).get("rows") for _r, _q, c in C} - {None})},
+           "median_answer_n_known": {
+               "attribute": med([sum(x for x in ((c.get("answerability") or {}).get("n_pos"),
+                                                 (c.get("answerability") or {}).get("n_neg")) if x is not None) or None
+                                 for _r, _q, c in A]),
+               "clinical": med([sum(x for x in ((c.get("answerability") or {}).get("n_pos"),
+                                                (c.get("answerability") or {}).get("n_neg")) if x is not None) or None
+                                for _r, _q, c in C])}}
+    res["all_cells"] = rate_difference([c for _r, _q, c in A], [c for _r, _q, c in C], draws)
+    Ak = [t for t in A if cell_capable(t[2]) is True]
+    Ck = [t for t in C if cell_capable(t[2]) is True]
+    cap = rate_difference([c for _r, _q, c in Ak], [c for _r, _q, c in Ck], draws)
+    cap.update({"attr_cells_excluded": len(A) - len(Ak), "clin_cells_excluded": len(C) - len(Ck),
+                "attr_cells_without_answer_number": sum(cell_capable(c) is None for _r, _q, c in A),
+                "clin_cells_without_answer_number": sum(cell_capable(c) is None for _r, _q, c in C),
+                "rule": "answer_capable as analysis.calibration defines it, applied to attributes and findings alike"})
+    res["answer_capable_cells"] = cap
+    pairs, unmatched = [], []
+    for r in rows:
+        pp, uu = match_block(r, window)
+        pairs += pp
+        unmatched += uu
+    by_block = {r["block"]: r for r in rows}
+    by_pair_attr = [by_block[p["block"]]["attributes"][p["attribute"]] for p in pairs]
+    by_pair_clin = [by_block[p["block"]]["clinical"][p["clinical"]] for p in pairs]
+    m = rate_difference(by_pair_attr, by_pair_clin, draws)
+    m.update({"n_pairs": len(pairs), "n_attr_cells": len(A),
+              "n_attr_cells_matched": len({(p["block"], p["attribute"]) for p in pairs}),
+              "n_attr_cells_unmatched": len(unmatched), "unmatched": unmatched,
+              "median_abs_answer_auroc_gap": med([p["abs_answer_auroc_gap"] for p in pairs]),
+              "max_abs_answer_auroc_gap": max([p["abs_answer_auroc_gap"] for p in pairs], default=None),
+              "n_distinct_clinical_cells": len({(p["block"], p["clinical"]) for p in pairs}),
+              "rule": (f"an attribute cell pairs with every clinical cell of the SAME block whose clean-answer AUROC is "
+                       f"within {window} of it; the rates are over PAIRS, so a cell that matches several counts several times")})
+    res["answerability_matched"] = m
+    return res
+
+
 def attr_section(blocks: dict) -> dict:
     """Non-clinical attribute directions written inside one nine-direction family, beside the clinical directions of the same family.
 
@@ -314,7 +487,11 @@ def attr_section(blocks: dict) -> dict:
                 raise RuntimeError(f"{mk}/{ds} attr {q}: question_kind {c['question_kind']} / own_direction {c['own_direction']} unexpected for a {kind} question")
             cell = {"owned": owned(c), "verdict": c["verdict"], "steering_reference": c["steering_reference"], "W_qq": c["W_qq"],
                     "O_q": c["O_q"], "max_other": c["max_other"], "argmax_other": c["argmax_other"],
-                    "random_reference": c["random_reference"], "abs_sham": c["abs_sham"]}
+                    "random_reference": c["random_reference"], "abs_sham": c["abs_sham"],
+                    # the clean-answer number this cell is compared and matched on, exactly as analysis.attr read it
+                    # from the block's own summary (calibration for a finding, attrq / ATTR test rows for an attribute)
+                    "answerability": c.get("answerability") or {},
+                    "owned_draws_hex": c.get("owned_draws_hex"), "owned_draw_rate": c.get("owned_draw_rate")}
             if kind == "attribute":
                 at = a["attributes"][q]
                 cos = {k: float(v) for k, v in at["cos_model_to_clinical"].items()}
@@ -337,11 +514,18 @@ def attr_section(blocks: dict) -> dict:
                      "median_abs_W_qq_clinical": med([abs(c["W_qq"]) for c in clin.values()]),
                      "median_abs_cos_attr_clinical": med([x for _, _, x in cos_pairs]),
                      "attributes": attrs, "clinical": clin})
+        rows[-1]["matched_pairs"], rows[-1]["matched_unmatched"] = match_block(rows[-1])
+        rows[-1]["comparison"] = attr_comparison([rows[-1]])
     per = {}
     for g, dss in GROUPS.items():
         bs = [r for r in rows if r["dataset"] in dss]
         ac = [c for r in bs for c in r["attributes"].values()]
         cc = [c for r in bs for c in r["clinical"].values()]
+        # blocks whose ATTRIBUTE cells carry the protocol's 119-direction random family (module ATTRRAND scored).
+        # Without it an attribute cell is referenced against its sham alone while a clinical cell has the random p95,
+        # so the two kinds are not on one steering reference and an ownership rate pooled over both kinds of block
+        # would mix two rules. The comparison to read is the one restricted to these blocks.
+        bs_ref = [r for r in bs if r["attributes"] and all(c["random_reference"] for c in r["attributes"].values())]
         pair = {}
         for r in bs:
             for q, c in r["attributes"].items():
@@ -359,6 +543,9 @@ def attr_section(blocks: dict) -> dict:
              "max_median_abs_cos_pair": ({"pair": top[0], **top[1]} if top else None),
              "attribute_random_reference": any(c["random_reference"] for c in ac),
              "clinical_random_reference": all(c["random_reference"] for c in cc) if cc else None,
+             "comparison": attr_comparison(bs),
+             "blocks_matched_reference": [r["block"] for r in bs_ref],
+             "comparison_matched_reference": attr_comparison(bs_ref),
              "per_attribute": {}}
         for q in ATTR_CONCEPTS:
             xs = [r["attributes"][q] for r in bs if q in r["attributes"]]
@@ -371,7 +558,236 @@ def attr_section(blocks: dict) -> dict:
                 "median_abs_cos_to_clinical": med([abs(v) for c in xs for v in c["cos_model_to_clinical"].values()]),
                 "median_n_pos": med([c["n_pos"] for c in xs]), "median_n_neg": med([c["n_neg"] for c in xs])}
         per[g] = d
-    return {"attributes": list(ATTR_CONCEPTS), "blocks": rows, "per_dataset": per, "skipped": skipped}
+    return {"attributes": list(ATTR_CONCEPTS), "blocks": rows, "per_dataset": per, "skipped": skipped,
+            "comparison_modes": {"all_cells": "every attribute cell against every clinical cell of the same blocks",
+                                 "answer_capable_cells": "only cells whose clean answer clears the campaign's answer-capable rule",
+                                 "answerability_matched": f"attribute cells paired with clinical cells of the same block "
+                                                          f"within {ATTR_MATCH_WINDOW} clean-answer AUROC"},
+            "match_window": ATTR_MATCH_WINDOW}
+
+
+# ------------------------------------------------------------------------------------------------ FGOBJ
+# The difficulty-matched comparison. PRESPECIFICATION: the two matching windows below -- 0.05 on clean-answer AUROC and
+# 0.05 on probe selectivity -- were fixed in the module brief BEFORE the FGOBJ grid was built and before any FGOBJ
+# outcome existed. They are the windows the chest-versus-easy-COCO matched comparison already used, they were not tuned
+# to any result here, and nothing in this section chooses a window, a group or a category by an ownership outcome. The
+# six fine-grained categories were likewise chosen by cohort support and instance size alone (protocol.FGOBJ_CONCEPTS).
+FGOBJ_WINDOW_ANSWER_AUROC = 0.05
+FGOBJ_WINDOW_SELECTIVITY = 0.05
+FGOBJ_BOOT_DRAWS = 5000
+FGOBJ_BOOT_SEED = 2026091601
+# The interval is a CLUSTER bootstrap over MODELS, not over patients, and it is named that way everywhere it is
+# reported. A cell's ownership flag is already a 600-patient statistic (the max-T verdict and the steering reference are
+# computed inside the block from the block's own unit bootstrap); what varies above it, and what the matched difference
+# is a mean over, is the cell. Cells are clustered by model -- a model contributes its nih, its chexpert and its coco
+# cells, and those are not independent -- so the model is the resampling unit. Recomputing a per-patient interval for a
+# cell-level rate would require re-deriving every cell's verdict inside every draw from every block's outcomes parquet;
+# this section reads block summaries only and does not claim to do that.
+FGOBJ_GROUPS = ("chest", "coco_easy", "coco_fine")
+
+
+def _cell_group(dataset: str, kind: str) -> str:
+    return "chest" if dataset in CHEST else ("coco_fine" if kind == "fgobj" else "coco_easy")
+
+
+def fgobj_cells(blocks: dict) -> tuple[list, list]:
+    """One row per pooled cell: every chest cell, every easy COCO cell (both from summary.json core + calibration) and
+    every fine-grained COCO cell (summary.json fgobj). A cell carries its ownership flag and the two matching
+    variables -- clean-answer AUROC and probe selectivity -- measured on the block's own calibration rows by the
+    campaign's rule for every group alike."""
+    cells, skipped = [], []
+    for (mk, ds), b in blocks.items():
+        s = b["summary"]
+        co, cal = s.get("core"), s.get("calibration")
+        if not co or not cal:
+            skipped.append({"block": f"{mk}/{ds}", "reason": "summary.json carries no core or no calibration"}); continue
+        for q in CONCEPTS[ds]:
+            c, g = co["per_question"].get(q), cal.get(q)
+            if c is None or g is None:
+                skipped.append({"block": f"{mk}/{ds}", "reason": f"{q}: missing from core or calibration"}); continue
+            cells.append({"block": f"{mk}/{ds}", "model": mk, "dataset": ds, "concept": q, "kind": "core",
+                          "group": _cell_group(ds, "core"), "owned": owned(c), "verdict": c.get("verdict"),
+                          "steering_reference": c.get("steering_reference"), "W_qq": c.get("W_qq"), "O_q": c.get("O_q"),
+                          "answer_auroc": g.get("answer_auroc"), "selectivity": g.get("selectivity"),
+                          "readable": g.get("readable"), "answer_capable": g.get("answer_capable"),
+                          "n_pos": g.get("n_pos"), "n_neg": g.get("n_neg")})
+        if ds != "coco":
+            continue
+        f = s.get("fgobj")
+        if not f:
+            if completed(b, "FGOBJ"):
+                skipped.append({"block": f"{mk}/{ds}", "reason": "FGOBJ completed but summary.json carries no fgobj; "
+                                                                 "rerun python -m cftransfer.analysis --what fgobj"})
+            continue
+        if not completed(b, "FGOBJ"):
+            skipped.append({"block": f"{mk}/{ds}", "reason": "FGOBJ not in run.json completed_modules"}); continue
+        if f.get("n_scored_rows_min") != f.get("n_rows"):
+            skipped.append({"block": f"{mk}/{ds}", "reason": f"fgobj scored on {f.get('n_scored_rows_min')} of {f.get('n_rows')} rows"}); continue
+        if list(f["concepts"]) != list(FGOBJ_CONCEPTS):
+            raise RuntimeError(f"{mk}/{ds} fgobj: concepts {f['concepts']} are not {list(FGOBJ_CONCEPTS)}")
+        if not f["probe_grade_source"]["answer_available"]:
+            skipped.append({"block": f"{mk}/{ds}", "reason": "FGOBJ_CALIBRATION not scored: the fine-grained cells carry "
+                                                             "no clean-answer AUROC and cannot be pooled"}); continue
+        for q in FGOBJ_CONCEPTS:
+            c, p = f["per_question"][q], f["probes"][q]
+            cells.append({"block": f"{mk}/{ds}", "model": mk, "dataset": ds, "concept": q, "kind": "fgobj",
+                          "group": _cell_group(ds, "fgobj"), "owned": bool(c["owned"]), "verdict": c.get("verdict"),
+                          "steering_reference": c.get("steering_reference"), "W_qq": c.get("W_qq"), "O_q": c.get("O_q"),
+                          "answer_auroc": p.get("answer_auroc"), "selectivity": p.get("selectivity"),
+                          "readable": p.get("readable"), "answer_capable": p.get("answer_capable"),
+                          "n_pos": p.get("n_pos"), "n_neg": p.get("n_neg")})
+    return cells, skipped
+
+
+def _matchable(cells: list) -> list:
+    return [c for c in cells if c["answer_auroc"] is not None and c["selectivity"] is not None
+            and np.isfinite(c["answer_auroc"]) and np.isfinite(c["selectivity"])]
+
+
+def match_matrix(chest: list, natural: list, window_auroc: float | None, window_selectivity: float | None) -> np.ndarray:
+    """(n_chest, n_natural) boolean: a natural-image cell matches a chest cell when every ACTIVE matching variable is
+    within its window. A window of None switches that variable off (the single-variable matchings)."""
+    ca = np.array([c["answer_auroc"] for c in chest], float)[:, None]
+    cs = np.array([c["selectivity"] for c in chest], float)[:, None]
+    na = np.array([c["answer_auroc"] for c in natural], float)[None, :]
+    ns = np.array([c["selectivity"] for c in natural], float)[None, :]
+    M = np.ones((len(chest), len(natural)), bool)
+    if window_auroc is not None:
+        M &= np.abs(ca - na) <= window_auroc
+    if window_selectivity is not None:
+        M &= np.abs(cs - ns) <= window_selectivity
+    return M
+
+
+def _matched_estimate(M: np.ndarray, owned_c: np.ndarray, owned_n: np.ndarray, w_c: np.ndarray, w_n: np.ndarray):
+    """(matched difference, pooled difference, weight of the matched chest cells). The matched difference is the mean
+    over matched chest cells of (its own ownership minus the ownership RATE OF ITS OWN PARTNER SET), which is the
+    estimator a variable-sized match set calls for; the pooled difference is the ownership rate among matched chest
+    cells minus the rate among the natural-image cells that served as a partner at least once."""
+    den = M @ w_n
+    ok = den > 0
+    if not ok.any() or w_c[ok].sum() <= 0:
+        return None, None, 0.0
+    num = M @ (w_n * owned_n)
+    p = num[ok] / den[ok]
+    wc = w_c[ok]
+    matched = float((wc * (owned_c[ok] - p)).sum() / wc.sum())
+    used = (M[ok].T @ wc) > 0
+    pooled = None
+    if used.any() and (w_n * used).sum() > 0:
+        pooled = float((wc * owned_c[ok]).sum() / wc.sum() - (w_n * used * owned_n).sum() / (w_n * used).sum())
+    return matched, pooled, float(wc.sum())
+
+
+def matched_comparison(chest: list, natural: list, window_auroc, window_selectivity, name: str, draws: int = FGOBJ_BOOT_DRAWS) -> dict:
+    """The difficulty-matched chest-versus-natural-image ownership difference under one matching, with a cluster
+    bootstrap over models."""
+    if not chest or not natural:
+        return {"matching": name, "n_chest_cells": len(chest), "n_natural_cells": len(natural),
+                "status": "NO_CELLS", "matched_ownership_difference": None}
+    M = match_matrix(chest, natural, window_auroc, window_selectivity)
+    owned_c = np.array([float(c["owned"]) for c in chest])
+    owned_n = np.array([float(c["owned"]) for c in natural])
+    one_c, one_n = np.ones(len(chest)), np.ones(len(natural))
+    est, pooled, _ = _matched_estimate(M, owned_c, owned_n, one_c, one_n)
+    matched = M.any(axis=1)
+    used = M[matched].any(axis=0) if matched.any() else np.zeros(len(natural), bool)
+    models = sorted({c["model"] for c in chest} | {c["model"] for c in natural})
+    mi_c = np.array([models.index(c["model"]) for c in chest])
+    mi_n = np.array([models.index(c["model"]) for c in natural])
+    rng = np.random.Generator(np.random.PCG64(FGOBJ_BOOT_SEED))
+    draws_est, draws_pooled = [], []
+    for _ in range(draws):
+        mult = np.bincount(rng.integers(0, len(models), len(models)), minlength=len(models)).astype(float)
+        e, p, wsum = _matched_estimate(M, owned_c, owned_n, mult[mi_c], mult[mi_n])
+        if e is not None and wsum > 0:
+            draws_est.append(e)
+        if p is not None:
+            draws_pooled.append(p)
+    partners = M.sum(axis=1)
+    comp = {g: int(sum(1 for j, c in enumerate(natural) if used[j] and c["group"] == g)) for g in ("coco_easy", "coco_fine")}
+    return {
+        "matching": name, "window_answer_auroc": window_auroc, "window_selectivity": window_selectivity,
+        "n_chest_cells": len(chest), "n_natural_cells": len(natural),
+        "n_matched_chest_cells": int(matched.sum()), "n_unmatched_chest_cells": int((~matched).sum()),
+        "unmatched_chest_cells": [f"{c['block']} {c['concept']}" for c, mm in zip(chest, matched) if not mm][:40],
+        "n_natural_cells_used": int(used.sum()), "partner_composition_used": comp,
+        "median_partners_per_matched_chest_cell": float(np.median(partners[matched])) if matched.any() else None,
+        "chest_owned_rate_matched": float(owned_c[matched].mean()) if matched.any() else None,
+        "natural_owned_rate_used": float(owned_n[used].mean()) if used.any() else None,
+        "matched_ownership_difference": est,
+        "matched_ownership_difference_ci95": [float(np.percentile(draws_est, 2.5)), float(np.percentile(draws_est, 97.5))] if draws_est else None,
+        "pooled_ownership_difference": pooled,
+        "pooled_ownership_difference_ci95": [float(np.percentile(draws_pooled, 2.5)), float(np.percentile(draws_pooled, 97.5))] if draws_pooled else None,
+        "bootstrap_valid_draws": len(draws_est), "bootstrap_draws": draws,
+        "bootstrap_unit": "model (cluster bootstrap; a model carries its nih, chexpert and coco cells)"}
+
+
+def fgobj_section(blocks: dict) -> dict:
+    """Fine-grained COCO object concepts, and the difficulty-matched chest-versus-natural-image comparison they make
+    possible.
+
+    Per block with FGOBJ completed and the six-direction write matrix scored on every test row: the fine-grained cells'
+    ownership inside their own family, their probe readability and clean-answer capability from the block's calibration
+    rows, and the block's own easy-COCO CORE cells beside them. Pooled: ownership rate, median clean-answer AUROC and
+    median probe selectivity for chest cells, easy COCO cells and fine-grained COCO cells; then the matched comparison
+    under three matchings (both variables, clean-answer AUROC alone, probe selectivity alone), plus the same matching
+    restricted to the easy COCO cells so the starvation FGOBJ is meant to remove is visible next to the result."""
+    cells, skipped = fgobj_cells(blocks)
+    rows = []
+    for (mk, ds), b in blocks.items():
+        f = b["summary"].get("fgobj")
+        if ds != "coco" or not f or not any(c["block"] == f"{mk}/{ds}" and c["kind"] == "fgobj" for c in cells):
+            continue
+        fine = [c for c in cells if c["block"] == f"{mk}/{ds}" and c["kind"] == "fgobj"]
+        easy = [c for c in cells if c["block"] == f"{mk}/{ds}" and c["kind"] == "core"]
+        rows.append({"block": f"{mk}/{ds}", "model": mk, "dataset": ds, "n_rows": f["n_rows"], "template_id": f.get("template_id"),
+                     "alpha": f.get("alpha"), "draws": f.get("draws"), "max_t_critical": f.get("max_t_critical"),
+                     "random_seed": f.get("random_seed"), "n_random": f.get("n_random"),
+                     "fine_cells": len(fine), "fine_owned": sum(c["owned"] for c in fine),
+                     "easy_cells": len(easy), "easy_owned": sum(c["owned"] for c in easy),
+                     "fine_readable": sum(bool(c["readable"]) for c in fine),
+                     "fine_answer_capable": sum(bool(c["answer_capable"]) for c in fine),
+                     "median_answer_auroc_fine": med([c["answer_auroc"] for c in fine]),
+                     "median_answer_auroc_easy": med([c["answer_auroc"] for c in easy]),
+                     "median_selectivity_fine": med([c["selectivity"] for c in fine]),
+                     "median_selectivity_easy": med([c["selectivity"] for c in easy]),
+                     "median_abs_cos_to_easy": f.get("median_abs_cos_to_easy"),
+                     "per_concept": {c["concept"]: {k: c[k] for k in ("owned", "verdict", "steering_reference", "W_qq", "O_q",
+                                                                      "answer_auroc", "selectivity", "readable",
+                                                                      "answer_capable", "n_pos", "n_neg")} for c in fine}})
+    pool = {}
+    for g in FGOBJ_GROUPS:
+        gc = [c for c in cells if c["group"] == g]
+        pool[g] = {"cells": len(gc), "blocks": len({c["block"] for c in gc}), "owned": sum(c["owned"] for c in gc),
+                   "owned_rate": (sum(c["owned"] for c in gc) / len(gc)) if gc else None,
+                   "median_answer_auroc": med([c["answer_auroc"] for c in gc]),
+                   "median_selectivity": med([c["selectivity"] for c in gc]),
+                   "readable": sum(bool(c["readable"]) for c in gc),
+                   "answer_capable": sum(bool(c["answer_capable"]) for c in gc),
+                   "with_both_matching_variables": len(_matchable(gc))}
+    chest = _matchable([c for c in cells if c["group"] == "chest"])
+    natural = _matchable([c for c in cells if c["group"] in ("coco_easy", "coco_fine")])
+    easy_only = [c for c in natural if c["group"] == "coco_easy"]
+    W, S = FGOBJ_WINDOW_ANSWER_AUROC, FGOBJ_WINDOW_SELECTIVITY
+    matched = {
+        "both": matched_comparison(chest, natural, W, S, "clean-answer AUROC and probe selectivity"),
+        "answer_auroc": matched_comparison(chest, natural, W, None, "clean-answer AUROC alone"),
+        "selectivity": matched_comparison(chest, natural, None, S, "probe selectivity alone"),
+        # the pre-FGOBJ state, for reference only: the same matching with the six EASY COCO concepts as the only partners
+        "both_easy_partners_only": matched_comparison(chest, easy_only, W, S, "both variables, easy COCO partners only")}
+    return {"concepts": list(FGOBJ_CONCEPTS), "blocks": rows, "pool": pool, "matched": matched,
+            "cells": cells, "skipped": skipped,
+            "prespecification": f"the matching windows ({W} clean-answer AUROC, {S} probe selectivity) and the six "
+                                f"fine-grained categories were fixed before the FGOBJ grid was built; no ownership "
+                                f"outcome enters either choice",
+            "matching_variables": {"clean_answer_auroc": "summary.json calibration answer_auroc for chest and easy COCO "
+                                                         "cells, summary.json fgobj probes answer_auroc (module "
+                                                         "FGOBJ_CALIBRATION) for fine-grained cells -- the same rows, rule "
+                                                         "and estimator in both cases",
+                                   "probe_selectivity": "probe AUROC minus the mean of the 20 type->random-label control "
+                                                        "AUROCs on the calibration rows, the campaign's definition for "
+                                                        "every group"}}
 
 
 # ------------------------------------------------------------------------------------------------ PRECISION
@@ -478,6 +894,44 @@ def write_md(R: dict, path: Path) -> None:
               f"answer-capable {ch['attr_answer_capable']}/{ch['attr_cells']}; median |cos| attribute-to-clinical {f3(ch['median_abs_cos_attr_clinical'])} "
               f"(largest pair median {f3(mm.get('median_abs_cos'))} for {mm.get('pair')} over {mm.get('n_blocks')} blocks); "
               f"attribute questions carry a random family: {ch['attribute_random_reference']}."]
+    L += ["", "### The attribute-versus-finding comparison, three ways", "",
+          f"Window for the answerability match: {B['match_window']} of clean-answer AUROC, inside one block.", "",
+          "| group | mode | attr owned | clinical owned | difference | patient-bootstrap CI | excludes 0 |",
+          "|---|---|---|---|---|---|---|"]
+    for g, d in B["per_dataset"].items():
+        if not d["blocks"]:
+            continue
+        for key, tag in (("comparison", ""), ("comparison_matched_reference", " (ATTRRAND blocks)")):
+            if key == "comparison_matched_reference" and not d["blocks_matched_reference"]:
+                continue
+            for mode in ("all_cells", "answer_capable_cells", "answerability_matched"):
+                m = d[key][mode]
+                bt = m.get("bootstrap") or {}
+                ci = (f"[{bt['difference_ci95_percentile'][0]:+.3f}, {bt['difference_ci95_percentile'][1]:+.3f}]"
+                      if bt.get("available") else "n/a")
+                L.append(f"| {g}{tag} | {mode} | {m['attr_owned']}/{m['attr_cells']} ({f3(m['attr_owned_share'])}) | "
+                         f"{m['clin_owned']}/{m['clin_cells']} ({f3(m['clin_owned_share'])}) | {f3(m['difference'])} | {ci} | "
+                         f"{bt.get('difference_excludes_zero') if bt.get('available') else 'n/a'} |")
+    if ch["blocks"] and ch["blocks_matched_reference"]:
+        L += ["", f"Attribute and clinical cells are graded against one steering reference only where ATTRRAND has been "
+              f"scored: {len(ch['blocks_matched_reference'])} of {ch['blocks']} chest blocks "
+              f"({', '.join(ch['blocks_matched_reference'])}). Elsewhere the attribute cells still carry the sham-only "
+              f"reference, so the rows without the (ATTRRAND blocks) tag mix two rules."]
+    cm = ch["comparison_matched_reference"] if (ch["blocks"] and ch["blocks_matched_reference"]) else \
+        (ch["comparison"] if ch["blocks"] else None)
+    if cm:
+        mt = cm["answerability_matched"]
+        L += ["", f"Pooled chest, answerability-matched: {mt['n_pairs']} pairs from {mt['n_attr_cells_matched']} of "
+              f"{mt['n_attr_cells']} attribute cells over {cm['blocks']} blocks; {mt['n_attr_cells_unmatched']} attribute "
+              f"cells find no clinical cell within the window. Median |AUROC gap| inside a pair "
+              f"{f3(mt['median_abs_answer_auroc_gap'])}.",
+              f"Answer AUROC rows: attribute {cm['answer_auroc_rows']['attribute']} (median known labels "
+              f"{f3(cm['median_answer_n_known']['attribute'])}), clinical {cm['answer_auroc_rows']['clinical']} "
+              f"(median known labels {f3(cm['median_answer_n_known']['clinical'])})."]
+        for u in mt["unmatched"]:
+            n0 = u.get("nearest_clinical") or {}
+            L.append(f"- unmatched: {u['block']} {u['attribute']} (answer AUROC {f3(u['answer_auroc'])}); nearest clinical "
+                     f"{n0.get('concept')} at {f3(n0.get('answer_auroc'))} (gap {f3(n0.get('gap'))}) -- {u['reason']}")
     L += ["", "## PRECISION: full grade under fp32 and batch size one (200 rows)", "",
           "| block | setting | verdict changes | reference changes | owned changes | max abs dW grid | max abs d contrast |", "|---|---|---|---|---|---|---|"]
     for r in P["blocks"]:
@@ -487,8 +941,48 @@ def write_md(R: dict, path: Path) -> None:
     pa = P["aggregate"]
     L += ["", f"Pooled: {pa['blocks']} blocks, {pa['block_settings']} block-settings, {pa['graded_cells']} graded cells; verdict changes {pa['verdict_changes']}, "
           f"reference changes {pa['steering_reference_changes']}, owned changes {pa['owned_changes']}; max |dW| grid {f3(pa['max_abs_dW_grid'])} ({pa['max_abs_dW_grid_at']}); "
-          f"max |d contrast| {f3(pa['max_abs_dcontrast'])}.", "", "## Skipped", ""]
-    for sec in ("valid", "altdird", "ansdirt", "attr", "precision"):
+          f"max |d contrast| {f3(pa['max_abs_dcontrast'])}."]
+    G = R.get("fgobj")
+    if G:
+        L += ["", "## FGOBJ: fine-grained COCO object concepts, and the difficulty-matched comparison", "",
+              "Six COCO categories that are small, often occluded or fine-grained ("
+              + ", ".join(G["concepts"]) + "), built from the same instance annotations by the same rule, fitted with the "
+              "same projection, scaler and probe settings on the same training rows, and written as a self-contained "
+              "127-condition family (own baseline, six directions, own 119 random directions, own sham) at the primary "
+              "template and dose. " + G["prespecification"][0].upper() + G["prespecification"][1:] + ".", "",
+              "| block | fine owned | easy owned | fine readable | fine answerable | med answer AUROC fine / easy | med selectivity fine / easy |",
+              "|---|---|---|---|---|---|---|"]
+        for r in G["blocks"]:
+            L.append(f"| {r['block']} | {r['fine_owned']}/{r['fine_cells']} | {r['easy_owned']}/{r['easy_cells']} | "
+                     f"{r['fine_readable']}/{r['fine_cells']} | {r['fine_answer_capable']}/{r['fine_cells']} | "
+                     f"{f3(r['median_answer_auroc_fine'])} / {f3(r['median_answer_auroc_easy'])} | "
+                     f"{f3(r['median_selectivity_fine'])} / {f3(r['median_selectivity_easy'])} |")
+        L += ["", "| group | blocks | cells | owned | rate | median clean-answer AUROC | median probe selectivity |",
+              "|---|---|---|---|---|---|---|"]
+        for g in FGOBJ_GROUPS:
+            d = G["pool"][g]
+            L.append(f"| {g} | {d['blocks']} | {d['cells']} | {d['owned']} | {f3(d['owned_rate'])} | "
+                     f"{f3(d['median_answer_auroc'])} | {f3(d['median_selectivity'])} |")
+        L += ["", "Difficulty-matched chest-versus-natural-image ownership difference. Every chest cell is paired with "
+              "the natural-image cells of ANY block inside the prespecified window; the difference is the mean over "
+              "matched chest cells of its own ownership minus the ownership rate of its own partner set. The interval "
+              "is a cluster bootstrap over models (a cell's ownership is already a 600-patient statistic; the model is "
+              "the unit that clusters cells).", "",
+              "| matching | matched chest cells | unmatched | partners used (easy / fine) | chest rate | partner rate | difference | 95% CI |",
+              "|---|---|---|---|---|---|---|---|"]
+        for key in ("both", "answer_auroc", "selectivity", "both_easy_partners_only"):
+            m = G["matched"][key]
+            ci = m.get("matched_ownership_difference_ci95")
+            comp = m.get("partner_composition_used") or {}
+            L.append(f"| {m['matching']} | {m.get('n_matched_chest_cells')}/{m.get('n_chest_cells')} | "
+                     f"{m.get('n_unmatched_chest_cells')} | {comp.get('coco_easy')} / {comp.get('coco_fine')} | "
+                     f"{f3(m.get('chest_owned_rate_matched'))} | {f3(m.get('natural_owned_rate_used'))} | "
+                     f"{f3(m.get('matched_ownership_difference'))} | "
+                     + (f"[{ci[0]:+.3f}, {ci[1]:+.3f}] |" if ci else "n/a |"))
+    L += ["", "## Skipped", ""]
+    for sec in ("valid", "altdird", "ansdirt", "attr", "precision", "fgobj"):
+        if sec not in R:
+            continue
         for s in R[sec]["skipped"]:
             L.append(f"- {sec}: {s['block']}{' ' + s['setting'] if s.get('setting') else ''}: {s['reason']}")
     path.write_text("\n".join(L) + "\n", encoding="utf-8")
@@ -512,7 +1006,10 @@ def main():
                             "precision": "setting status COMPLETE with the full grade"},
                   "script": str(Path(__file__).resolve())},
          "valid": valid_section(blocks), "altdird": altdird_section(blocks), "ansdirt": ansdirt_section(blocks),
-         "attr": attr_section(blocks), "precision": precision_section(blocks)}
+         "attr": attr_section(blocks), "precision": precision_section(blocks), "fgobj": fgobj_section(blocks)}
+    R["meta"]["rules"]["fgobj"] = ("FGOBJ completed; the six-direction write matrix scored on every test row; "
+                                   "FGOBJ_CALIBRATION scored, so the fine-grained cells carry a clean-answer AUROC "
+                                   "measured on the same calibration rows and by the same rule as every other cell")
     R["meta"]["seconds"] = round(time.time() - t0, 1)
     out = Path(a.out); out.mkdir(parents=True, exist_ok=True)
     (out / "round2.json").write_text(json.dumps(clean(R), indent=1), encoding="utf-8")
@@ -525,8 +1022,28 @@ def main():
     print("ansdirt: " + "; ".join(f"{g} {x['blocks']}b kept {x['kept_pairs']}/{x['pairs']}" for g, x in t.items()))
     print("attr: " + "; ".join(f"{g} {x['blocks']}b attributes {x['attr_owned']}/{x['attr_cells']} clinical {x['clin_owned']}/{x['clin_cells']}"
                                for g, x in bt.items() if x["blocks"]))
+    for g, x in bt.items():
+        if not x["blocks"]:
+            continue
+        for key, tag in (("comparison", ""), ("comparison_matched_reference", "+ATTRRAND")):
+            if key == "comparison_matched_reference" and not x["blocks_matched_reference"]:
+                continue
+            _print_comparison(g + tag, x[key])
     print(f"precision: {p['blocks']} blocks, {p['block_settings']} settings, verdict changes {p['verdict_changes']}, reference changes {p['steering_reference_changes']}, max|dW| grid {p['max_abs_dW_grid']}")
-    for sec in ("valid", "altdird", "ansdirt", "attr", "precision"):
+    G = R["fgobj"]
+    print("fgobj: " + "; ".join(f"{g} {G['pool'][g]['cells']} cells {G['pool'][g]['owned']} owned "
+                                f"(rate {G['pool'][g]['owned_rate'] if G['pool'][g]['owned_rate'] is None else round(G['pool'][g]['owned_rate'], 3)}, "
+                                f"median answer AUROC {G['pool'][g]['median_answer_auroc'] if G['pool'][g]['median_answer_auroc'] is None else round(G['pool'][g]['median_answer_auroc'], 3)})"
+                                for g in FGOBJ_GROUPS))
+    for key in ("both", "answer_auroc", "selectivity", "both_easy_partners_only"):
+        m = G["matched"][key]
+        ci = m.get("matched_ownership_difference_ci95")
+        d = m.get("matched_ownership_difference")
+        print(f"  fgobj-matched {key:26s} matched {m.get('n_matched_chest_cells')}/{m.get('n_chest_cells')} chest cells "
+              f"(unmatched {m.get('n_unmatched_chest_cells')}), partners used {m.get('partner_composition_used')}, "
+              f"d={None if d is None else round(d, 4)} "
+              + (f"[{ci[0]:+.4f}, {ci[1]:+.4f}]" if ci else "no interval"))
+    for sec in ("valid", "altdird", "ansdirt", "attr", "precision", "fgobj"):
         for s in R[sec]["skipped"]:
             print(f"  skipped {sec}: {s['block']} {s.get('setting', '')} {s['reason']}")
     print(f"wrote {out / 'round2.json'} and round2.md in {time.time() - t0:.1f}s")

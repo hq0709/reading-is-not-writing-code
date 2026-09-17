@@ -23,7 +23,13 @@ Implemented:
   valid(model, dataset)               -> VALID: the CORE grade on the radiologist-labelled CheXpert valid rows, answer capability and
                                          probe readability against those labels, paired comparison with the block's CORE grade on test
   attr(model, dataset)                -> also folds in ATTRRAND when its outcomes exist: the attribute cells then carry the SAME
-                                         random p95 reference as the clinical cells (sham-only and matched verdicts both recorded)
+                                         random p95 reference as the clinical cells (sham-only and matched verdicts both recorded),
+                                         and every one of the nine cells carries an `answerability` block (clean-answer AUROC, its
+                                         one-sided lower bound, the answer-capable flag, the rows it was measured on and where the
+                                         number came from) plus per-draw ownership, so the attribute-versus-finding comparison can
+                                         be restricted to cells the model can actually answer
+  attrq(model, dataset)               -> ATTRQ: per attribute and phrasing the clean-answer AUROC on the calibration rows with its
+                                         one-sided lower bound, and the phrasing the campaign's rule selects for the block
   validfit(model, dataset)            -> VALIDFIT: W / O of the expert-label (radiologist) refits against CORE's competitor family,
                                          random p95 and sham, plus the CPU cosines and cross-fitted AUROCs of the prep
   projseed(model, dataset)            -> PROJSEED: per projection seed the 6x6 write matrix, O_q with that projection's own
@@ -40,6 +46,11 @@ Implemented:
                                          spillover onto the other five concepts' endpoints, the affirmative/negated correlation,
                                          and the incremental validity of ownership over write magnitude, probe selectivity and
                                          clean-answer AUROC (reported the same way whether or not it adds anything)
+  fgobj(model, dataset)               -> FGOBJ: six fine-grained COCO concepts graded exactly as CORE grades the six easy ones --
+                                         the 6x6 write matrix against FGOBJ's own baseline, O_q with its interval and max-T verdict,
+                                         the family's OWN 119-random p95 and own sham, the readable / answer-capable grades from the
+                                         calibration rows (FGOBJ_CALIBRATION supplies the clean margins), and the block-level
+                                         comparison of the fine-grained family with the block's own easy-COCO CORE cells
 """
 from __future__ import annotations
 
@@ -56,14 +67,18 @@ from .altdir import gram_spectrum_summary, load_altdir
 from .ansdir import load_ansdir
 from .attr import attribute_labels, attribute_value, load_attr
 from .extcomp import load_extcomp
+from .fgobj import load_fgobj
 from .fit import load_fit
 from .projseed import load_projseed
 from .images import DATA_ROOT, load_cohort, load_labels
-from .protocol import (ALTDIR_FAMILIES, ALTDIRD_FAMILIES, ANSDIRT_TEMPLATES, ATTR_CONCEPTS, BOOT_CALIBRATION_DRAWS,
+from .protocol import (ALTDIR_FAMILIES, ALTDIRD_FAMILIES, ANSDIRT_TEMPLATES, ATTR_CONCEPTS, ATTRQ_PHRASINGS,
+                       BOOT_CALIBRATION_DRAWS,
                        BOOT_CALIBRATION_SEED, BOOT_CORE_DRAWS, BOOT_CORE_SEED, BOOT_DIAGNOSTIC_SEED, CONCEPTS, CONTROL_SEEDS, DATASETS,
-                       EXTCOMP_LABELS, LOCI, MODULE_SETTINGS, MODULES, N_RANDOM, NUMERICS_DEFAULT, PRECISION_SETTINGS, PRIMARY_ALPHA,
+                       EXTCOMP_LABELS, FGOBJ_CONCEPTS, LOCI, MODULE_SETTINGS, MODULES, N_RANDOM, NUMERICS_DEFAULT,
+                       PRECISION_SETTINGS, PRIMARY_ALPHA,
                        PROJSEED_SEEDS, PROMPT_CONCEPTS, REPLAY_SOURCE, SEMEND_N_RANDOM, SEMEND_SIGN, SEMEND_TEMPLATES,
-                       TOKENW_VARIANTS, TOWERSWAP_PAIRS, conditions_for, expected_rows, primary_template, semend_finding_word)
+                       TOKENW_VARIANTS, TOWERSWAP_PAIRS, attrq_source_template, conditions_for, expected_rows, primary_template,
+                       render_attrq, semend_finding_word)
 from .semend import load_semend
 from .runpaths import outcomes_dir, run_dir, valid_features_dir
 from .validfit import load_validfit
@@ -139,15 +154,32 @@ def max_t(estimates: np.ndarray, draws: np.ndarray, level: float = 0.95) -> dict
             "degenerate": (~ok).astype(int)}
 
 
+def pack_draw_flags(flags) -> str:
+    """One bit per bootstrap draw, hex encoded. 2,000 draws cost 500 characters instead of 2,000 JSON items, which is
+    what lets a per-cell per-draw indicator live in summary.json at all."""
+    return np.packbits(np.asarray(flags, bool)).tobytes().hex()
+
+
+def unpack_draw_flags(hex_str: str, draws: int) -> np.ndarray:
+    """Inverse of pack_draw_flags; `draws` trims the padding of the last byte."""
+    bits = np.unpackbits(np.frombuffer(bytes.fromhex(hex_str), dtype=np.uint8))
+    if len(bits) < draws:
+        raise ValueError(f"packed flags hold {len(bits)} bits, fewer than the {draws} draws asked for")
+    return bits[:draws].astype(bool)
+
+
 # ----------------------------------------------------------------------------------------- calibration
-def calibration(model_key: str, dataset_id: str, locus_id: str = "vis.last", template_id: str | None = None) -> dict:
+def calibration(model_key: str, dataset_id: str, locus_id: str = "vis.last", template_id: str | None = None,
+                draws: int = BOOT_CALIBRATION_DRAWS) -> dict:
+    """`draws` is the campaign's BOOT_CALIBRATION_DRAWS unless a caller that only needs the point estimates lowers it
+    (the readable / answer-capable flags require >= 1900 valid draws, so a lowered count leaves them False)."""
     template_id = _primary(model_key, dataset_id, template_id)
     ps = pq.read_table(run_dir(model_key, dataset_id) / f"probe_scores.{locus_id}.parquet").to_pandas()
     ps = ps[(ps.role == "calibration") & (ps.fit_seed == 0)]
     cal_rows = load_cohort(dataset_id, ("calibration",))
     order = {r["row_id"]: i for i, r in enumerate(cal_rows)}
     n = len(cal_rows)
-    idx = bootstrap_indices(dataset_id, n, BOOT_CALIBRATION_SEED, BOOT_CALIBRATION_DRAWS)
+    idx = bootstrap_indices(dataset_id, n, BOOT_CALIBRATION_SEED, draws)
     # answers (clean CALIBRATION margins of the block's primary template)
     cal_path = outcomes_dir(model_key, dataset_id) / "CALIBRATION.parquet"
     ans = pq.read_table(cal_path).to_pandas() if cal_path.exists() else None
@@ -546,13 +578,16 @@ def _logistic_reference(d_log: dict, concepts: list[str], idx: np.ndarray) -> tu
     return Wlog, comp_boot, ref
 
 
-def _ownership_block(own: np.ndarray, fam: dict, concepts: list[str], idx: np.ndarray, own_names: dict | None = None) -> dict:
+def _ownership_block(own: np.ndarray, fam: dict, concepts: list[str], idx: np.ndarray, own_names: dict | None = None,
+                     return_o_draws: bool = False) -> dict:
     """Ownership of an own write against a competitor family, with the CORE rules.
     own: (Q, n) per-sample deltas of each question's own direction; fam: name -> (Q, n) deltas of that direction on
     every question; the competitors of question q are every name except its own (`own_names[q]`, default q).
     Returns the write matrix W[q][name] (own under its own name), per question W_qq / O_q / strongest competitor /
     percentile interval of O_q (max recomputed per draw) / verdict from the max-T simultaneous intervals over all
-    (q, competitor) contrasts."""
+    (q, competitor) contrasts. With return_o_draws the key "O_draws" carries the per-draw O_q of every question and the
+    caller pops it: it is what a RATE over cells needs to get a unit (patient) bootstrap interval, because the max-T
+    verdict that decides ownership on the point estimate is not a per-draw quantity."""
     own_names = own_names or {q: q for q in concepts}
     names = list(fam)
     F = np.stack([fam[nm] for nm in names], axis=1)                                       # (6, K, n)
@@ -581,6 +616,8 @@ def _ownership_block(own: np.ndarray, fam: dict, concepts: list[str], idx: np.nd
         cols = blocks[q]
         lows = [mt["lower"][j] for j in cols]; highs = [mt["upper"][j] for j in cols]
         O_draws = boot[:, cols].min(axis=1)
+        if return_o_draws:
+            res.setdefault("O_draws", {})[q] = O_draws
         res["per_question"][q] = {
             "W_qq": float(Wo[qi]), "O_q": float(Wo[qi] - max(others.values())),
             "max_other": max(others.values()), "argmax_other": max(others, key=others.get), "n_competitors": len(others),
@@ -854,6 +891,71 @@ def _attrrand_deltas(model_key: str, dataset_id: str, attr_df, order: dict, alph
                    baseline=attr_df[attr_df.direction_id == "baseline"])
 
 
+def attrq(model_key: str, dataset_id: str, template_id: str | None = None, draws: int = BOOT_CALIBRATION_DRAWS) -> dict:
+    """ATTRQ statistics: the clean answer of each attribute question under each phrasing, on the CALIBRATION rows,
+    against the attribute's manifest label. No direction is written and no reference family is scored -- this is the
+    eligibility pass that says whether the model can answer an attribute question at all, and in which phrasing.
+
+    Per (attribute, phrasing): the exact question text, the candidate-set template it inherits, known positives and
+    negatives, clean-answer AUROC and Brier, the one-sided 95% lower AUROC bound over `draws` calibration-row unit
+    bootstrap draws, and the answer-capable flag -- exactly analysis.calibration's rule for a clinical question, so the
+    two kinds of question are graded the same way on the same rows.
+
+    Selection (protocol.json attrq.selection_rule, fixed before any of this was scored): the block's primary phrasing
+    for an attribute is the ELIGIBLE phrasing (answer-capable: >= 10 positives, >= 10 negatives, >= 1900 valid draws,
+    lower bound > 0.5) with the HIGHEST lower bound; ties break in phrasing order. An attribute with no eligible
+    phrasing selects none and is recorded as not answerable in this block."""
+    primary = _primary(model_key, dataset_id, template_id)
+    df = _load_module(model_key, dataset_id, "ATTRQ")
+    if df is None or len(df) == 0:
+        raise FileNotFoundError("attrq needs merged outcomes/ATTRQ.parquet (python -m cftransfer.package)")
+    rows = load_cohort(dataset_id, ("calibration",))
+    order = {r["row_id"]: i for i, r in enumerate(rows)}
+    n = len(rows)
+    idx = bootstrap_indices(dataset_id, n, BOOT_CALIBRATION_SEED, draws)
+    labels = load_labels(dataset_id)
+    c0 = CONCEPTS[dataset_id][0]
+    written = ATTRQ_PHRASINGS[0]                      # AQ0: the phrasing ATTR and ATTRRAND write
+    out = {}
+    for a in ATTR_CONCEPTS:
+        y = np.array([attribute_value(a, labels[(r["row_id"], c0)]) for r in rows], int)
+        per = {}
+        for ph in ATTRQ_PHRASINGS:
+            g = df[(df.concept == a) & (df.template_id == ph) & (df.direction_id == "baseline")]
+            g = g[g.row_id.isin(order)]
+            if g.empty:
+                continue
+            m = np.full(n, np.nan)
+            m[[order[r] for r in g.row_id]] = g.semantic_margin.values
+            cell = _answer_cell(y, m, idx)
+            cell.update({"question": render_attrq(dataset_id, a, ph, primary),
+                         "candidate_source_template": attrq_source_template(ph, primary),
+                         "n_scored_rows": int(np.isfinite(m).sum()), "is_written_phrasing": ph == written,
+                         "eligible": bool(cell["answer_capable"])})
+            per[ph] = cell
+        elig = [ph for ph in ATTRQ_PHRASINGS if ph in per and per[ph]["eligible"]]
+        sel = max(elig, key=lambda ph: (per[ph]["answer_auroc_lower95_one_sided"], -ATTRQ_PHRASINGS.index(ph))) if elig else None
+        out[a] = {"phrasings": per, "n_scored_phrasings": len(per), "eligible_phrasings": elig, "selected": sel,
+                  "selected_answer_auroc": per[sel]["answer_auroc"] if sel else None,
+                  "selected_answer_auroc_lower95_one_sided": per[sel]["answer_auroc_lower95_one_sided"] if sel else None,
+                  "written_phrasing": written if written in per else None,
+                  "selection_changes_written_phrasing": bool(sel is not None and sel != written),
+                  "selection_status": ("selected" if sel else
+                                       ("no_phrasing_scored" if not per else "no_eligible_phrasing")),
+                  "selection_reason": (f"{sel}: highest one-sided 95% lower bound of the clean-answer AUROC "
+                                       f"({per[sel]['answer_auroc_lower95_one_sided']:.4f}) among the eligible phrasings "
+                                       f"{elig}" if sel else
+                                       "no phrasing clears the campaign's rule (>= 10 positives and negatives, "
+                                       ">= 1900 valid draws, one-sided 95% lower AUROC bound above 0.5) on this block")}
+    return {"n_rows": n, "role": "calibration", "draws": int(idx.shape[0]), "primary_template": primary,
+            "phrasings": list(ATTRQ_PHRASINGS), "written_phrasing": written, "attributes": list(ATTR_CONCEPTS),
+            "label_source": "manifest labels.csv (view / sex / age), the attribute definitions of cftransfer.attr",
+            "rule": ("answer-capable = >= 10 known positives and >= 10 known negatives, >= 1900 valid unit-bootstrap draws "
+                     "and a one-sided 95% lower AUROC bound above 0.5 (analysis.calibration's rule); the selected phrasing "
+                     "is the eligible one with the highest lower bound, ties in phrasing order"),
+            "per_attribute": out}
+
+
 def attr(model_key: str, dataset_id: str, template_id: str | None = None, alpha: float = PRIMARY_ALPHA,
          draws: int = BOOT_CALIBRATION_DRAWS) -> dict:
     """ATTR statistics. Questions Q = 3 attributes + 6 clinical, directions = 3 attribute directions + 6 clinical normals:
@@ -892,8 +994,9 @@ def attr(model_key: str, dataset_id: str, template_id: str | None = None, alpha:
     fam = {nm: _direction_rows(d, Q, nm, n) for nm in dir_names}
     own = np.stack([d[(q, own_names[q])] for q in Q]).astype(float)
     idx = core_bootstrap_indices(dataset_id, n, draws)
-    block = _ownership_block(own, fam, Q, idx, own_names)
+    block = _ownership_block(own, fam, Q, idx, own_names, return_o_draws=True)
     block.pop("own_boot")
+    o_draws = block.pop("O_draws", {})
     n_attr_random = 0
     for q in Q:
         cell = block["per_question"][q]
@@ -919,6 +1022,13 @@ def attr(model_key: str, dataset_id: str, template_id: str | None = None, alpha:
                      "steering_reference": bool(matched) if matched is not None else sham_only,
                      "steering_reference_rule": ("random_p95_and_sham (%s 119-random family)" % cell["random_source"])
                      if cell["random_reference"] else "sham_only (no random family scored for this cell)"})
+        # per-draw ownership, so a RATE over cells can carry a unit (patient) bootstrap interval. The max-T verdict is
+        # not a per-draw quantity, so inside a draw the rule is the reference (fixed at the point estimate) and O_q > 0
+        # with the strongest competitor recomputed in that draw. The point grade stays the campaign's owned() rule.
+        if q in o_draws:
+            flags = cell["steering_reference"] & (np.asarray(o_draws[q]) > 0)
+            cell.update({"owned_draws_hex": pack_draw_flags(flags), "owned_draw_rate": float(flags.mean()),
+                         "owned_draw_rule": "steering_reference and O_q > 0 within the draw (max competitor recomputed per draw)"})
     # attribute readability (calibration rows) and answer capability (test rows) from the prep file and ATTR baselines
     arr = load_attr(model_key, dataset_id, LOCI["primary"])
     an = list(arr["attr_names"].astype(str))
@@ -953,6 +1063,41 @@ def attr(model_key: str, dataset_id: str, template_id: str | None = None, alpha:
                      "n_train_pos": int(arr["n_pos"][k]), "n_train_neg": int(arr["n_neg"][k]),
                      "cos_model_to_clinical": {c: float(arr["cos_model"][k, ci]) for ci, c in enumerate(clin)}})
         attributes[a] = cell
+    # Answerability of every one of the nine questions, READ from the block's own summary.json, never recomputed here.
+    # A cell whose clean answer no direction can move cannot be owned for reasons that have nothing to do with whether
+    # the concept is clinical, so the attribute-versus-finding comparison is reported restricted to answer-capable cells
+    # and matched on this number as well as pooled over all cells (protocol.json attr_comparison).
+    sp = run_dir(model_key, dataset_id) / "summary.json"
+    summary = json.loads(sp.read_text()) if sp.exists() else {}
+    cal = {c: v for c, v in (summary.get("calibration") or {}).items() if isinstance(v, dict)}
+    aq = summary.get("attrq") or {}
+    aq_written = aq.get("written_phrasing")
+    for q in Q:
+        cell = block["per_question"][q]
+        if q in ATTR_CONCEPTS:
+            ph = (((aq.get("per_attribute") or {}).get(q) or {}).get("phrasings") or {}).get(aq_written) if aq_written else None
+            if ph:
+                src, rows_used = ph, "calibration"
+                note = (f"summary.json attrq, phrasing {aq_written} (the phrasing ATTR writes): clean ATTRQ answers on the "
+                        f"{aq.get('n_rows')} calibration rows against the manifest attribute label")
+            else:                             # ATTRQ not scored yet: the module's own test-row measurement is all there is
+                at = attributes[q]
+                src = {k[len("label_"):]: v for k, v in at.items() if k.startswith("label_")}
+                rows_used = "test"
+                note = ("summary.json attr: the ATTR module's own clean baseline on the test rows against the manifest "
+                        "attribute label (ATTRQ not scored for this block, so no calibration-row number exists yet)")
+        else:
+            src, rows_used = cal.get(q) or {}, "calibration"
+            note = ("summary.json calibration: the clean CALIBRATION margins of the primary template on the calibration "
+                    "rows against the manifest label" if src else
+                    "not available: summary.json carries no calibration section for this block")
+        cell["answerability"] = {
+            "answer_auroc": src.get("answer_auroc"), "answer_auroc_lower95_one_sided": src.get("answer_auroc_lower95_one_sided"),
+            "answer_capable": src.get("answer_capable"), "answer_brier": src.get("answer_brier"),
+            "n_pos": src.get("n_pos"), "n_neg": src.get("n_neg"), "valid_draws": src.get("answer_valid_draws"),
+            "rows": rows_used if src else None, "source": note,
+            "rule": ("answer-capable = >= 10 known positives and >= 10 known negatives, >= 1900 valid unit-bootstrap draws "
+                     "and a one-sided 95% lower AUROC bound above 0.5 (analysis.calibration)")}
     attrrand = {"available": d_ar is not None, "n_random": int(n_attr_random), "expected_random": N_RANDOM,
                 "questions": list(ATTR_CONCEPTS), "baseline_module": "ATTR",
                 "note": ("the three attribute questions carry the protocol's own 119-direction random family (module ATTRRAND), "
@@ -960,8 +1105,22 @@ def attr(model_key: str, dataset_id: str, template_id: str | None = None, alpha:
                 if d_ar is not None else
                 ("ATTRRAND not scored for this block: attribute cells fall back to the sham-only reference "
                  "(steering_reference_rule records this per cell)")}
+    answerability = {
+        "attrq_available": bool(aq), "attrq_written_phrasing": aq_written,
+        "clinical_source": "summary.json calibration (calibration rows)" if cal else "not available",
+        "attribute_source": (f"summary.json attrq, phrasing {aq_written} (calibration rows)" if aq else
+                             "summary.json attr, the module's own clean baseline (test rows)"),
+        "same_rows": bool(aq and cal),
+        "note": ("attribute and clinical answerability are measured on the same calibration rows" if (aq and cal) else
+                 "until ATTRQ is scored for this block the attribute number comes from the 600 test rows and the clinical "
+                 "number from the 400 calibration rows: the same AUROC therefore carries a different bootstrap lower bound, "
+                 "which makes answer_capable easier to reach for an attribute cell. Every cell records its own rows."),
+        "bootstrap": {"helper": "cftransfer.analysis.core_bootstrap_indices(dataset, n, draws)", "seed": BOOT_CORE_SEED,
+                      "draws": int(idx.shape[0]),
+                      "unit": "test row = one unit (patient on NIH / CheXpert); draws are the campaign's shared draws",
+                      "per_draw_ownership": "steering_reference and O_q > 0 inside the draw (owned_draws_hex per cell)"}}
     return {"n_rows": n, "alpha": alpha, "template_id": primary, "draws": int(idx.shape[0]), "questions": Q, "directions": dir_names,
-            "attributes": attributes, "attrrand": attrrand, **block}
+            "attributes": attributes, "attrrand": attrrand, "answerability": answerability, **block}
 
 
 # --------------------------------------------------------------------------------------------- ANSDIRT
@@ -1828,6 +1987,166 @@ def semend(model_key: str, dataset_id: str, template_id: str | None = None, alph
     return res
 
 
+# ----------------------------------------------------------------------------------------------- FGOBJ
+def _fgobj_probe_grades(arr: dict, dataset_id: str, cal_df, primary: str, draws: int) -> tuple[dict, dict]:
+    """Per fine-grained concept, the campaign's readability grade on the calibration rows (probe AUROC against the 20
+    type->random-label controls of the block's own seed-0 fit) and the campaign's answer-capability grade on the clean
+    margins of the FGOBJ_CALIBRATION module, which scores exactly the rows and the rule CALIBRATION uses for the six
+    easy concepts. Returns (per-concept cells, the answer source record)."""
+    concepts = list(arr["fgobj_names"].astype(str))
+    cal_rows = load_cohort(dataset_id, ("calibration",))
+    corder = {r["row_id"]: i for i, r in enumerate(cal_rows)}
+    n_cal = len(cal_rows)
+    prep_ids = arr["cal_row_ids"].astype(str)
+    perm = np.full(n_cal, -1, int)                       # prep order -> frozen calibration order (the campaign's)
+    for j, rid in enumerate(prep_ids):
+        if rid in corder:
+            perm[corder[rid]] = j
+    if (perm < 0).any():
+        raise RuntimeError("fgobj_seed0.npz does not carry every calibration row of the frozen cohort")
+    idx_cal = bootstrap_indices(dataset_id, n_cal, BOOT_CALIBRATION_SEED, draws)
+    controls_ok = bool(arr["controls_eligible"])
+    margins = None
+    if cal_df is not None and len(cal_df):
+        cal_df = cal_df[(cal_df.template_id == primary) & (cal_df.direction_id == "baseline")]
+        margins = {}
+        for c in concepts:
+            g = cal_df[cal_df.concept == c]
+            v = np.full(n_cal, np.nan)
+            keep = [i for i, r in enumerate(g.row_id) if r in corder]
+            v[[corder[r] for r in g.row_id.values[keep]]] = g.semantic_margin.values[keep]
+            margins[c] = v
+    cells = {}
+    for ci, c in enumerate(concepts):
+        y = arr["cal_labels"][ci][perm].astype(int)
+        s_real = arr["cal_real_logits"][ci][perm].astype(float)
+        controls = [(arr["cal_control_logits"][ci, j][perm].astype(float), arr["cal_control_labels"][j][perm].astype(int))
+                    for j in range(arr["cal_control_logits"].shape[1])
+                    if np.isfinite(arr["cal_control_logits"][ci, j]).all()] if controls_ok else []
+        cell = _readability_cell(y, s_real, controls, idx_cal)
+        cell["controls_note"] = ("the block's own 20 type->random-label control probes over the COCO aspect x area "
+                                 "strata, the same controls the six easy concepts are graded against")
+        if margins is not None:
+            cell.update(_answer_cell(y, margins[c], idx_cal))
+        cell.update({"auroc_calibration_prep": float(arr["auroc_calibration"][ci]), "auroc_test_prep": float(arr["auroc_test"][ci]),
+                     "n_train_pos": int(arr["n_pos"][ci, 0]), "n_train_neg": int(arr["n_neg"][ci, 0]),
+                     "n_test_pos": int(arr["n_pos"][ci, 2]), "n_test_neg": int(arr["n_neg"][ci, 2]),
+                     "cos_model_to_easy": {e: float(arr["cos_model"][ci, ei]) for ei, e in enumerate(arr["concept_names"].astype(str))}})
+        cell["median_abs_cos_to_easy"] = float(np.median(np.abs(list(cell["cos_model_to_easy"].values()))))
+        cells[c] = cell
+    source = {"readability": "calibration rows, campaign rule (analysis.calibration): probe AUROC minus the mean of the "
+                             "20 type->random-label control AUROCs, one-sided 95% lower bound > 0 with >= 10 positives and "
+                             "10 negatives",
+              "answerability": ("FGOBJ_CALIBRATION clean margins on the 400 calibration rows, the rule and cohort "
+                                "CALIBRATION uses for the six easy concepts" if margins is not None else None),
+              "answer_available": margins is not None,
+              "answer_missing_reason": None if margins is not None else
+              "FGOBJ_CALIBRATION not scored for this block; the fine-grained cells carry no clean-answer AUROC and are "
+              "not poolable with the campaign's cells until it is"}
+    return cells, source
+
+
+def fgobj(model_key: str, dataset_id: str = "coco", template_id: str | None = None, alpha: float = PRIMARY_ALPHA,
+          draws: int = BOOT_CALIBRATION_DRAWS) -> dict:
+    """FGOBJ statistics: the fine-grained object family graded exactly as CORE grades the six easy COCO concepts, plus
+    the block-level comparison between the two families.
+
+      W_qd (6x6) against FGOBJ's OWN clean baseline on the 600 test rows at the primary template and dose;
+      O_q = W_qq - max_{d != q} W_qd with the percentile interval (max recomputed inside every draw) and the 6x5 max-T
+      verdict, exactly core()'s rules;
+      the steering reference is the family's OWN: W_qq > 0, > the p95 of its 119 own random directions (fgobjrand) and
+      > |W(q, fgobjsham_q)|; owned = steering reference and fixed_family_advantage (the campaign rule, unchanged);
+      per concept the readable and answer-capable grades from the calibration rows (_fgobj_probe_grades);
+      `block_comparison` puts the six fine-grained cells of this block next to the block's own six CORE cells: ownership
+      rate, median clean-answer AUROC and median probe selectivity for each family, on the same block, the same rows,
+      the same dose and the same rule."""
+    if dataset_id not in MODULES["FGOBJ"].datasets:
+        raise SystemExit(f"FGOBJ is NOT_REQUESTED for {dataset_id} (fine-grained OBJECT concepts live on COCO)")
+    primary = _primary(model_key, dataset_id, template_id)
+    concepts = list(FGOBJ_CONCEPTS)
+    easy = list(CONCEPTS[dataset_id])
+    rows = load_cohort(dataset_id, ("test",))
+    order = {r["row_id"]: i for i, r in enumerate(rows)}
+    n = len(rows)
+    df = _load_module(model_key, dataset_id, "FGOBJ")
+    if df is None or len(df) == 0:
+        raise FileNotFoundError("fgobj needs merged outcomes/FGOBJ.parquet (python -m cftransfer.package)")
+    base = df[df.direction_id == "baseline"]
+    d = _matrix(df, concepts, order, alpha, template_id=primary, baseline=base)
+    A = _family_stack(d, concepts, "fgobj", n)
+    idx = core_bootstrap_indices(dataset_id, n, draws)
+    block = _ownership_block(np.stack([A[qi, qi] for qi in range(len(concepts))]),
+                             {c: A[:, ci, :] for ci, c in enumerate(concepts)}, concepts, idx)
+    block.pop("own_boot")
+    arr = load_fgobj(model_key, dataset_id, LOCI["primary"])
+    if list(arr["fgobj_names"].astype(str)) != concepts:
+        raise RuntimeError("fgobj_seed0.npz concept order differs from the protocol")
+    names = concepts
+    for qi, q in enumerate(concepts):
+        cell = block["per_question"][q]
+        rand = np.array([np.nanmean(d[(q, f"fgobjrand:{i:03d}")]) for i in range(N_RANDOM) if (q, f"fgobjrand:{i:03d}") in d])
+        sham = float(np.nanmean(d[(q, f"fgobjsham:{q}")])) if (q, f"fgobjsham:{q}") in d else np.nan
+        w = cell["W_qq"]
+        cell.update({"random_n": int(len(rand)), "random_reference": bool(len(rand) == N_RANDOM),
+                     "random_p95": float(np.percentile(rand, 95)) if len(rand) == N_RANDOM else None,
+                     "random_max": float(rand.max()) if len(rand) else None,
+                     "abs_sham": abs(sham) if not np.isnan(sham) else np.nan,
+                     "rank_in_random_family": int(1 + (rand >= w).sum()) if len(rand) == N_RANDOM else None,
+                     "own_direction": f"fgobj:{q}", "auroc_test_probe": float(arr["auroc_test"][names.index(q)])})
+        cell["steering_reference"] = bool(cell["random_reference"] and w > 0 and w > cell["random_p95"] and w > cell["abs_sham"])
+        cell["owned"] = bool(cell["steering_reference"] and cell["verdict"] == "fixed_family_advantage")
+    probes, answer_source = _fgobj_probe_grades(arr, dataset_id, _load_module(model_key, dataset_id, "FGOBJ_CALIBRATION"),
+                                                primary, draws)
+    # block-level comparison against the block's OWN easy-COCO CORE cells (same rows, dose, template and rule)
+    core_grade = core(model_key, dataset_id, "CORE", template_id=primary, alpha=alpha, n_boot=draws)
+    cal = calibration(model_key, dataset_id, template_id=primary, draws=draws)   # same draw count as the fine-grained grades
+    fam = {}
+    fam["fgobj"] = {"concepts": concepts, "n_cells": len(concepts),
+                    "owned": sorted(q for q in concepts if block["per_question"][q]["owned"]),
+                    "readable": sorted(q for q in concepts if probes[q]["readable"]),
+                    "answer_capable": sorted(q for q in concepts if probes[q].get("answer_capable")),
+                    "median_answer_auroc": _nanmed([probes[q].get("answer_auroc") for q in concepts]),
+                    "median_selectivity": _nanmed([probes[q].get("selectivity") for q in concepts]),
+                    "median_W_qq": _nanmed([block["per_question"][q]["W_qq"] for q in concepts]),
+                    "median_O_q": _nanmed([block["per_question"][q]["O_q"] for q in concepts])}
+    ec = {q: core_grade["per_question"][q] for q in easy}
+    fam["core"] = {"concepts": easy, "n_cells": len(easy),
+                   "owned": sorted(q for q in easy if ec[q].get("steering_reference") and ec[q].get("verdict") == "fixed_family_advantage"),
+                   "readable": sorted(q for q in easy if cal.get(q, {}).get("readable")),
+                   "answer_capable": sorted(q for q in easy if cal.get(q, {}).get("answer_capable")),
+                   "median_answer_auroc": _nanmed([cal.get(q, {}).get("answer_auroc") for q in easy]),
+                   "median_selectivity": _nanmed([cal.get(q, {}).get("selectivity") for q in easy]),
+                   "median_W_qq": _nanmed([ec[q]["W_qq"] for q in easy]),
+                   "median_O_q": _nanmed([ec[q]["O_q"] for q in easy])}
+    for k, v in fam.items():
+        v["owned_rate"] = len(v["owned"]) / v["n_cells"] if v["n_cells"] else None
+    comparison = {"families": fam, "block": f"{model_key}/{dataset_id}",
+                  "owned_rate_difference_fgobj_minus_core": (fam["fgobj"]["owned_rate"] - fam["core"]["owned_rate"])
+                  if fam["fgobj"]["owned_rate"] is not None and fam["core"]["owned_rate"] is not None else None,
+                  "answer_auroc_difference": _diff(fam["fgobj"]["median_answer_auroc"], fam["core"]["median_answer_auroc"]),
+                  "selectivity_difference": _diff(fam["fgobj"]["median_selectivity"], fam["core"]["median_selectivity"]),
+                  "note": "the two families are scored on the same block, the same 600 test rows, the same template and "
+                          "dose, and graded by the same ownership rule; they differ only in which six COCO categories "
+                          "the questions and directions are about"}
+    return {"n_rows": n, "alpha": alpha, "template_id": primary, "draws": int(idx.shape[0]), "concepts": concepts,
+            "directions": [f"fgobj:{c}" for c in concepts], "random_seed": int(arr["random_seed"]),
+            "n_random": int(arr["n_random"]), "baseline_module": "FGOBJ",
+            "controls_eligible": bool(arr["controls_eligible"]),
+            "controls_source": list(arr["controls_source"].astype(str)),
+            "probes": probes, "probe_grade_source": answer_source, "block_comparison": comparison,
+            "owned": sorted(q for q in concepts if block["per_question"][q]["owned"]),
+            "median_abs_cos_to_easy": float(np.median(np.abs(arr["cos_model"]))), **block}
+
+
+def _nanmed(xs) -> float | None:
+    xs = [float(x) for x in xs if x is not None and np.isfinite(x)]
+    return float(np.median(xs)) if xs else None
+
+
+def _diff(a, b):
+    return None if a is None or b is None else float(a - b)
+
+
 def _ineligible_prompt_rows(model_key, dataset_id) -> int:
     """Rows the PROMPT block legitimately lacks because templates were INELIGIBLE at preflight."""
     elig = _eligibility(model_key, dataset_id)
@@ -1840,8 +2159,10 @@ if __name__ == "__main__":
     ap.add_argument("--model-key", required=True)
     ap.add_argument("--dataset", required=True)
     ap.add_argument("--what", default="calibration,core",
-                    help="comma list of calibration,core,shifts,t3,altdir,extcomp,tokenw,precision,ansdir,altdird,attr,ansdirt,"
-                         "valid,validfit,projseed,towerswap,replay,semend (ATTRRAND is folded into attr)")
+                    help="comma list of calibration,core,shifts,t3,altdir,extcomp,tokenw,precision,ansdir,altdird,attr,attrq,"
+                         "ansdirt,valid,validfit,projseed,towerswap,replay,semend,fgobj (ATTRRAND is folded into attr; run attrq "
+                         "BEFORE attr so attr reads the attribute answerability from the same calibration rows as the clinical one; "
+                         "fgobj folds in FGOBJ_CALIBRATION and is COCO only)")
     ap.add_argument("--n-boot", type=int, default=None)
     a = ap.parse_args()
     rd = run_dir(a.model_key, a.dataset)
@@ -1867,6 +2188,8 @@ if __name__ == "__main__":
             report["ansdir"] = ansdir(a.model_key, a.dataset, draws=a.n_boot or BOOT_CALIBRATION_DRAWS)
         elif w == "altdird":
             report["altdird"] = altdird(a.model_key, a.dataset, draws=a.n_boot or BOOT_CALIBRATION_DRAWS)
+        elif w == "attrq":
+            report["attrq"] = attrq(a.model_key, a.dataset, draws=a.n_boot or BOOT_CALIBRATION_DRAWS)
         elif w == "attr":
             report["attr"] = attr(a.model_key, a.dataset, draws=a.n_boot or BOOT_CALIBRATION_DRAWS)
         elif w == "ansdirt":
@@ -1883,6 +2206,8 @@ if __name__ == "__main__":
             report["replay"] = replay(a.model_key, a.dataset, draws=a.n_boot or BOOT_CALIBRATION_DRAWS)
         elif w == "semend":
             report["semend"] = semend(a.model_key, a.dataset, draws=a.n_boot or BOOT_CALIBRATION_DRAWS)
+        elif w == "fgobj":
+            report["fgobj"] = fgobj(a.model_key, a.dataset, draws=a.n_boot or BOOT_CALIBRATION_DRAWS)
     report["primary_template"] = primary_template(rd)       # template the single-template statistics above refer to
     (rd / "summary.json").write_text(json.dumps(report, indent=1, default=lambda o: float(o) if isinstance(o, np.floating) else str(o)))
     if "calibration" in report:
@@ -1934,6 +2259,15 @@ if __name__ == "__main__":
                 lo, hi = cell["O_q_ci95_percentile"]
                 print(f"ALTDIRD {fam:12s} {q:14s} W_qq={cell['W_qq']:+.4f} O_q={cell['O_q']:+.4f} [{lo:+.4f},{hi:+.4f}] "
                       f"own-maxlog={cell['own_minus_max_logistic_competitor']:+.4f} cos_log={cell['cos_to_logistic_model']:+.3f} ref={cell['steering_reference']} verdict={cell['verdict']}")
+    if "attrq" in report and "attrq" in a.what:
+        aq = report["attrq"]
+        print(f"ATTRQ {aq['n_rows']} calibration rows, phrasings {aq['phrasings']} (written: {aq['written_phrasing']})")
+        for a_name, blk in aq["per_attribute"].items():
+            for ph, c in blk["phrasings"].items():
+                print(f"  ATTRQ {a_name:8s} {ph} auroc={c.get('answer_auroc', float('nan')):.4f} "
+                      f"lower95={c.get('answer_auroc_lower95_one_sided', float('nan')):.4f} "
+                      f"pos/neg {c.get('n_pos')}/{c.get('n_neg')} eligible={c['eligible']} | {c['question']}")
+            print(f"  ATTRQ {a_name:8s} -> {blk['selection_status']}: {blk['selection_reason']}")
     if "attr" in report and "attr" in a.what:
         ar = report["attr"].get("attrrand") or {}
         print(f"ATTR attribute random family (ATTRRAND): available={ar.get('available')} n_random={ar.get('n_random')}")
@@ -2064,6 +2398,22 @@ if __name__ == "__main__":
             print(f"  owned minus reference-met-not-owned: {d.get('estimate')} {d.get('ci95_percentile')} "
                   f"excludes 0: {d.get('interval_excludes_zero', d.get('reason'))}")
         print(f"SEMEND summary: {r['summary']}")
+    if "fgobj" in report and "fgobj" in a.what:
+        r = report["fgobj"]
+        f3 = lambda x: "n/a" if x is None else f"{float(x):.3f}"
+        print(f"FGOBJ own random family seed {r['random_seed']} ({r['n_random']} directions); answerability from "
+              f"{'FGOBJ_CALIBRATION' if r['probe_grade_source']['answer_available'] else 'NOT SCORED'}")
+        for q, cell in r["per_question"].items():
+            p = r["probes"][q]
+            lo, hi = cell["O_q_ci95_percentile"]
+            print(f"FGOBJ {q:14s} W_qq={cell['W_qq']:+.4f} O_q={cell['O_q']:+.4f} [{lo:+.4f},{hi:+.4f}] (vs {cell['argmax_other']}) "
+                  f"p95rand={f3(cell['random_p95'])} |sham|={cell['abs_sham']:.4f} rank={cell['rank_in_random_family']} "
+                  f"ref={cell['steering_reference']} verdict={cell['verdict']} owned={cell['owned']} | probe auroc="
+                  f"{f3(p['auroc_real'])} S={f3(p['selectivity'])} readable={p['readable']} answer_auroc="
+                  f"{f3(p.get('answer_auroc'))} capable={p.get('answer_capable')}")
+        for nm, v in r["block_comparison"]["families"].items():
+            print(f"FGOBJ block {nm:6s}: owned {len(v['owned'])}/{v['n_cells']} ({', '.join(v['owned']) or '-'}), median clean-answer "
+                  f"AUROC {f3(v['median_answer_auroc'])}, median probe selectivity {f3(v['median_selectivity'])}")
     if "core" in report and "core" in a.what:
         for q, cell in report["core"]["per_question"].items():
             print(f"CORE {q:14s} W_qq={cell['W_qq']:.4f} O_q={cell['O_q']:.4f} (vs {cell['argmax_other']}) p95rand={cell['random_p95']:.4f} "

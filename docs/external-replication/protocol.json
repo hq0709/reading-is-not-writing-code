@@ -160,6 +160,52 @@
     "WB": "Does {image_phrase} show {finding}? Answer B if the finding is present and A if it is absent. Reply with A or B only."
   },
   "modules": {
+    "FGOBJ": {
+      "cohort": "test",
+      "questions": "six FINE-GRAINED COCO object concepts (handbag, book, backpack, traffic light, knife, cell phone), not the six protocol COCO concepts",
+      "templates": [
+        "IY"
+      ],
+      "alpha": [
+        0.25
+      ],
+      "locus": "primary (vis.last)",
+      "fit_seed": 0,
+      "labels": "presence from the 2017 instance annotations of the row's own split, crowd instances count as present (the rule of manifests.build_coco); APPENDED to the frozen COCO labels.csv without changing one existing row, cohort.csv and the roles untouched, provenance in manifests/fgobj.json (python -m cftransfer.fgobj --build-labels)",
+      "selection": "prespecified, outcome-free: >= 10 positives among the 400 calibration rows and among the 600 test rows, >= 567 training positives (bicycle's, the weakest easy concept), mean relative instance area below the median of the six easy concepts (0.02252); then calibration positives descending, ties by mean area ascending, then category id",
+      "directions": "own clean baseline + 6 fine-grained directions (fgobj:<concept>) + the family's OWN 119 random directions (fgobjrand:###) + the question's own sham (fgobjsham:<concept>) = 127 conditions per question, byte for byte CORE's grid shape",
+      "fit": "the block's own seed-0 projection R and TRAIN-ONLY scaler (never refitted), LogisticRegression(C=1, lbfgs, 2000 iterations, random_state 0) on the SAME training rows, lifted with fit.direction_from_projected; the random family and shams are fit_locus's construction re-drawn from PCG64(3), so an FGOBJ cell is graded against a random p95 and a sham of its own",
+      "prep": "python -m cftransfer.fgobj --model-key K --dataset coco  (CPU, seconds; writes fits/vis.last/fgobj_seed0.npz with the calibration-row probe and control logits the readability rule needs)",
+      "expected_rows": 457200,
+      "baseline": "own",
+      "datasets": [
+        "coco"
+      ],
+      "added": "2026-09-16; addendum, enqueued explicitly (four shards, CORE's budget); a CONTROL for a handful of COCO blocks, not the whole grid",
+      "rationale": "the headline contrast is 29 of 246 chest cells owned against 101 of 120 COCO cells, and a reviewer can answer that COCO differs in DIFFICULTY rather than in concept type. The six easy COCO concepts give the natural-image side no hard cells, so the difficulty-matched chest-versus-COCO comparison is starved. FGOBJ makes the natural-image side span the chest side's difficulty range, with everything but the six categories held fixed.",
+      "analysis": "cftransfer.analysis --what fgobj: the 6x6 write matrix, O_q with the percentile interval and the 6x5 max-T verdict, the family's own random p95 and sham, the readable and answer-capable grades from the calibration rows, and the block-level comparison against the block's own six easy-COCO CORE cells (ownership rate, median clean-answer AUROC, median probe selectivity per family). scripts/mayo/robustness_round2.py adds the pooled difficulty-matched comparison."
+    },
+    "FGOBJ_CALIBRATION": {
+      "cohort": "calibration",
+      "questions": "the same six fine-grained COCO concepts, clean",
+      "templates": [
+        "IY"
+      ],
+      "alpha": [
+        0.0
+      ],
+      "locus": "primary (vis.last)",
+      "fit_seed": 0,
+      "directions": "none: clean forwards only",
+      "expected_rows": 2400,
+      "baseline": "own (the clean forward IS the measurement)",
+      "datasets": [
+        "coco"
+      ],
+      "added": "2026-09-16; addendum, enqueued explicitly (one shard), no prep of its own",
+      "rationale": "the matched comparison pools chest, easy-COCO and fine-grained-COCO cells on clean-answer AUROC. CALIBRATION measures that on the 400 calibration rows for the first two; this module measures it the same way, on the same rows, for the third, so no group is matched on a differently estimated number.",
+      "analysis": "folded into cftransfer.analysis --what fgobj; until it is scored the fine-grained cells carry no clean-answer AUROC and the matched comparison refuses to pool them"
+    },
     "CALIBRATION": {
       "NIH_COCO_rows_each": 6400,
       "CheXpert_rows": 2400,
@@ -566,6 +612,30 @@
       "added": "2026-09-16; addendum, enqueued explicitly (two shards)",
       "analysis": "folded into cftransfer.analysis --what attr: each attribute cell gains random_p95 / random_n / rank_in_random_family from this module and records steering_reference_sham_only (the old rule), steering_reference_matched (W_qq > 0, > random p95, > |sham|) and steering_reference_rule, which names the reference the cell used; clinical cells are unchanged"
     },
+    "ATTRQ": {
+      "cohort": "calibration",
+      "questions": "the 3 attribute questions of ATTR only (view_AP, sex_F, age_60), each under 3 phrasings",
+      "templates": [
+        "AQ0",
+        "AQ1",
+        "AQ2"
+      ],
+      "alpha": [
+        0.0
+      ],
+      "locus": "primary (vis.last)",
+      "fit_seed": 0,
+      "directions": "none: clean forwards only (no writes, no reference family)",
+      "rationale": "cheap per-block eligibility pass for the ATTR / ATTRRAND control: how well the model answers each non-clinical attribute question under three phrasings, on the calibration rows, with no writes and no reference family. It exists because a cell whose clean answer no direction can move cannot be owned for reasons that have nothing to do with whether the concept is clinical, so pooling such cells makes the attribute-versus-finding comparison unfair in both directions.",
+      "expected_rows": 3600,
+      "baseline": "own (the clean forward IS the measurement)",
+      "datasets": [
+        "nih",
+        "chexpert"
+      ],
+      "added": "2026-09-16; addendum, enqueued explicitly (one shard)",
+      "analysis": "cftransfer.analysis --what attrq: per attribute and phrasing the question text, n_pos / n_neg, clean-answer AUROC and Brier, the one-sided 95% lower bound, the answer-capable flag, and the selected phrasing with the reason; written to summary.json under `attrq`. analysis --what attr then reads the written phrasing's calibration-row numbers from it, so an attribute cell and a clinical cell carry answerability measured on the same rows."
+    },
     "VALIDFIT": {
       "cohort": "test (the write); the FIT uses the 200 radiologist-labelled `valid` rows",
       "concepts": "all",
@@ -923,7 +993,7 @@
     "all_test_and_calibration_rows": 125153600,
     "excludes": "feature extraction, interface preflight and retries",
     "ALTDIR_rows_addendum": 5702400,
-    "ALTDIR_note": "addenda rows (ALTDIR, EXTCOMP, TOKENW, PRECISION, ANSDIR, ALTDIRD, ATTR, ANSDIRT, VALID, ATTRRAND, VALIDFIT, PROJSEED, TOWERSWAP, REPLAY, SEMEND) are outside all_test_and_calibration_rows, which keeps the planned total of the original seven modules",
+    "ALTDIR_note": "addenda rows (ALTDIR, EXTCOMP, TOKENW, PRECISION, ANSDIR, ALTDIRD, ATTR, ANSDIRT, VALID, ATTRRAND, VALIDFIT, PROJSEED, TOWERSWAP, REPLAY, SEMEND, ATTRQ, FGOBJ, FGOBJ_CALIBRATION) are outside all_test_and_calibration_rows, which keeps the planned total of the original seven modules",
     "addenda": {
       "ALTDIR": 5702400,
       "EXTCOMP": 712800,
@@ -939,7 +1009,10 @@
       "PROJSEED": 59875200,
       "TOWERSWAP": 10058400,
       "REPLAY": 10058400,
-      "SEMEND": 31363200
+      "SEMEND": 31363200,
+      "ATTRQ": 158400,
+      "FGOBJ": 10058400,
+      "FGOBJ_CALIBRATION": 52800
     },
     "addenda_notes": {
       "PROJSEED": "907,200 rows per block (453,600 per projection seed). The addenda table states the whole-grid figure by its own convention (per model over all datasets x 22 models); the module is intended for a handful of representative blocks, not the whole grid.",
@@ -947,7 +1020,10 @@
       "VALIDFIT": "21,600 rows per CheXpert block (22 models)",
       "TOWERSWAP": "152,400 rows per crossed arm; the table follows the campaign convention (all datasets x 22 models), but the module is defined only for the four models of TOWERSWAP_PAIRS and is budgeted for the gemma3-4 / medgemma-4 pair on NIH and CheXpert (4 arms, ~10.9 GPU-h measured from those blocks' own CORE throughput), COCO optional (+5.3 GPU-h). The two native arms cost nothing: they are CORE restricted to the same 200 rows.",
       "REPLAY": "152,400 rows per block; the table follows the campaign convention, but the module is defined only for the seven blocks of the three shared-tower groups (REPLAY_SOURCE). One dataset per group costs ~5.7 GPU-h (LLaVA-1.5 pair), ~7.5 (MedGemma pair) and ~11.2 (Gemma 3 triple), plus a tower-only tensor prep of well under 0.1 GPU-h per source block.",
-      "SEMEND": "475,200 rows per block; budgeted for at most 8 blocks, staged behind a 3-block stop rule. The GPU cost is set by the number of forwards, not the number of outcomes: 32 steered conditions are one batch-32 forward, so the full 33-condition grid costs exactly what a 25-condition grid would (7.3-19.5 GPU-h per block on the measured throughput of those blocks' own CORE runs)."
+      "SEMEND": "475,200 rows per block; budgeted for at most 8 blocks, staged behind a 3-block stop rule. The GPU cost is set by the number of forwards, not the number of outcomes: 32 steered conditions are one batch-32 forward, so the full 33-condition grid costs exactly what a 25-condition grid would (7.3-19.5 GPU-h per block on the measured throughput of those blocks' own CORE runs).",
+      "ATTRQ": "3,600 rows per chest block (3 attributes x 3 phrasings x 400 calibration rows); the table follows the campaign convention (NIH + CheXpert x 22 models)",
+      "FGOBJ": "457,200 rows per COCO block, byte for byte CORE's grid shape on six new questions; the table follows the campaign convention (COCO x 22 models), but the module is a CONTROL and is budgeted for a handful of COCO blocks chosen for family coverage, not for the whole grid. Measured cost per block is that block's own CORE cost (same 6 x 127 x 600 grid): 3.2-16.4 GPU-h over the 17 COCO blocks whose CORE metas cover all 457,200 outcomes, median 8.5; llama32-11 is the outlier at 32.9.",
+      "FGOBJ_CALIBRATION": "2,400 clean forwards per COCO block (6 fine-grained questions x 400 calibration rows); the table follows the campaign convention (COCO x 22 models). It is 3/8 of the COCO CALIBRATION module, i.e. 0.02-0.14 GPU-h per block on the measured CALIBRATION throughput, under 2% of the FGOBJ block it accompanies."
     }
   },
   "semend": {
@@ -1021,5 +1097,84 @@
     "n_random": 18,
     "grid": "per (question, endpoint): clean baseline + the SIX label directions + the SIX answer directions a_d + the question's label sham + the question's answer sham + 18 random directions = 33 conditions, of which 32 are steered and therefore fill exactly one batch-32 forward; the endpoint grid costs the same GPU time as a grid half its size would",
     "reference": "per endpoint and per family, the own signed effect must be positive, above every one of the 18 random directions (rank 1 of 19) and above the |effect| of that family's own sham"
+  },
+  "attrq": {
+    "purpose": "cheap per-block eligibility pass for the ATTR / ATTRRAND control: how well the model answers each non-clinical attribute question under three phrasings, on the calibration rows, with no writes and no reference family. It exists because a cell whose clean answer no direction can move cannot be owned for reasons that have nothing to do with whether the concept is clinical, so pooling such cells makes the attribute-versus-finding comparison unfair in both directions.",
+    "cohort": "calibration",
+    "phrasings": [
+      "AQ0",
+      "AQ1",
+      "AQ2"
+    ],
+    "questions": {
+      "view_AP": {
+        "AQ0": {
+          "template": "primary"
+        },
+        "AQ1": {
+          "text": "Was {image_phrase} acquired with an anteroposterior (AP) projection? Answer yes or no."
+        },
+        "AQ2": {
+          "text": "Does {image_phrase} show an AP (anteroposterior) view rather than a PA (posteroanterior) view? Answer yes or no."
+        }
+      },
+      "sex_F": {
+        "AQ0": {
+          "template": "primary"
+        },
+        "AQ1": {
+          "text": "Is the patient in {image_phrase} female? Answer yes or no."
+        },
+        "AQ2": {
+          "text": "Does {image_phrase} show a female patient rather than a male patient? Answer yes or no."
+        }
+      },
+      "age_60": {
+        "AQ0": {
+          "template": "primary"
+        },
+        "AQ1": {
+          "text": "Is the patient in {image_phrase} sixty years old or older? Answer yes or no."
+        },
+        "AQ2": {
+          "text": "Does {image_phrase} show a patient aged sixty or older rather than a younger patient? Answer yes or no."
+        }
+      }
+    },
+    "candidate_source": {
+      "AQ0": "primary",
+      "AQ1": "IY",
+      "AQ2": "IY"
+    },
+    "answer_mapping": "yes = the attribute is positive (view_AP = AP / portable, sex_F = female, age_60 = age >= 60), exactly the mapping the yes/no templates use for a finding; AQ1 and AQ2 keep the 'Answer yes or no.' ending and reuse the block's frozen IY candidate set, so nothing about the answer head changes.",
+    "AQ0": "the phrasing ATTR and ATTRRAND already write: the block's primary template with the attribute phrase in the {finding} slot, rendered by protocol.render_question, so its text is byte-identical to theirs and the module measures the written question as well as the alternatives.",
+    "eligibility_source": "AQ0 inherits the primary template's preflight eligibility; AQ1 and AQ2 are yes/no questions and inherit IY's, so a block whose yes/no mapping failed image-free preflight check E does not score them.",
+    "selection_rule": "per block and attribute the primary phrasing is the ELIGIBLE phrasing with the highest one-sided 95% lower bound of the clean-answer AUROC against the attribute's manifest label on the calibration rows. Eligible = >= 10 known positives and >= 10 known negatives, >= 1900 valid unit-bootstrap draws and a lower bound above 0.5 -- the support and lower-bound rule the readable and answer-capable grades use. Ties break in phrasing order (AQ0 first). An attribute with no eligible phrasing is recorded as not answerable in that block and no phrasing is selected.",
+    "bootstrap": "cftransfer.analysis.bootstrap_indices(dataset, n_calibration, BOOT_CALIBRATION_SEED, draws), the campaign's shared calibration-row unit bootstrap",
+    "writes": "none: alpha 0 clean forwards only, one condition per (row, attribute, phrasing)",
+    "expected_rows": 3600,
+    "datasets": [
+      "nih",
+      "chexpert"
+    ],
+    "added": "2026-09-16; addendum, enqueued explicitly",
+    "analysis": "cftransfer.analysis --what attrq: per attribute and phrasing the question text, n_pos / n_neg, clean-answer AUROC and Brier, the one-sided 95% lower bound, the answer-capable flag, and the selected phrasing with the reason; written to summary.json under `attrq`. analysis --what attr then reads the written phrasing's calibration-row numbers from it, so an attribute cell and a clinical cell carry answerability measured on the same rows."
+  },
+  "attr_comparison": {
+    "purpose": "the attribute-versus-finding ownership comparison of the ATTR / ATTRRAND control, reported three ways. All three are prespecified and all three are reported whatever they show.",
+    "modes": {
+      "all_cells": "every attribute cell against every clinical cell of the same blocks (the comparison as it stood)",
+      "answer_capable_cells": "only cells whose clean answer clears the campaign's answer-capable rule (>= 10 known positives and negatives, >= 1900 valid draws, one-sided 95% lower AUROC bound above 0.5), applied to attributes and findings alike",
+      "answerability_matched": "each attribute cell paired with every clinical cell of the SAME block whose clean-answer AUROC is within match_window of it; the reported quantity is the ownership rate of each kind over the matched pairs and their difference. Attribute cells with no match are counted and named."
+    },
+    "match_window": 0.05,
+    "answer_auroc_source": {
+      "clinical": "summary.json `calibration` of the same block: the clean CALIBRATION margins of the primary template against the manifest label on the 400 calibration rows. Read, never recomputed.",
+      "attribute": "summary.json `attrq` for the phrasing ATTR wrote, when ATTRQ has been scored for the block (400 calibration rows, same rows as the clinical number); otherwise summary.json `attr`, which measures the ATTR module's own clean baseline against the manifest attribute label on the 600 test rows. Every cell records which one it used.",
+      "caveat": "until ATTRQ is scored the two kinds are measured on different rows (600 test vs 400 calibration) and therefore with different bootstrap power at the same AUROC, which makes the answer-capable flag easier to reach for an attribute cell than for a clinical one. ATTRQ removes the asymmetry; the aggregates report the row set and the known-label counts of both kinds so it stays visible."
+    },
+    "ownership": "cftransfer.manifest.owned: steering_reference and verdict == fixed_family_advantage, unchanged",
+    "interval": "percentile 2.5 / 97.5 over the campaign's shared unit (patient) bootstrap draws of the block analysis (core_bootstrap_indices, seed 2026090601): ownership is re-decided inside every draw as steering_reference (the point-estimate reference) and O_q > 0 with the strongest competitor recomputed in that draw, because the max-T simultaneous verdict is not a per-draw quantity. The point rates use the campaign's owned() rule; the per-draw rate is reported beside them so the gap between the two rules is visible.",
+    "report": "<RUN_ROOT>/robustness/round2.json attr.comparison, per dataset and pooled over the chest sets, with the per-block rows carrying every cell's answer AUROC, its source and its matched partners"
   }
 }

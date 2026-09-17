@@ -23,11 +23,20 @@ def partial(a, n=None):
             return True
         return any(partial(v, n) for v in a.values())
     return False
-MODS = {"ANSDIR": "ansdir", "EXTCOMP": "extcomp", "TOKENW": "tokenw", "PRECISION": "precision", "ALTDIRD": "altdird", "ATTR": "attr", "ANSDIRT": "ansdirt",
+MODS = {"ANSDIR": "ansdir", "EXTCOMP": "extcomp", "TOKENW": "tokenw", "PRECISION": "precision", "ALTDIRD": "altdird",
+        "ATTRQ": "attrq", "ATTR": "attr", "ANSDIRT": "ansdirt",
         "VALID": "valid", "ATTRRAND": "attr", "VALIDFIT": "validfit", "PROJSEED": "projseed",
         "TOWERSWAP": "towerswap", "REPLAY": "replay", "SEMEND": "semend"}
 # ATTRRAND has no analysis key of its own: it is folded into `attr`, so a block whose stored `attr` was computed before
-# ATTRRAND landed (no attribute random family in it) is reported as needing the analysis again.
+# ATTRRAND landed (no attribute random family in it) is reported as needing the analysis again. ATTRQ is listed BEFORE
+# ATTR so that in one pass the attribute answerability is computed first and `attr` can read it; an `attr` computed
+# before ATTRQ landed (its answerability still measured on the test rows) is likewise reported as stale.
+# FGOBJ_CALIBRATION is folded into `fgobj` the same way: it carries no analysis key of its own, and an `fgobj` computed
+# before it landed has no clean-answer AUROC for the fine-grained cells, so those cells cannot be pooled with the
+# campaign's cells and the analysis is reported as stale.
+MODS["FGOBJ"] = "fgobj"
+MODS["FGOBJ_CALIBRATION"] = "fgobj"
+SHARDS["FGOBJ"] = 4
 for mod, key in MODS.items():
     for d in sorted(glob.glob(f"{R}/*/*/outcomes/{mod}")):
         metas = glob.glob(f"{d}/meta-*.json")
@@ -44,5 +53,9 @@ for mod, key in MODS.items():
         stale = False
         if mod == "ATTRRAND":                     # attr is stored but was computed without the attribute random family
             stale = ((s.get("attr") or {}).get("attrrand") or {}).get("available") is not True
+        if mod in ("ATTR", "ATTRRAND") and s.get("attrq"):   # attr predates this block's ATTRQ answerability
+            stale = stale or ((s.get("attr") or {}).get("answerability") or {}).get("attrq_available") is not True
+        if mod == "FGOBJ_CALIBRATION":            # fgobj is stored but was computed without the clean-answer margins
+            stale = ((s.get("fgobj") or {}).get("probe_grade_source") or {}).get("answer_available") is not True
         if key not in s or stale or (partial(s[key]) and len(metas) >= SHARDS.get(mod, 1) and not busy(rd, mod)):
             print(os.path.basename(os.path.dirname(rd)), os.path.basename(rd), mod)

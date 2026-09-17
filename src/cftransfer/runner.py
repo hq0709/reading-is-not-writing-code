@@ -25,13 +25,16 @@ from .altdir import load_altdir
 from .ansdir import load_ansdir
 from .attr import load_attr
 from .extcomp import load_extcomp
+from .fgobj import load_fgobj
 from .fit import load_fit, run_id_for
 from .hooks import LocusHook
 from .images import image_path, load_cohort, open_rgb
 from .hooks import MODE_SOFTMAX, MODE_TOPQ
 from .projseed import load_projseed
-from .protocol import (ALTDIR_FAMILIES, ALTDIRD_FAMILIES, ATTR_CONCEPTS, CONCEPTS, LOCI, MODULE_SETTINGS, MODULES, NUMERICS_DEFAULT,
-                       PROTOCOL_ID, TOKENW_VARIANTS, conditions_for, direction_kind, primary_template, question_list, render_question)
+from .protocol import (ALTDIR_FAMILIES, ALTDIRD_FAMILIES, ATTR_CONCEPTS, CONCEPTS, FGOBJ_CONCEPTS, LOCI, MODULE_SETTINGS,
+                       MODULES, NUMERICS_DEFAULT,
+                       PROTOCOL_ID, TOKENW_VARIANTS, attrq_source_template, conditions_for, direction_kind, primary_template,
+                       question_list, render_attrq, render_question)
 from .replay import ReplayBank, replay_source
 from .semend import load_prompts
 from .towerswap import apply_tower_swap, swap_partner
@@ -64,7 +67,7 @@ class DirectionBank:
 
     def __init__(self, model_key, dataset_id, locus_id, seeds, altdir: bool = False, extcomp: bool = False, tokenw: bool = False,
                  ansdir: bool = False, altdird: bool = False, attr: bool = False, validfit: bool = False,
-                 projseed: tuple[int, ...] | None = None):
+                 projseed: tuple[int, ...] | None = None, fgobj: bool = False):
         self.fits = {s: load_fit(model_key, dataset_id, locus_id, s) for s in seeds}
         if 0 not in self.fits:
             self.fits[0] = load_fit(model_key, dataset_id, locus_id, 0)
@@ -90,6 +93,15 @@ class DirectionBank:
         if self.validfit is not None and (list(self.validfit["concept_names"].astype(str)) != self.concepts
                                           or self.validfit["expert_vectors"].shape != (len(self.concepts), self.D)):
             raise RuntimeError("validfit_seed0.npz concept order or width differs from seed0.npz")
+        # FGOBJ: a self-contained fine-grained family -- its own six directions, its own 119 random directions and its
+        # own per-question shams, all from fits/<locus>/fgobj_seed0.npz (python -m cftransfer.fgobj)
+        self.fgobj = load_fgobj(model_key, dataset_id, locus_id) if fgobj else None
+        if self.fgobj is not None:
+            self.fgobj_names = list(self.fgobj["fgobj_names"].astype(str))
+            if self.fgobj_names != list(FGOBJ_CONCEPTS) or self.fgobj["fgobj_vectors"].shape != (len(FGOBJ_CONCEPTS), self.D):
+                raise RuntimeError("fgobj_seed0.npz concept order or width differs from the protocol / fit")
+            if self.fgobj["random_vectors"].shape[1] != self.D or int(self.fgobj["random_seed"]) == int(self.fits[0]["random_seed"]):
+                raise RuntimeError("fgobj_seed0.npz random family width is wrong, or it reuses CORE's random seed")
         # PROJSEED: one refit file per PROJECTION seed; the seed travels in the condition's seed slot (the fit_seed column)
         self.projseed = {k: load_projseed(model_key, dataset_id, locus_id, k) for k in (projseed or ())}
         for k, arr in self.projseed.items():
@@ -147,6 +159,12 @@ class DirectionBank:
             if kind == "projrand":
                 return arr["random_vectors"][int(name)]
             return arr["clinical_vectors" if kind == "proj" else "sham_vectors"][self.concepts.index(name)]
+        if kind in ("fgobj", "fgobjrand", "fgobjsham"):
+            if self.fgobj is None:
+                raise KeyError(f"{direction_id}: fine-grained object directions are only loaded for the FGOBJ module")
+            if kind == "fgobjrand":
+                return self.fgobj["random_vectors"][int(name)]
+            return self.fgobj["fgobj_vectors" if kind == "fgobj" else "sham_vectors"][self.fgobj_names.index(name)]
         raise KeyError(direction_id)
 
     def scorer(self, direction_id: str, seed: int) -> np.ndarray:
@@ -205,7 +223,8 @@ def run_block(model_key: str, dataset_id: str, module: str, shard: int, n_shards
                          extcomp=spec.directions == "extcomp", tokenw=spec.directions == "tokenw",
                          ansdir=spec.directions in ("ansdir", "ansdirt", "semend"), altdird=spec.directions == "altdird",
                          attr=spec.directions == "attr", validfit=spec.directions == "validfit",
-                         projseed=seeds if spec.directions == "projseed" else None)
+                         projseed=seeds if spec.directions == "projseed" else None,
+                         fgobj=spec.directions == "fgobj")
     # SEMEND renders its own endpoint prompts and candidate sets (protocol.json "semend", frozen by the module's prep)
     prompts = load_prompts(model_key, dataset_id, locus_id) if spec.directions == "semend" else None
     rows = load_cohort(dataset_id, (spec.role,))
@@ -229,12 +248,16 @@ def run_block(model_key: str, dataset_id: str, module: str, shard: int, n_shards
         print(f"[{model_key}/{dataset_id}/{module}] primary template {primary} (IY INELIGIBLE by preflight check E)", flush=True)
     skipped: list[str] = []
     elig_path = rd / "template_eligibility.json"
+    # ATTRQ phrasings are not protocol templates: each inherits the eligibility of the template whose candidate set it
+    # reuses (AQ0 the primary, AQ1 / AQ2 the yes/no IY), so a block whose interface failed check E never scores them.
+    def elig_key(t: str) -> str:
+        return attrq_source_template(t, primary) if module == "ATTRQ" else t
     if elig_path.exists():
         elig = json.loads(elig_path.read_text())
-        skipped = sorted({t for _c, t in questions if not elig.get(t, {}).get("eligible", True)})
+        skipped = sorted({t for _c, t in questions if not elig.get(elig_key(t), {}).get("eligible", True)})
         if skipped:
             print(f"[{model_key}/{dataset_id}/{module}] templates INELIGIBLE by preflight, not scored: {skipped}", flush=True)
-        questions = [(c, t) for c, t in questions if elig.get(t, {}).get("eligible", True)]
+        questions = [(c, t) for c, t in questions if elig.get(elig_key(t), {}).get("eligible", True)]
     if not questions:
         print(f"[{model_key}/{dataset_id}/{module}] no eligible questions; nothing to score", flush=True)
         meta = {"model_key": model_key, "dataset_id": dataset_id, "module": module, "shard": shard, "n_shards": n_shards,
@@ -304,10 +327,15 @@ def run_block(model_key: str, dataset_id: str, module: str, shard: int, n_shards
                 rhook.set_row(row["row_id"])
             image = open_rgb(image_path(dataset_id, row))
             for concept, template_id in questions:
-                question = (render_question(dataset_id, concept, template_id) if prompts is None
-                            else prompts.render(dataset_id, concept, template_id))
-                cands = (ad.candidates[template_id] if prompts is None
-                         else prompts.candidates(ad, dataset_id, concept, template_id))
+                if prompts is not None:                       # SEMEND: prompts and candidate sets frozen by its prep
+                    question = prompts.render(dataset_id, concept, template_id)
+                    cands = prompts.candidates(ad, dataset_id, concept, template_id)
+                elif module == "ATTRQ":                       # attribute phrasings; the texts live in protocol.json
+                    question = render_attrq(dataset_id, concept, template_id, primary)
+                    cands = ad.candidates[attrq_source_template(template_id, primary)]
+                else:
+                    question = render_question(dataset_id, concept, template_id)
+                    cands = ad.candidates[template_id]
                 conds = [(d, a, s) for s in seeds for d, a in conditions_for(module, dataset_id, concept)]
                 base = dict(protocol_id=PROTOCOL_ID, run_id=run_id, model_key=model_key, dataset_id=dataset_id,
                             module=module, role=row["role"], row_id=row["row_id"], unit_id=row["unit_id"],

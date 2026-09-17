@@ -52,12 +52,12 @@ CALIBRATION_PROMPT_DATASETS = ("nih", "coco")
 # after the campaign's blocks were packaged; it is enqueued explicitly (enqueue --modules ALTDIR) and its coverage is
 # requested only once its outcomes directory exists, so packaged blocks keep COMPLETE until it starts.
 MODULES_ADDED_LATER = {"nih": ("ALTDIR", "EXTCOMP", "TOKENW", "PRECISION", "ANSDIR", "ALTDIRD", "ATTR", "ANSDIRT",
-                               "ATTRRAND", "PROJSEED", "TOWERSWAP", "REPLAY", "SEMEND"),
+                               "ATTRRAND", "PROJSEED", "TOWERSWAP", "REPLAY", "SEMEND", "ATTRQ"),
                        "coco": ("ALTDIR", "TOKENW", "PRECISION", "ANSDIR", "ALTDIRD", "ANSDIRT", "PROJSEED",
                                 "TOWERSWAP", "REPLAY", "SEMEND"),
                        "chexpert": ("PROMPT", "DOSE", "REFIT", "LOCUS", "LOCUS_CALIBRATION", "ALTDIR", "EXTCOMP", "TOKENW", "ANSDIR",
                                     "ALTDIRD", "ATTR", "ANSDIRT", "VALID", "ATTRRAND", "VALIDFIT", "PROJSEED",
-                                    "TOWERSWAP", "REPLAY", "SEMEND")}
+                                    "TOWERSWAP", "REPLAY", "SEMEND", "ATTRQ")}
 # ALTDIR direction families, in condition order: difference of means, Haufe pattern, orthogonalised logistic normal,
 # logistic normal refitted on label-residualised features (altdir.py); every family is lifted with the logistic rule.
 ALTDIR_FAMILIES = ("dom", "pattern", "orth", "resid")
@@ -79,6 +79,26 @@ ATTR_SHAM_SEED = 1                 # PCG64(1): one coordinate permutation per at
 # its own). It exists so an attribute cell gets the same random p95 bar as a clinical cell: before it, attribute cells
 # were referenced against their sham alone while clinical cells had the 119-random p95, so the attribute-versus-finding
 # ownership comparison used two different steering references. analysis.attr() folds it in and reports both verdicts.
+# ATTRQ: the answerability pass of the attribute control. ATTR and ATTRRAND write on ONE phrasing of each attribute
+# question (AQ0: the protocol template with the attribute phrase in the {finding} slot). In several blocks the model
+# answers that question barely above chance -- clean-answer AUROC against the attribute's own label of 0.51 to 0.60 --
+# while it answers the clinical questions of the same block far better. A cell whose clean answer no direction can move
+# cannot be owned for reasons that have nothing to do with whether the concept is clinical, so pooling such cells makes
+# the attribute-versus-finding comparison unfair in both directions. ATTRQ scores the CLEAN answer of each attribute
+# under THREE phrasings (AQ0 plus two written in the same yes/no form and answer mapping, protocol.json "attrq") on the
+# 400 CALIBRATION rows only: no writes, no reference family, 3 x 3 x 400 = 3,600 clean forwards per block. The analysis
+# picks a per-block primary phrasing by the campaign's own rule (highest one-sided 95% lower bound of the clean-answer
+# AUROC, lower bound > 0.5, >= 10 positives and >= 10 negatives) and records every phrasing's numbers under `attrq`.
+# It also puts the attribute's answerability on the SAME rows as the clinical one, which analysis.calibration measures
+# on the calibration rows.
+ATTRQ = PROTOCOL["attrq"]
+ATTRQ_PHRASINGS = tuple(ATTRQ["phrasings"])                      # AQ0 AQ1 AQ2; AQ0 is the phrasing ATTR writes
+ATTRQ_QUESTIONS: dict[str, dict[str, dict]] = ATTRQ["questions"]
+ATTRQ_CANDIDATE_SOURCE: dict[str, str] = ATTRQ["candidate_source"]
+# ATTR_MATCH_WINDOW: the answerability-matched comparison pairs an attribute cell with the clinical cells of the SAME
+# block whose clean-answer AUROC is within this much of it (protocol.json "attr_comparison").
+ATTR_MATCH_WINDOW = float(PROTOCOL["attr_comparison"]["match_window"])
+ATTR_COMPARISON_MODES = tuple(PROTOCOL["attr_comparison"]["modes"])
 # ANSDIRT: the IY-fitted answer directions written under the five other templates (own clean baseline per template)
 ANSDIRT_TEMPLATES = ("WY", "IA", "IB", "WA", "WB")
 # VALID: the CORE grid (primary template, PRIMARY_ALPHA, the 127-direction core family of the seed-0 fit) on the `valid`
@@ -130,7 +150,7 @@ MODULE_SETTINGS = {"PRECISION": PRECISION_SETTINGS}       # modules scored once 
 # addenda (each enqueued explicitly, each counted in total_planned_outcomes.addenda, each in MODULES_ADDED_LATER).
 PLANNED_MODULES = ("CORE", "CALIBRATION", "PROMPT", "DOSE", "REFIT", "LOCUS", "LOCUS_CALIBRATION")
 ADDENDUM_MODULES = ("ALTDIR", "EXTCOMP", "TOKENW", "PRECISION", "ANSDIR", "ALTDIRD", "ATTR", "ANSDIRT", "VALID",
-                    "ATTRRAND", "VALIDFIT", "PROJSEED", "TOWERSWAP", "REPLAY", "SEMEND")
+                    "ATTRRAND", "VALIDFIT", "PROJSEED", "TOWERSWAP", "REPLAY", "SEMEND", "ATTRQ")
 # ANSDIR (answer-direction oracle, ansdir.py): per question q a ridge regression of the clean answer margin on the
 # projected, train-scaled features of the first ANSDIR_N_TRAIN training rows (alpha by 5-fold CV over ANSDIR_ALPHAS),
 # lifted like the logistic normals; written with the six a_d plus the coordinate-permutation sham of a_q.
@@ -138,6 +158,41 @@ ANSDIR_N_TRAIN = 3000
 ANSDIR_ALPHAS = (0.1, 1.0, 10.0, 100.0)
 ANSDIR_CV_FOLDS = 5
 COCO_CATEGORY_IDS = {"person": 1, "dog": 18, "car": 3, "chair": 62, "bottle": 44, "bicycle": 2}
+# FGOBJ: six FINE-GRAINED object concepts on COCO, the control that decides whether the chest-versus-COCO ownership gap
+# is about clinical concepts or about task difficulty. The six COCO concepts above are easy (median clean-answer AUROC
+# 0.98 over the 120 easy COCO cells of the campaign grid against 0.67 over its 246 chest cells), so matching chest cells
+# to them on answerability and probe selectivity starves the
+# matched comparison: the natural-image side has no hard concepts. FGOBJ adds six categories that are small, often
+# occluded or fine-grained, built from the SAME instance annotations by the SAME rule (presence, crowd instances count),
+# fitted with the SAME projection / train-only scaler / probe hyperparameters on the SAME training rows, and written as
+# a SELF-CONTAINED family: its own 119 random directions and its own coordinate-permutation shams (cftransfer.fgobj),
+# at the primary template and dose on the 600 test rows. The grid therefore has CORE's shape and the campaign ownership
+# rule applies to an FGOBJ cell unchanged.
+#
+# Selection (fixed before any FGOBJ outcome existed; no ownership, write or verdict enters it). The candidate pool is
+# the COCO categories with enough support in the frozen cohort; from it,
+#   A support     >= FGOBJ_MIN_ROLE_POS positives among the 400 calibration rows AND among the 600 test rows (the 10/10
+#                 rule the readability and answerability grades need), and >= FGOBJ_MIN_TRAIN_POS training positives --
+#                 the training support of `bicycle`, the weakest of the six easy concepts
+#   B difficulty  mean relative instance area < FGOBJ_MAX_MEAN_AREA, the MEDIAN of the six easy concepts' mean relative
+#                 areas (person .0400, dog .0981, car .0168, chair .0203, bottle .0095, bicycle .0247), i.e. smaller
+#                 than half the existing natural-image grid
+#   C rank        calibration positives descending, ties by mean relative area ascending, then COCO category id; take six
+# which selects handbag (cal 28), book (19), backpack (19), traffic light (16), knife (16), cell phone (16); spoon and
+# tie (15 each) are the next two, potted plant / bench / vase fail B, remote fails A.
+FGOBJ_CANDIDATE_POOL = ("handbag", "book", "backpack", "potted plant", "traffic light", "cell phone", "knife",
+                        "spoon", "remote", "bench", "tie", "vase")
+FGOBJ_CONCEPTS = ["handbag", "book", "backpack", "traffic light", "knife", "cell phone"]
+FGOBJ_CATEGORY_IDS = {"handbag": 31, "book": 84, "backpack": 27, "traffic light": 10, "knife": 49, "cell phone": 77}
+FGOBJ_PHRASES = {"handbag": "a handbag", "book": "a book", "backpack": "a backpack", "traffic light": "a traffic light",
+                 "knife": "a knife", "cell phone": "a cell phone"}
+FGOBJ_MIN_ROLE_POS = 10            # the calibration grading's 10 positives / 10 negatives rule
+FGOBJ_MIN_TRAIN_POS = 567          # training positives of `bicycle`, the weakest of the six easy COCO concepts
+FGOBJ_MAX_MEAN_AREA = 0.02252      # median mean relative instance area of the six easy COCO concepts
+FGOBJ_RANDOM_SEED = 3              # PCG64(3): the family's own 119 random directions, then one permutation per concept
+FINDING_PHRASES["coco"].update(FGOBJ_PHRASES)       # fine-grained questions render with the protocol templates
+ADDENDUM_MODULES = ADDENDUM_MODULES + ("FGOBJ", "FGOBJ_CALIBRATION")
+MODULES_ADDED_LATER["coco"] = MODULES_ADDED_LATER["coco"] + ("FGOBJ", "FGOBJ_CALIBRATION")
 # TOWERSWAP: one reader, the OTHER checkpoint's vision tower. Today's "the reader of the representation decides what a
 # written direction does" evidence is made of shared-tower pairs (one tower, two readers); this module supplies the
 # missing crossover (one reader, two towers). Gemma 3 and MedGemma are the same architecture with different weights, so
@@ -226,6 +281,33 @@ def render_question(dataset_id: str, concept: str, template_id: str) -> str:
     )
 
 
+def attrq_source_template(phrasing_id: str, primary: str = "IY") -> str:
+    """The protocol template whose frozen candidate set and preflight eligibility an ATTRQ phrasing inherits.
+
+    AQ0 IS the block's primary template (it is the question ATTR writes); AQ1 and AQ2 are yes/no questions and take
+    IY's, so a block whose yes/no mapping failed image-free preflight check E never scores them."""
+    if phrasing_id not in ATTRQ_PHRASINGS:
+        raise KeyError(f"{phrasing_id}: not an ATTRQ phrasing {ATTRQ_PHRASINGS}")
+    src = ATTRQ_CANDIDATE_SOURCE[phrasing_id]
+    return primary if src == "primary" else src
+
+
+def render_attrq(dataset_id: str, attribute: str, phrasing_id: str, primary: str = "IY") -> str:
+    """Exact question text of one ATTRQ phrasing; the syntax is protocol.json's, not the executor's to edit.
+
+    AQ0 renders through the protocol template (the block's primary), so it is byte-identical to the attribute question
+    ATTR and ATTRRAND write; AQ1 / AQ2 are frozen texts with the dataset's image phrase in the one slot."""
+    if attribute not in ATTR_CONCEPTS:
+        raise KeyError(f"{attribute}: not an ATTR attribute {ATTR_CONCEPTS}")
+    if phrasing_id not in ATTRQ_PHRASINGS:
+        raise KeyError(f"{phrasing_id}: not an ATTRQ phrasing {ATTRQ_PHRASINGS}")
+    spec = ATTRQ_QUESTIONS[attribute][phrasing_id]
+    if "template" in spec:
+        t = primary if spec["template"] == "primary" else spec["template"]
+        return render_question(dataset_id, attribute, t)
+    return spec["text"].format(image_phrase=IMAGE_PHRASE[dataset_id])
+
+
 def semend_finding_word(dataset_id: str, concept: str) -> str:
     """The single word the report-continuation endpoint scores for one concept (frozen in protocol.json)."""
     return SEMEND_FINDING_WORDS[dataset_id][concept]
@@ -280,7 +362,7 @@ class ModuleSpec:
     role: str                       # cohort role scored
     row_limit: int | None           # first N rows of the role in cohorts order (DOSE)
     templates: tuple[str, ...]
-    concepts_rule: str              # "all" | "prompt" | "attr" (3 attribute + 6 clinical) | "attrrand" (the 3 attribute questions)
+    concepts_rule: str              # "all" | "prompt" | "attr" (3 attribute + 6 clinical) | "attrrand" / "attrq" (the 3 attribute questions)
     alphas: tuple[float, ...]
     directions: str                 # "core" | "clean" | "dose" | "refit" | "altdir" | "extcomp" | "tokenw" | "ansdir" | "altdird"
                                     # | "attr" | "ansdirt" | "attrrand" | "validfit" | "projseed" | "semend"
@@ -335,6 +417,10 @@ MODULES: dict[str, ModuleSpec] = {
     # attribute cell was missing (ATTR referenced attribute cells against their sham alone)
     "ATTRRAND": ModuleSpec("ATTRRAND", "test", None, ("IY",), "attrrand", (PRIMARY_ALPHA,), "attrrand", (0,), "primary", "ATTR",
                            ("nih", "chexpert")),
+    # the three attribute questions under three phrasings, CLEAN forwards on the calibration rows: the answerability
+    # pass that decides which attribute cells may be compared with a clinical cell, and which phrasing a block should write
+    "ATTRQ": ModuleSpec("ATTRQ", "calibration", None, ATTRQ_PHRASINGS, "attrq", (0.0,), "clean", (0,), "primary", None,
+                        ("nih", "chexpert")),
     # the six concept directions refitted on the radiologist-labelled valid rows, written on the test rows, CORE baseline
     # and CORE's random / sham references reused
     "VALIDFIT": ModuleSpec("VALIDFIT", "test", None, ("IY",), "all", (PRIMARY_ALPHA,), "validfit", (0,), "primary", "CORE",
@@ -353,6 +439,17 @@ MODULES: dict[str, ModuleSpec] = {
     "SEMEND": ModuleSpec("SEMEND", "test", None, SEMEND_TEMPLATES, "all", (PRIMARY_ALPHA,), "semend", (0,), "primary",
                          None, ("nih", "chexpert", "coco")),
 }
+# FGOBJ: the six fine-grained COCO questions under their own self-contained 127-condition family (own clean baseline,
+# six fine-grained directions, 119 own random directions, the question's own sham) at the primary template and dose on
+# the 600 test rows -- CORE's grid shape, so the ownership rule applies unchanged and an FGOBJ cell is directly
+# comparable with an easy-COCO CORE cell and with a chest cell.
+MODULES["FGOBJ"] = ModuleSpec("FGOBJ", "test", None, ("IY",), "fgobj", (PRIMARY_ALPHA,), "fgobj", (0,), "primary", None,
+                              ("coco",))
+# FGOBJ_CALIBRATION: the six fine-grained questions scored CLEAN on the 400 calibration rows, exactly as CALIBRATION
+# does for the easy six, so the fine-grained cells' answerability is estimated on the same cohort by the same rule as
+# every cell the matched comparison pools (2,400 clean forwards; ~1.5% of an FGOBJ block).
+MODULES["FGOBJ_CALIBRATION"] = ModuleSpec("FGOBJ_CALIBRATION", "calibration", None, ("IY",), "fgobj", (0.0,), "clean",
+                                          (0,), "primary", None, ("coco",))
 
 
 def question_list(dataset_id: str, module: str, primary: str = "IY") -> list[tuple[str, str]]:
@@ -366,8 +463,10 @@ def question_list(dataset_id: str, module: str, primary: str = "IY") -> list[tup
         concepts = PROMPT_CONCEPTS[dataset_id]
     elif spec.concepts_rule == "attr":
         concepts = ATTR_CONCEPTS + list(concepts)
-    elif spec.concepts_rule == "attrrand":
+    elif spec.concepts_rule in ("attrrand", "attrq"):
         concepts = list(ATTR_CONCEPTS)
+    elif spec.concepts_rule == "fgobj":
+        concepts = list(FGOBJ_CONCEPTS)
     out = [(c, primary if t == "IY" else t) for t in spec.templates for c in concepts]
     if module == "CALIBRATION" and dataset_id in CALIBRATION_PROMPT_DATASETS:
         # NIH/COCO calibration also scores the two PROMPT concepts under the five other templates (README 5.4)
@@ -428,6 +527,12 @@ def conditions_for(module: str, dataset_id: str, concept: str) -> list[tuple[str
         # one projection seed per fit_seed: six refit directions, that projection's own 119 random directions and its sham
         ids = [f"proj:{c}" for c in CONCEPTS[dataset_id]] + [f"projrand:{i:03d}" for i in range(N_RANDOM)] + [f"projsham:{concept}"]
         return [(d, spec.alphas[0]) for d in ids]
+    if spec.directions == "fgobj":
+        # CORE's grid shape on the fine-grained family: own clean baseline, the six fine-grained directions, the
+        # family's OWN 119 random directions and the question's OWN sham (never the easy concepts' references)
+        ids = (["baseline"] + [f"fgobj:{c}" for c in FGOBJ_CONCEPTS] + [f"fgobjrand:{i:03d}" for i in range(N_RANDOM)]
+               + [f"fgobjsham:{concept}"])
+        return [(d, 0.0 if d == "baseline" else spec.alphas[0]) for d in ids]
     raise ValueError(spec.directions)
 
 
