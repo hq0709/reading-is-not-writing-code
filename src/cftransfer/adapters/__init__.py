@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from ..protocol import MODELS
+from .chexagent import CheXagentAdapter
 from .gemma import Gemma3Adapter
 from .internvl import InternVLAdapter
 from .llava import LlavaAdapter
@@ -28,6 +29,7 @@ REVISIONS = {
     "lingshu-7": "b98aecd41dfd9d7545a6b8e2f4743ae8471bd7a9",
     "lingshu-32": "36b98277cacb60db86f34b75ce0540b1ea35183c",
     "llavamed-7": "91bb16c122001ddc9cf1fd36ce1dae09448943a2",
+    "chexagent-3": "8f19b53a2eceda4c33b0acec6c81fbc293ad80d0",
 }
 
 FAMILY_ADAPTER = {
@@ -39,6 +41,7 @@ FAMILY_ADAPTER = {
     "iv35-8": InternVLAdapter, "iv35-14": InternVLAdapter, "iv35-38": InternVLAdapter,
     "llava15-7": LlavaAdapter, "llava15-13": LlavaAdapter,
     "llavamed-7": LlavaMedAdapter,
+    "chexagent-3": CheXagentAdapter,
     "llama32-11": MllamaAdapter, "llama32-90": MllamaAdapter,
 }
 

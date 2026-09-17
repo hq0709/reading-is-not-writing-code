@@ -14,12 +14,21 @@ SRC = "/rodata/azradonc_dev/m253405/concept-flow/src"
 PREP = "/rodata/azradonc_dev/m253405/concept-flow/scripts/mayo/prep_model.sh"
 LANE = {"q25-3": "gpu1", "q25-7": "gpu1", "q3-4": "gpu1", "q3-8": "gpu1", "iv35-8": "gpu1", "iv35-14": "gpu1",
         "gemma3-4": "gpu1", "gemma3-12": "gpu1", "medgemma-4": "gpu1", "llama32-11": "gpu1", "llava15-7": "gpu1",
-        "llava15-13": "gpu1", "lingshu-7": "gpu1", "llavamed-7": "gpu1",
+        "llava15-13": "gpu1", "lingshu-7": "gpu1", "llavamed-7": "gpu1", "chexagent-3": "gpu1",
         "q25-32": "gpu2", "q3-32": "gpu2", "iv35-38": "gpu2", "gemma3-27": "gpu2", "medgemma-27": "gpu2", "lingshu-32": "gpu2",
         "q25-72": "gpu3", "llama32-90": "gpu3"}
 BATCH = {"gpu1": 32, "gpu2": 16, "gpu3": 8, "gpu4": 8}
-# per-model overrides: Mllama computes all 4 tile slots per image (3 zero tiles), so its vision cost is ~4x
-BATCH_MODEL = {"llama32-11": 16, "llama32-90": 4}
+# per-model overrides: Mllama computes all 4 tile slots per image (3 zero tiles), so its vision cost is ~4x.
+# chexagent-3 is small (3B) but expensive per row: 1,024 visual tokens at 512 px, eager attention (its remote
+# code offers no SDPA path) over a 1,077-token prompt, and its forward takes no `logits_to_keep`, so every
+# forward materialises (B, 1077, 51,200) float32 logits. Measured on one A100-80GB, steered forwards of the
+# runner's replicated-image composition: 0.361 s at batch 4 (8.1 GB peak), 0.682 at 8 (9.7 GB), 1.323 at 16
+# (12.9 GB) -- per condition 0.0903 / 0.0852 / 0.0827, i.e. already flat. Per-condition throughput is not what
+# decides the batch here: the runner spends one FULL batch forward on each clean baseline condition, so a
+# larger batch makes the baselines and the whole CALIBRATION module proportionally more expensive. NIH
+# CORE + CALIBRATION costs 12.55 / 12.81 / 14.26 GPU-h at batch 4 / 8 / 16. 8 is the flat part of that curve
+# with the smaller memory footprint.
+BATCH_MODEL = {"llama32-11": 16, "llama32-90": 4, "chexagent-3": 8}
 
 
 def batch_for(model_key: str, lane: str) -> int:
@@ -98,7 +107,8 @@ PREP_DATA = {"VALIDFIT": lambda mk, ds: [str(valid_features_dir(mk, ds) / "vis.l
 MODULE_ORDER = ["CALIBRATION", "CORE", "LOCUS_CALIBRATION", "DOSE", "REFIT", "LOCUS", "PROMPT"]
 MODEL_PRIORITY = ["q25-7", "llava15-7", "lingshu-7", "llavamed-7", "q3-8", "iv35-8", "medgemma-4", "q25-3", "q3-4", "iv35-14",
                   "llava15-13", "gemma3-4", "gemma3-12", "llama32-11", "q25-32", "q3-32", "lingshu-32", "medgemma-27",
-                  "gemma3-27", "iv35-38", "q25-72", "llama32-90"]
+                  "gemma3-27", "iv35-38", "q25-72", "llama32-90",
+                  "chexagent-3"]   # addendum checkpoint, appended so no existing block's task names change
 
 
 def enqueue(model_key: str, dataset_id: str, modules: list[str] | None = None, prep: bool = True, prefix: str = "") -> list[str]:

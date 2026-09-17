@@ -21,3 +21,4 @@ llava15-13,llava-hf/llava-1.5-13b-hf,llava1.5,13,phase2,1x80GB,bridge-scale,http
 lingshu-7,lingshu-medical-mllm/Lingshu-7B,lingshu,7,phase1,1x80GB,medical-family,https://huggingface.co/lingshu-medical-mllm/Lingshu-7B
 llavamed-7,microsoft/llava-med-v1.5-mistral-7b,llava-med,7,phase2,1x80GB,medical-runtime,https://huggingface.co/microsoft/llava-med-v1.5-mistral-7b
 lingshu-32,lingshu-medical-mllm/Lingshu-32B,lingshu,32,phase2,2x80GB,external-medical-pair,https://huggingface.co/lingshu-medical-mllm/Lingshu-32B
+chexagent-3,StanfordAIMI/CheXagent-2-3b,chexagent-2,3,addendum,1x48GB,medical-chest-tower,https://huggingface.co/StanfordAIMI/CheXagent-2-3b

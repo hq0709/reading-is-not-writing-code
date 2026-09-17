@@ -1009,6 +1009,16 @@
       "model_revision": null,
       "processor_revision": null,
       "execution_state": "NOT_STARTED"
+    },
+    {
+      "model_key": "chexagent-3",
+      "model_id": "StanfordAIMI/CheXagent-2-3b",
+      "batch": "addendum",
+      "required_for_full_package": false,
+      "model_revision": "8f19b53a2eceda4c33b0acec6c81fbc293ad80d0",
+      "processor_revision": "8f19b53a2eceda4c33b0acec6c81fbc293ad80d0",
+      "execution_state": "NOT_STARTED",
+      "note": "addendum checkpoint added after the 22-model campaign was planned: the only grid member whose vision tower (StanfordAIMI/XraySigLIP__vit-l-16-siglip-384__webli, revision f0edbf5d90dba44edb7f4f96d8663537cb0749bf) was trained on chest radiographs. It is outside total_planned_outcomes, which stays the 22-model plan."
     }
   ],
   "total_planned_outcomes": {
@@ -1052,7 +1062,11 @@
       "ATTRQ": "3,600 rows per chest block (3 attributes x 3 phrasings x 400 calibration rows); the table follows the campaign convention (NIH + CheXpert x 22 models)",
       "FGOBJ": "457,200 rows per COCO block, byte for byte CORE's grid shape on six new questions; the table follows the campaign convention (COCO x 22 models), but the module is a CONTROL and is budgeted for a handful of COCO blocks chosen for family coverage, not for the whole grid. Measured cost per block is that block's own CORE cost (same 6 x 127 x 600 grid): 3.2-16.4 GPU-h over the 17 COCO blocks whose CORE metas cover all 457,200 outcomes, median 8.5; llama32-11 is the outlier at 32.9.",
       "FGOBJ_CALIBRATION": "2,400 clean forwards per COCO block (6 fine-grained questions x 400 calibration rows); the table follows the campaign convention (COCO x 22 models). It is 3/8 of the COCO CALIBRATION module, i.e. 0.02-0.14 GPU-h per block on the measured CALIBRATION throughput, under 2% of the FGOBJ block it accompanies."
-    }
+    },
+    "addendum_models": [
+      "chexagent-3"
+    ],
+    "addendum_models_note": "chexagent-3 (StanfordAIMI/CheXagent-2-3b) is an addendum checkpoint enqueued explicitly; the planned totals above remain those of the 22-model campaign."
   },
   "semend": {
     "purpose": "semantic endpoints outside the six yes/no / A-B templates, so ownership is not validated only against the model's own answers under those six prompts",
