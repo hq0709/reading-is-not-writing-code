@@ -66,6 +66,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import sys
 import time
 from pathlib import Path
@@ -635,6 +636,10 @@ FGOBJ_BOOT_SEED = 2026091601
 # cell-level rate would require re-deriving every cell's verdict inside every draw from every block's outcomes parquet;
 # this section reads block summaries only and does not claim to do that.
 FGOBJ_GROUPS = ("chest", "coco_easy", "coco_fine")
+# The fine-grained cells exist in the six FGOBJ blocks only. The grid-wide easy-object rate runs over every COCO block,
+# so it is the COCO number of the grid and NOT the comparison for "does fine-grainedness reduce ownership": that
+# comparison has to hold the checkpoint set fixed, which is what `coco_easy_same_blocks` does.
+FGOBJ_POOLS = FGOBJ_GROUPS + ("coco_easy_same_blocks",)
 
 
 def _cell_group(dataset: str, kind: str) -> str:
@@ -710,6 +715,16 @@ def match_matrix(chest: list, natural: list, window_auroc: float | None, window_
     return M
 
 
+# The two estimators the matched comparison reports. They answer different questions and are never interchangeable:
+# subtracting the two pooled RATES gives the POOLED difference, never the matched one.
+FGOBJ_ESTIMANDS = {
+    "matched": "the mean over matched chest cells of (that cell's ownership minus the ownership rate of its own "
+               "partner set); each chest cell is compared only with the natural-image cells inside its own window, "
+               "so cells with many partners and cells with few count equally",
+    "pooled": "the ownership rate among the matched chest cells minus the ownership rate among the natural-image "
+              "cells that served as a partner at least once; this is the difference of the two reported rates"}
+
+
 def _matched_estimate(M: np.ndarray, owned_c: np.ndarray, owned_n: np.ndarray, w_c: np.ndarray, w_n: np.ndarray):
     """(matched difference, pooled difference, weight of the matched chest cells). The matched difference is the mean
     over matched chest cells of (its own ownership minus the ownership RATE OF ITS OWN PARTNER SET), which is the
@@ -757,6 +772,9 @@ def matched_comparison(chest: list, natural: list, window_auroc, window_selectiv
             draws_pooled.append(p)
     partners = M.sum(axis=1)
     comp = {g: int(sum(1 for j, c in enumerate(natural) if used[j] and c["group"] == g)) for g in ("coco_easy", "coco_fine")}
+    chest_rate = float(owned_c[matched].mean()) if matched.any() else None
+    nat_rate = float(owned_n[used].mean()) if used.any() else None
+    rate_diff = None if (chest_rate is None or nat_rate is None) else chest_rate - nat_rate
     return {
         "matching": name, "window_answer_auroc": window_auroc, "window_selectivity": window_selectivity,
         "n_chest_cells": len(chest), "n_natural_cells": len(natural),
@@ -764,14 +782,56 @@ def matched_comparison(chest: list, natural: list, window_auroc, window_selectiv
         "unmatched_chest_cells": [f"{c['block']} {c['concept']}" for c, mm in zip(chest, matched) if not mm][:40],
         "n_natural_cells_used": int(used.sum()), "partner_composition_used": comp,
         "median_partners_per_matched_chest_cell": float(np.median(partners[matched])) if matched.any() else None,
-        "chest_owned_rate_matched": float(owned_c[matched].mean()) if matched.any() else None,
-        "natural_owned_rate_used": float(owned_n[used].mean()) if used.any() else None,
+        "chest_owned_rate_matched": chest_rate,
+        "natural_owned_rate_used": nat_rate,
         "matched_ownership_difference": est,
         "matched_ownership_difference_ci95": [float(np.percentile(draws_est, 2.5)), float(np.percentile(draws_est, 97.5))] if draws_est else None,
         "pooled_ownership_difference": pooled,
         "pooled_ownership_difference_ci95": [float(np.percentile(draws_pooled, 2.5)), float(np.percentile(draws_pooled, 97.5))] if draws_pooled else None,
-        "bootstrap_valid_draws": len(draws_est), "bootstrap_draws": draws,
+        # the effective sample each estimator averages over, so a reader never has to infer it from the rates
+        "effective_sample": {"matched_chest_cells": int(matched.sum()), "distinct_partners_used": int(used.sum()),
+                             "total_chest_cells": len(chest), "total_natural_cells": len(natural)},
+        "estimands": dict(FGOBJ_ESTIMANDS),
+        # the pooled estimator IS the difference of the two reported rates; the matched one is not, and the gap
+        # between them is recorded so no caption can present the two as one quantity
+        "rate_difference": rate_diff,
+        "pooled_equals_rate_difference": bool(pooled is not None and rate_diff is not None and abs(pooled - rate_diff) < 1e-9),
+        "matched_minus_rate_difference": None if (est is None or rate_diff is None) else float(est - rate_diff),
+        "bootstrap_valid_draws": len(draws_est), "bootstrap_valid_draws_pooled": len(draws_pooled), "bootstrap_draws": draws,
         "bootstrap_unit": "model (cluster bootstrap; a model carries its nih, chexpert and coco cells)"}
+
+
+def sign_test(pos: int, neg: int) -> float | None:
+    """Exact two-sided sign test on the non-tied pairs: P(|X - n/2| >= |k - n/2|) for X ~ Binomial(n, 1/2)."""
+    n = pos + neg
+    if n == 0:
+        return None
+    obs = abs(pos - n / 2)
+    tail = sum(math.comb(n, i) for i in range(n + 1) if abs(i - n / 2) >= obs - 1e-12)
+    return float(tail / 2 ** n)
+
+
+def same_block_comparison(rows: list) -> dict:
+    """Fine-grained against easy COCO objects INSIDE THE SAME BLOCKS: the only comparison of the two that holds the
+    checkpoint set fixed. Per block the two counts of six, then the paired difference over blocks with an exact
+    two-sided sign test on the blocks that are not tied."""
+    per = [{"block": r["block"], "fine_owned": r["fine_owned"], "fine_cells": r["fine_cells"],
+            "easy_owned": r["easy_owned"], "easy_cells": r["easy_cells"],
+            "difference": r["fine_owned"] - r["easy_owned"]} for r in rows]
+    d = [p["difference"] for p in per]
+    fine_o, fine_n = sum(p["fine_owned"] for p in per), sum(p["fine_cells"] for p in per)
+    easy_o, easy_n = sum(p["easy_owned"] for p in per), sum(p["easy_cells"] for p in per)
+    pos, neg = sum(x > 0 for x in d), sum(x < 0 for x in d)
+    return {"blocks": [p["block"] for p in per], "n_blocks": len(per), "per_block": per,
+            "fine_owned": fine_o, "fine_cells": fine_n, "fine_rate": (fine_o / fine_n) if fine_n else None,
+            "easy_owned": easy_o, "easy_cells": easy_n, "easy_rate": (easy_o / easy_n) if easy_n else None,
+            "rate_difference": ((fine_o / fine_n) - (easy_o / easy_n)) if fine_n and easy_n else None,
+            "paired_difference_min": min(d) if d else None, "paired_difference_max": max(d) if d else None,
+            "paired_difference_mean": float(np.mean(d)) if d else None,
+            "n_blocks_fine_higher": pos, "n_blocks_easy_higher": neg, "n_blocks_tied": sum(x == 0 for x in d),
+            "sign_test_p": sign_test(pos, neg),
+            "note": "the easy-object cells of these blocks only; the grid-wide easy rate spans every COCO block and "
+                    "must not be quoted as this comparison"}
 
 
 def fgobj_section(blocks: dict) -> dict:
@@ -807,16 +867,24 @@ def fgobj_section(blocks: dict) -> dict:
                      "per_concept": {c["concept"]: {k: c[k] for k in ("owned", "verdict", "steering_reference", "W_qq", "O_q",
                                                                       "answer_auroc", "selectivity", "readable",
                                                                       "answer_capable", "n_pos", "n_neg")} for c in fine}})
-    pool = {}
-    for g in FGOBJ_GROUPS:
-        gc = [c for c in cells if c["group"] == g]
-        pool[g] = {"cells": len(gc), "blocks": len({c["block"] for c in gc}), "owned": sum(c["owned"] for c in gc),
-                   "owned_rate": (sum(c["owned"] for c in gc) / len(gc)) if gc else None,
-                   "median_answer_auroc": med([c["answer_auroc"] for c in gc]),
-                   "median_selectivity": med([c["selectivity"] for c in gc]),
-                   "readable": sum(bool(c["readable"]) for c in gc),
-                   "answer_capable": sum(bool(c["answer_capable"]) for c in gc),
-                   "with_both_matching_variables": len(_matchable(gc))}
+    fine_blocks = sorted({r["block"] for r in rows})
+
+    def pool_of(gc: list) -> dict:
+        return {"cells": len(gc), "blocks": len({c["block"] for c in gc}), "owned": sum(c["owned"] for c in gc),
+                "owned_rate": (sum(c["owned"] for c in gc) / len(gc)) if gc else None,
+                "median_answer_auroc": med([c["answer_auroc"] for c in gc]),
+                "median_selectivity": med([c["selectivity"] for c in gc]),
+                "readable": sum(bool(c["readable"]) for c in gc),
+                "answer_capable": sum(bool(c["answer_capable"]) for c in gc),
+                "with_both_matching_variables": len(_matchable(gc))}
+    pool = {g: pool_of([c for c in cells if c["group"] == g]) for g in FGOBJ_GROUPS}
+    # the easy-object cells of the SIX FGOBJ BLOCKS ONLY: the fine-grained cells come from these blocks and no others,
+    # so this is the pool the fine-grained rate may be compared with. Same checkpoints, same rows, same family size.
+    pool["coco_easy_same_blocks"] = pool_of([c for c in cells if c["group"] == "coco_easy" and c["block"] in set(fine_blocks)])
+    pool["coco_easy_same_blocks"]["block_list"] = fine_blocks
+    pool["coco_easy_same_blocks"]["note"] = ("the six easy COCO concepts of the FGOBJ blocks only; the grid-wide "
+                                             "`coco_easy` pool spans every COCO block and is the COCO number of the "
+                                             "grid, not the comparison for fine-grainedness")
     chest = _matchable([c for c in cells if c["group"] == "chest"])
     natural = _matchable([c for c in cells if c["group"] in ("coco_easy", "coco_fine")])
     easy_only = [c for c in natural if c["group"] == "coco_easy"]
@@ -828,6 +896,7 @@ def fgobj_section(blocks: dict) -> dict:
         # the pre-FGOBJ state, for reference only: the same matching with the six EASY COCO concepts as the only partners
         "both_easy_partners_only": matched_comparison(chest, easy_only, W, S, "both variables, easy COCO partners only")}
     return {"concepts": list(FGOBJ_CONCEPTS), "blocks": rows, "pool": pool, "matched": matched,
+            "same_block_comparison": same_block_comparison(rows),
             "cells": cells, "skipped": skipped,
             "prespecification": f"the matching windows ({W} clean-answer AUROC, {S} probe selectivity) and the six "
                                 f"fine-grained categories were fixed before the FGOBJ grid was built; no ownership "
@@ -839,6 +908,187 @@ def fgobj_section(blocks: dict) -> dict:
                                    "probe_selectivity": "probe AUROC minus the mean of the 20 type->random-label control "
                                                         "AUROCs on the calibration rows, the campaign's definition for "
                                                         "every group"}}
+
+
+# ------------------------------------------------------------------------------------------------ SEMEND (held out)
+# Whether the ownership grade carries information about endpoint behaviour BEYOND the write magnitude, the probe
+# selectivity and the clean-answer AUROC is a prediction question, so it is answered out of sample. Adding predictors
+# can never lower a training R^2, which is why the training increment (summary.json semend incremental_validity) is
+# reported here only as the in-sample reference it is.
+#
+# Design, per direction family:
+#   target        the cell's endpoint selectivity (intended minus mean unintended), summary.json semend per_question
+#   base          intercept, endpoint dummies, W_qq_core, probe_selectivity, answer_auroc   -- all per-concept
+#   full          base + owned_core + O_q_core                                              -- the two ownership terms
+#   estimator     ridge on standardised predictors; the penalty is chosen by an inner leave-one-group-out split of the
+#                 TRAINING FOLD only, and the standardisation is fitted on the training fold only, so nothing about a
+#                 held-out fold enters its own prediction
+#   splits        leave-one-concept-out inside a block, and leave-one-block-out over the pooled blocks
+#   score         held-out R^2 = 1 - SSE(held-out predictions) / SST, one denominator for base and full, so the change
+#                 in held-out R^2 is exactly the change in held-out squared error
+#   null          ownership permuted ACROSS THE CONCEPTS OF A BLOCK (the level at which it is assigned), the same draw
+#                 used for both families of that block, and the p-value is the share of draws whose change in held-out
+#                 R^2 is at least the observed one
+SEMEND_FAMS = ("label", "answer")
+SEMEND_CV_LAMBDAS = (1e-6, 1e-3, 1e-2, 1e-1, 1.0, 10.0, 100.0, 1000.0)
+SEMEND_CV_PERMUTATIONS = 2000
+SEMEND_CV_SEED = 2026091702
+SEMEND_BASE = ("W_qq_core", "probe_selectivity", "answer_auroc")
+SEMEND_ADDED = ("owned_core", "O_q_core")
+
+
+def semend_frame(summary: dict, fam: str) -> tuple[list, list, np.ndarray, np.ndarray, np.ndarray]:
+    """(endpoints, concepts, cell table, owned_core per concept, O_q_core per concept) for one block and family, read
+    from summary.json only. The cell table columns are (concept index, endpoint index, target, W_qq_core,
+    probe_selectivity, answer_auroc)."""
+    s = summary["semend"]
+    eps, concepts = list(s["endpoints"]), list(s["core"].keys())
+    own, oq, rows = np.zeros(len(concepts)), np.zeros(len(concepts)), []
+    for ei, e in enumerate(eps):
+        pq = s["per_endpoint"][e]["families"][fam]["per_question"]
+        for qi, q in enumerate(concepts):
+            c = pq[q]
+            own[qi] = 1.0 if c["owned_core"] else 0.0
+            oq[qi] = c["O_q_core"]
+            rows.append((qi, ei, c["selectivity"], c["W_qq_core"], c["probe_selectivity"], c["answer_auroc"]))
+    return eps, concepts, np.array(rows, float), own, oq
+
+
+def semend_design(A: np.ndarray, n_endpoints: int, own: np.ndarray, oq: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    """(base, full) design matrices. Column 0 is the intercept; the endpoint dummies drop the first endpoint."""
+    K = len(A)
+    ep, qi = A[:, 1].astype(int), A[:, 0].astype(int)
+    D = np.stack([(ep == j).astype(float) for j in range(1, n_endpoints)], axis=1) if n_endpoints > 1 else np.zeros((K, 0))
+    base = np.column_stack([np.ones(K), D, A[:, 3], A[:, 4], A[:, 5]])
+    return base, np.column_stack([base, own[qi], oq[qi]])
+
+
+def _ridge(X: np.ndarray, y: np.ndarray, lam: float) -> np.ndarray:
+    P = np.eye(X.shape[1]) * lam
+    P[0, 0] = 0.0                                                    # the intercept is never penalised
+    return np.linalg.solve(X.T @ X + P, X.T @ y)
+
+
+def _fit_predict(Xtr: np.ndarray, ytr: np.ndarray, Xte: np.ndarray, gtr: np.ndarray) -> np.ndarray:
+    """Ridge fitted entirely inside the training fold: the standardisation and the penalty both come from (Xtr, ytr)."""
+    mu, sd = Xtr[:, 1:].mean(0), Xtr[:, 1:].std(0)
+    sd = np.where(sd < 1e-12, 1.0, sd)
+    Ztr = np.column_stack([np.ones(len(Xtr)), (Xtr[:, 1:] - mu) / sd])
+    Zte = np.column_stack([np.ones(len(Xte)), (Xte[:, 1:] - mu) / sd])
+    groups = np.unique(gtr)
+    lam = 1.0
+    if len(groups) >= 3:
+        sse = np.zeros(len(SEMEND_CV_LAMBDAS))
+        for g in groups:
+            te = gtr == g
+            tr = ~te
+            for li, l in enumerate(SEMEND_CV_LAMBDAS):
+                sse[li] += float(((ytr[te] - Ztr[te] @ _ridge(Ztr[tr], ytr[tr], l)) ** 2).sum())
+        lam = SEMEND_CV_LAMBDAS[int(np.argmin(sse))]
+    return Zte @ _ridge(Ztr, ytr, lam)
+
+
+def _heldout_r2(y: np.ndarray, X: np.ndarray, fold: np.ndarray, group: np.ndarray) -> float:
+    pred = np.empty_like(y)
+    for f in np.unique(fold):
+        te = fold == f
+        pred[te] = _fit_predict(X[~te], y[~te], X[te], group[~te])
+    sst = float(((y - y.mean()) ** 2).sum())
+    return 1.0 - float(((y - pred) ** 2).sum()) / sst if sst > 0 else float("nan")
+
+
+def semend_section(blocks: dict) -> dict:
+    """The incremental validity of ownership over write magnitude, probe selectivity and clean-answer AUROC, tested
+    out of sample under two splits with a concept-level permutation null."""
+    keys = [k for k in sorted(blocks) if blocks[k]["summary"].get("semend") and completed(blocks[k], "SEMEND")]
+    skipped = [{"block": f"{mk}/{ds}", "reason": "SEMEND completed but summary.json carries no semend"}
+               for (mk, ds), b in blocks.items() if completed(b, "SEMEND") and not b["summary"].get("semend")]
+    if not keys:
+        return {"blocks": [], "skipped": skipped, "status": "NO_BLOCKS"}
+    rng = np.random.Generator(np.random.PCG64(SEMEND_CV_SEED))
+    F = {}
+    for k in keys:
+        for fam in SEMEND_FAMS:
+            F[(k, fam)] = semend_frame(blocks[k]["summary"], fam)
+    # one permutation of the six concepts per block per draw, shared by the two families: ownership is a property of
+    # the concept in the block, not of the family that was written
+    n_concepts = {k: len(F[(k, SEMEND_FAMS[0])][1]) for k in keys}
+    perms = [{k: rng.permutation(n_concepts[k]) for k in keys} for _ in range(SEMEND_CV_PERMUTATIONS)]
+
+    loco, loco_null = [], np.zeros(SEMEND_CV_PERMUTATIONS)
+    for k in keys:
+        for fam in SEMEND_FAMS:
+            eps, concepts, A, own, oq = F[(k, fam)]
+            y, qi = A[:, 2], A[:, 0].astype(int)
+            Xb, Xf = semend_design(A, len(eps), own, oq)
+            rb = _heldout_r2(y, Xb, qi, qi)
+            rf = _heldout_r2(y, Xf, qi, qi)
+            null = np.array([_heldout_r2(y, semend_design(A, len(eps), own[p[k]], oq[p[k]])[1], qi, qi) - rb
+                             for p in perms])
+            loco_null += null
+            loco.append({"block": f"{k[0]}/{k[1]}", "model": k[0], "dataset": k[1], "family": fam,
+                         "n_cells": len(A), "n_folds": len(concepts), "concepts": list(concepts), "endpoints": list(eps),
+                         "heldout_r2_base": rb, "heldout_r2_full": rf, "delta_heldout_r2": rf - rb,
+                         "permutation_p": float((1 + int((null >= rf - rb).sum())) / (1 + SEMEND_CV_PERMUTATIONS)),
+                         "training_r2_base": blocks[k]["summary"]["semend"]["incremental_validity"][fam]["base_model"]["r2"],
+                         "training_r2_full": blocks[k]["summary"]["semend"]["incremental_validity"][fam]["full_model"]["r2"],
+                         "training_delta_r2": blocks[k]["summary"]["semend"]["incremental_validity"][fam]["ownership_adds"]["delta_r2"]})
+
+    lobo, lobo_null = [], np.zeros(SEMEND_CV_PERMUTATIONS)
+    for fam in SEMEND_FAMS:
+        parts, fold, owns, oqs, offs, off, n_ep = [], [], [], [], [], 0, 0
+        for bi, k in enumerate(keys):
+            eps, concepts, A, own, oq = F[(k, fam)]
+            A = A.copy()
+            A[:, 0] += off
+            parts.append(A)
+            fold.append(np.full(len(A), bi))
+            owns.append(own)
+            oqs.append(oq)
+            offs.append(off)
+            off += len(concepts)
+            n_ep = max(n_ep, len(eps))
+        A = np.vstack(parts)
+        fold = np.concatenate(fold)
+        own, oq = np.concatenate(owns), np.concatenate(oqs)
+        y = A[:, 2]
+        Xb, Xf = semend_design(A, n_ep, own, oq)
+        rb = _heldout_r2(y, Xb, fold, fold)
+        rf = _heldout_r2(y, Xf, fold, fold)
+        null = []
+        for p in perms:
+            pi = np.concatenate([offs[bi] + p[k] for bi, k in enumerate(keys)])
+            null.append(_heldout_r2(y, semend_design(A, n_ep, own[pi], oq[pi])[1], fold, fold) - rb)
+        null = np.array(null)
+        lobo_null += null
+        lobo.append({"family": fam, "n_cells": len(A), "n_folds": len(keys), "blocks": [f"{mk}/{ds}" for mk, ds in keys],
+                     "heldout_r2_base": rb, "heldout_r2_full": rf, "delta_heldout_r2": rf - rb,
+                     "permutation_p": float((1 + int((null >= rf - rb).sum())) / (1 + SEMEND_CV_PERMUTATIONS))})
+
+    def pooled(rows: list, null_sum: np.ndarray) -> dict:
+        d = float(np.mean([r["delta_heldout_r2"] for r in rows]))
+        nd = null_sum / len(rows)
+        return {"n_tests": len(rows), "mean_delta_heldout_r2": d,
+                "permutation_p": float((1 + int((nd >= d).sum())) / (1 + SEMEND_CV_PERMUTATIONS)),
+                "delta_min": min(r["delta_heldout_r2"] for r in rows), "delta_max": max(r["delta_heldout_r2"] for r in rows),
+                "n_tests_delta_positive": sum(r["delta_heldout_r2"] > 0 for r in rows),
+                "min_permutation_p": min(r["permutation_p"] for r in rows)}
+
+    P_loco, P_lobo = pooled(loco, loco_null), pooled(lobo, lobo_null)
+    adds = bool((P_loco["permutation_p"] < 0.05 and P_loco["mean_delta_heldout_r2"] > 0)
+                or (P_lobo["permutation_p"] < 0.05 and P_lobo["mean_delta_heldout_r2"] > 0))
+    return {
+        "blocks": [f"{mk}/{ds}" for mk, ds in keys], "n_blocks": len(keys), "families": list(SEMEND_FAMS),
+        "base_predictors": list(SEMEND_BASE), "added_predictors": list(SEMEND_ADDED),
+        "permutations": SEMEND_CV_PERMUTATIONS, "lambda_grid": list(SEMEND_CV_LAMBDAS), "seed": SEMEND_CV_SEED,
+        "leave_one_concept_out": loco, "leave_one_block_out": lobo,
+        "pooled_leave_one_concept_out": P_loco, "pooled_leave_one_block_out": P_lobo,
+        "ownership_adds_out_of_sample": adds,
+        "training_r2_note": "adding predictors cannot lower a training R^2, so the in-sample increment carried in the "
+                            "per-test rows is a reference quantity and is not evidence of incremental validity",
+        "permutation_null": "ownership (owned_core and O_q_core together) permuted across the concepts of a block, the "
+                            "same draw for both direction families, the whole cross-validation recomputed inside each draw",
+        "skipped": skipped}
 
 
 # ------------------------------------------------------------------------------------------------ PRECISION
@@ -1017,28 +1267,65 @@ def write_md(R: dict, path: Path) -> None:
                      f"{f3(r['median_selectivity_fine'])} / {f3(r['median_selectivity_easy'])} |")
         L += ["", "| group | blocks | cells | owned | rate | median clean-answer AUROC | median probe selectivity |",
               "|---|---|---|---|---|---|---|"]
-        for g in FGOBJ_GROUPS:
+        for g in FGOBJ_POOLS:
             d = G["pool"][g]
             L.append(f"| {g} | {d['blocks']} | {d['cells']} | {d['owned']} | {f3(d['owned_rate'])} | "
                      f"{f3(d['median_answer_auroc'])} | {f3(d['median_selectivity'])} |")
-        L += ["", "Difficulty-matched chest-versus-natural-image ownership difference. Every chest cell is paired with "
-              "the natural-image cells of ANY block inside the prespecified window; the difference is the mean over "
-              "matched chest cells of its own ownership minus the ownership rate of its own partner set. The interval "
-              "is a cluster bootstrap over models (a cell's ownership is already a 600-patient statistic; the model is "
-              "the unit that clusters cells).", "",
-              "| matching | matched chest cells | unmatched | partners used (easy / fine) | chest rate | partner rate | difference | 95% CI |",
-              "|---|---|---|---|---|---|---|---|"]
+        sb = G["same_block_comparison"]
+        L += ["", "Fine-grained against easy objects INSIDE THE SAME BLOCKS (the grid-wide `coco_easy` rate spans every "
+              "COCO block and is not this comparison):", "",
+              f"Fine {sb['fine_owned']}/{sb['fine_cells']} (rate {f3(sb['fine_rate'])}) against easy "
+              f"{sb['easy_owned']}/{sb['easy_cells']} (rate {f3(sb['easy_rate'])}) over {sb['n_blocks']} blocks; paired "
+              f"per-block difference {sb['paired_difference_min']} to {sb['paired_difference_max']} cells "
+              f"(mean {f3(sb['paired_difference_mean'])}), fine higher in {sb['n_blocks_fine_higher']}, easy higher in "
+              f"{sb['n_blocks_easy_higher']}, tied in {sb['n_blocks_tied']}; exact two-sided sign test p = {f3(sb['sign_test_p'])}.", "",
+              "| block | fine owned | easy owned | difference |", "|---|---|---|---|"]
+        for p in sb["per_block"]:
+            L.append(f"| {p['block']} | {p['fine_owned']}/{p['fine_cells']} | {p['easy_owned']}/{p['easy_cells']} | {p['difference']:+d} |")
+        L += ["", "Difficulty-matched chest-versus-natural-image ownership difference, under TWO estimators that are "
+              "reported separately because they answer different questions. MATCHED: " + FGOBJ_ESTIMANDS["matched"]
+              + ". POOLED: " + FGOBJ_ESTIMANDS["pooled"] + ". The chest rate and the partner rate below are the two "
+              "pooled rates, so their difference is the pooled estimator and never the matched one. Both intervals are "
+              "cluster bootstraps over models (a cell's ownership is already a 600-patient statistic; the model is the "
+              "unit that clusters cells).", "",
+              "| matching | matched chest cells | unmatched | distinct partners used (easy / fine) | chest rate | partner rate "
+              "| matched difference | 95% CI | pooled difference | 95% CI |",
+              "|---|---|---|---|---|---|---|---|---|---|"]
         for key in ("both", "answer_auroc", "selectivity", "both_easy_partners_only"):
             m = G["matched"][key]
-            ci = m.get("matched_ownership_difference_ci95")
+            ci, pci = m.get("matched_ownership_difference_ci95"), m.get("pooled_ownership_difference_ci95")
             comp = m.get("partner_composition_used") or {}
             L.append(f"| {m['matching']} | {m.get('n_matched_chest_cells')}/{m.get('n_chest_cells')} | "
-                     f"{m.get('n_unmatched_chest_cells')} | {comp.get('coco_easy')} / {comp.get('coco_fine')} | "
+                     f"{m.get('n_unmatched_chest_cells')} | {m.get('n_natural_cells_used')}/{m.get('n_natural_cells')} "
+                     f"({comp.get('coco_easy')} / {comp.get('coco_fine')}) | "
                      f"{f3(m.get('chest_owned_rate_matched'))} | {f3(m.get('natural_owned_rate_used'))} | "
                      f"{f3(m.get('matched_ownership_difference'))} | "
-                     + (f"[{ci[0]:+.3f}, {ci[1]:+.3f}] |" if ci else "n/a |"))
+                     + (f"[{ci[0]:+.3f}, {ci[1]:+.3f}]" if ci else "n/a")
+                     + f" | {f3(m.get('pooled_ownership_difference'))} | "
+                     + (f"[{pci[0]:+.3f}, {pci[1]:+.3f}] |" if pci else "n/a |"))
+    S = R.get("semend")
+    if S and S.get("leave_one_concept_out"):
+        L += ["", "## SEMEND: does ownership add anything about endpoint behaviour OUT OF SAMPLE?", "",
+              "Base predictors " + ", ".join(S["base_predictors"]) + " with endpoint dummies; the full model adds "
+              + " and ".join(S["added_predictors"]) + ". Ridge, with the penalty and the standardisation fitted inside "
+              f"each training fold. Null: {S['permutation_null']}, {S['permutations']} draws. "
+              + S["training_r2_note"] + ".", "",
+              "| split | block | family | held-out R2 base | held-out R2 full | delta | permutation p | training delta R2 |",
+              "|---|---|---|---|---|---|---|---|"]
+        for r in S["leave_one_concept_out"]:
+            L.append(f"| leave-one-concept-out | {r['block']} | {r['family']} | {f3(r['heldout_r2_base'])} | "
+                     f"{f3(r['heldout_r2_full'])} | {f3(r['delta_heldout_r2'])} | {r['permutation_p']:.4f} | "
+                     f"{f3(r['training_delta_r2'])} |")
+        for r in S["leave_one_block_out"]:
+            L.append(f"| leave-one-block-out | pooled ({r['n_folds']} blocks) | {r['family']} | {f3(r['heldout_r2_base'])} | "
+                     f"{f3(r['heldout_r2_full'])} | {f3(r['delta_heldout_r2'])} | {r['permutation_p']:.4f} | -- |")
+        for nm, p in (("leave-one-concept-out", S["pooled_leave_one_concept_out"]),
+                      ("leave-one-block-out", S["pooled_leave_one_block_out"])):
+            L.append(f"| **{nm}, pooled** | {p['n_tests']} tests | both | -- | -- | {f3(p['mean_delta_heldout_r2'])} | "
+                     f"{p['permutation_p']:.4f} | -- |")
+        L += ["", f"**ownership_adds_out_of_sample = {S['ownership_adds_out_of_sample']}**"]
     L += ["", "## Skipped", ""]
-    for sec in ("valid", "altdird", "ansdirt", "attr", "precision", "fgobj"):
+    for sec in ("valid", "altdird", "ansdirt", "attr", "precision", "fgobj", "semend"):
         if sec not in R:
             continue
         for s in R[sec]["skipped"]:
@@ -1064,10 +1351,14 @@ def main():
                             "precision": "setting status COMPLETE with the full grade"},
                   "script": str(Path(__file__).resolve())},
          "valid": valid_section(blocks), "altdird": altdird_section(blocks), "ansdirt": ansdirt_section(blocks),
-         "attr": attr_section(blocks), "precision": precision_section(blocks), "fgobj": fgobj_section(blocks)}
+         "attr": attr_section(blocks), "precision": precision_section(blocks), "fgobj": fgobj_section(blocks),
+         "semend": semend_section(blocks)}
     R["meta"]["rules"]["fgobj"] = ("FGOBJ completed; the six-direction write matrix scored on every test row; "
                                    "FGOBJ_CALIBRATION scored, so the fine-grained cells carry a clean-answer AUROC "
                                    "measured on the same calibration rows and by the same rule as every other cell")
+    R["meta"]["rules"]["semend"] = ("SEMEND completed; the incremental validity of ownership tested out of sample "
+                                    "under leave-one-concept-out and leave-one-block-out cross-validation with a "
+                                    "concept-level permutation null")
     R["meta"]["seconds"] = round(time.time() - t0, 1)
     out = Path(a.out); out.mkdir(parents=True, exist_ok=True)
     (out / "round2.json").write_text(json.dumps(clean(R), indent=1), encoding="utf-8")
@@ -1092,16 +1383,36 @@ def main():
     print("fgobj: " + "; ".join(f"{g} {G['pool'][g]['cells']} cells {G['pool'][g]['owned']} owned "
                                 f"(rate {G['pool'][g]['owned_rate'] if G['pool'][g]['owned_rate'] is None else round(G['pool'][g]['owned_rate'], 3)}, "
                                 f"median answer AUROC {G['pool'][g]['median_answer_auroc'] if G['pool'][g]['median_answer_auroc'] is None else round(G['pool'][g]['median_answer_auroc'], 3)})"
-                                for g in FGOBJ_GROUPS))
+                                for g in FGOBJ_POOLS))
+    sb = G["same_block_comparison"]
+    print(f"  fgobj same blocks ({sb['n_blocks']}): fine {sb['fine_owned']}/{sb['fine_cells']} vs easy "
+          f"{sb['easy_owned']}/{sb['easy_cells']}, paired difference {sb['paired_difference_min']}..{sb['paired_difference_max']} "
+          f"cells, sign test p={sb['sign_test_p']}")
     for key in ("both", "answer_auroc", "selectivity", "both_easy_partners_only"):
         m = G["matched"][key]
         ci = m.get("matched_ownership_difference_ci95")
-        d = m.get("matched_ownership_difference")
+        pci = m.get("pooled_ownership_difference_ci95")
+        d, pd = m.get("matched_ownership_difference"), m.get("pooled_ownership_difference")
         print(f"  fgobj-matched {key:26s} matched {m.get('n_matched_chest_cells')}/{m.get('n_chest_cells')} chest cells "
-              f"(unmatched {m.get('n_unmatched_chest_cells')}), partners used {m.get('partner_composition_used')}, "
-              f"d={None if d is None else round(d, 4)} "
-              + (f"[{ci[0]:+.4f}, {ci[1]:+.4f}]" if ci else "no interval"))
-    for sec in ("valid", "altdird", "ansdirt", "attr", "precision", "fgobj"):
+              f"(unmatched {m.get('n_unmatched_chest_cells')}), partners used {m.get('n_natural_cells_used')} "
+              f"{m.get('partner_composition_used')}, rates {m.get('chest_owned_rate_matched')} vs {m.get('natural_owned_rate_used')}")
+        print(f"      matched d={None if d is None else round(d, 4)} " + (f"[{ci[0]:+.4f}, {ci[1]:+.4f}]" if ci else "no interval")
+              + f" | pooled d={None if pd is None else round(pd, 4)} " + (f"[{pci[0]:+.4f}, {pci[1]:+.4f}]" if pci else "no interval"))
+    S = R["semend"]
+    if S.get("leave_one_concept_out"):
+        print(f"semend held-out incremental validity ({S['n_blocks']} blocks, {S['permutations']} permutations):")
+        for r in S["leave_one_concept_out"]:
+            print(f"  LOCO {r['block']:22s} {r['family']:6s} heldout R2 base {r['heldout_r2_base']:+.4f} full "
+                  f"{r['heldout_r2_full']:+.4f} delta {r['delta_heldout_r2']:+.4f} p={r['permutation_p']:.4f} "
+                  f"(training delta {r['training_delta_r2']:+.4f})")
+        for r in S["leave_one_block_out"]:
+            print(f"  LOBO {'pooled':22s} {r['family']:6s} heldout R2 base {r['heldout_r2_base']:+.4f} full "
+                  f"{r['heldout_r2_full']:+.4f} delta {r['delta_heldout_r2']:+.4f} p={r['permutation_p']:.4f}")
+        for nm, p in (("LOCO", S["pooled_leave_one_concept_out"]), ("LOBO", S["pooled_leave_one_block_out"])):
+            print(f"  pooled {nm}: mean delta {p['mean_delta_heldout_r2']:+.4f} over {p['n_tests']} tests, "
+                  f"p={p['permutation_p']:.4f}, positive in {p['n_tests_delta_positive']}")
+        print(f"  ownership_adds_out_of_sample = {S['ownership_adds_out_of_sample']}")
+    for sec in ("valid", "altdird", "ansdirt", "attr", "precision", "fgobj", "semend"):
         for s in R[sec]["skipped"]:
             print(f"  skipped {sec}: {s['block']} {s.get('setting', '')} {s['reason']}")
     print(f"wrote {out / 'round2.json'} and round2.md in {time.time() - t0:.1f}s")
