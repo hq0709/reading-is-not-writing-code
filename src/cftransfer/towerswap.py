@@ -187,6 +187,9 @@ def donor_tower_tensors(donor_key: str, revision: str | None = None) -> tuple[di
     return tensors, shas
 
 
+NON_CHECKPOINT_BUFFERS = ("position_ids",)   # built by the module from its config, absent from both checkpoints
+
+
 def apply_tower_swap(ad, donor_key: str, revision: str | None = None, donor_tensors: dict | None = None,
                      donor_shas: dict | None = None) -> dict:
     """Replace the loaded adapter's vision-tower weights with `donor_key`'s and verify. Returns the receipt."""
@@ -198,6 +201,11 @@ def apply_tower_swap(ad, donor_key: str, revision: str | None = None, donor_tens
         donor_tensors, donor_shas = donor_tower_tensors(donor_key, revision)
     donor_shas = donor_shas or {}
     runtime = {k: v for k, v in (list(tower.named_parameters()) + list(tower.named_buffers()))}
+    # A buffer the checkpoint does not store is constructed by the module itself from its config (position_ids is the
+    # one case in this grid). Both checkpoints build it identically because the swap only runs on families whose tower
+    # configs match, so it is kept and its signature is verified with the rest of the untouched model below.
+    unstored = sorted(k for k in set(runtime) - set(donor_tensors) if k.split(".")[-1] in NON_CHECKPOINT_BUFFERS)
+    runtime = {k: v for k, v in runtime.items() if k not in unstored}
     missing = sorted(set(runtime) - set(donor_tensors))
     extra = sorted(set(donor_tensors) - set(runtime))
     if missing or extra:
@@ -209,10 +217,10 @@ def apply_tower_swap(ad, donor_key: str, revision: str | None = None, donor_tens
         raise RuntimeError(f"tower swap {donor_key} -> {ad.model_key}: shape mismatch on {len(bad)} tensors, e.g. "
                            f"{[(k, tuple(runtime[k].shape), tuple(donor_tensors[k].shape)) for k in bad[:3]]}")
     state = {k: donor_tensors[k].to(dtype=runtime[k].dtype) for k in runtime}
-    tower.load_state_dict(state, strict=True)
+    tower.load_state_dict(state, strict=False if unstored else True)
     # 1) every replaced tensor is exactly the donor's
     runtime_after = {k: v for k, v in (list(tower.named_parameters()) + list(tower.named_buffers()))}
-    unequal = [k for k in runtime_after if not torch.equal(runtime_after[k].detach().cpu(), state[k])]
+    unequal = [k for k in runtime_after if k in state and not torch.equal(runtime_after[k].detach().cpu(), state[k])]
     if unequal:
         raise RuntimeError(f"tower swap {donor_key} -> {ad.model_key}: {len(unequal)} tensors differ from the donor "
                            f"after loading, e.g. {unequal[:3]}")
@@ -235,6 +243,7 @@ def apply_tower_swap(ad, donor_key: str, revision: str | None = None, donor_tens
             "runtime_dtype": str(next(iter(runtime.values())).dtype),
             "donor_tower_sha256": h.hexdigest() if donor_shas else None,
             "n_tower_tensors_changed": changed_inside, "n_tower_tensors": len(inside),
+            "buffers_built_by_the_module": unstored,
             "n_tensors_outside_tower": len(before) - len(inside), "n_tensors_outside_tower_changed": 0,
             "verified_bitwise_equal_to_donor": True, "verified_rest_unchanged": True,
             "seconds": round(time.time() - t0, 1),

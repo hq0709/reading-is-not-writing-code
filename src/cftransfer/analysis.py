@@ -1945,8 +1945,8 @@ if __name__ == "__main__":
         for q, cell in report["attr"]["per_question"].items():
             lo, hi = cell["O_q_ci95_percentile"]
             print(f"ATTR {cell['question_kind']:9s} {q:14s} W_qq={cell['W_qq']:+.4f} O_q={cell['O_q']:+.4f} [{lo:+.4f},{hi:+.4f}] (vs {cell['argmax_other']}) "
-                  f"ref={cell['steering_reference']} (sham_only={cell['steering_reference_sham_only']}, matched={cell['steering_reference_matched']}, "
-                  f"{cell['steering_reference_rule']}) verdict={cell['verdict']}")
+                  f"ref={cell['steering_reference']} (sham_only={cell.get('steering_reference_sham_only')}, "
+                  f"matched={cell.get('steering_reference_matched')}, {cell.get('steering_reference_rule', 'core')}) verdict={cell['verdict']}")
     if "validfit" in report and "validfit" in a.what:
         r = report["validfit"]
         print(f"VALIDFIT fitted on {r['fit_rows']} radiologist-labelled rows, {r['n_folds']}-fold cross-fitting; "
