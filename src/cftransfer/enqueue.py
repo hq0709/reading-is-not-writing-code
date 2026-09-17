@@ -28,7 +28,7 @@ def batch_for(model_key: str, lane: str) -> int:
 SHARDS = {"CORE": 4, "LOCUS": 4, "PROMPT": 7, "DOSE": 2, "REFIT": 1, "CALIBRATION": 1, "LOCUS_CALIBRATION": 1, "ALTDIR": 1,
           "EXTCOMP": 1, "TOKENW": 1, "PRECISION": 1, "ANSDIR": 1, "ALTDIRD": 1, "ATTR": 1, "ANSDIRT": 2,
           "VALID": 1, "ATTRRAND": 2, "VALIDFIT": 1, "ATTRQ": 1,
-          "PROJSEED": 1, "TOWERSWAP": 1, "REPLAY": 1, "SEMEND": 4}   # PRECISION: one shard per setting; VALID: 152,400 outcomes on 200 rows, one third of a CORE shard
+          "PROJSEED": 1, "TOWERSWAP": 1, "TOWERSWAPD": 1, "REPLAY": 1, "SEMEND": 4}   # PRECISION: one shard per setting; VALID: 152,400 outcomes on 200 rows, one third of a CORE shard
 # budget; ATTRRAND: 214,200 outcomes, two shards keep a shard near CORE's 114,300; VALIDFIT: 21,600 outcomes, one shard;
 # ATTRQ: 3,600 clean forwards on the calibration rows (3 attributes x 3 phrasings x 400), one shard, no prep of its own --
 # it writes nothing, so it needs no directions beyond the standard fit the prep already produces;
@@ -60,10 +60,11 @@ PREP_TASK_CPU = {"VALIDFIT", "PROJSEED", "SEMEND"}
 # PREP_FILE (which is always this block's fits/vis.last/).
 MODULE_DATA_FN = {
     "TOWERSWAP": lambda mk, ds: [str(fits_dir(TOWERSWAP_PAIRS[mk], ds, "vis.last") / "seed0.npz")],
+    "TOWERSWAPD": lambda mk, ds: [str(fits_dir(mk, ds, "vis.last") / "seed0.npz")],
     "REPLAY": lambda mk, ds: [str(run_dir(REPLAY_SOURCE[mk], ds) / "replay" / "vis.last.npz"),
                               str(fits_dir(REPLAY_SOURCE[mk], ds, "vis.last") / "seed0.npz")]}
 # Models a module can be enqueued for at all (the pair / group tables of the protocol).
-MODULE_MODELS = {"TOWERSWAP": set(TOWERSWAP_PAIRS), "REPLAY": set(REPLAY_SOURCE)}
+MODULE_MODELS = {"TOWERSWAP": set(TOWERSWAP_PAIRS), "TOWERSWAPD": set(TOWERSWAP_PAIRS), "REPLAY": set(REPLAY_SOURCE)}
 # FGOBJ (fine-grained COCO objects): CORE's grid on six new questions, 457,200 outcomes over 600 rows, so CORE's four
 # shards. Its CPU prep (python -m cftransfer.fgobj) fits the six probes and draws the family's own 119 random
 # directions; the module task waits for fgobj_seed0.npz. FGOBJ_CALIBRATION is 2,400 clean forwards on the calibration

@@ -288,14 +288,16 @@ def run_block(model_key: str, dataset_id: str, module: str, shard: int, n_shards
     ad = get_adapter(model_key, revision).load(device_map=device_map, dtype=dtype)
     locus = ad.loci()[locus_id]
     swap = None
-    if module == "TOWERSWAP":                 # the reader (projector + language model) is the host's; the tower is not
+    if module in ("TOWERSWAP", "TOWERSWAPD"):  # the reader (projector + language model) is the host's; the tower is not
         if int(locus.hidden_dim) != bank.D:
-            raise RuntimeError(f"TOWERSWAP: {bank_key} directions are {bank.D}-d but {model_key}'s {locus_id} is "
+            raise RuntimeError(f"{module}: {bank_key} directions are {bank.D}-d but {model_key}'s {locus_id} is "
                                f"{locus.hidden_dim}-d; the towers are not interchangeable")
-        swap = apply_tower_swap(ad, bank_key)      # the donor is pinned by its own locked revision
+        donor = swap_partner(model_key)           # TOWERSWAPD keeps the host's directions, so the donor is named here
+        swap = apply_tower_swap(ad, donor)        # the donor is pinned by its own locked revision
         (part_dir / f"swap-{shard_tag}.json").write_text(json.dumps(swap, indent=1))
-        print(f"[{model_key}/{dataset_id}/TOWERSWAP] {swap['n_tensors_replaced']} tower tensors "
-              f"({swap['n_params_replaced'] / 1e6:.1f}M params) replaced from {bank_key}; rest unchanged", flush=True)
+        print(f"[{model_key}/{dataset_id}/{module}] {swap['n_tensors_replaced']} tower tensors "
+              f"({swap['n_params_replaced'] / 1e6:.1f}M params) replaced from {donor}; directions from {bank_key}; "
+              f"rest unchanged", flush=True)
     hook = LocusHook(ad.module(locus.module_path), locus_id)
     # REPLAY: overwrite the consumed block with the source block's stored tensor. Registered AFTER the steering hook
     # (both prepend=True) so it runs FIRST and LocusHook computes the norms and the write on the replayed tensor.

@@ -768,6 +768,33 @@
       "added": "2026-09-16; addendum, enqueued explicitly",
       "analysis": "cftransfer.analysis --what semend: per endpoint and per family the 6x6 write matrix, W_qq, O_q with the 2,000-draw percentile interval, the 18-random / sham steering reference and the 6x5 max-T verdict; the affirmative-versus-negated signed change and its across-question correlation with CORE; the counterbalanced forced-choice probability and the order bias; the report-continuation delta log p of the finding word; and the incremental-validity regression described above",
       "incremental_validity": "the analysis asks whether OWNERSHIP predicts behaviour on these endpoints beyond what is already known. Per cell (question, endpoint, family) it records the intended change on the question's own endpoint, the unintended change of the same direction on the other five concepts' endpoints, and their difference (the selectivity of the change). Pooled over cells it regresses that difference on (i) the CORE write magnitude W_qq, (ii) the probe selectivity S, (iii) the clean-answer AUROC, and then adds (iv) the CORE ownership indicator and O_q, reporting the added coefficients, their patient-bootstrap intervals and the change in explained variance, separately for the label and the answer direction. Cells that meet the steering reference but are NOT owned are kept as their own group and compared with the owned cells directly, since that contrast is what ownership would have to explain."
+    },
+    "TOWERSWAPD": {
+      "cohort": "first 200 test rows in cohorts.csv order",
+      "concepts": "all",
+      "templates": [
+        "IY"
+      ],
+      "alpha": [
+        0.25
+      ],
+      "locus": "primary (vis.last)",
+      "fit_seed": 0,
+      "directions": "the block's own seed-0 fit, unchanged",
+      "model": "the block's own reader (multimodal projector + language model) with the PARTNER checkpoint's vision tower loaded in its place; protocol.TOWERSWAP_PAIRS pairs gemma3-4 with medgemma-4 and gemma3-27 with medgemma-27",
+      "swap_feasibility": "verified from the staged checkpoints (python -m cftransfer.towerswap): gemma-3-4b-it and medgemma-4b-it have IDENTICAL tensor name sets (883 each) and identical shapes for vision_tower (437 tensors, 416.9M params), multi_modal_projector (2) and language_model (444), with 0/437 tower tensors bitwise identical (MedSigLIP vs SigLIP); the same holds for gemma-3-27b-it vs medgemma-27b-it (1247 tensors). gemma-3-12b-it vs medgemma-27b-it fails as expected: mm_input_projection_weight (1152,3840) vs (1152,5376) and 48 vs 62 language-model layers.",
+      "verification": "every replaced tensor is torch.equal to the donor checkpoint's tensor after the runtime dtype cast, and every parameter and buffer outside the tower keeps its (dtype, shape, sum, sum|x|, NaN count) signature; the receipt is written to outcomes/TOWERSWAPD/swap-<shard>.json",
+      "four_combinations": "the two crossed arms are this module on the two blocks of a pair; the two native arms are those blocks' own CORE grade restricted to the same 200 rows (analysis.core row_limit), so no GPU time is spent re-running CORE",
+      "expected_rows": 152400,
+      "baseline": "own",
+      "datasets": [
+        "nih",
+        "chexpert",
+        "coco"
+      ],
+      "added": "2026-09-17; addendum, enqueued explicitly, only for the models in TOWERSWAP_PAIRS",
+      "analysis": "cftransfer.analysis --what towerswap: per combination (tower, reader) the 6x6 write matrix, W_qq, O_q with the 2,000-draw percentile interval, the 119-random p95 / |sham| steering reference and the 6x5 max-T verdict; within the block the paired crossed-minus-native contrasts; and, when the partner block is packaged, the reader effect at fixed tower and the tower effect at fixed reader over the six questions",
+      "purpose": "the same crossed arm as TOWERSWAP with the block's OWN directions instead of the donor tower's, so the pair separates the two factors a tower swap changes at once: TOWERSWAPD against TOWERSWAP isolates the direction the tower was fitted on, and TOWERSWAPD against the native arm isolates the representation itself"
     }
   },
   "numerics": {
@@ -1012,7 +1039,8 @@
       "SEMEND": 31363200,
       "ATTRQ": 158400,
       "FGOBJ": 10058400,
-      "FGOBJ_CALIBRATION": 52800
+      "FGOBJ_CALIBRATION": 52800,
+      "TOWERSWAPD": 10058400
     },
     "addenda_notes": {
       "PROJSEED": "907,200 rows per block (453,600 per projection seed). The addenda table states the whole-grid figure by its own convention (per model over all datasets x 22 models); the module is intended for a handful of representative blocks, not the whole grid.",

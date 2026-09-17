@@ -52,12 +52,12 @@ CALIBRATION_PROMPT_DATASETS = ("nih", "coco")
 # after the campaign's blocks were packaged; it is enqueued explicitly (enqueue --modules ALTDIR) and its coverage is
 # requested only once its outcomes directory exists, so packaged blocks keep COMPLETE until it starts.
 MODULES_ADDED_LATER = {"nih": ("ALTDIR", "EXTCOMP", "TOKENW", "PRECISION", "ANSDIR", "ALTDIRD", "ATTR", "ANSDIRT",
-                               "ATTRRAND", "PROJSEED", "TOWERSWAP", "REPLAY", "SEMEND", "ATTRQ"),
+                               "ATTRRAND", "PROJSEED", "TOWERSWAP", "TOWERSWAPD", "REPLAY", "SEMEND", "ATTRQ"),
                        "coco": ("ALTDIR", "TOKENW", "PRECISION", "ANSDIR", "ALTDIRD", "ANSDIRT", "PROJSEED",
-                                "TOWERSWAP", "REPLAY", "SEMEND"),
+                                "TOWERSWAP", "TOWERSWAPD", "REPLAY", "SEMEND"),
                        "chexpert": ("PROMPT", "DOSE", "REFIT", "LOCUS", "LOCUS_CALIBRATION", "ALTDIR", "EXTCOMP", "TOKENW", "ANSDIR",
                                     "ALTDIRD", "ATTR", "ANSDIRT", "VALID", "ATTRRAND", "VALIDFIT", "PROJSEED",
-                                    "TOWERSWAP", "REPLAY", "SEMEND", "ATTRQ")}
+                                    "TOWERSWAP", "TOWERSWAPD", "REPLAY", "SEMEND", "ATTRQ")}
 # ALTDIR direction families, in condition order: difference of means, Haufe pattern, orthogonalised logistic normal,
 # logistic normal refitted on label-residualised features (altdir.py); every family is lifted with the logistic rule.
 ALTDIR_FAMILIES = ("dom", "pattern", "orth", "resid")
@@ -150,7 +150,7 @@ MODULE_SETTINGS = {"PRECISION": PRECISION_SETTINGS}       # modules scored once 
 # addenda (each enqueued explicitly, each counted in total_planned_outcomes.addenda, each in MODULES_ADDED_LATER).
 PLANNED_MODULES = ("CORE", "CALIBRATION", "PROMPT", "DOSE", "REFIT", "LOCUS", "LOCUS_CALIBRATION")
 ADDENDUM_MODULES = ("ALTDIR", "EXTCOMP", "TOKENW", "PRECISION", "ANSDIR", "ALTDIRD", "ATTR", "ANSDIRT", "VALID",
-                    "ATTRRAND", "VALIDFIT", "PROJSEED", "TOWERSWAP", "REPLAY", "SEMEND", "ATTRQ")
+                    "ATTRRAND", "VALIDFIT", "PROJSEED", "TOWERSWAP", "TOWERSWAPD", "REPLAY", "SEMEND", "ATTRQ")
 # ANSDIR (answer-direction oracle, ansdir.py): per question q a ridge regression of the clean answer margin on the
 # projected, train-scaled features of the first ANSDIR_N_TRAIN training rows (alpha by 5-fold CV over ANSDIR_ALPHAS),
 # lifted like the logistic normals; written with the six a_d plus the coordinate-permutation sham of a_q.
@@ -432,6 +432,11 @@ MODULES: dict[str, ModuleSpec] = {
     # directions and its own clean baseline, on the first TOWERSWAP_ROWS test rows (the native arm is CORE on those rows)
     "TOWERSWAP": ModuleSpec("TOWERSWAP", "test", TOWERSWAP_ROWS, ("IY",), "all", (PRIMARY_ALPHA,), "core", (0,), "primary",
                             None, ("nih", "chexpert", "coco")),
+    # the partner's tower behind the block's own reader, written with THIS block's own directions: TOWERSWAP changes the
+    # tower and the directions fitted on it at once, so the pair of modules separates the two factors (TOWERSWAPD against
+    # TOWERSWAP isolates the direction, TOWERSWAPD against the native CORE arm isolates the representation)
+    "TOWERSWAPD": ModuleSpec("TOWERSWAPD", "test", TOWERSWAP_ROWS, ("IY",), "all", (PRIMARY_ALPHA,), "core", (0,), "primary",
+                             None, ("nih", "chexpert", "coco")),
     # the CORE grid written on the stored consumed-block tensors of the shared-tower group's source block (own baseline)
     "REPLAY": ModuleSpec("REPLAY", "test", REPLAY_ROWS, ("IY",), "all", (PRIMARY_ALPHA,), "core", (0,), "primary", None,
                          ("nih", "chexpert", "coco")),
