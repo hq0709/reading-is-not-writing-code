@@ -4,6 +4,7 @@ from __future__ import annotations
 from ..protocol import MODELS
 from .chexagent import CheXagentAdapter
 from .chexagent8 import CheXagent8Adapter
+from .echo import EchoAdapter
 from .gemma import Gemma3Adapter
 from .huatuo import HuatuoAdapter
 from .internvl import InternVLAdapter
@@ -40,6 +41,7 @@ REVISIONS = {
     "chexagent-8": "4934e91451945c8218c267aae9c34929a7677829",
     "llavarad-7": "dcdbc6caf6806c9acb66e12a827a39c86e00f6a7",
     "maira2-7": "795a2b1cd4a310624b4e3d14b5a23e41fd273deb",
+    "echo-7": "26f9ab2a7f536cce07d99cc0f7f7afbff712ae43",
 }
 
 FAMILY_ADAPTER = {
@@ -56,6 +58,7 @@ FAMILY_ADAPTER = {
     "maira2-7": Maira2Adapter,
     "chexagent-3": CheXagentAdapter,
     "chexagent-8": CheXagent8Adapter,
+    "echo-7": EchoAdapter,
     "llama32-11": MllamaAdapter, "llama32-90": MllamaAdapter,
 }
 

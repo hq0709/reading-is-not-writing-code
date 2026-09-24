@@ -1,1266 +1,1304 @@
 {
-  "protocol_id": "cf-transfer-v1",
-  "status": "PLANNED",
-  "code_reference_commit": "763072d39dfedb34d42432415408de4e6f547f9b",
-  "dataset": {
-    "name": "NIH ChestX-ray14",
-    "manifest": "data/manifest.csv",
-    "cohorts": "docs/external-replication/cohorts.csv",
-    "train_rule": "all original train rows",
-    "preflight_patients": 16,
-    "calibration_patients": 400,
-    "test_patients": 600,
-    "images": "row_id + .png; licensed local image root supplied by operator",
-    "patient_disjoint_roles": true,
-    "prior_study_patient_overlap": "allowed and disclosed; shared-panel model replication, not fresh-patient confirmation",
-    "primary_datasets": [
-      "nih",
-      "chexpert",
-      "coco"
-    ],
-    "nih_concepts": [
-      "Effusion",
-      "Atelectasis",
-      "Pneumothorax",
-      "Cardiomegaly",
-      "Mass",
-      "Nodule"
-    ],
-    "chexpert_concepts": [
-      "Effusion",
-      "Atelectasis",
-      "Pneumothorax",
-      "Cardiomegaly",
-      "Consolidation",
-      "Edema"
-    ],
-    "coco_concepts": [
-      "person",
-      "dog",
-      "car",
-      "chair",
-      "bottle",
-      "bicycle"
-    ],
-    "chexpert_finding_phrases": [
-      "a pleural effusion",
-      "atelectasis",
-      "a pneumothorax",
-      "cardiomegaly",
-      "consolidation",
-      "pulmonary edema"
-    ],
-    "coco_finding_phrases": [
-      "a person",
-      "a dog",
-      "a car",
-      "a chair",
-      "a bottle",
-      "a bicycle"
-    ],
-    "templates_image_phrase": {
-      "nih": "this chest radiograph",
-      "chexpert": "this chest radiograph",
-      "coco": "this photograph"
-    },
-    "additional_manifests": "CheXpert and COCO ordered manifests must be constructed once using README section 4 and shared before model runs"
-  },
-  "concepts": [
-    "Effusion",
-    "Atelectasis",
-    "Pneumothorax",
-    "Cardiomegaly",
-    "Mass",
-    "Nodule"
+ "protocol_id": "cf-transfer-v1",
+ "status": "PLANNED",
+ "code_reference_commit": "763072d39dfedb34d42432415408de4e6f547f9b",
+ "dataset": {
+  "name": "NIH ChestX-ray14",
+  "manifest": "data/manifest.csv",
+  "cohorts": "docs/external-replication/cohorts.csv",
+  "train_rule": "all original train rows",
+  "preflight_patients": 16,
+  "calibration_patients": 400,
+  "test_patients": 600,
+  "images": "row_id + .png; licensed local image root supplied by operator",
+  "patient_disjoint_roles": true,
+  "prior_study_patient_overlap": "allowed and disclosed; shared-panel model replication, not fresh-patient confirmation",
+  "primary_datasets": [
+   "nih",
+   "chexpert",
+   "coco"
   ],
-  "finding_phrases": [
-    "a pleural effusion",
-    "atelectasis",
-    "a pneumothorax",
-    "cardiomegaly",
-    "a lung mass",
-    "a lung nodule"
+  "nih_concepts": [
+   "Effusion",
+   "Atelectasis",
+   "Pneumothorax",
+   "Cardiomegaly",
+   "Mass",
+   "Nodule"
   ],
-  "primary": {
-    "module": "CORE",
-    "question_template": "IY",
-    "locus": "consumed final visual feature block, before connector",
-    "direction_fit_seed": 0,
-    "alpha": 0.25,
-    "clinical_directions": 6,
-    "random_directions": 119,
-    "question_specific_shams": 1,
-    "configurations_per_question": 127,
-    "test_rows": 457200,
-    "score": "max present-candidate logit minus max absent-candidate logit",
-    "primary_ownership_coordinate": "sigmoid(semantic_margin)",
-    "primary_family": "22 models x 3 datasets x 6 questions x 5 clinical/object contrasts = 1980; separate bootstrap within dataset, shared across models",
-    "bootstrap_draws": 5000,
-    "bootstrap_seed": 2026090601,
-    "simultaneous_interval": "two-sided max-absolute-centered-Z with fixed per-contrast bootstrap SD"
+  "chexpert_concepts": [
+   "Effusion",
+   "Atelectasis",
+   "Pneumothorax",
+   "Cardiomegaly",
+   "Consolidation",
+   "Edema"
+  ],
+  "coco_concepts": [
+   "person",
+   "dog",
+   "car",
+   "chair",
+   "bottle",
+   "bicycle"
+  ],
+  "chexpert_finding_phrases": [
+   "a pleural effusion",
+   "atelectasis",
+   "a pneumothorax",
+   "cardiomegaly",
+   "consolidation",
+   "pulmonary edema"
+  ],
+  "coco_finding_phrases": [
+   "a person",
+   "a dog",
+   "a car",
+   "a chair",
+   "a bottle",
+   "a bicycle"
+  ],
+  "templates_image_phrase": {
+   "nih": "this chest radiograph",
+   "chexpert": "this chest radiograph",
+   "coco": "this photograph"
   },
-  "probe": {
-    "projection_dim": 512,
-    "projection_seed": 0,
-    "projection": "PCG64 standard_normal(D,512)/sqrt(512), float32",
-    "standardization": "fit train only; StandardScaler",
-    "classifier": "LogisticRegression(C=1, max_iter=2000, solver=lbfgs, class_weight=null, random_state=0)",
-    "clinical_orientation": "positive diagnosis",
-    "control_seeds": [
-      0,
-      1,
-      2,
-      3,
-      4,
-      5,
-      6,
-      7,
-      8,
-      9,
-      10,
-      11,
-      12,
-      13,
-      14,
-      15,
-      16,
-      17,
-      18,
-      19
-    ],
-    "type_columns": [
-      "view_AP",
-      "sex_M",
-      "age_decade"
-    ],
-    "nuisances": [
-      "view_AP",
-      "sex_M"
-    ],
-    "refit_seeds": [
-      1,
-      2
-    ],
-    "refit": "bootstrap training patients with replacement seeds1,2, retain all rows per sampled patient multiplicity; refit train scaler and all6logistic probes with fixed projection; COCO resample images"
+  "additional_manifests": "CheXpert and COCO ordered manifests must be constructed once using README section 4 and shared before model runs"
+ },
+ "concepts": [
+  "Effusion",
+  "Atelectasis",
+  "Pneumothorax",
+  "Cardiomegaly",
+  "Mass",
+  "Nodule"
+ ],
+ "finding_phrases": [
+  "a pleural effusion",
+  "atelectasis",
+  "a pneumothorax",
+  "cardiomegaly",
+  "a lung mass",
+  "a lung nodule"
+ ],
+ "primary": {
+  "module": "CORE",
+  "question_template": "IY",
+  "locus": "consumed final visual feature block, before connector",
+  "direction_fit_seed": 0,
+  "alpha": 0.25,
+  "clinical_directions": 6,
+  "random_directions": 119,
+  "question_specific_shams": 1,
+  "configurations_per_question": 127,
+  "test_rows": 457200,
+  "score": "max present-candidate logit minus max absent-candidate logit",
+  "primary_ownership_coordinate": "sigmoid(semantic_margin)",
+  "primary_family": "22 models x 3 datasets x 6 questions x 5 clinical/object contrasts = 1980; separate bootstrap within dataset, shared across models",
+  "bootstrap_draws": 5000,
+  "bootstrap_seed": 2026090601,
+  "simultaneous_interval": "two-sided max-absolute-centered-Z with fixed per-contrast bootstrap SD"
+ },
+ "probe": {
+  "projection_dim": 512,
+  "projection_seed": 0,
+  "projection": "PCG64 standard_normal(D,512)/sqrt(512), float32",
+  "standardization": "fit train only; StandardScaler",
+  "classifier": "LogisticRegression(C=1, max_iter=2000, solver=lbfgs, class_weight=null, random_state=0)",
+  "clinical_orientation": "positive diagnosis",
+  "control_seeds": [
+   0,
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7,
+   8,
+   9,
+   10,
+   11,
+   12,
+   13,
+   14,
+   15,
+   16,
+   17,
+   18,
+   19
+  ],
+  "type_columns": [
+   "view_AP",
+   "sex_M",
+   "age_decade"
+  ],
+  "nuisances": [
+   "view_AP",
+   "sex_M"
+  ],
+  "refit_seeds": [
+   1,
+   2
+  ],
+  "refit": "bootstrap training patients with replacement seeds1,2, retain all rows per sampled patient multiplicity; refit train scaler and all6logistic probes with fixed projection; COCO resample images"
+ },
+ "intervention": {
+  "mode": "reltoken",
+  "formula": "h_token_new = h_token + alpha * norm(h_token,2) * unit_direction",
+  "random_seed": 0,
+  "random_rng": "PCG64; one 119xD standard_normal draw then row normalization; saved vectors authoritative",
+  "sham": "after random draw, permute each clinical normal in concept order; save all permutations",
+  "tensor_policy": "preserve special tokens and padding; perturb consumed image tokens; record branch selection"
+ },
+ "templates": {
+  "IY": "Is there {finding} in {image_phrase}? Answer yes or no.",
+  "WY": "Does {image_phrase} show {finding}? Answer yes or no.",
+  "IA": "Is there {finding} in {image_phrase}? Answer A if the finding is present and B if it is absent. Reply with A or B only.",
+  "IB": "Is there {finding} in {image_phrase}? Answer B if the finding is present and A if it is absent. Reply with A or B only.",
+  "WA": "Does {image_phrase} show {finding}? Answer A if the finding is present and B if it is absent. Reply with A or B only.",
+  "WB": "Does {image_phrase} show {finding}? Answer B if the finding is present and A if it is absent. Reply with A or B only."
+ },
+ "modules": {
+  "FGOBJ": {
+   "cohort": "test",
+   "questions": "six FINE-GRAINED COCO object concepts (handbag, book, backpack, traffic light, knife, cell phone), not the six protocol COCO concepts",
+   "templates": [
+    "IY"
+   ],
+   "alpha": [
+    0.25
+   ],
+   "locus": "primary (vis.last)",
+   "fit_seed": 0,
+   "labels": "presence from the 2017 instance annotations of the row's own split, crowd instances count as present (the rule of manifests.build_coco); APPENDED to the frozen COCO labels.csv without changing one existing row, cohort.csv and the roles untouched, provenance in manifests/fgobj.json (python -m cftransfer.fgobj --build-labels)",
+   "selection": "prespecified, outcome-free: >= 10 positives among the 400 calibration rows and among the 600 test rows, >= 567 training positives (bicycle's, the weakest easy concept), mean relative instance area below the median of the six easy concepts (0.02252); then calibration positives descending, ties by mean area ascending, then category id",
+   "directions": "own clean baseline + 6 fine-grained directions (fgobj:<concept>) + the family's OWN 119 random directions (fgobjrand:###) + the question's own sham (fgobjsham:<concept>) = 127 conditions per question, byte for byte CORE's grid shape",
+   "fit": "the block's own seed-0 projection R and TRAIN-ONLY scaler (never refitted), LogisticRegression(C=1, lbfgs, 2000 iterations, random_state 0) on the SAME training rows, lifted with fit.direction_from_projected; the random family and shams are fit_locus's construction re-drawn from PCG64(3), so an FGOBJ cell is graded against a random p95 and a sham of its own",
+   "prep": "python -m cftransfer.fgobj --model-key K --dataset coco  (CPU, seconds; writes fits/vis.last/fgobj_seed0.npz with the calibration-row probe and control logits the readability rule needs)",
+   "expected_rows": 457200,
+   "baseline": "own",
+   "datasets": [
+    "coco"
+   ],
+   "added": "2026-09-16; addendum, enqueued explicitly (four shards, CORE's budget); a CONTROL for a handful of COCO blocks, not the whole grid",
+   "rationale": "the headline contrast is 29 of 246 chest cells owned against 101 of 120 COCO cells, and a reviewer can answer that COCO differs in DIFFICULTY rather than in concept type. The six easy COCO concepts give the natural-image side no hard cells, so the difficulty-matched chest-versus-COCO comparison is starved. FGOBJ makes the natural-image side span the chest side's difficulty range, with everything but the six categories held fixed.",
+   "analysis": "cftransfer.analysis --what fgobj: the 6x6 write matrix, O_q with the percentile interval and the 6x5 max-T verdict, the family's own random p95 and sham, the readable and answer-capable grades from the calibration rows, and the block-level comparison against the block's own six easy-COCO CORE cells (ownership rate, median clean-answer AUROC, median probe selectivity per family). scripts/mayo/robustness_round2.py adds the pooled difficulty-matched comparison."
   },
-  "intervention": {
-    "mode": "reltoken",
-    "formula": "h_token_new = h_token + alpha * norm(h_token,2) * unit_direction",
-    "random_seed": 0,
-    "random_rng": "PCG64; one 119xD standard_normal draw then row normalization; saved vectors authoritative",
-    "sham": "after random draw, permute each clinical normal in concept order; save all permutations",
-    "tensor_policy": "preserve special tokens and padding; perturb consumed image tokens; record branch selection"
+  "FGOBJ_CALIBRATION": {
+   "cohort": "calibration",
+   "questions": "the same six fine-grained COCO concepts, clean",
+   "templates": [
+    "IY"
+   ],
+   "alpha": [
+    0.0
+   ],
+   "locus": "primary (vis.last)",
+   "fit_seed": 0,
+   "directions": "none: clean forwards only",
+   "expected_rows": 2400,
+   "baseline": "own (the clean forward IS the measurement)",
+   "datasets": [
+    "coco"
+   ],
+   "added": "2026-09-16; addendum, enqueued explicitly (one shard), no prep of its own",
+   "rationale": "the matched comparison pools chest, easy-COCO and fine-grained-COCO cells on clean-answer AUROC. CALIBRATION measures that on the 400 calibration rows for the first two; this module measures it the same way, on the same rows, for the third, so no group is matched on a differently estimated number.",
+   "analysis": "folded into cftransfer.analysis --what fgobj; until it is scored the fine-grained cells carry no clean-answer AUROC and the matched comparison refuses to pool them"
   },
-  "templates": {
-    "IY": "Is there {finding} in {image_phrase}? Answer yes or no.",
-    "WY": "Does {image_phrase} show {finding}? Answer yes or no.",
-    "IA": "Is there {finding} in {image_phrase}? Answer A if the finding is present and B if it is absent. Reply with A or B only.",
-    "IB": "Is there {finding} in {image_phrase}? Answer B if the finding is present and A if it is absent. Reply with A or B only.",
-    "WA": "Does {image_phrase} show {finding}? Answer A if the finding is present and B if it is absent. Reply with A or B only.",
-    "WB": "Does {image_phrase} show {finding}? Answer B if the finding is present and A if it is absent. Reply with A or B only."
+  "CALIBRATION": {
+   "NIH_COCO_rows_each": 6400,
+   "CheXpert_rows": 2400,
+   "LOCUS_rows_each_NIH_COCO": 2400,
+   "LOCUS_rows_CheXpert": 2400
   },
-  "modules": {
-    "FGOBJ": {
-      "cohort": "test",
-      "questions": "six FINE-GRAINED COCO object concepts (handbag, book, backpack, traffic light, knife, cell phone), not the six protocol COCO concepts",
-      "templates": [
-        "IY"
-      ],
-      "alpha": [
-        0.25
-      ],
-      "locus": "primary (vis.last)",
-      "fit_seed": 0,
-      "labels": "presence from the 2017 instance annotations of the row's own split, crowd instances count as present (the rule of manifests.build_coco); APPENDED to the frozen COCO labels.csv without changing one existing row, cohort.csv and the roles untouched, provenance in manifests/fgobj.json (python -m cftransfer.fgobj --build-labels)",
-      "selection": "prespecified, outcome-free: >= 10 positives among the 400 calibration rows and among the 600 test rows, >= 567 training positives (bicycle's, the weakest easy concept), mean relative instance area below the median of the six easy concepts (0.02252); then calibration positives descending, ties by mean area ascending, then category id",
-      "directions": "own clean baseline + 6 fine-grained directions (fgobj:<concept>) + the family's OWN 119 random directions (fgobjrand:###) + the question's own sham (fgobjsham:<concept>) = 127 conditions per question, byte for byte CORE's grid shape",
-      "fit": "the block's own seed-0 projection R and TRAIN-ONLY scaler (never refitted), LogisticRegression(C=1, lbfgs, 2000 iterations, random_state 0) on the SAME training rows, lifted with fit.direction_from_projected; the random family and shams are fit_locus's construction re-drawn from PCG64(3), so an FGOBJ cell is graded against a random p95 and a sham of its own",
-      "prep": "python -m cftransfer.fgobj --model-key K --dataset coco  (CPU, seconds; writes fits/vis.last/fgobj_seed0.npz with the calibration-row probe and control logits the readability rule needs)",
-      "expected_rows": 457200,
-      "baseline": "own",
-      "datasets": [
-        "coco"
-      ],
-      "added": "2026-09-16; addendum, enqueued explicitly (four shards, CORE's budget); a CONTROL for a handful of COCO blocks, not the whole grid",
-      "rationale": "the headline contrast is 29 of 246 chest cells owned against 101 of 120 COCO cells, and a reviewer can answer that COCO differs in DIFFICULTY rather than in concept type. The six easy COCO concepts give the natural-image side no hard cells, so the difficulty-matched chest-versus-COCO comparison is starved. FGOBJ makes the natural-image side span the chest side's difficulty range, with everything but the six categories held fixed.",
-      "analysis": "cftransfer.analysis --what fgobj: the 6x6 write matrix, O_q with the percentile interval and the 6x5 max-T verdict, the family's own random p95 and sham, the readable and answer-capable grades from the calibration rows, and the block-level comparison against the block's own six easy-COCO CORE cells (ownership rate, median clean-answer AUROC, median probe selectivity per family). scripts/mayo/robustness_round2.py adds the pooled difficulty-matched comparison."
+  "CORE": {
+   "cohort": "test",
+   "concepts": "all",
+   "templates": [
+    "IY"
+   ],
+   "alpha": [
+    0.25
+   ],
+   "directions": "baseline+6clinical+119random+question_sham",
+   "expected_rows": 457200,
+   "datasets": [
+    "nih",
+    "chexpert",
+    "coco"
+   ]
+  },
+  "PROMPT": {
+   "cohort": "test",
+   "templates": [
+    "WY",
+    "IA",
+    "IB",
+    "WA",
+    "WB"
+   ],
+   "alpha": [
+    0.25
+   ],
+   "directions": "baseline+6clinical+119random+question_sham",
+   "expected_rows": 762000,
+   "datasets": [
+    "nih",
+    "chexpert",
+    "coco"
+   ],
+   "concepts_by_dataset": {
+    "nih": [
+     "Effusion",
+     "Mass"
+    ],
+    "chexpert": [
+     "Effusion",
+     "Edema"
+    ],
+    "coco": [
+     "person",
+     "bottle"
+    ]
+   }
+  },
+  "DOSE": {
+   "cohort": "first 200 test rows in cohorts.csv order",
+   "concepts": "all",
+   "templates": [
+    "IY"
+   ],
+   "alpha": [
+    -0.5,
+    -0.25,
+    -0.1,
+    0.1,
+    0.5
+   ],
+   "directions": "6clinical+first20random+question_sham",
+   "expected_rows": 162000,
+   "baseline": "reuse CORE",
+   "datasets": [
+    "nih",
+    "chexpert",
+    "coco"
+   ]
+  },
+  "REFIT": {
+   "cohort": "test",
+   "concepts": "all",
+   "templates": [
+    "IY"
+   ],
+   "alpha": [
+    0.25
+   ],
+   "seeds": [
+    1,
+    2
+   ],
+   "directions": "6clinical+question_sham",
+   "expected_rows": 50400,
+   "baseline": "reuse CORE",
+   "datasets": [
+    "nih",
+    "chexpert",
+    "coco"
+   ]
+  },
+  "LOCUS": {
+   "datasets": [
+    "nih",
+    "chexpert",
+    "coco"
+   ],
+   "status": "required_for_full_package",
+   "locus": "connector_output (single consumed image embedding stream; family adaptation recorded)",
+   "directions": "baseline+6concept+119random+question_sham",
+   "alpha": [
+    0.25
+   ],
+   "concepts": "all",
+   "templates": [
+    "IY"
+   ],
+   "cohort": "test",
+   "expected_rows_per_dataset_checkpoint": 457200,
+   "calibration_rows_per_dataset_checkpoint": 2400
+  },
+  "ALTDIR": {
+   "cohort": "test",
+   "concepts": "all",
+   "templates": [
+    "IY"
+   ],
+   "alpha": [
+    0.25
+   ],
+   "locus": "primary (vis.last)",
+   "fit_seed": 0,
+   "directions": "6dom+6pattern+6orth+6resid (24 steered conditions per question; no baseline rows)",
+   "direction_families": {
+    "dom": "difference of class means mu_pos - mu_neg in the projected, train-scaled 512-d space (known-label training rows)",
+    "pattern": "Haufe pattern Sigma w, Sigma = covariance of the projected, train-scaled features over all training rows, w = seed-0 logistic normal",
+    "orth": "seed-0 logistic normal with its component in the span of the other five concepts' logistic normals removed (512-d space); fraction of norm removed recorded",
+    "resid": "logistic normal (same C, iterations, seed 0) refitted on features residualised column-wise against the other concepts' binary labels (intercept + labels) on the training rows where the concept's label and every used covariate label are known; covariates are dropped one at a time, worst first, while one has fewer than 5 rows in a class on those rows or the rows fall below 25% of the concept's own known rows (CheXpert); a concept single-class on its usable rows keeps the logistic normal (fallback); resid_covariates_used / resid_rows_used / resid_fallback / resid_retention_fraction and the cosine to the original normal are recorded"
+   },
+   "lift": "every family is mapped to model space exactly as the logistic normal: v = normalize(P @ (u / max(s, 1e-8)))",
+   "prep": "python -m cftransfer.altdir --model-key K --dataset D  (CPU; writes fits/vis.last/altdir_seed0.npz)",
+   "expected_rows": 86400,
+   "baseline": "reuse CORE",
+   "datasets": [
+    "nih",
+    "chexpert",
+    "coco"
+   ],
+   "added": "2026-09-14; not part of the planned campaign total (see total_planned_outcomes.ALTDIR_rows_addendum); enqueued explicitly",
+   "analysis": "cftransfer.analysis --what altdir: per family W (6x6), within-family O_q with 2,000-draw patient-bootstrap percentile interval and 6x5 max-T verdict, own write minus the strongest logistic competitor from CORE, per-concept cosines"
+  },
+  "EXTCOMP": {
+   "cohort": "test",
+   "concepts": "all",
+   "templates": [
+    "IY"
+   ],
+   "alpha": [
+    0.25
+   ],
+   "locus": "primary (vis.last)",
+   "fit_seed": 0,
+   "directions": "one logistic direction per extra dataset label (no baseline rows; CORE baseline reused)",
+   "extra_labels": {
+    "nih": [
+     "Consolidation",
+     "Edema",
+     "Infiltration"
+    ],
+    "chexpert": [
+     "Enlarged Cardiomediastinum",
+     "Fracture",
+     "Lung Lesion",
+     "Lung Opacity",
+     "Pneumonia",
+     "Support Devices"
+    ]
+   },
+   "support_rule": "label kept when the training rows hold >= 100 known positives and >= 100 known negatives",
+   "excluded": {
+    "nih": {
+     "no_finding": "no-finding label, excluded by design"
     },
-    "FGOBJ_CALIBRATION": {
-      "cohort": "calibration",
-      "questions": "the same six fine-grained COCO concepts, clean",
-      "templates": [
-        "IY"
-      ],
-      "alpha": [
-        0.0
-      ],
-      "locus": "primary (vis.last)",
-      "fit_seed": 0,
-      "directions": "none: clean forwards only",
-      "expected_rows": 2400,
-      "baseline": "own (the clean forward IS the measurement)",
-      "datasets": [
-        "coco"
-      ],
-      "added": "2026-09-16; addendum, enqueued explicitly (one shard), no prep of its own",
-      "rationale": "the matched comparison pools chest, easy-COCO and fine-grained-COCO cells on clean-answer AUROC. CALIBRATION measures that on the 400 calibration rows for the first two; this module measures it the same way, on the same rows, for the third, so no group is matched on a differently estimated number.",
-      "analysis": "folded into cftransfer.analysis --what fgobj; until it is scored the fine-grained cells carry no clean-answer AUROC and the matched comparison refuses to pool them"
-    },
-    "CALIBRATION": {
-      "NIH_COCO_rows_each": 6400,
-      "CheXpert_rows": 2400,
-      "LOCUS_rows_each_NIH_COCO": 2400,
-      "LOCUS_rows_CheXpert": 2400
-    },
-    "CORE": {
-      "cohort": "test",
-      "concepts": "all",
-      "templates": [
-        "IY"
-      ],
-      "alpha": [
-        0.25
-      ],
-      "directions": "baseline+6clinical+119random+question_sham",
-      "expected_rows": 457200,
-      "datasets": [
-        "nih",
-        "chexpert",
-        "coco"
-      ]
-    },
-    "PROMPT": {
-      "cohort": "test",
-      "templates": [
-        "WY",
-        "IA",
-        "IB",
-        "WA",
-        "WB"
-      ],
-      "alpha": [
-        0.25
-      ],
-      "directions": "baseline+6clinical+119random+question_sham",
-      "expected_rows": 762000,
-      "datasets": [
-        "nih",
-        "chexpert",
-        "coco"
-      ],
-      "concepts_by_dataset": {
-        "nih": [
-          "Effusion",
-          "Mass"
-        ],
-        "chexpert": [
-          "Effusion",
-          "Edema"
-        ],
-        "coco": [
-          "person",
-          "bottle"
-        ]
-      }
-    },
-    "DOSE": {
-      "cohort": "first 200 test rows in cohorts.csv order",
-      "concepts": "all",
-      "templates": [
-        "IY"
-      ],
-      "alpha": [
-        -0.5,
-        -0.25,
-        -0.1,
-        0.1,
-        0.5
-      ],
-      "directions": "6clinical+first20random+question_sham",
-      "expected_rows": 162000,
-      "baseline": "reuse CORE",
-      "datasets": [
-        "nih",
-        "chexpert",
-        "coco"
-      ]
-    },
-    "REFIT": {
-      "cohort": "test",
-      "concepts": "all",
-      "templates": [
-        "IY"
-      ],
-      "alpha": [
-        0.25
-      ],
-      "seeds": [
-        1,
-        2
-      ],
-      "directions": "6clinical+question_sham",
-      "expected_rows": 50400,
-      "baseline": "reuse CORE",
-      "datasets": [
-        "nih",
-        "chexpert",
-        "coco"
-      ]
-    },
-    "LOCUS": {
-      "datasets": [
-        "nih",
-        "chexpert",
-        "coco"
-      ],
-      "status": "required_for_full_package",
-      "locus": "connector_output (single consumed image embedding stream; family adaptation recorded)",
-      "directions": "baseline+6concept+119random+question_sham",
-      "alpha": [
-        0.25
-      ],
-      "concepts": "all",
-      "templates": [
-        "IY"
-      ],
-      "cohort": "test",
-      "expected_rows_per_dataset_checkpoint": 457200,
-      "calibration_rows_per_dataset_checkpoint": 2400
-    },
-    "ALTDIR": {
-      "cohort": "test",
-      "concepts": "all",
-      "templates": [
-        "IY"
-      ],
-      "alpha": [
-        0.25
-      ],
-      "locus": "primary (vis.last)",
-      "fit_seed": 0,
-      "directions": "6dom+6pattern+6orth+6resid (24 steered conditions per question; no baseline rows)",
-      "direction_families": {
-        "dom": "difference of class means mu_pos - mu_neg in the projected, train-scaled 512-d space (known-label training rows)",
-        "pattern": "Haufe pattern Sigma w, Sigma = covariance of the projected, train-scaled features over all training rows, w = seed-0 logistic normal",
-        "orth": "seed-0 logistic normal with its component in the span of the other five concepts' logistic normals removed (512-d space); fraction of norm removed recorded",
-        "resid": "logistic normal (same C, iterations, seed 0) refitted on features residualised column-wise against the other concepts' binary labels (intercept + labels) on the training rows where the concept's label and every used covariate label are known; covariates are dropped one at a time, worst first, while one has fewer than 5 rows in a class on those rows or the rows fall below 25% of the concept's own known rows (CheXpert); a concept single-class on its usable rows keeps the logistic normal (fallback); resid_covariates_used / resid_rows_used / resid_fallback / resid_retention_fraction and the cosine to the original normal are recorded"
-      },
-      "lift": "every family is mapped to model space exactly as the logistic normal: v = normalize(P @ (u / max(s, 1e-8)))",
-      "prep": "python -m cftransfer.altdir --model-key K --dataset D  (CPU; writes fits/vis.last/altdir_seed0.npz)",
-      "expected_rows": 86400,
-      "baseline": "reuse CORE",
-      "datasets": [
-        "nih",
-        "chexpert",
-        "coco"
-      ],
-      "added": "2026-09-14; not part of the planned campaign total (see total_planned_outcomes.ALTDIR_rows_addendum); enqueued explicitly",
-      "analysis": "cftransfer.analysis --what altdir: per family W (6x6), within-family O_q with 2,000-draw patient-bootstrap percentile interval and 6x5 max-T verdict, own write minus the strongest logistic competitor from CORE, per-concept cosines"
-    },
-    "EXTCOMP": {
-      "cohort": "test",
-      "concepts": "all",
-      "templates": [
-        "IY"
-      ],
-      "alpha": [
-        0.25
-      ],
-      "locus": "primary (vis.last)",
-      "fit_seed": 0,
-      "directions": "one logistic direction per extra dataset label (no baseline rows; CORE baseline reused)",
-      "extra_labels": {
-        "nih": [
-          "Consolidation",
-          "Edema",
-          "Infiltration"
-        ],
-        "chexpert": [
-          "Enlarged Cardiomediastinum",
-          "Fracture",
-          "Lung Lesion",
-          "Lung Opacity",
-          "Pneumonia",
-          "Support Devices"
-        ]
-      },
-      "support_rule": "label kept when the training rows hold >= 100 known positives and >= 100 known negatives",
-      "excluded": {
-        "nih": {
-          "no_finding": "no-finding label, excluded by design"
-        },
-        "chexpert": {
-          "No Finding": "no-finding label, excluded by design",
-          "Pleural Other": "12 known negatives in the training rows (< 100)"
-        }
-      },
-      "fit": "as the protocol normals: seed-0 projection P, train-only scaler, LogisticRegression(C=1, lbfgs, 2000 iterations, random_state 0) on the label's known-label training rows; lifted with normalize(P @ (w / max(s, 1e-8)))",
-      "prep": "python -m cftransfer.extcomp --model-key K --dataset D  (CPU; writes fits/vis.last/extcomp_seed0.npz with cosines to the six normals and calibration/test AUROC)",
-      "expected_rows": {
-        "nih": 10800,
-        "chexpert": 21600
-      },
-      "baseline": "reuse CORE",
-      "datasets": [
-        "nih",
-        "chexpert"
-      ],
-      "added": "2026-09-14; addendum, enqueued explicitly",
-      "analysis": "cftransfer.analysis --what extcomp: W_q,extra per extra direction, extended ownership O^ext_q = W_qq - max over the five protocol competitors and the extras with the 2,000-draw percentile interval, extras beating W_qq, verdict over the extended 6 x (5 + K) max-T family"
-    },
-    "TOKENW": {
-      "cohort": "test",
-      "concepts": "all",
-      "templates": [
-        "IY"
-      ],
-      "alpha": [
-        0.25
-      ],
-      "locus": "primary (vis.last)",
-      "fit_seed": 0,
-      "directions": "6 logistic directions x 2 token-weighting variants = 12 steered conditions per question (no baseline rows; CORE baseline reused)",
-      "variants": {
-        "tokenw": "weight_t = T * softmax_t(score_t), score_t = the token's projected, train-scaled feature dotted with the concept's logistic normal (temperature 1); mean weight 1",
-        "topq": "the top 25% of consumed tokens by score_t (round(0.25 T), at least 1) get weight T/k (= 4), the rest 0; mean weight 1"
-      },
-      "write": "h'_t = h_t + alpha * weight_t * ||h_t|| * v_c per consumed token (hooks.token_weights); same total dose as CORE's uniform write",
-      "expected_rows": 43200,
-      "baseline": "reuse CORE",
-      "datasets": [
-        "nih",
-        "chexpert",
-        "coco"
-      ],
-      "added": "2026-09-14; addendum, enqueued explicitly; no prep beyond fits/vis.last/seed0.npz",
-      "analysis": "cftransfer.analysis --what tokenw: per variant W (6x6), O_q with percentile interval and 6x5 max-T verdict, own weighted write minus the strongest uniform logistic competitor of CORE"
-    },
-    "PRECISION": {
-      "cohort": "first 200 test rows in cohorts.csv order",
-      "concepts": "all",
-      "templates": [
-        "IY"
-      ],
-      "alpha": [
-        0.25
-      ],
-      "locus": "primary (vis.last)",
-      "fit_seed": 0,
-      "directions": "the CORE grid: baseline + 6 clinical + 119 random + question sham = 127 (own baseline per setting)",
-      "settings": {
-        "fp32": "model weights and forward in float32; CORE batch composition",
-        "batch1": "bf16 weights; batch size 1 for every condition, baseline included"
-      },
-      "runner": "python -m cftransfer.runner ... --module PRECISION --numerics fp32|batch1; outcomes carry the setting in the `numerics` column (every other module: bf16-batched)",
-      "expected_rows": 304800,
-      "expected_rows_per_setting": 152400,
-      "baseline": "own (per setting)",
-      "datasets": [
-        "nih",
-        "coco"
-      ],
-      "added": "2026-09-14; addendum, enqueued explicitly as two tasks (PRECISION-fp32, PRECISION-batch1)",
-      "analysis": "cftransfer.analysis --what precision: per setting W and O on the 200 rows against CORE on the same rows, max |dW| over the 6x6 clinical cells, dO per question, agreement of the two point verdicts (own > strongest competitor, own > random p95)"
-    },
-    "ANSDIR": {
-      "cohort": "test",
-      "concepts": "all",
-      "templates": [
-        "IY"
-      ],
-      "alpha": [
-        0.25
-      ],
-      "locus": "primary (vis.last)",
-      "fit_seed": 0,
-      "directions": "6 answer directions a_d + the coordinate-permutation sham of a_q = 7 steered conditions per question (no baseline rows; CORE baseline and random family reused)",
-      "prep": "python -m cftransfer.ansdir --model-key K --dataset D --n-train 3000 (GPU, enqueued by enqueue --modules ANSDIR as the module's prep task): clean forwards of the six primary-template questions on the first 3,000 training-cohort rows in manifest order, fp32 answer margins to outcomes/ANSDIR_prep.parquet; per question a ridge regression of the margin on the projected, train-scaled 512-d features (seed-0 P and scaler; alpha by 5-fold CV over {0.1, 1, 10, 100}), lifted with normalize(P @ (w / max(s, 1e-8))) to a_q; fits/vis.last/ansdir_seed0.npz holds a_q, the CV R^2, cos(a_q, w_q) and the 6x6 cosine matrix to the logistic normals",
-      "expected_rows": 25200,
-      "baseline": "reuse CORE",
-      "datasets": [
-        "nih",
-        "chexpert",
-        "coco"
-      ],
-      "added": "2026-09-14; addendum, enqueued explicitly",
-      "analysis": "cftransfer.analysis --what ansdir: W^a (6x6), O^a_q with the 2,000-draw percentile interval and 6x5 max-T verdict, steering reference against the CORE random p95 and the a-sham, own answer write minus the strongest logistic competitor of CORE, cosines / CV R^2"
-    },
-    "ALTDIRD": {
-      "cohort": "test",
-      "concepts": "all",
-      "templates": [
-        "IY"
-      ],
-      "alpha": [
-        0.25
-      ],
-      "locus": "primary (vis.last)",
-      "fit_seed": 0,
-      "directions": "6 dom_disp + 6 pattern_disp = 12 steered conditions per question (no baseline rows; CORE baseline reused)",
-      "lift": "a displacement u in the standardised 512-d space is lifted as its minimum-norm preimage x = R (R^T R)^{-1} diag(s) u (R = the seed-0 projection), unit-normalised; the coefficient lift R diag(1/s) beta of the logistic normals and of the ALTDIR families is unchanged",
-      "prep": "python -m cftransfer.altdir --model-key K --dataset D  (CPU; appends dom_disp/pattern_disp vectors, the R^T R / D eigenvalue spectrum and the extended cosine matrices to fits/vis.last/altdir_seed0.npz without changing existing arrays)",
-      "expected_rows": 43200,
-      "baseline": "reuse CORE",
-      "datasets": [
-        "nih",
-        "chexpert",
-        "coco"
-      ],
-      "added": "2026-09-15; addendum, enqueued explicitly",
-      "analysis": "cftransfer.analysis --what altdird: per family W (6x6), within-family O_q with interval and 6x5 max-T verdict, own write minus the strongest logistic competitor of CORE, cosines to the logistic normal and to the coefficient-lifted dom / pattern"
-    },
-    "ATTR": {
-      "cohort": "test",
-      "questions": "3 attribute questions (view_AP, sex_F, age_60; protocol templates with the attribute phrase) + the 6 clinical questions",
-      "templates": [
-        "IY"
-      ],
-      "alpha": [
-        0.25
-      ],
-      "locus": "primary (vis.last)",
-      "fit_seed": 0,
-      "attribute_phrases": {
-        "view_AP": "an anteroposterior (portable) projection",
-        "sex_F": "a female patient",
-        "age_60": "a patient aged sixty or older"
-      },
-      "attribute_labels": {
-        "view_AP": "1 = AP, 0 = PA (manifest `view`)",
-        "sex_F": "1 = F, 0 = M (manifest `sex`)",
-        "age_60": "1 = age >= 60, 0 = age < 60 (manifest `age`)"
-      },
-      "support_rule": ">= 100 known training rows per class (both chest sets qualify on all three attributes)",
-      "directions": "3 attribute directions (fitted like the protocol normals) + 6 clinical normals + the question's sham; attribute questions also score their clean baseline (11 conditions), clinical questions reuse CORE's baseline (10 conditions); no random family (CORE's random p95 is the reference for clinical questions; attribute questions are referenced against their sham only)",
-      "prep": "python -m cftransfer.attr --model-key K --dataset D  (CPU; writes fits/vis.last/attr_seed0.npz with directions, shams, cosines to the six normals, calibration-row probe and type->random-label control logits)",
-      "expected_rows": 55800,
-      "baseline": "attribute questions: own; clinical questions: reuse CORE",
-      "datasets": [
-        "nih",
-        "chexpert"
-      ],
-      "added": "2026-09-15; addendum, enqueued explicitly",
-      "analysis": "cftransfer.analysis --what attr: 9x9 write matrix (questions x directions), ownership of every question over the family {3 attributes + 6 clinical} with interval and max-T verdict, readability of the attribute probes (calibration rows, selectivity vs the 20 type->random-label controls) and answer AUROC of the clean attribute questions on the test rows"
-    },
-    "ANSDIRT": {
-      "cohort": "test",
-      "concepts": "all",
-      "templates": [
-        "WY",
-        "IA",
-        "IB",
-        "WA",
-        "WB"
-      ],
-      "alpha": [
-        0.25
-      ],
-      "locus": "primary (vis.last)",
-      "fit_seed": 0,
-      "directions": "baseline + 6 IY-fitted answer directions a_d + the a-sham of q = 8 conditions per (question, template); 40 per question over the five templates",
-      "prep": "fits/vis.last/ansdir_seed0.npz from the ANSDIR prep (python -m cftransfer.ansdir; enqueue emits it)",
-      "expected_rows": 144000,
-      "baseline": "own, per (question, template)",
-      "datasets": [
-        "nih",
-        "chexpert",
-        "coco"
-      ],
-      "added": "2026-09-15; addendum, enqueued explicitly; INELIGIBLE templates are dropped as in PROMPT",
-      "analysis": "cftransfer.analysis --what ansdirt: per template W^a (6x6), O^a_q with interval and 6x5 max-T verdict, the a-sham reference, the cross comparison against the logistic competitors and random p95 of PROMPT under the same template (its two designated concepts), and transfer counts of the IY-owned a_q cells (from --what ansdir) that stay owned under each template"
-    },
-    "VALID": {
-      "cohort": "valid",
-      "concepts": "all",
-      "templates": [
-        "IY"
-      ],
-      "alpha": [
-        0.25
-      ],
-      "locus": "primary (vis.last)",
-      "fit_seed": 0,
-      "directions": "baseline+6clinical+119random+question_sham (the CORE grid with the block's seed-0 directions; no new fit)",
-      "rows": "200: one frontal per patient of the official CheXpert validation split (200 patients, 202 frontals), selected and ordered by the CheXpert Plus hash rules (manifests.build_chexpert_valid); labels are the radiologist consensus of CheXpert-v1.0 valid.csv (manifests/release.json `valid`, label_source radiologist), not the labeler output of the other roles",
-      "expected_rows": 152400,
-      "baseline": "own",
-      "datasets": [
-        "chexpert"
-      ],
-      "added": "2026-09-15; addendum, enqueued explicitly; images PNG/valid/* of the CheXpert Plus zips (scripts/mayo/extract_chexpert_valid.py); enqueue also emits a features task for the valid rows (features/valid/<locus>.npz) that the module task does not wait for",
-      "analysis": "cftransfer.analysis --what valid: the CORE grade on the valid rows (W_qq, strongest competitor, O_q with interval, 6x5 max-T verdict from 2,000 paired draws at n = 200, random p95 / |sham| reference on those rows), answer capability of the clean answers against the radiologist labels (campaign rule), probe readability on the valid features against the 20 control probes when extracted, and the paired comparison with the block's CORE grade on the 600 labeler-labelled test rows (per-concept readable / answer-capable / owned, O_q on both, counts of agreeing verdicts)"
-    },
-    "ATTRRAND": {
-      "cohort": "test",
-      "questions": "the 3 attribute questions of ATTR only (view_AP, sex_F, age_60)",
-      "templates": [
-        "IY"
-      ],
-      "alpha": [
-        0.25
-      ],
-      "locus": "primary (vis.last)",
-      "fit_seed": 0,
-      "directions": "the protocol's own 119 random directions (fits/vis.last/seed0.npz random_vectors, the PCG64(0) draw CORE scores); no new directions, no baseline rows, no prep of its own",
-      "rationale": "ATTR referenced attribute cells against their sham alone while clinical cells had the 119-random p95, so the attribute-versus-finding ownership comparison used two different steering references; ATTRRAND gives an attribute cell the same random p95 bar as a clinical cell",
-      "expected_rows": 214200,
-      "baseline": "reuse ATTR (the attribute questions' own clean baseline)",
-      "datasets": [
-        "nih",
-        "chexpert"
-      ],
-      "added": "2026-09-16; addendum, enqueued explicitly (two shards)",
-      "analysis": "folded into cftransfer.analysis --what attr: each attribute cell gains random_p95 / random_n / rank_in_random_family from this module and records steering_reference_sham_only (the old rule), steering_reference_matched (W_qq > 0, > random p95, > |sham|) and steering_reference_rule, which names the reference the cell used; clinical cells are unchanged"
-    },
-    "ATTRQ": {
-      "cohort": "calibration",
-      "questions": "the 3 attribute questions of ATTR only (view_AP, sex_F, age_60), each under 3 phrasings",
-      "templates": [
-        "AQ0",
-        "AQ1",
-        "AQ2"
-      ],
-      "alpha": [
-        0.0
-      ],
-      "locus": "primary (vis.last)",
-      "fit_seed": 0,
-      "directions": "none: clean forwards only (no writes, no reference family)",
-      "rationale": "cheap per-block eligibility pass for the ATTR / ATTRRAND control: how well the model answers each non-clinical attribute question under three phrasings, on the calibration rows, with no writes and no reference family. It exists because a cell whose clean answer no direction can move cannot be owned for reasons that have nothing to do with whether the concept is clinical, so pooling such cells makes the attribute-versus-finding comparison unfair in both directions.",
-      "expected_rows": 3600,
-      "baseline": "own (the clean forward IS the measurement)",
-      "datasets": [
-        "nih",
-        "chexpert"
-      ],
-      "added": "2026-09-16; addendum, enqueued explicitly (one shard)",
-      "analysis": "cftransfer.analysis --what attrq: per attribute and phrasing the question text, n_pos / n_neg, clean-answer AUROC and Brier, the one-sided 95% lower bound, the answer-capable flag, and the selected phrasing with the reason; written to summary.json under `attrq`. analysis --what attr then reads the written phrasing's calibration-row numbers from it, so an attribute cell and a clinical cell carry answerability measured on the same rows."
-    },
-    "VALIDFIT": {
-      "cohort": "test (the write); the FIT uses the 200 radiologist-labelled `valid` rows",
-      "concepts": "all",
-      "templates": [
-        "IY"
-      ],
-      "alpha": [
-        0.25
-      ],
-      "locus": "primary (vis.last)",
-      "fit_seed": 0,
-      "directions": "6 expert-label directions (vfit:<concept>); no baseline rows, no random family and no sham of its own -- CORE's baseline, 119-random family and question sham are the references",
-      "fit": "the six concept probes refitted on the known-label `valid` rows (role valid, label_source radiologist) with the protocol's own probe settings: the block's seed-0 projection R and its TRAIN-ONLY scaler mu/s (never refitted on 200 rows), LogisticRegression(C=1, lbfgs, 2000 iterations, random_state 0), lifted with normalize(R @ (w / max(s, 1e-8))); features from features/valid/<locus>.npz (the VALID feature task)",
-      "cross_fitting": "5 folds over PATIENTS (KFold shuffled, seed 0, over the sorted unit ids), so every valid row is scored by a direction not fitted on it",
-      "cpu_report": "raw cosine (model space and projected 512-d) and covariance-whitened cosine (<a,b>_Sigma / sqrt(<a,a>_Sigma <b,b>_Sigma), Sigma = covariance of the projected, train-scaled TRAINING features) between each expert-label direction and the corresponding report-label direction; held-out probe AUROC against the expert labels and against the report-derived (labeler) labels of the same rows; the seed-0 report-label direction's AUROC on those rows for reference",
-      "prep": "python -m cftransfer.validfit --model-key K --dataset chexpert  (CPU; writes fits/vis.last/validfit_seed0.npz)",
-      "expected_rows": 21600,
-      "baseline": "reuse CORE",
-      "datasets": [
-        "chexpert"
-      ],
-      "added": "2026-09-16; addendum, enqueued explicitly",
-      "analysis": "cftransfer.analysis --what validfit: W^e (6x6), O^e_q with the 2,000-draw percentile interval and the 6x5 max-T verdict, CORE's steering reference (W^e_qq > 0, > the 119-random p95, > |sham|), own expert write minus the strongest logistic competitor of CORE, and the prep's cosines / AUROCs per concept"
-    },
-    "PROJSEED": {
-      "cohort": "test",
-      "concepts": "all",
-      "templates": [
-        "IY"
-      ],
-      "alpha": [
-        0.25
-      ],
-      "locus": "primary (vis.last)",
-      "projection_seeds": [
-        1,
-        2
-      ],
-      "directions": "per projection seed: 6 refit directions (proj:<concept>) + that projection's own 119 random directions (projrand:###) + the question's sham (projsham:<concept>) = 126 conditions per question and seed; no baseline rows",
-      "fit": "R_k = PCG64(k).standard_normal((D, 512)) / sqrt(512) (the protocol's projection construction with the seed replaced); the train-only scaler is recomputed in that projected space; the six probes are refitted on the SAME training rows and known-label masks with the same hyperparameters (C=1, lbfgs, 2000 iterations, random_state 0); the random family and shams are the same construction re-drawn from PCG64(k) in that projection",
-      "fit_seed_column": "the outcomes carry the PROJECTION seed (1 or 2) in the fit_seed column; direction ids are seed-independent",
-      "prep": "python -m cftransfer.projseed --model-key K --dataset D  (CPU; writes fits/vis.last/projseed_seed1.npz and projseed_seed2.npz with the model-space cosines to the seed-0 directions)",
-      "expected_rows": 907200,
-      "baseline": "reuse CORE",
-      "datasets": [
-        "nih",
-        "chexpert",
-        "coco"
-      ],
-      "added": "2026-09-16; addendum, enqueued explicitly, ONE SHARD PER PROJECTION SEED (runner --fit-seed); intended for a handful of representative blocks, not the whole grid",
-      "analysis": "cftransfer.analysis --what projseed: per seed W^k (6x6), O^k_q with the 2,000-draw percentile interval and the 6x5 max-T verdict, that projection's OWN random p95 and sham as the steering reference, the model-space cosine to the seed-0 direction, and the count of verdicts / ownership decisions that agree with the block's CORE grade on the same rows"
-    },
-    "TOWERSWAP": {
-      "cohort": "first 200 test rows in cohorts.csv order",
-      "concepts": "all",
-      "templates": [
-        "IY"
-      ],
-      "alpha": [
-        0.25
-      ],
-      "locus": "primary (vis.last)",
-      "fit_seed": 0,
-      "directions": "the CORE grid: baseline + 6 clinical + 119 random + question sham = 127 (own baseline), with the DIRECTIONS OF THE TOWER IN USE -- the donor block's seed-0 fit, reused unchanged",
-      "model": "the block's own reader (multimodal projector + language model) with the PARTNER checkpoint's vision tower loaded in its place; protocol.TOWERSWAP_PAIRS pairs gemma3-4 with medgemma-4 and gemma3-27 with medgemma-27",
-      "swap_feasibility": "verified from the staged checkpoints (python -m cftransfer.towerswap): gemma-3-4b-it and medgemma-4b-it have IDENTICAL tensor name sets (883 each) and identical shapes for vision_tower (437 tensors, 416.9M params), multi_modal_projector (2) and language_model (444), with 0/437 tower tensors bitwise identical (MedSigLIP vs SigLIP); the same holds for gemma-3-27b-it vs medgemma-27b-it (1247 tensors). gemma-3-12b-it vs medgemma-27b-it fails as expected: mm_input_projection_weight (1152,3840) vs (1152,5376) and 48 vs 62 language-model layers.",
-      "verification": "every replaced tensor is torch.equal to the donor checkpoint's tensor after the runtime dtype cast, and every parameter and buffer outside the tower keeps its (dtype, shape, sum, sum|x|, NaN count) signature; the receipt is written to outcomes/TOWERSWAP/swap-<shard>.json",
-      "four_combinations": "the two crossed arms are this module on the two blocks of a pair; the two native arms are those blocks' own CORE grade restricted to the same 200 rows (analysis.core row_limit), so no GPU time is spent re-running CORE",
-      "expected_rows": 152400,
-      "baseline": "own",
-      "datasets": [
-        "nih",
-        "chexpert",
-        "coco"
-      ],
-      "added": "2026-09-16; addendum, enqueued explicitly, only for the models in TOWERSWAP_PAIRS",
-      "analysis": "cftransfer.analysis --what towerswap: per combination (tower, reader) the 6x6 write matrix, W_qq, O_q with the 2,000-draw percentile interval, the 119-random p95 / |sham| steering reference and the 6x5 max-T verdict; within the block the paired crossed-minus-native contrasts; and, when the partner block is packaged, the reader effect at fixed tower and the tower effect at fixed reader over the six questions"
-    },
-    "REPLAY": {
-      "cohort": "first 200 test rows in cohorts.csv order",
-      "concepts": "all",
-      "templates": [
-        "IY"
-      ],
-      "alpha": [
-        0.25
-      ],
-      "locus": "primary (vis.last)",
-      "fit_seed": 0,
-      "directions": "the CORE grid (127 configurations, own baseline) with the SOURCE block's seed-0 directions, random family and sham -- identical for every reader of the shared-tower group",
-      "mechanism": "the consumed block's output is overwritten with the source block's stored tensor before the steering hook reads it (cftransfer.replay.ReplayHook registers on the same module with prepend=True after LocusHook, so it runs first and LocusHook computes the token norms and the write on the replayed tensor); the outcome schema is unchanged",
-      "shared_tower_groups": "verified bitwise identical in the staged checkpoints: SigLIP 437/437 tensors across gemma3-4 / gemma3-12 / gemma3-27, MedSigLIP 437/437 across medgemma-4 / medgemma-27, CLIP ViT-L/14-336 391/391 across llava15-7 / llava15-13; SigLIP vs MedSigLIP 0/437. llavamed-7 joins the CLIP group: the same 391 tensors in the same shapes under the vision_tower.vision_model.* spelling, equal up to the fp16 -> bf16 storage change (max |difference| 0.047, 0 exactly equal after the cast), which is precisely the difference replaying one stored tensor into both readers removes; it is the grid's only shared-tower pair whose readers are a general and a medical model.",
-      "prep": "python -m cftransfer.replay --model-key SOURCE --dataset D (GPU; one tower pass over the 200 rows, writes runs/SOURCE/D/replay/vis.last.npz with the ORIGINAL bits of the captured tensor)",
-      "note": "the tower still runs during the module, so a replay block costs what the same CORE grid costs on the same rows; what it buys is an exactly identical input, not speed",
-      "expected_rows": 152400,
-      "baseline": "own",
-      "datasets": [
-        "nih",
-        "chexpert",
-        "coco"
-      ],
-      "added": "2026-09-16; addendum, enqueued explicitly, only for the models in REPLAY_SOURCE",
-      "analysis": "cftransfer.analysis --what replay: the CORE grade on the replayed tensors (core() on the REPLAY parquet), the paired comparison against the block's own CORE grade on the same rows, the recorded drift between this reader's own tower output and the stored tensor, and, when the group's other blocks are packaged, the cross-reader comparison on byte-identical inputs"
-    },
-    "SEMEND": {
-      "cohort": "test",
-      "concepts": "all",
-      "templates": [
-        "NY",
-        "DA",
-        "DB",
-        "RF"
-      ],
-      "alpha": [
-        0.25
-      ],
-      "locus": "primary (vis.last)",
-      "fit_seed": 0,
-      "directions": "baseline + 6 label directions concept:<c> + 6 answer directions ans:<c> + the question's label sham sham:<q> + the question's answer sham anssham:<q> + 18 random directions = 33 conditions per (question, endpoint). Both families therefore have a FULL 6x6 write matrix on every endpoint, so the campaign's ownership rule applies unchanged AND the spillover of one direction onto the other five concepts' endpoints is measured.",
-      "endpoints": "see the top-level `semend` block: NY negated question (sign -1), DA/DB counterbalanced two-finding forced choice, RF finding-word log-probability in a report continuation",
-      "reference": "each endpoint gets its own clean baseline and its own steering reference: the own signed effect must be positive, above all 18 random directions (rank 1 of 19) and above that family's own |sham|. Ownership is the campaign rule: the steering reference plus positive max-T lower bounds over the five-competitor family.",
-      "prep": "python -m cftransfer.semend --model-key K --dataset D (CPU; freezes the strongest competitor per question from the block's CORE write matrix and the exact rendered prompt of every (question, endpoint) into fits/vis.last/semend_seed0.npz). It requires fits/vis.last/ansdir_seed0.npz, so SEMEND is enqueued with or after ANSDIR.",
-      "expected_rows": 475200,
-      "baseline": "own, per (question, endpoint)",
-      "datasets": [
-        "nih",
-        "chexpert",
-        "coco"
-      ],
-      "added": "2026-09-16; addendum, enqueued explicitly",
-      "analysis": "cftransfer.analysis --what semend: per endpoint and per family the 6x6 write matrix, W_qq, O_q with the 2,000-draw percentile interval, the 18-random / sham steering reference and the 6x5 max-T verdict; the affirmative-versus-negated signed change and its across-question correlation with CORE; the counterbalanced forced-choice probability and the order bias; the report-continuation delta log p of the finding word; and the incremental-validity regression described above",
-      "incremental_validity": "the analysis asks whether OWNERSHIP predicts behaviour on these endpoints beyond what is already known. Per cell (question, endpoint, family) it records the intended change on the question's own endpoint, the unintended change of the same direction on the other five concepts' endpoints, and their difference (the selectivity of the change). Pooled over cells it regresses that difference on (i) the CORE write magnitude W_qq, (ii) the probe selectivity S, (iii) the clean-answer AUROC, and then adds (iv) the CORE ownership indicator and O_q, reporting the added coefficients, their patient-bootstrap intervals and the change in explained variance, separately for the label and the answer direction. Cells that meet the steering reference but are NOT owned are kept as their own group and compared with the owned cells directly, since that contrast is what ownership would have to explain."
-    },
-    "TOWERSWAPD": {
-      "cohort": "first 200 test rows in cohorts.csv order",
-      "concepts": "all",
-      "templates": [
-        "IY"
-      ],
-      "alpha": [
-        0.25
-      ],
-      "locus": "primary (vis.last)",
-      "fit_seed": 0,
-      "directions": "the block's own seed-0 fit, unchanged",
-      "model": "the block's own reader (multimodal projector + language model) with the PARTNER checkpoint's vision tower loaded in its place; protocol.TOWERSWAP_PAIRS pairs gemma3-4 with medgemma-4 and gemma3-27 with medgemma-27",
-      "swap_feasibility": "verified from the staged checkpoints (python -m cftransfer.towerswap): gemma-3-4b-it and medgemma-4b-it have IDENTICAL tensor name sets (883 each) and identical shapes for vision_tower (437 tensors, 416.9M params), multi_modal_projector (2) and language_model (444), with 0/437 tower tensors bitwise identical (MedSigLIP vs SigLIP); the same holds for gemma-3-27b-it vs medgemma-27b-it (1247 tensors). gemma-3-12b-it vs medgemma-27b-it fails as expected: mm_input_projection_weight (1152,3840) vs (1152,5376) and 48 vs 62 language-model layers.",
-      "verification": "every replaced tensor is torch.equal to the donor checkpoint's tensor after the runtime dtype cast, and every parameter and buffer outside the tower keeps its (dtype, shape, sum, sum|x|, NaN count) signature; the receipt is written to outcomes/TOWERSWAPD/swap-<shard>.json",
-      "four_combinations": "the two crossed arms are this module on the two blocks of a pair; the two native arms are those blocks' own CORE grade restricted to the same 200 rows (analysis.core row_limit), so no GPU time is spent re-running CORE",
-      "expected_rows": 152400,
-      "baseline": "own",
-      "datasets": [
-        "nih",
-        "chexpert",
-        "coco"
-      ],
-      "added": "2026-09-17; addendum, enqueued explicitly, only for the models in TOWERSWAP_PAIRS",
-      "analysis": "cftransfer.analysis --what towerswap: per combination (tower, reader) the 6x6 write matrix, W_qq, O_q with the 2,000-draw percentile interval, the 119-random p95 / |sham| steering reference and the 6x5 max-T verdict; within the block the paired crossed-minus-native contrasts; and, when the partner block is packaged, the reader effect at fixed tower and the tower effect at fixed reader over the six questions",
-      "purpose": "the same crossed arm as TOWERSWAP with the block's OWN directions instead of the donor tower's, so the pair separates the two factors a tower swap changes at once: TOWERSWAPD against TOWERSWAP isolates the direction the tower was fitted on, and TOWERSWAPD against the native arm isolates the representation itself"
+    "chexpert": {
+     "No Finding": "no-finding label, excluded by design",
+     "Pleural Other": "12 known negatives in the training rows (< 100)"
     }
+   },
+   "fit": "as the protocol normals: seed-0 projection P, train-only scaler, LogisticRegression(C=1, lbfgs, 2000 iterations, random_state 0) on the label's known-label training rows; lifted with normalize(P @ (w / max(s, 1e-8)))",
+   "prep": "python -m cftransfer.extcomp --model-key K --dataset D  (CPU; writes fits/vis.last/extcomp_seed0.npz with cosines to the six normals and calibration/test AUROC)",
+   "expected_rows": {
+    "nih": 10800,
+    "chexpert": 21600
+   },
+   "baseline": "reuse CORE",
+   "datasets": [
+    "nih",
+    "chexpert"
+   ],
+   "added": "2026-09-14; addendum, enqueued explicitly",
+   "analysis": "cftransfer.analysis --what extcomp: W_q,extra per extra direction, extended ownership O^ext_q = W_qq - max over the five protocol competitors and the extras with the 2,000-draw percentile interval, extras beating W_qq, verdict over the extended 6 x (5 + K) max-T family"
   },
-  "numerics": {
-    "weights": "BF16 primary; record exceptions as separate condition",
-    "eval_mode": true,
-    "dropout": false,
-    "gradient": "disabled",
-    "max_generation_tokens": 0,
-    "logit_storage": "float32",
-    "aggregate_storage": "float64",
-    "quantization": "separate sensitivity condition only"
+  "TOKENW": {
+   "cohort": "test",
+   "concepts": "all",
+   "templates": [
+    "IY"
+   ],
+   "alpha": [
+    0.25
+   ],
+   "locus": "primary (vis.last)",
+   "fit_seed": 0,
+   "directions": "6 logistic directions x 2 token-weighting variants = 12 steered conditions per question (no baseline rows; CORE baseline reused)",
+   "variants": {
+    "tokenw": "weight_t = T * softmax_t(score_t), score_t = the token's projected, train-scaled feature dotted with the concept's logistic normal (temperature 1); mean weight 1",
+    "topq": "the top 25% of consumed tokens by score_t (round(0.25 T), at least 1) get weight T/k (= 4), the rest 0; mean weight 1"
+   },
+   "write": "h'_t = h_t + alpha * weight_t * ||h_t|| * v_c per consumed token (hooks.token_weights); same total dose as CORE's uniform write",
+   "expected_rows": 43200,
+   "baseline": "reuse CORE",
+   "datasets": [
+    "nih",
+    "chexpert",
+    "coco"
+   ],
+   "added": "2026-09-14; addendum, enqueued explicitly; no prep beyond fits/vis.last/seed0.npz",
+   "analysis": "cftransfer.analysis --what tokenw: per variant W (6x6), O_q with percentile interval and 6x5 max-T verdict, own weighted write minus the strongest uniform logistic competitor of CORE"
   },
-  "activation_storage": {
-    "required": "pooled unprojected features, float16 or float32, all train/calibration/test rows; row ids and masks metadata",
-    "optional": "full token tensors for 16 preflight images only"
+  "PRECISION": {
+   "cohort": "first 200 test rows in cohorts.csv order",
+   "concepts": "all",
+   "templates": [
+    "IY"
+   ],
+   "alpha": [
+    0.25
+   ],
+   "locus": "primary (vis.last)",
+   "fit_seed": 0,
+   "directions": "the CORE grid: baseline + 6 clinical + 119 random + question sham = 127 (own baseline per setting)",
+   "settings": {
+    "fp32": "model weights and forward in float32; CORE batch composition",
+    "batch1": "bf16 weights; batch size 1 for every condition, baseline included"
+   },
+   "runner": "python -m cftransfer.runner ... --module PRECISION --numerics fp32|batch1; outcomes carry the setting in the `numerics` column (every other module: bf16-batched)",
+   "expected_rows": 304800,
+   "expected_rows_per_setting": 152400,
+   "baseline": "own (per setting)",
+   "datasets": [
+    "nih",
+    "coco"
+   ],
+   "added": "2026-09-14; addendum, enqueued explicitly as two tasks (PRECISION-fp32, PRECISION-batch1)",
+   "analysis": "cftransfer.analysis --what precision: per setting W and O on the 200 rows against CORE on the same rows, max |dW| over the 6x6 clinical cells, dO per question, agreement of the two point verdicts (own > strongest competitor, own > random p95)"
   },
-  "planned_models": [
-    {
-      "model_key": "q25-3",
-      "model_id": "Qwen/Qwen2.5-VL-3B-Instruct",
-      "batch": "phase1",
-      "required_for_full_package": true,
-      "model_revision": null,
-      "processor_revision": null,
-      "execution_state": "NOT_STARTED"
-    },
-    {
-      "model_key": "q25-7",
-      "model_id": "Qwen/Qwen2.5-VL-7B-Instruct",
-      "batch": "phase1",
-      "required_for_full_package": true,
-      "model_revision": null,
-      "processor_revision": null,
-      "execution_state": "NOT_STARTED"
-    },
-    {
-      "model_key": "q25-32",
-      "model_id": "Qwen/Qwen2.5-VL-32B-Instruct",
-      "batch": "phase1",
-      "required_for_full_package": true,
-      "model_revision": null,
-      "processor_revision": null,
-      "execution_state": "NOT_STARTED"
-    },
-    {
-      "model_key": "q25-72",
-      "model_id": "Qwen/Qwen2.5-VL-72B-Instruct",
-      "batch": "phase2",
-      "required_for_full_package": true,
-      "model_revision": null,
-      "processor_revision": null,
-      "execution_state": "NOT_STARTED"
-    },
-    {
-      "model_key": "q3-4",
-      "model_id": "Qwen/Qwen3-VL-4B-Instruct",
-      "batch": "phase1",
-      "required_for_full_package": true,
-      "model_revision": null,
-      "processor_revision": null,
-      "execution_state": "NOT_STARTED"
-    },
-    {
-      "model_key": "q3-8",
-      "model_id": "Qwen/Qwen3-VL-8B-Instruct",
-      "batch": "phase1",
-      "required_for_full_package": true,
-      "model_revision": null,
-      "processor_revision": null,
-      "execution_state": "NOT_STARTED"
-    },
-    {
-      "model_key": "q3-32",
-      "model_id": "Qwen/Qwen3-VL-32B-Instruct",
-      "batch": "phase1",
-      "required_for_full_package": true,
-      "model_revision": null,
-      "processor_revision": null,
-      "execution_state": "NOT_STARTED"
-    },
-    {
-      "model_key": "iv35-8",
-      "model_id": "OpenGVLab/InternVL3_5-8B-HF",
-      "batch": "phase1",
-      "required_for_full_package": true,
-      "model_revision": null,
-      "processor_revision": null,
-      "execution_state": "NOT_STARTED"
-    },
-    {
-      "model_key": "iv35-14",
-      "model_id": "OpenGVLab/InternVL3_5-14B-HF",
-      "batch": "phase1",
-      "required_for_full_package": true,
-      "model_revision": null,
-      "processor_revision": null,
-      "execution_state": "NOT_STARTED"
-    },
-    {
-      "model_key": "iv35-38",
-      "model_id": "OpenGVLab/InternVL3_5-38B-HF",
-      "batch": "phase1",
-      "required_for_full_package": true,
-      "model_revision": null,
-      "processor_revision": null,
-      "execution_state": "NOT_STARTED"
-    },
-    {
-      "model_key": "gemma3-4",
-      "model_id": "google/gemma-3-4b-it",
-      "batch": "phase1",
-      "required_for_full_package": true,
-      "model_revision": null,
-      "processor_revision": null,
-      "execution_state": "NOT_STARTED"
-    },
-    {
-      "model_key": "gemma3-12",
-      "model_id": "google/gemma-3-12b-it",
-      "batch": "phase2",
-      "required_for_full_package": true,
-      "model_revision": null,
-      "processor_revision": null,
-      "execution_state": "NOT_STARTED"
-    },
-    {
-      "model_key": "gemma3-27",
-      "model_id": "google/gemma-3-27b-it",
-      "batch": "phase1",
-      "required_for_full_package": true,
-      "model_revision": null,
-      "processor_revision": null,
-      "execution_state": "NOT_STARTED"
-    },
-    {
-      "model_key": "medgemma-4",
-      "model_id": "google/medgemma-4b-it",
-      "batch": "phase1",
-      "required_for_full_package": true,
-      "model_revision": null,
-      "processor_revision": null,
-      "execution_state": "NOT_STARTED"
-    },
-    {
-      "model_key": "medgemma-27",
-      "model_id": "google/medgemma-27b-it",
-      "batch": "phase1",
-      "required_for_full_package": true,
-      "model_revision": null,
-      "processor_revision": null,
-      "execution_state": "NOT_STARTED"
-    },
-    {
-      "model_key": "llama32-11",
-      "model_id": "meta-llama/Llama-3.2-11B-Vision-Instruct",
-      "batch": "phase1",
-      "required_for_full_package": true,
-      "model_revision": null,
-      "processor_revision": null,
-      "execution_state": "NOT_STARTED"
-    },
-    {
-      "model_key": "llama32-90",
-      "model_id": "meta-llama/Llama-3.2-90B-Vision-Instruct",
-      "batch": "phase2",
-      "required_for_full_package": true,
-      "model_revision": null,
-      "processor_revision": null,
-      "execution_state": "NOT_STARTED"
-    },
-    {
-      "model_key": "llava15-7",
-      "model_id": "llava-hf/llava-1.5-7b-hf",
-      "batch": "phase1",
-      "required_for_full_package": true,
-      "model_revision": null,
-      "processor_revision": null,
-      "execution_state": "NOT_STARTED"
-    },
-    {
-      "model_key": "llava15-13",
-      "model_id": "llava-hf/llava-1.5-13b-hf",
-      "batch": "phase2",
-      "required_for_full_package": true,
-      "model_revision": null,
-      "processor_revision": null,
-      "execution_state": "NOT_STARTED"
-    },
-    {
-      "model_key": "lingshu-7",
-      "model_id": "lingshu-medical-mllm/Lingshu-7B",
-      "batch": "phase1",
-      "required_for_full_package": true,
-      "model_revision": null,
-      "processor_revision": null,
-      "execution_state": "NOT_STARTED"
-    },
-    {
-      "model_key": "llavamed-7",
-      "model_id": "microsoft/llava-med-v1.5-mistral-7b",
-      "batch": "phase2",
-      "required_for_full_package": true,
-      "model_revision": null,
-      "processor_revision": null,
-      "execution_state": "NOT_STARTED"
-    },
-    {
-      "model_key": "lingshu-32",
-      "model_id": "lingshu-medical-mllm/Lingshu-32B",
-      "batch": "phase2",
-      "required_for_full_package": true,
-      "model_revision": null,
-      "processor_revision": null,
-      "execution_state": "NOT_STARTED"
-    },
-    {
-      "model_key": "chexagent-3",
-      "model_id": "StanfordAIMI/CheXagent-2-3b",
-      "batch": "addendum",
-      "required_for_full_package": false,
-      "model_revision": "8f19b53a2eceda4c33b0acec6c81fbc293ad80d0",
-      "processor_revision": "8f19b53a2eceda4c33b0acec6c81fbc293ad80d0",
-      "execution_state": "NOT_STARTED",
-      "note": "addendum checkpoint added after the 22-model campaign was planned: the only grid member whose vision tower (StanfordAIMI/XraySigLIP__vit-l-16-siglip-384__webli, revision f0edbf5d90dba44edb7f4f96d8663537cb0749bf) was trained on chest radiographs. It is outside total_planned_outcomes, which stays the 22-model plan."
-    },
-    {
-      "model_key": "huatuo-7",
-      "model_id": "FreedomIntelligence/HuatuoGPT-Vision-7B",
-      "batch": "addendum",
-      "required_for_full_package": false,
-      "model_revision": "34dfcdbb7728ff38da865839f342b88c4cf6ef39",
-      "processor_revision": "34dfcdbb7728ff38da865839f342b88c4cf6ef39",
-      "execution_state": "NOT_STARTED",
-      "note": "addendum checkpoint: a medical VLM trained on PubMedVision with the LLaVA-1.5 architecture over a Qwen2-7B language model. Its model_type llava_qwen2 exists only in the HuatuoGPT-Vision repository, so it enters the grid through the native conversion scripts/mayo/convert_huatuo.py (receipt at cache/converted/HuatuoGPT-Vision-7B-hf/conversion.json), as llavamed-7 does. It shares llava15-7's CLIP ViT-L/14-336 tower and llavamed-7's medical domain with a third language model, so it separates the tower from the reader once more. Outside total_planned_outcomes, which stays the 22-model plan."
-    },
-    {
-      "model_key": "chexagent-8",
-      "model_id": "StanfordAIMI/CheXagent-8b",
-      "batch": "addendum",
-      "required_for_full_package": false,
-      "model_revision": "4934e91451945c8218c267aae9c34929a7677829",
-      "processor_revision": "4934e91451945c8218c267aae9c34929a7677829",
-      "execution_state": "NOT_STARTED",
-      "note": "addendum checkpoint: the checkpoint of the CheXagent paper (arXiv:2401.12208). It is BLIP-2, not LLaVA, and not the architecture of chexagent-3: a 40-layer EVA-CLIP-shaped ViT at 448 px trained on chest radiographs, a 12-layer Q-Former with 128 query tokens, a linear projection and Mistral-7B. It is the grid's only perceiver-resampler connector with a fixed 128-token visual interface. Outside total_planned_outcomes, which stays the 22-model plan."
-    },
-    {
-      "model_key": "llavarad-7",
-      "model_id": "microsoft/llava-rad",
-      "batch": "addendum",
-      "required_for_full_package": false,
-      "model_revision": "dcdbc6caf6806c9acb66e12a827a39c86e00f6a7",
-      "processor_revision": "dcdbc6caf6806c9acb66e12a827a39c86e00f6a7",
-      "execution_state": "NOT_STARTED",
-      "note": "addendum checkpoint: a chest-radiograph LLaVA whose published repository carries no language-model weights -- a LoRA over lmsys/vicuna-7b-v1.5 (revision resolved at staging), the two mm_projector tensors, and a BiomedCLIP-CXR-518 vision tower in an open_clip training checkpoint. It enters the grid through the assembly scripts/mayo/convert_llavarad.py (receipt at cache/converted/llava-rad-hf/conversion.json). Its tower is a timm vit_base_patch14_dinov2 at 518 px, so it consumes 1,369 visual tokens, 2.4x LLaVA-1.5's 576. Outside total_planned_outcomes, which stays the 22-model plan."
-    },
-    {
-      "model_key": "maira2-7",
-      "model_id": "microsoft/maira-2",
-      "batch": "addendum",
-      "required_for_full_package": false,
-      "model_revision": "795a2b1cd4a310624b4e3d14b5a23e41fd273deb",
-      "processor_revision": "795a2b1cd4a310624b4e3d14b5a23e41fd273deb",
-      "execution_state": "NOT_STARTED",
-      "note": "addendum checkpoint: Microsoft's chest-radiograph report-generation model. LLaVA-shaped with a DINOv2 ViT-B/14 backbone at 518 px (1,369 consumed tokens), a FOUR-layer projector -- the deepest connector of the grid -- and a Vicuna-7B-shaped Llama with a 32,207-token vocabulary. Its remote code targets the transformers 4.51 module layout and cannot run on the campaign's 5.15, so it enters through the layout assembly scripts/mayo/convert_maira2.py (receipt at cache/converted/maira-2-hf/conversion.json); no tensor value is changed. Outside total_planned_outcomes, which stays the 22-model plan."
-    }
-  ],
-  "total_planned_outcomes": {
-    "models": 22,
-    "datasets": 3,
-    "primary_concept_cells": 396,
-    "core_clinical_matrix_cells": 2376,
-    "primary_CORE_rows": 30175200,
-    "all_test_and_calibration_rows": 125153600,
-    "excludes": "feature extraction, interface preflight and retries",
-    "ALTDIR_rows_addendum": 5702400,
-    "ALTDIR_note": "addenda rows (ALTDIR, EXTCOMP, TOKENW, PRECISION, ANSDIR, ALTDIRD, ATTR, ANSDIRT, VALID, ATTRRAND, VALIDFIT, PROJSEED, TOWERSWAP, REPLAY, SEMEND, ATTRQ, FGOBJ, FGOBJ_CALIBRATION) are outside all_test_and_calibration_rows, which keeps the planned total of the original seven modules",
-    "addenda": {
-      "ALTDIR": 5702400,
-      "EXTCOMP": 712800,
-      "TOKENW": 2851200,
-      "PRECISION": 13411200,
-      "ANSDIR": 1663200,
-      "ALTDIRD": 2851200,
-      "ATTR": 2455200,
-      "ANSDIRT": 9504000,
-      "VALID": 3352800,
-      "ATTRRAND": 9424800,
-      "VALIDFIT": 475200,
-      "PROJSEED": 59875200,
-      "TOWERSWAP": 10058400,
-      "REPLAY": 10058400,
-      "SEMEND": 31363200,
-      "ATTRQ": 158400,
-      "FGOBJ": 10058400,
-      "FGOBJ_CALIBRATION": 52800,
-      "TOWERSWAPD": 10058400
-    },
-    "addenda_notes": {
-      "PROJSEED": "907,200 rows per block (453,600 per projection seed). The addenda table states the whole-grid figure by its own convention (per model over all datasets x 22 models); the module is intended for a handful of representative blocks, not the whole grid.",
-      "ATTRRAND": "214,200 rows per chest block (NIH + CheXpert x 22 models)",
-      "VALIDFIT": "21,600 rows per CheXpert block (22 models)",
-      "TOWERSWAP": "152,400 rows per crossed arm; the table follows the campaign convention (all datasets x 22 models), but the module is defined only for the four models of TOWERSWAP_PAIRS and is budgeted for the gemma3-4 / medgemma-4 pair on NIH and CheXpert (4 arms, ~10.9 GPU-h measured from those blocks' own CORE throughput), COCO optional (+5.3 GPU-h). The two native arms cost nothing: they are CORE restricted to the same 200 rows.",
-      "REPLAY": "152,400 rows per block; the table follows the campaign convention, but the module is defined only for the seven blocks of the three shared-tower groups (REPLAY_SOURCE). One dataset per group costs ~5.7 GPU-h (LLaVA-1.5 pair), ~7.5 (MedGemma pair) and ~11.2 (Gemma 3 triple), plus a tower-only tensor prep of well under 0.1 GPU-h per source block.",
-      "SEMEND": "475,200 rows per block; budgeted for at most 8 blocks, staged behind a 3-block stop rule. The GPU cost is set by the number of forwards, not the number of outcomes: 32 steered conditions are one batch-32 forward, so the full 33-condition grid costs exactly what a 25-condition grid would (7.3-19.5 GPU-h per block on the measured throughput of those blocks' own CORE runs).",
-      "ATTRQ": "3,600 rows per chest block (3 attributes x 3 phrasings x 400 calibration rows); the table follows the campaign convention (NIH + CheXpert x 22 models)",
-      "FGOBJ": "457,200 rows per COCO block, byte for byte CORE's grid shape on six new questions; the table follows the campaign convention (COCO x 22 models), but the module is a CONTROL and is budgeted for a handful of COCO blocks chosen for family coverage, not for the whole grid. Measured cost per block is that block's own CORE cost (same 6 x 127 x 600 grid): 3.2-16.4 GPU-h over the 17 COCO blocks whose CORE metas cover all 457,200 outcomes, median 8.5; llama32-11 is the outlier at 32.9.",
-      "FGOBJ_CALIBRATION": "2,400 clean forwards per COCO block (6 fine-grained questions x 400 calibration rows); the table follows the campaign convention (COCO x 22 models). It is 3/8 of the COCO CALIBRATION module, i.e. 0.02-0.14 GPU-h per block on the measured CALIBRATION throughput, under 2% of the FGOBJ block it accompanies."
-    },
-    "addendum_models": [
-      "chexagent-3",
-      "huatuo-7",
-      "chexagent-8",
-      "llavarad-7",
-      "maira2-7"
-    ],
-    "addendum_models_note": "chexagent-3 (StanfordAIMI/CheXagent-2-3b), huatuo-7 (FreedomIntelligence/HuatuoGPT-Vision-7B) chexagent-8 (StanfordAIMI/CheXagent-8b) llavarad-7 (microsoft/llava-rad) and maira2-7 (microsoft/maira-2) are addendum checkpoints enqueued explicitly; the planned totals above remain those of the 22-model campaign."
+  "ANSDIR": {
+   "cohort": "test",
+   "concepts": "all",
+   "templates": [
+    "IY"
+   ],
+   "alpha": [
+    0.25
+   ],
+   "locus": "primary (vis.last)",
+   "fit_seed": 0,
+   "directions": "6 answer directions a_d + the coordinate-permutation sham of a_q = 7 steered conditions per question (no baseline rows; CORE baseline and random family reused)",
+   "prep": "python -m cftransfer.ansdir --model-key K --dataset D --n-train 3000 (GPU, enqueued by enqueue --modules ANSDIR as the module's prep task): clean forwards of the six primary-template questions on the first 3,000 training-cohort rows in manifest order, fp32 answer margins to outcomes/ANSDIR_prep.parquet; per question a ridge regression of the margin on the projected, train-scaled 512-d features (seed-0 P and scaler; alpha by 5-fold CV over {0.1, 1, 10, 100}), lifted with normalize(P @ (w / max(s, 1e-8))) to a_q; fits/vis.last/ansdir_seed0.npz holds a_q, the CV R^2, cos(a_q, w_q) and the 6x6 cosine matrix to the logistic normals",
+   "expected_rows": 25200,
+   "baseline": "reuse CORE",
+   "datasets": [
+    "nih",
+    "chexpert",
+    "coco"
+   ],
+   "added": "2026-09-14; addendum, enqueued explicitly",
+   "analysis": "cftransfer.analysis --what ansdir: W^a (6x6), O^a_q with the 2,000-draw percentile interval and 6x5 max-T verdict, steering reference against the CORE random p95 and the a-sham, own answer write minus the strongest logistic competitor of CORE, cosines / CV R^2"
   },
-  "semend": {
-    "purpose": "semantic endpoints outside the six yes/no / A-B templates, so ownership is not validated only against the model's own answers under those six prompts",
-    "templates": {
-      "NY": "Is there no evidence of {finding} in {image_phrase}? Answer yes or no.",
-      "DA": "Which is present in {image_phrase}, {finding} or {competitor}? Answer A if it is {finding} and B if it is {competitor}. Reply with A or B only.",
-      "DB": "Which is present in {image_phrase}, {competitor} or {finding}? Answer A if it is {competitor} and B if it is {finding}. Reply with A or B only.",
-      "RF": "{report_prefix}\n{report_continuation}"
-    },
-    "endpoint": {
-      "NY": "negated question; the endpoint is p(yes) with SIGN -1, because a direction that carries the concept must move a negated question the other way",
-      "DA": "two-finding forced choice with the concept as option A; the endpoint is the probability of the CONCEPT option",
-      "DB": "the same forced choice with the order and the A/B mapping swapped (counterbalanced); the endpoint is again the probability of the concept option",
-      "RF": "short report continuation; the endpoint is log p(finding word) = max(positive_logits) - vocab_logsumexp at the continuation position, no yes/no head"
-    },
-    "candidate_source": {
-      "NY": "IY",
-      "DA": "IA",
-      "DB": "IB",
-      "RF": "first token of each spelling of the finding word (positive) and of the dataset's neutral word (negative)"
-    },
-    "sign": {
-      "NY": -1,
-      "DA": 1,
-      "DB": 1,
-      "RF": 1
-    },
-    "competitor": "the question's strongest competitor in the block's own CORE write matrix, argmax_{d != q} W_qd on the primary template; frozen by the prep into fits/vis.last/semend_seed0.npz",
-    "report_prefix": {
-      "nih": "Write the findings section of the radiology report for this chest radiograph.",
-      "chexpert": "Write the findings section of the radiology report for this chest radiograph.",
-      "coco": "List the objects visible in this photograph."
-    },
-    "report_continuation": {
-      "nih": "Findings:",
-      "chexpert": "Findings:",
-      "coco": "Objects:"
-    },
-    "neutral_word": {
-      "nih": "normal",
-      "chexpert": "normal",
-      "coco": "nothing"
-    },
-    "finding_words": {
-      "nih": {
-        "Effusion": "effusion",
-        "Atelectasis": "atelectasis",
-        "Pneumothorax": "pneumothorax",
-        "Cardiomegaly": "cardiomegaly",
-        "Mass": "mass",
-        "Nodule": "nodule"
-      },
-      "chexpert": {
-        "Effusion": "effusion",
-        "Atelectasis": "atelectasis",
-        "Pneumothorax": "pneumothorax",
-        "Cardiomegaly": "cardiomegaly",
-        "Consolidation": "consolidation",
-        "Edema": "edema"
-      },
-      "coco": {
-        "person": "person",
-        "dog": "dog",
-        "car": "car",
-        "chair": "chair",
-        "bottle": "bottle",
-        "bicycle": "bicycle"
-      }
-    },
-    "n_random": 18,
-    "grid": "per (question, endpoint): clean baseline + the SIX label directions + the SIX answer directions a_d + the question's label sham + the question's answer sham + 18 random directions = 33 conditions, of which 32 are steered and therefore fill exactly one batch-32 forward; the endpoint grid costs the same GPU time as a grid half its size would",
-    "reference": "per endpoint and per family, the own signed effect must be positive, above every one of the 18 random directions (rank 1 of 19) and above the |effect| of that family's own sham"
+  "ALTDIRD": {
+   "cohort": "test",
+   "concepts": "all",
+   "templates": [
+    "IY"
+   ],
+   "alpha": [
+    0.25
+   ],
+   "locus": "primary (vis.last)",
+   "fit_seed": 0,
+   "directions": "6 dom_disp + 6 pattern_disp = 12 steered conditions per question (no baseline rows; CORE baseline reused)",
+   "lift": "a displacement u in the standardised 512-d space is lifted as its minimum-norm preimage x = R (R^T R)^{-1} diag(s) u (R = the seed-0 projection), unit-normalised; the coefficient lift R diag(1/s) beta of the logistic normals and of the ALTDIR families is unchanged",
+   "prep": "python -m cftransfer.altdir --model-key K --dataset D  (CPU; appends dom_disp/pattern_disp vectors, the R^T R / D eigenvalue spectrum and the extended cosine matrices to fits/vis.last/altdir_seed0.npz without changing existing arrays)",
+   "expected_rows": 43200,
+   "baseline": "reuse CORE",
+   "datasets": [
+    "nih",
+    "chexpert",
+    "coco"
+   ],
+   "added": "2026-09-15; addendum, enqueued explicitly",
+   "analysis": "cftransfer.analysis --what altdird: per family W (6x6), within-family O_q with interval and 6x5 max-T verdict, own write minus the strongest logistic competitor of CORE, cosines to the logistic normal and to the coefficient-lifted dom / pattern"
   },
-  "attrq": {
-    "purpose": "cheap per-block eligibility pass for the ATTR / ATTRRAND control: how well the model answers each non-clinical attribute question under three phrasings, on the calibration rows, with no writes and no reference family. It exists because a cell whose clean answer no direction can move cannot be owned for reasons that have nothing to do with whether the concept is clinical, so pooling such cells makes the attribute-versus-finding comparison unfair in both directions.",
-    "cohort": "calibration",
-    "phrasings": [
-      "AQ0",
-      "AQ1",
-      "AQ2"
-    ],
-    "questions": {
-      "view_AP": {
-        "AQ0": {
-          "template": "primary"
-        },
-        "AQ1": {
-          "text": "Was {image_phrase} acquired with an anteroposterior (AP) projection? Answer yes or no."
-        },
-        "AQ2": {
-          "text": "Does {image_phrase} show an AP (anteroposterior) view rather than a PA (posteroanterior) view? Answer yes or no."
-        }
-      },
-      "sex_F": {
-        "AQ0": {
-          "template": "primary"
-        },
-        "AQ1": {
-          "text": "Is the patient in {image_phrase} female? Answer yes or no."
-        },
-        "AQ2": {
-          "text": "Does {image_phrase} show a female patient rather than a male patient? Answer yes or no."
-        }
-      },
-      "age_60": {
-        "AQ0": {
-          "template": "primary"
-        },
-        "AQ1": {
-          "text": "Is the patient in {image_phrase} sixty years old or older? Answer yes or no."
-        },
-        "AQ2": {
-          "text": "Does {image_phrase} show a patient aged sixty or older rather than a younger patient? Answer yes or no."
-        }
-      }
-    },
-    "candidate_source": {
-      "AQ0": "primary",
-      "AQ1": "IY",
-      "AQ2": "IY"
-    },
-    "answer_mapping": "yes = the attribute is positive (view_AP = AP / portable, sex_F = female, age_60 = age >= 60), exactly the mapping the yes/no templates use for a finding; AQ1 and AQ2 keep the 'Answer yes or no.' ending and reuse the block's frozen IY candidate set, so nothing about the answer head changes.",
-    "AQ0": "the phrasing ATTR and ATTRRAND already write: the block's primary template with the attribute phrase in the {finding} slot, rendered by protocol.render_question, so its text is byte-identical to theirs and the module measures the written question as well as the alternatives.",
-    "eligibility_source": "AQ0 inherits the primary template's preflight eligibility; AQ1 and AQ2 are yes/no questions and inherit IY's, so a block whose yes/no mapping failed image-free preflight check E does not score them.",
-    "selection_rule": "per block and attribute the primary phrasing is the ELIGIBLE phrasing with the highest one-sided 95% lower bound of the clean-answer AUROC against the attribute's manifest label on the calibration rows. Eligible = >= 10 known positives and >= 10 known negatives, >= 1900 valid unit-bootstrap draws and a lower bound above 0.5 -- the support and lower-bound rule the readable and answer-capable grades use. Ties break in phrasing order (AQ0 first). An attribute with no eligible phrasing is recorded as not answerable in that block and no phrasing is selected.",
-    "bootstrap": "cftransfer.analysis.bootstrap_indices(dataset, n_calibration, BOOT_CALIBRATION_SEED, draws), the campaign's shared calibration-row unit bootstrap",
-    "writes": "none: alpha 0 clean forwards only, one condition per (row, attribute, phrasing)",
-    "expected_rows": 3600,
-    "datasets": [
-      "nih",
-      "chexpert"
-    ],
-    "added": "2026-09-16; addendum, enqueued explicitly",
-    "analysis": "cftransfer.analysis --what attrq: per attribute and phrasing the question text, n_pos / n_neg, clean-answer AUROC and Brier, the one-sided 95% lower bound, the answer-capable flag, and the selected phrasing with the reason; written to summary.json under `attrq`. analysis --what attr then reads the written phrasing's calibration-row numbers from it, so an attribute cell and a clinical cell carry answerability measured on the same rows."
+  "ATTR": {
+   "cohort": "test",
+   "questions": "3 attribute questions (view_AP, sex_F, age_60; protocol templates with the attribute phrase) + the 6 clinical questions",
+   "templates": [
+    "IY"
+   ],
+   "alpha": [
+    0.25
+   ],
+   "locus": "primary (vis.last)",
+   "fit_seed": 0,
+   "attribute_phrases": {
+    "view_AP": "an anteroposterior (portable) projection",
+    "sex_F": "a female patient",
+    "age_60": "a patient aged sixty or older"
+   },
+   "attribute_labels": {
+    "view_AP": "1 = AP, 0 = PA (manifest `view`)",
+    "sex_F": "1 = F, 0 = M (manifest `sex`)",
+    "age_60": "1 = age >= 60, 0 = age < 60 (manifest `age`)"
+   },
+   "support_rule": ">= 100 known training rows per class (both chest sets qualify on all three attributes)",
+   "directions": "3 attribute directions (fitted like the protocol normals) + 6 clinical normals + the question's sham; attribute questions also score their clean baseline (11 conditions), clinical questions reuse CORE's baseline (10 conditions); no random family (CORE's random p95 is the reference for clinical questions; attribute questions are referenced against their sham only)",
+   "prep": "python -m cftransfer.attr --model-key K --dataset D  (CPU; writes fits/vis.last/attr_seed0.npz with directions, shams, cosines to the six normals, calibration-row probe and type->random-label control logits)",
+   "expected_rows": 55800,
+   "baseline": "attribute questions: own; clinical questions: reuse CORE",
+   "datasets": [
+    "nih",
+    "chexpert"
+   ],
+   "added": "2026-09-15; addendum, enqueued explicitly",
+   "analysis": "cftransfer.analysis --what attr: 9x9 write matrix (questions x directions), ownership of every question over the family {3 attributes + 6 clinical} with interval and max-T verdict, readability of the attribute probes (calibration rows, selectivity vs the 20 type->random-label controls) and answer AUROC of the clean attribute questions on the test rows"
   },
-  "attr_comparison": {
-    "purpose": "the attribute-versus-finding ownership comparison of the ATTR / ATTRRAND control, reported three ways. All three are prespecified and all three are reported whatever they show.",
-    "modes": {
-      "all_cells": "every attribute cell against every clinical cell of the same blocks (the comparison as it stood)",
-      "answer_capable_cells": "only cells whose clean answer clears the campaign's answer-capable rule (>= 10 known positives and negatives, >= 1900 valid draws, one-sided 95% lower AUROC bound above 0.5), applied to attributes and findings alike",
-      "answerability_matched": "each attribute cell paired with every clinical cell of the SAME block whose clean-answer AUROC is within match_window of it; the reported quantity is the ownership rate of each kind over the matched pairs and their difference. Attribute cells with no match are counted and named."
-    },
-    "match_window": 0.05,
-    "answer_auroc_source": {
-      "clinical": "summary.json `calibration` of the same block: the clean CALIBRATION margins of the primary template against the manifest label on the 400 calibration rows. Read, never recomputed.",
-      "attribute": "summary.json `attrq` for the phrasing ATTR wrote, when ATTRQ has been scored for the block (400 calibration rows, same rows as the clinical number); otherwise summary.json `attr`, which measures the ATTR module's own clean baseline against the manifest attribute label on the 600 test rows. Every cell records which one it used.",
-      "caveat": "until ATTRQ is scored the two kinds are measured on different rows (600 test vs 400 calibration) and therefore with different bootstrap power at the same AUROC, which makes the answer-capable flag easier to reach for an attribute cell than for a clinical one. ATTRQ removes the asymmetry; the aggregates report the row set and the known-label counts of both kinds so it stays visible."
-    },
-    "ownership": "cftransfer.manifest.owned: steering_reference and verdict == fixed_family_advantage, unchanged",
-    "interval": "percentile 2.5 / 97.5 over the campaign's shared unit (patient) bootstrap draws of the block analysis (core_bootstrap_indices, seed 2026090601): ownership is re-decided inside every draw as steering_reference (the point-estimate reference) and O_q > 0 with the strongest competitor recomputed in that draw, because the max-T simultaneous verdict is not a per-draw quantity. The point rates use the campaign's owned() rule; the per-draw rate is reported beside them so the gap between the two rules is visible.",
-    "report": "<RUN_ROOT>/robustness/round2.json attr.comparison, per dataset and pooled over the chest sets, with the per-block rows carrying every cell's answer AUROC, its source and its matched partners"
+  "ANSDIRT": {
+   "cohort": "test",
+   "concepts": "all",
+   "templates": [
+    "WY",
+    "IA",
+    "IB",
+    "WA",
+    "WB"
+   ],
+   "alpha": [
+    0.25
+   ],
+   "locus": "primary (vis.last)",
+   "fit_seed": 0,
+   "directions": "baseline + 6 IY-fitted answer directions a_d + the a-sham of q = 8 conditions per (question, template); 40 per question over the five templates",
+   "prep": "fits/vis.last/ansdir_seed0.npz from the ANSDIR prep (python -m cftransfer.ansdir; enqueue emits it)",
+   "expected_rows": 144000,
+   "baseline": "own, per (question, template)",
+   "datasets": [
+    "nih",
+    "chexpert",
+    "coco"
+   ],
+   "added": "2026-09-15; addendum, enqueued explicitly; INELIGIBLE templates are dropped as in PROMPT",
+   "analysis": "cftransfer.analysis --what ansdirt: per template W^a (6x6), O^a_q with interval and 6x5 max-T verdict, the a-sham reference, the cross comparison against the logistic competitors and random p95 of PROMPT under the same template (its two designated concepts), and transfer counts of the IY-owned a_q cells (from --what ansdir) that stay owned under each template"
+  },
+  "VALID": {
+   "cohort": "valid",
+   "concepts": "all",
+   "templates": [
+    "IY"
+   ],
+   "alpha": [
+    0.25
+   ],
+   "locus": "primary (vis.last)",
+   "fit_seed": 0,
+   "directions": "baseline+6clinical+119random+question_sham (the CORE grid with the block's seed-0 directions; no new fit)",
+   "rows": "200: one frontal per patient of the official CheXpert validation split (200 patients, 202 frontals), selected and ordered by the CheXpert Plus hash rules (manifests.build_chexpert_valid); labels are the radiologist consensus of CheXpert-v1.0 valid.csv (manifests/release.json `valid`, label_source radiologist), not the labeler output of the other roles",
+   "expected_rows": 152400,
+   "baseline": "own",
+   "datasets": [
+    "chexpert"
+   ],
+   "added": "2026-09-15; addendum, enqueued explicitly; images PNG/valid/* of the CheXpert Plus zips (scripts/mayo/extract_chexpert_valid.py); enqueue also emits a features task for the valid rows (features/valid/<locus>.npz) that the module task does not wait for",
+   "analysis": "cftransfer.analysis --what valid: the CORE grade on the valid rows (W_qq, strongest competitor, O_q with interval, 6x5 max-T verdict from 2,000 paired draws at n = 200, random p95 / |sham| reference on those rows), answer capability of the clean answers against the radiologist labels (campaign rule), probe readability on the valid features against the 20 control probes when extracted, and the paired comparison with the block's CORE grade on the 600 labeler-labelled test rows (per-concept readable / answer-capable / owned, O_q on both, counts of agreeing verdicts)"
+  },
+  "ATTRRAND": {
+   "cohort": "test",
+   "questions": "the 3 attribute questions of ATTR only (view_AP, sex_F, age_60)",
+   "templates": [
+    "IY"
+   ],
+   "alpha": [
+    0.25
+   ],
+   "locus": "primary (vis.last)",
+   "fit_seed": 0,
+   "directions": "the protocol's own 119 random directions (fits/vis.last/seed0.npz random_vectors, the PCG64(0) draw CORE scores); no new directions, no baseline rows, no prep of its own",
+   "rationale": "ATTR referenced attribute cells against their sham alone while clinical cells had the 119-random p95, so the attribute-versus-finding ownership comparison used two different steering references; ATTRRAND gives an attribute cell the same random p95 bar as a clinical cell",
+   "expected_rows": 214200,
+   "baseline": "reuse ATTR (the attribute questions' own clean baseline)",
+   "datasets": [
+    "nih",
+    "chexpert"
+   ],
+   "added": "2026-09-16; addendum, enqueued explicitly (two shards)",
+   "analysis": "folded into cftransfer.analysis --what attr: each attribute cell gains random_p95 / random_n / rank_in_random_family from this module and records steering_reference_sham_only (the old rule), steering_reference_matched (W_qq > 0, > random p95, > |sham|) and steering_reference_rule, which names the reference the cell used; clinical cells are unchanged"
+  },
+  "ATTRQ": {
+   "cohort": "calibration",
+   "questions": "the 3 attribute questions of ATTR only (view_AP, sex_F, age_60), each under 3 phrasings",
+   "templates": [
+    "AQ0",
+    "AQ1",
+    "AQ2"
+   ],
+   "alpha": [
+    0.0
+   ],
+   "locus": "primary (vis.last)",
+   "fit_seed": 0,
+   "directions": "none: clean forwards only (no writes, no reference family)",
+   "rationale": "cheap per-block eligibility pass for the ATTR / ATTRRAND control: how well the model answers each non-clinical attribute question under three phrasings, on the calibration rows, with no writes and no reference family. It exists because a cell whose clean answer no direction can move cannot be owned for reasons that have nothing to do with whether the concept is clinical, so pooling such cells makes the attribute-versus-finding comparison unfair in both directions.",
+   "expected_rows": 3600,
+   "baseline": "own (the clean forward IS the measurement)",
+   "datasets": [
+    "nih",
+    "chexpert"
+   ],
+   "added": "2026-09-16; addendum, enqueued explicitly (one shard)",
+   "analysis": "cftransfer.analysis --what attrq: per attribute and phrasing the question text, n_pos / n_neg, clean-answer AUROC and Brier, the one-sided 95% lower bound, the answer-capable flag, and the selected phrasing with the reason; written to summary.json under `attrq`. analysis --what attr then reads the written phrasing's calibration-row numbers from it, so an attribute cell and a clinical cell carry answerability measured on the same rows."
+  },
+  "VALIDFIT": {
+   "cohort": "test (the write); the FIT uses the 200 radiologist-labelled `valid` rows",
+   "concepts": "all",
+   "templates": [
+    "IY"
+   ],
+   "alpha": [
+    0.25
+   ],
+   "locus": "primary (vis.last)",
+   "fit_seed": 0,
+   "directions": "6 expert-label directions (vfit:<concept>); no baseline rows, no random family and no sham of its own -- CORE's baseline, 119-random family and question sham are the references",
+   "fit": "the six concept probes refitted on the known-label `valid` rows (role valid, label_source radiologist) with the protocol's own probe settings: the block's seed-0 projection R and its TRAIN-ONLY scaler mu/s (never refitted on 200 rows), LogisticRegression(C=1, lbfgs, 2000 iterations, random_state 0), lifted with normalize(R @ (w / max(s, 1e-8))); features from features/valid/<locus>.npz (the VALID feature task)",
+   "cross_fitting": "5 folds over PATIENTS (KFold shuffled, seed 0, over the sorted unit ids), so every valid row is scored by a direction not fitted on it",
+   "cpu_report": "raw cosine (model space and projected 512-d) and covariance-whitened cosine (<a,b>_Sigma / sqrt(<a,a>_Sigma <b,b>_Sigma), Sigma = covariance of the projected, train-scaled TRAINING features) between each expert-label direction and the corresponding report-label direction; held-out probe AUROC against the expert labels and against the report-derived (labeler) labels of the same rows; the seed-0 report-label direction's AUROC on those rows for reference",
+   "prep": "python -m cftransfer.validfit --model-key K --dataset chexpert  (CPU; writes fits/vis.last/validfit_seed0.npz)",
+   "expected_rows": 21600,
+   "baseline": "reuse CORE",
+   "datasets": [
+    "chexpert"
+   ],
+   "added": "2026-09-16; addendum, enqueued explicitly",
+   "analysis": "cftransfer.analysis --what validfit: W^e (6x6), O^e_q with the 2,000-draw percentile interval and the 6x5 max-T verdict, CORE's steering reference (W^e_qq > 0, > the 119-random p95, > |sham|), own expert write minus the strongest logistic competitor of CORE, and the prep's cosines / AUROCs per concept"
+  },
+  "PROJSEED": {
+   "cohort": "test",
+   "concepts": "all",
+   "templates": [
+    "IY"
+   ],
+   "alpha": [
+    0.25
+   ],
+   "locus": "primary (vis.last)",
+   "projection_seeds": [
+    1,
+    2
+   ],
+   "directions": "per projection seed: 6 refit directions (proj:<concept>) + that projection's own 119 random directions (projrand:###) + the question's sham (projsham:<concept>) = 126 conditions per question and seed; no baseline rows",
+   "fit": "R_k = PCG64(k).standard_normal((D, 512)) / sqrt(512) (the protocol's projection construction with the seed replaced); the train-only scaler is recomputed in that projected space; the six probes are refitted on the SAME training rows and known-label masks with the same hyperparameters (C=1, lbfgs, 2000 iterations, random_state 0); the random family and shams are the same construction re-drawn from PCG64(k) in that projection",
+   "fit_seed_column": "the outcomes carry the PROJECTION seed (1 or 2) in the fit_seed column; direction ids are seed-independent",
+   "prep": "python -m cftransfer.projseed --model-key K --dataset D  (CPU; writes fits/vis.last/projseed_seed1.npz and projseed_seed2.npz with the model-space cosines to the seed-0 directions)",
+   "expected_rows": 907200,
+   "baseline": "reuse CORE",
+   "datasets": [
+    "nih",
+    "chexpert",
+    "coco"
+   ],
+   "added": "2026-09-16; addendum, enqueued explicitly, ONE SHARD PER PROJECTION SEED (runner --fit-seed); intended for a handful of representative blocks, not the whole grid",
+   "analysis": "cftransfer.analysis --what projseed: per seed W^k (6x6), O^k_q with the 2,000-draw percentile interval and the 6x5 max-T verdict, that projection's OWN random p95 and sham as the steering reference, the model-space cosine to the seed-0 direction, and the count of verdicts / ownership decisions that agree with the block's CORE grade on the same rows"
+  },
+  "TOWERSWAP": {
+   "cohort": "first 200 test rows in cohorts.csv order",
+   "concepts": "all",
+   "templates": [
+    "IY"
+   ],
+   "alpha": [
+    0.25
+   ],
+   "locus": "primary (vis.last)",
+   "fit_seed": 0,
+   "directions": "the CORE grid: baseline + 6 clinical + 119 random + question sham = 127 (own baseline), with the DIRECTIONS OF THE TOWER IN USE -- the donor block's seed-0 fit, reused unchanged",
+   "model": "the block's own reader (multimodal projector + language model) with the PARTNER checkpoint's vision tower loaded in its place; protocol.TOWERSWAP_PAIRS pairs gemma3-4 with medgemma-4 and gemma3-27 with medgemma-27",
+   "swap_feasibility": "verified from the staged checkpoints (python -m cftransfer.towerswap): gemma-3-4b-it and medgemma-4b-it have IDENTICAL tensor name sets (883 each) and identical shapes for vision_tower (437 tensors, 416.9M params), multi_modal_projector (2) and language_model (444), with 0/437 tower tensors bitwise identical (MedSigLIP vs SigLIP); the same holds for gemma-3-27b-it vs medgemma-27b-it (1247 tensors). gemma-3-12b-it vs medgemma-27b-it fails as expected: mm_input_projection_weight (1152,3840) vs (1152,5376) and 48 vs 62 language-model layers.",
+   "verification": "every replaced tensor is torch.equal to the donor checkpoint's tensor after the runtime dtype cast, and every parameter and buffer outside the tower keeps its (dtype, shape, sum, sum|x|, NaN count) signature; the receipt is written to outcomes/TOWERSWAP/swap-<shard>.json",
+   "four_combinations": "the two crossed arms are this module on the two blocks of a pair; the two native arms are those blocks' own CORE grade restricted to the same 200 rows (analysis.core row_limit), so no GPU time is spent re-running CORE",
+   "expected_rows": 152400,
+   "baseline": "own",
+   "datasets": [
+    "nih",
+    "chexpert",
+    "coco"
+   ],
+   "added": "2026-09-16; addendum, enqueued explicitly, only for the models in TOWERSWAP_PAIRS",
+   "analysis": "cftransfer.analysis --what towerswap: per combination (tower, reader) the 6x6 write matrix, W_qq, O_q with the 2,000-draw percentile interval, the 119-random p95 / |sham| steering reference and the 6x5 max-T verdict; within the block the paired crossed-minus-native contrasts; and, when the partner block is packaged, the reader effect at fixed tower and the tower effect at fixed reader over the six questions"
+  },
+  "REPLAY": {
+   "cohort": "first 200 test rows in cohorts.csv order",
+   "concepts": "all",
+   "templates": [
+    "IY"
+   ],
+   "alpha": [
+    0.25
+   ],
+   "locus": "primary (vis.last)",
+   "fit_seed": 0,
+   "directions": "the CORE grid (127 configurations, own baseline) with the SOURCE block's seed-0 directions, random family and sham -- identical for every reader of the shared-tower group",
+   "mechanism": "the consumed block's output is overwritten with the source block's stored tensor before the steering hook reads it (cftransfer.replay.ReplayHook registers on the same module with prepend=True after LocusHook, so it runs first and LocusHook computes the token norms and the write on the replayed tensor); the outcome schema is unchanged",
+   "shared_tower_groups": "verified bitwise identical in the staged checkpoints: SigLIP 437/437 tensors across gemma3-4 / gemma3-12 / gemma3-27, MedSigLIP 437/437 across medgemma-4 / medgemma-27, CLIP ViT-L/14-336 391/391 across llava15-7 / llava15-13; SigLIP vs MedSigLIP 0/437. llavamed-7 joins the CLIP group: the same 391 tensors in the same shapes under the vision_tower.vision_model.* spelling, equal up to the fp16 -> bf16 storage change (max |difference| 0.047, 0 exactly equal after the cast), which is precisely the difference replaying one stored tensor into both readers removes; it is the grid's only shared-tower pair whose readers are a general and a medical model.",
+   "prep": "python -m cftransfer.replay --model-key SOURCE --dataset D (GPU; one tower pass over the 200 rows, writes runs/SOURCE/D/replay/vis.last.npz with the ORIGINAL bits of the captured tensor)",
+   "note": "the tower still runs during the module, so a replay block costs what the same CORE grid costs on the same rows; what it buys is an exactly identical input, not speed",
+   "expected_rows": 152400,
+   "baseline": "own",
+   "datasets": [
+    "nih",
+    "chexpert",
+    "coco"
+   ],
+   "added": "2026-09-16; addendum, enqueued explicitly, only for the models in REPLAY_SOURCE",
+   "analysis": "cftransfer.analysis --what replay: the CORE grade on the replayed tensors (core() on the REPLAY parquet), the paired comparison against the block's own CORE grade on the same rows, the recorded drift between this reader's own tower output and the stored tensor, and, when the group's other blocks are packaged, the cross-reader comparison on byte-identical inputs"
+  },
+  "SEMEND": {
+   "cohort": "test",
+   "concepts": "all",
+   "templates": [
+    "NY",
+    "DA",
+    "DB",
+    "RF"
+   ],
+   "alpha": [
+    0.25
+   ],
+   "locus": "primary (vis.last)",
+   "fit_seed": 0,
+   "directions": "baseline + 6 label directions concept:<c> + 6 answer directions ans:<c> + the question's label sham sham:<q> + the question's answer sham anssham:<q> + 18 random directions = 33 conditions per (question, endpoint). Both families therefore have a FULL 6x6 write matrix on every endpoint, so the campaign's ownership rule applies unchanged AND the spillover of one direction onto the other five concepts' endpoints is measured.",
+   "endpoints": "see the top-level `semend` block: NY negated question (sign -1), DA/DB counterbalanced two-finding forced choice, RF finding-word log-probability in a report continuation",
+   "reference": "each endpoint gets its own clean baseline and its own steering reference: the own signed effect must be positive, above all 18 random directions (rank 1 of 19) and above that family's own |sham|. Ownership is the campaign rule: the steering reference plus positive max-T lower bounds over the five-competitor family.",
+   "prep": "python -m cftransfer.semend --model-key K --dataset D (CPU; freezes the strongest competitor per question from the block's CORE write matrix and the exact rendered prompt of every (question, endpoint) into fits/vis.last/semend_seed0.npz). It requires fits/vis.last/ansdir_seed0.npz, so SEMEND is enqueued with or after ANSDIR.",
+   "expected_rows": 475200,
+   "baseline": "own, per (question, endpoint)",
+   "datasets": [
+    "nih",
+    "chexpert",
+    "coco"
+   ],
+   "added": "2026-09-16; addendum, enqueued explicitly",
+   "analysis": "cftransfer.analysis --what semend: per endpoint and per family the 6x6 write matrix, W_qq, O_q with the 2,000-draw percentile interval, the 18-random / sham steering reference and the 6x5 max-T verdict; the affirmative-versus-negated signed change and its across-question correlation with CORE; the counterbalanced forced-choice probability and the order bias; the report-continuation delta log p of the finding word; and the incremental-validity regression described above",
+   "incremental_validity": "the analysis asks whether OWNERSHIP predicts behaviour on these endpoints beyond what is already known. Per cell (question, endpoint, family) it records the intended change on the question's own endpoint, the unintended change of the same direction on the other five concepts' endpoints, and their difference (the selectivity of the change). Pooled over cells it regresses that difference on (i) the CORE write magnitude W_qq, (ii) the probe selectivity S, (iii) the clean-answer AUROC, and then adds (iv) the CORE ownership indicator and O_q, reporting the added coefficients, their patient-bootstrap intervals and the change in explained variance, separately for the label and the answer direction. Cells that meet the steering reference but are NOT owned are kept as their own group and compared with the owned cells directly, since that contrast is what ownership would have to explain."
+  },
+  "TOWERSWAPD": {
+   "cohort": "first 200 test rows in cohorts.csv order",
+   "concepts": "all",
+   "templates": [
+    "IY"
+   ],
+   "alpha": [
+    0.25
+   ],
+   "locus": "primary (vis.last)",
+   "fit_seed": 0,
+   "directions": "the block's own seed-0 fit, unchanged",
+   "model": "the block's own reader (multimodal projector + language model) with the PARTNER checkpoint's vision tower loaded in its place; protocol.TOWERSWAP_PAIRS pairs gemma3-4 with medgemma-4 and gemma3-27 with medgemma-27",
+   "swap_feasibility": "verified from the staged checkpoints (python -m cftransfer.towerswap): gemma-3-4b-it and medgemma-4b-it have IDENTICAL tensor name sets (883 each) and identical shapes for vision_tower (437 tensors, 416.9M params), multi_modal_projector (2) and language_model (444), with 0/437 tower tensors bitwise identical (MedSigLIP vs SigLIP); the same holds for gemma-3-27b-it vs medgemma-27b-it (1247 tensors). gemma-3-12b-it vs medgemma-27b-it fails as expected: mm_input_projection_weight (1152,3840) vs (1152,5376) and 48 vs 62 language-model layers.",
+   "verification": "every replaced tensor is torch.equal to the donor checkpoint's tensor after the runtime dtype cast, and every parameter and buffer outside the tower keeps its (dtype, shape, sum, sum|x|, NaN count) signature; the receipt is written to outcomes/TOWERSWAPD/swap-<shard>.json",
+   "four_combinations": "the two crossed arms are this module on the two blocks of a pair; the two native arms are those blocks' own CORE grade restricted to the same 200 rows (analysis.core row_limit), so no GPU time is spent re-running CORE",
+   "expected_rows": 152400,
+   "baseline": "own",
+   "datasets": [
+    "nih",
+    "chexpert",
+    "coco"
+   ],
+   "added": "2026-09-17; addendum, enqueued explicitly, only for the models in TOWERSWAP_PAIRS",
+   "analysis": "cftransfer.analysis --what towerswap: per combination (tower, reader) the 6x6 write matrix, W_qq, O_q with the 2,000-draw percentile interval, the 119-random p95 / |sham| steering reference and the 6x5 max-T verdict; within the block the paired crossed-minus-native contrasts; and, when the partner block is packaged, the reader effect at fixed tower and the tower effect at fixed reader over the six questions",
+   "purpose": "the same crossed arm as TOWERSWAP with the block's OWN directions instead of the donor tower's, so the pair separates the two factors a tower swap changes at once: TOWERSWAPD against TOWERSWAP isolates the direction the tower was fitted on, and TOWERSWAPD against the native arm isolates the representation itself"
   }
+ },
+ "numerics": {
+  "weights": "BF16 primary; record exceptions as separate condition",
+  "eval_mode": true,
+  "dropout": false,
+  "gradient": "disabled",
+  "max_generation_tokens": 0,
+  "logit_storage": "float32",
+  "aggregate_storage": "float64",
+  "quantization": "separate sensitivity condition only"
+ },
+ "activation_storage": {
+  "required": "pooled unprojected features, float16 or float32, all train/calibration/test rows; row ids and masks metadata",
+  "optional": "full token tensors for 16 preflight images only"
+ },
+ "planned_models": [
+  {
+   "model_key": "q25-3",
+   "model_id": "Qwen/Qwen2.5-VL-3B-Instruct",
+   "batch": "phase1",
+   "required_for_full_package": true,
+   "model_revision": null,
+   "processor_revision": null,
+   "execution_state": "NOT_STARTED"
+  },
+  {
+   "model_key": "q25-7",
+   "model_id": "Qwen/Qwen2.5-VL-7B-Instruct",
+   "batch": "phase1",
+   "required_for_full_package": true,
+   "model_revision": null,
+   "processor_revision": null,
+   "execution_state": "NOT_STARTED"
+  },
+  {
+   "model_key": "q25-32",
+   "model_id": "Qwen/Qwen2.5-VL-32B-Instruct",
+   "batch": "phase1",
+   "required_for_full_package": true,
+   "model_revision": null,
+   "processor_revision": null,
+   "execution_state": "NOT_STARTED"
+  },
+  {
+   "model_key": "q25-72",
+   "model_id": "Qwen/Qwen2.5-VL-72B-Instruct",
+   "batch": "phase2",
+   "required_for_full_package": true,
+   "model_revision": null,
+   "processor_revision": null,
+   "execution_state": "NOT_STARTED"
+  },
+  {
+   "model_key": "q3-4",
+   "model_id": "Qwen/Qwen3-VL-4B-Instruct",
+   "batch": "phase1",
+   "required_for_full_package": true,
+   "model_revision": null,
+   "processor_revision": null,
+   "execution_state": "NOT_STARTED"
+  },
+  {
+   "model_key": "q3-8",
+   "model_id": "Qwen/Qwen3-VL-8B-Instruct",
+   "batch": "phase1",
+   "required_for_full_package": true,
+   "model_revision": null,
+   "processor_revision": null,
+   "execution_state": "NOT_STARTED"
+  },
+  {
+   "model_key": "q3-32",
+   "model_id": "Qwen/Qwen3-VL-32B-Instruct",
+   "batch": "phase1",
+   "required_for_full_package": true,
+   "model_revision": null,
+   "processor_revision": null,
+   "execution_state": "NOT_STARTED"
+  },
+  {
+   "model_key": "iv35-8",
+   "model_id": "OpenGVLab/InternVL3_5-8B-HF",
+   "batch": "phase1",
+   "required_for_full_package": true,
+   "model_revision": null,
+   "processor_revision": null,
+   "execution_state": "NOT_STARTED"
+  },
+  {
+   "model_key": "iv35-14",
+   "model_id": "OpenGVLab/InternVL3_5-14B-HF",
+   "batch": "phase1",
+   "required_for_full_package": true,
+   "model_revision": null,
+   "processor_revision": null,
+   "execution_state": "NOT_STARTED"
+  },
+  {
+   "model_key": "iv35-38",
+   "model_id": "OpenGVLab/InternVL3_5-38B-HF",
+   "batch": "phase1",
+   "required_for_full_package": true,
+   "model_revision": null,
+   "processor_revision": null,
+   "execution_state": "NOT_STARTED"
+  },
+  {
+   "model_key": "gemma3-4",
+   "model_id": "google/gemma-3-4b-it",
+   "batch": "phase1",
+   "required_for_full_package": true,
+   "model_revision": null,
+   "processor_revision": null,
+   "execution_state": "NOT_STARTED"
+  },
+  {
+   "model_key": "gemma3-12",
+   "model_id": "google/gemma-3-12b-it",
+   "batch": "phase2",
+   "required_for_full_package": true,
+   "model_revision": null,
+   "processor_revision": null,
+   "execution_state": "NOT_STARTED"
+  },
+  {
+   "model_key": "gemma3-27",
+   "model_id": "google/gemma-3-27b-it",
+   "batch": "phase1",
+   "required_for_full_package": true,
+   "model_revision": null,
+   "processor_revision": null,
+   "execution_state": "NOT_STARTED"
+  },
+  {
+   "model_key": "medgemma-4",
+   "model_id": "google/medgemma-4b-it",
+   "batch": "phase1",
+   "required_for_full_package": true,
+   "model_revision": null,
+   "processor_revision": null,
+   "execution_state": "NOT_STARTED"
+  },
+  {
+   "model_key": "medgemma-27",
+   "model_id": "google/medgemma-27b-it",
+   "batch": "phase1",
+   "required_for_full_package": true,
+   "model_revision": null,
+   "processor_revision": null,
+   "execution_state": "NOT_STARTED"
+  },
+  {
+   "model_key": "llama32-11",
+   "model_id": "meta-llama/Llama-3.2-11B-Vision-Instruct",
+   "batch": "phase1",
+   "required_for_full_package": true,
+   "model_revision": null,
+   "processor_revision": null,
+   "execution_state": "NOT_STARTED"
+  },
+  {
+   "model_key": "llama32-90",
+   "model_id": "meta-llama/Llama-3.2-90B-Vision-Instruct",
+   "batch": "phase2",
+   "required_for_full_package": true,
+   "model_revision": null,
+   "processor_revision": null,
+   "execution_state": "NOT_STARTED"
+  },
+  {
+   "model_key": "llava15-7",
+   "model_id": "llava-hf/llava-1.5-7b-hf",
+   "batch": "phase1",
+   "required_for_full_package": true,
+   "model_revision": null,
+   "processor_revision": null,
+   "execution_state": "NOT_STARTED"
+  },
+  {
+   "model_key": "llava15-13",
+   "model_id": "llava-hf/llava-1.5-13b-hf",
+   "batch": "phase2",
+   "required_for_full_package": true,
+   "model_revision": null,
+   "processor_revision": null,
+   "execution_state": "NOT_STARTED"
+  },
+  {
+   "model_key": "lingshu-7",
+   "model_id": "lingshu-medical-mllm/Lingshu-7B",
+   "batch": "phase1",
+   "required_for_full_package": true,
+   "model_revision": null,
+   "processor_revision": null,
+   "execution_state": "NOT_STARTED"
+  },
+  {
+   "model_key": "llavamed-7",
+   "model_id": "microsoft/llava-med-v1.5-mistral-7b",
+   "batch": "phase2",
+   "required_for_full_package": true,
+   "model_revision": null,
+   "processor_revision": null,
+   "execution_state": "NOT_STARTED"
+  },
+  {
+   "model_key": "lingshu-32",
+   "model_id": "lingshu-medical-mllm/Lingshu-32B",
+   "batch": "phase2",
+   "required_for_full_package": true,
+   "model_revision": null,
+   "processor_revision": null,
+   "execution_state": "NOT_STARTED"
+  },
+  {
+   "model_key": "chexagent-3",
+   "model_id": "StanfordAIMI/CheXagent-2-3b",
+   "batch": "addendum",
+   "required_for_full_package": false,
+   "model_revision": "8f19b53a2eceda4c33b0acec6c81fbc293ad80d0",
+   "processor_revision": "8f19b53a2eceda4c33b0acec6c81fbc293ad80d0",
+   "execution_state": "NOT_STARTED",
+   "note": "addendum checkpoint added after the 22-model campaign was planned: the only grid member whose vision tower (StanfordAIMI/XraySigLIP__vit-l-16-siglip-384__webli, revision f0edbf5d90dba44edb7f4f96d8663537cb0749bf) was trained on chest radiographs. It is outside total_planned_outcomes, which stays the 22-model plan."
+  },
+  {
+   "model_key": "huatuo-7",
+   "model_id": "FreedomIntelligence/HuatuoGPT-Vision-7B",
+   "batch": "addendum",
+   "required_for_full_package": false,
+   "model_revision": "34dfcdbb7728ff38da865839f342b88c4cf6ef39",
+   "processor_revision": "34dfcdbb7728ff38da865839f342b88c4cf6ef39",
+   "execution_state": "NOT_STARTED",
+   "note": "addendum checkpoint: a medical VLM trained on PubMedVision with the LLaVA-1.5 architecture over a Qwen2-7B language model. Its model_type llava_qwen2 exists only in the HuatuoGPT-Vision repository, so it enters the grid through the native conversion scripts/mayo/convert_huatuo.py (receipt at cache/converted/HuatuoGPT-Vision-7B-hf/conversion.json), as llavamed-7 does. It shares llava15-7's CLIP ViT-L/14-336 tower and llavamed-7's medical domain with a third language model, so it separates the tower from the reader once more. Outside total_planned_outcomes, which stays the 22-model plan."
+  },
+  {
+   "model_key": "chexagent-8",
+   "model_id": "StanfordAIMI/CheXagent-8b",
+   "batch": "addendum",
+   "required_for_full_package": false,
+   "model_revision": "4934e91451945c8218c267aae9c34929a7677829",
+   "processor_revision": "4934e91451945c8218c267aae9c34929a7677829",
+   "execution_state": "NOT_STARTED",
+   "note": "addendum checkpoint: the checkpoint of the CheXagent paper (arXiv:2401.12208). It is BLIP-2, not LLaVA, and not the architecture of chexagent-3: a 40-layer EVA-CLIP-shaped ViT at 448 px trained on chest radiographs, a 12-layer Q-Former with 128 query tokens, a linear projection and Mistral-7B. It is the grid's only perceiver-resampler connector with a fixed 128-token visual interface. Outside total_planned_outcomes, which stays the 22-model plan."
+  },
+  {
+   "model_key": "llavarad-7",
+   "model_id": "microsoft/llava-rad",
+   "batch": "addendum",
+   "required_for_full_package": false,
+   "model_revision": "dcdbc6caf6806c9acb66e12a827a39c86e00f6a7",
+   "processor_revision": "dcdbc6caf6806c9acb66e12a827a39c86e00f6a7",
+   "execution_state": "NOT_STARTED",
+   "note": "addendum checkpoint: a chest-radiograph LLaVA whose published repository carries no language-model weights -- a LoRA over lmsys/vicuna-7b-v1.5 (revision resolved at staging), the two mm_projector tensors, and a BiomedCLIP-CXR-518 vision tower in an open_clip training checkpoint. It enters the grid through the assembly scripts/mayo/convert_llavarad.py (receipt at cache/converted/llava-rad-hf/conversion.json). Its tower is a timm vit_base_patch14_dinov2 at 518 px, so it consumes 1,369 visual tokens, 2.4x LLaVA-1.5's 576. Outside total_planned_outcomes, which stays the 22-model plan."
+  },
+  {
+   "model_key": "maira2-7",
+   "model_id": "microsoft/maira-2",
+   "batch": "addendum",
+   "required_for_full_package": false,
+   "model_revision": "795a2b1cd4a310624b4e3d14b5a23e41fd273deb",
+   "processor_revision": "795a2b1cd4a310624b4e3d14b5a23e41fd273deb",
+   "execution_state": "NOT_STARTED",
+   "note": "addendum checkpoint: Microsoft's chest-radiograph report-generation model. LLaVA-shaped with a DINOv2 ViT-B/14 backbone at 518 px (1,369 consumed tokens), a FOUR-layer projector -- the deepest connector of the grid -- and a Vicuna-7B-shaped Llama with a 32,207-token vocabulary. Its remote code targets the transformers 4.51 module layout and cannot run on the campaign's 5.15, so it enters through the layout assembly scripts/mayo/convert_maira2.py (receipt at cache/converted/maira-2-hf/conversion.json); no tensor value is changed. Outside total_planned_outcomes, which stays the 22-model plan."
+  },
+  {
+   "model_key": "echo-7",
+   "model_id": "Midea-AIRC/ECHO_block4",
+   "batch": "addendum",
+   "required_for_full_package": false,
+   "model_revision": "26f9ab2a7f536cce07d99cc0f7f7afbff712ae43",
+   "processor_revision": "26f9ab2a7f536cce07d99cc0f7f7afbff712ae43",
+   "execution_state": "PREFLIGHT_FAILED",
+   "note": "addendum checkpoint: the distilled student of ECHO (arXiv:2604.09450), a chest-report model that decodes by discrete diffusion rather than autoregressively. Its stack is Qwen2.5-VL 7B -- the same vision tower shape, merger and hidden size as q25-7, the grid's seed checkpoint -- so the two loci and the token layout are q25-7's, and the reader is what differs. The answer distribution sits at a masked position, not a next-token position, so the adapter appends one <|MASK|> after the generation prompt and reads position -1 there; a single forward pass, no sampling. It is the grid's only non-autoregressive reader. Outside total_planned_outcomes, which stays the 22-model plan.",
+   "preflight_outcome": {
+    "verdict": "not gradable by this protocol; no block entered the grid",
+    "gate_E_semantic_direction": {
+     "pass": false,
+     "eligible_templates": [
+      "IA",
+      "WA"
+     ],
+     "ineligible_templates": [
+      "IY",
+      "WY",
+      "IB",
+      "WB"
+     ],
+     "detail": "the image-free mapping gate states the finding in words and requires the answer to follow. ECHO never answers yes: 'The finding is present.' gives a semantic margin of -1.596 and 'The finding is explicitly reported as present.' -0.902, both negative, against -4.463 and -3.843 for the absent statements. The margin orders the two correctly and never crosses zero, so the four yes/no templates carry no gradable answer."
+    },
+    "gate_D_batch_vs_single": {
+     "pass": false,
+     "max_abs_candidate_logit_diff": 0.2592,
+     "declared_tolerance_logit": 0.25,
+     "max_abs_margin_diff": 0.0726,
+     "margin_sign_agreement": true,
+     "detail": "a marginal miss, plausibly the block-diffusion padding: block_size is 4 and batch composition changes how a row is padded into blocks."
+    },
+    "both_loci": "vis.last and connector both fail both gates",
+    "what_did_work": "features and probe fits completed on NIH: probe AUROC 0.54-0.75 over the six concepts and three seeds. The masked answer position itself reads cleanly -- a single forward gives a yes/no margin and two identical forwards agree to 0.0 logits -- so the adapter's design is sound and the failure is the checkpoint's answer behaviour, not the interface.",
+    "same_class_as": "maira2-7"
+   }
+  }
+ ],
+ "total_planned_outcomes": {
+  "models": 22,
+  "datasets": 3,
+  "primary_concept_cells": 396,
+  "core_clinical_matrix_cells": 2376,
+  "primary_CORE_rows": 30175200,
+  "all_test_and_calibration_rows": 125153600,
+  "excludes": "feature extraction, interface preflight and retries",
+  "ALTDIR_rows_addendum": 5702400,
+  "ALTDIR_note": "addenda rows (ALTDIR, EXTCOMP, TOKENW, PRECISION, ANSDIR, ALTDIRD, ATTR, ANSDIRT, VALID, ATTRRAND, VALIDFIT, PROJSEED, TOWERSWAP, REPLAY, SEMEND, ATTRQ, FGOBJ, FGOBJ_CALIBRATION) are outside all_test_and_calibration_rows, which keeps the planned total of the original seven modules",
+  "addenda": {
+   "ALTDIR": 5702400,
+   "EXTCOMP": 712800,
+   "TOKENW": 2851200,
+   "PRECISION": 13411200,
+   "ANSDIR": 1663200,
+   "ALTDIRD": 2851200,
+   "ATTR": 2455200,
+   "ANSDIRT": 9504000,
+   "VALID": 3352800,
+   "ATTRRAND": 9424800,
+   "VALIDFIT": 475200,
+   "PROJSEED": 59875200,
+   "TOWERSWAP": 10058400,
+   "REPLAY": 10058400,
+   "SEMEND": 31363200,
+   "ATTRQ": 158400,
+   "FGOBJ": 10058400,
+   "FGOBJ_CALIBRATION": 52800,
+   "TOWERSWAPD": 10058400
+  },
+  "addenda_notes": {
+   "PROJSEED": "907,200 rows per block (453,600 per projection seed). The addenda table states the whole-grid figure by its own convention (per model over all datasets x 22 models); the module is intended for a handful of representative blocks, not the whole grid.",
+   "ATTRRAND": "214,200 rows per chest block (NIH + CheXpert x 22 models)",
+   "VALIDFIT": "21,600 rows per CheXpert block (22 models)",
+   "TOWERSWAP": "152,400 rows per crossed arm; the table follows the campaign convention (all datasets x 22 models), but the module is defined only for the four models of TOWERSWAP_PAIRS and is budgeted for the gemma3-4 / medgemma-4 pair on NIH and CheXpert (4 arms, ~10.9 GPU-h measured from those blocks' own CORE throughput), COCO optional (+5.3 GPU-h). The two native arms cost nothing: they are CORE restricted to the same 200 rows.",
+   "REPLAY": "152,400 rows per block; the table follows the campaign convention, but the module is defined only for the seven blocks of the three shared-tower groups (REPLAY_SOURCE). One dataset per group costs ~5.7 GPU-h (LLaVA-1.5 pair), ~7.5 (MedGemma pair) and ~11.2 (Gemma 3 triple), plus a tower-only tensor prep of well under 0.1 GPU-h per source block.",
+   "SEMEND": "475,200 rows per block; budgeted for at most 8 blocks, staged behind a 3-block stop rule. The GPU cost is set by the number of forwards, not the number of outcomes: 32 steered conditions are one batch-32 forward, so the full 33-condition grid costs exactly what a 25-condition grid would (7.3-19.5 GPU-h per block on the measured throughput of those blocks' own CORE runs).",
+   "ATTRQ": "3,600 rows per chest block (3 attributes x 3 phrasings x 400 calibration rows); the table follows the campaign convention (NIH + CheXpert x 22 models)",
+   "FGOBJ": "457,200 rows per COCO block, byte for byte CORE's grid shape on six new questions; the table follows the campaign convention (COCO x 22 models), but the module is a CONTROL and is budgeted for a handful of COCO blocks chosen for family coverage, not for the whole grid. Measured cost per block is that block's own CORE cost (same 6 x 127 x 600 grid): 3.2-16.4 GPU-h over the 17 COCO blocks whose CORE metas cover all 457,200 outcomes, median 8.5; llama32-11 is the outlier at 32.9.",
+   "FGOBJ_CALIBRATION": "2,400 clean forwards per COCO block (6 fine-grained questions x 400 calibration rows); the table follows the campaign convention (COCO x 22 models). It is 3/8 of the COCO CALIBRATION module, i.e. 0.02-0.14 GPU-h per block on the measured CALIBRATION throughput, under 2% of the FGOBJ block it accompanies."
+  },
+  "addendum_models": [
+   "chexagent-3",
+   "huatuo-7",
+   "chexagent-8",
+   "llavarad-7",
+   "maira2-7"
+  ],
+  "addendum_models_note": "chexagent-3 (StanfordAIMI/CheXagent-2-3b), huatuo-7 (FreedomIntelligence/HuatuoGPT-Vision-7B) chexagent-8 (StanfordAIMI/CheXagent-8b) llavarad-7 (microsoft/llava-rad) and maira2-7 (microsoft/maira-2) are addendum checkpoints enqueued explicitly; the planned totals above remain those of the 22-model campaign."
+ },
+ "semend": {
+  "purpose": "semantic endpoints outside the six yes/no / A-B templates, so ownership is not validated only against the model's own answers under those six prompts",
+  "templates": {
+   "NY": "Is there no evidence of {finding} in {image_phrase}? Answer yes or no.",
+   "DA": "Which is present in {image_phrase}, {finding} or {competitor}? Answer A if it is {finding} and B if it is {competitor}. Reply with A or B only.",
+   "DB": "Which is present in {image_phrase}, {competitor} or {finding}? Answer A if it is {competitor} and B if it is {finding}. Reply with A or B only.",
+   "RF": "{report_prefix}\n{report_continuation}"
+  },
+  "endpoint": {
+   "NY": "negated question; the endpoint is p(yes) with SIGN -1, because a direction that carries the concept must move a negated question the other way",
+   "DA": "two-finding forced choice with the concept as option A; the endpoint is the probability of the CONCEPT option",
+   "DB": "the same forced choice with the order and the A/B mapping swapped (counterbalanced); the endpoint is again the probability of the concept option",
+   "RF": "short report continuation; the endpoint is log p(finding word) = max(positive_logits) - vocab_logsumexp at the continuation position, no yes/no head"
+  },
+  "candidate_source": {
+   "NY": "IY",
+   "DA": "IA",
+   "DB": "IB",
+   "RF": "first token of each spelling of the finding word (positive) and of the dataset's neutral word (negative)"
+  },
+  "sign": {
+   "NY": -1,
+   "DA": 1,
+   "DB": 1,
+   "RF": 1
+  },
+  "competitor": "the question's strongest competitor in the block's own CORE write matrix, argmax_{d != q} W_qd on the primary template; frozen by the prep into fits/vis.last/semend_seed0.npz",
+  "report_prefix": {
+   "nih": "Write the findings section of the radiology report for this chest radiograph.",
+   "chexpert": "Write the findings section of the radiology report for this chest radiograph.",
+   "coco": "List the objects visible in this photograph."
+  },
+  "report_continuation": {
+   "nih": "Findings:",
+   "chexpert": "Findings:",
+   "coco": "Objects:"
+  },
+  "neutral_word": {
+   "nih": "normal",
+   "chexpert": "normal",
+   "coco": "nothing"
+  },
+  "finding_words": {
+   "nih": {
+    "Effusion": "effusion",
+    "Atelectasis": "atelectasis",
+    "Pneumothorax": "pneumothorax",
+    "Cardiomegaly": "cardiomegaly",
+    "Mass": "mass",
+    "Nodule": "nodule"
+   },
+   "chexpert": {
+    "Effusion": "effusion",
+    "Atelectasis": "atelectasis",
+    "Pneumothorax": "pneumothorax",
+    "Cardiomegaly": "cardiomegaly",
+    "Consolidation": "consolidation",
+    "Edema": "edema"
+   },
+   "coco": {
+    "person": "person",
+    "dog": "dog",
+    "car": "car",
+    "chair": "chair",
+    "bottle": "bottle",
+    "bicycle": "bicycle"
+   }
+  },
+  "n_random": 18,
+  "grid": "per (question, endpoint): clean baseline + the SIX label directions + the SIX answer directions a_d + the question's label sham + the question's answer sham + 18 random directions = 33 conditions, of which 32 are steered and therefore fill exactly one batch-32 forward; the endpoint grid costs the same GPU time as a grid half its size would",
+  "reference": "per endpoint and per family, the own signed effect must be positive, above every one of the 18 random directions (rank 1 of 19) and above the |effect| of that family's own sham"
+ },
+ "attrq": {
+  "purpose": "cheap per-block eligibility pass for the ATTR / ATTRRAND control: how well the model answers each non-clinical attribute question under three phrasings, on the calibration rows, with no writes and no reference family. It exists because a cell whose clean answer no direction can move cannot be owned for reasons that have nothing to do with whether the concept is clinical, so pooling such cells makes the attribute-versus-finding comparison unfair in both directions.",
+  "cohort": "calibration",
+  "phrasings": [
+   "AQ0",
+   "AQ1",
+   "AQ2"
+  ],
+  "questions": {
+   "view_AP": {
+    "AQ0": {
+     "template": "primary"
+    },
+    "AQ1": {
+     "text": "Was {image_phrase} acquired with an anteroposterior (AP) projection? Answer yes or no."
+    },
+    "AQ2": {
+     "text": "Does {image_phrase} show an AP (anteroposterior) view rather than a PA (posteroanterior) view? Answer yes or no."
+    }
+   },
+   "sex_F": {
+    "AQ0": {
+     "template": "primary"
+    },
+    "AQ1": {
+     "text": "Is the patient in {image_phrase} female? Answer yes or no."
+    },
+    "AQ2": {
+     "text": "Does {image_phrase} show a female patient rather than a male patient? Answer yes or no."
+    }
+   },
+   "age_60": {
+    "AQ0": {
+     "template": "primary"
+    },
+    "AQ1": {
+     "text": "Is the patient in {image_phrase} sixty years old or older? Answer yes or no."
+    },
+    "AQ2": {
+     "text": "Does {image_phrase} show a patient aged sixty or older rather than a younger patient? Answer yes or no."
+    }
+   }
+  },
+  "candidate_source": {
+   "AQ0": "primary",
+   "AQ1": "IY",
+   "AQ2": "IY"
+  },
+  "answer_mapping": "yes = the attribute is positive (view_AP = AP / portable, sex_F = female, age_60 = age >= 60), exactly the mapping the yes/no templates use for a finding; AQ1 and AQ2 keep the 'Answer yes or no.' ending and reuse the block's frozen IY candidate set, so nothing about the answer head changes.",
+  "AQ0": "the phrasing ATTR and ATTRRAND already write: the block's primary template with the attribute phrase in the {finding} slot, rendered by protocol.render_question, so its text is byte-identical to theirs and the module measures the written question as well as the alternatives.",
+  "eligibility_source": "AQ0 inherits the primary template's preflight eligibility; AQ1 and AQ2 are yes/no questions and inherit IY's, so a block whose yes/no mapping failed image-free preflight check E does not score them.",
+  "selection_rule": "per block and attribute the primary phrasing is the ELIGIBLE phrasing with the highest one-sided 95% lower bound of the clean-answer AUROC against the attribute's manifest label on the calibration rows. Eligible = >= 10 known positives and >= 10 known negatives, >= 1900 valid unit-bootstrap draws and a lower bound above 0.5 -- the support and lower-bound rule the readable and answer-capable grades use. Ties break in phrasing order (AQ0 first). An attribute with no eligible phrasing is recorded as not answerable in that block and no phrasing is selected.",
+  "bootstrap": "cftransfer.analysis.bootstrap_indices(dataset, n_calibration, BOOT_CALIBRATION_SEED, draws), the campaign's shared calibration-row unit bootstrap",
+  "writes": "none: alpha 0 clean forwards only, one condition per (row, attribute, phrasing)",
+  "expected_rows": 3600,
+  "datasets": [
+   "nih",
+   "chexpert"
+  ],
+  "added": "2026-09-16; addendum, enqueued explicitly",
+  "analysis": "cftransfer.analysis --what attrq: per attribute and phrasing the question text, n_pos / n_neg, clean-answer AUROC and Brier, the one-sided 95% lower bound, the answer-capable flag, and the selected phrasing with the reason; written to summary.json under `attrq`. analysis --what attr then reads the written phrasing's calibration-row numbers from it, so an attribute cell and a clinical cell carry answerability measured on the same rows."
+ },
+ "attr_comparison": {
+  "purpose": "the attribute-versus-finding ownership comparison of the ATTR / ATTRRAND control, reported three ways. All three are prespecified and all three are reported whatever they show.",
+  "modes": {
+   "all_cells": "every attribute cell against every clinical cell of the same blocks (the comparison as it stood)",
+   "answer_capable_cells": "only cells whose clean answer clears the campaign's answer-capable rule (>= 10 known positives and negatives, >= 1900 valid draws, one-sided 95% lower AUROC bound above 0.5), applied to attributes and findings alike",
+   "answerability_matched": "each attribute cell paired with every clinical cell of the SAME block whose clean-answer AUROC is within match_window of it; the reported quantity is the ownership rate of each kind over the matched pairs and their difference. Attribute cells with no match are counted and named."
+  },
+  "match_window": 0.05,
+  "answer_auroc_source": {
+   "clinical": "summary.json `calibration` of the same block: the clean CALIBRATION margins of the primary template against the manifest label on the 400 calibration rows. Read, never recomputed.",
+   "attribute": "summary.json `attrq` for the phrasing ATTR wrote, when ATTRQ has been scored for the block (400 calibration rows, same rows as the clinical number); otherwise summary.json `attr`, which measures the ATTR module's own clean baseline against the manifest attribute label on the 600 test rows. Every cell records which one it used.",
+   "caveat": "until ATTRQ is scored the two kinds are measured on different rows (600 test vs 400 calibration) and therefore with different bootstrap power at the same AUROC, which makes the answer-capable flag easier to reach for an attribute cell than for a clinical one. ATTRQ removes the asymmetry; the aggregates report the row set and the known-label counts of both kinds so it stays visible."
+  },
+  "ownership": "cftransfer.manifest.owned: steering_reference and verdict == fixed_family_advantage, unchanged",
+  "interval": "percentile 2.5 / 97.5 over the campaign's shared unit (patient) bootstrap draws of the block analysis (core_bootstrap_indices, seed 2026090601): ownership is re-decided inside every draw as steering_reference (the point-estimate reference) and O_q > 0 with the strongest competitor recomputed in that draw, because the max-T simultaneous verdict is not a per-draw quantity. The point rates use the campaign's owned() rule; the per-draw rate is reported beside them so the gap between the two rules is visible.",
+  "report": "<RUN_ROOT>/robustness/round2.json attr.comparison, per dataset and pooled over the chest sets, with the per-block rows carrying every cell's answer AUROC, its source and its matched partners"
+ }
 }

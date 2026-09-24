@@ -2274,7 +2274,9 @@ if __name__ == "__main__":
                   f"readable={cell['readable']} answer_auroc={cell.get('answer_auroc', float('nan')):.4f} capable={cell.get('answer_capable')}")
     if "t3" in report:
         for k, v in report["t3"].items():
-            print(f"T3  {k:40s} {v['estimate']:+.4f} [{v['ci_low']:+.4f}, {v['ci_high']:+.4f}] {v['status']}")
+            ci = "[     n/a,      n/a]" if v["ci_low"] is None or v["ci_high"] is None \
+                else f"[{v['ci_low']:+.4f}, {v['ci_high']:+.4f}]"   # INSUFFICIENT_DRAWS carries no interval
+            print(f"T3  {k:40s} {v['estimate']:+.4f} {ci} {v['status']}")
     if "altdir" in report and "altdir" in a.what:
         for fam in report["altdir"]["families"]:
             for q, cell in report["altdir"][fam]["per_question"].items():

@@ -7,6 +7,42 @@ export OMP_NUM_THREADS=8 MKL_NUM_THREADS=8
 cd /rodata/azradonc_dev/m253405/concept-flow
 export PYTHONPATH=src
 t() { local s=$(date +%s); "$@"; local rc=$?; echo "$(date -u +%FT%TZ) rc=$rc $(( $(date +%s) - s ))s: $*" >&2; return $rc; }
+# run.json's completed_modules is derived from the outcomes on disk, and watch_all.sh stops packaging a
+# block after two attempts, so a block that gains a module later keeps a stale list and drops out of the
+# coverage counts while its shards sit on disk. Repackaging every block first costs ~17s each and makes
+# the refresh independent of whether the watcher happened to catch the block.
+# The loop walks outcomes/ and not run.json: a block that was never packaged at all has no run.json,
+# so keying on that file makes exactly the blocks that most need packaging invisible to the sweep.
+repackage_all() {
+  local o d n=0 bad=0
+  for o in /rodata/azradonc_dev/m253405/cf-transfer/runs/*/*/outcomes; do
+    d=$(dirname "$o")
+    python -m cftransfer.package --model-key "$(basename "$(dirname "$d")")" --dataset "$(basename "$d")" > /dev/null 2>&1 \
+      && n=$((n + 1)) || { bad=$((bad + 1)); echo "package failed: $d" >&2; }
+  done
+  [ "$bad" -eq 0 ] && echo "repackaged $n blocks" >&2 || echo "repackaged $n blocks, $bad FAILED" >&2
+  [ "$bad" -eq 0 ]
+}
+t repackage_all
+# summary.json feeds every table and figure and is written by cftransfer.analysis, which the same watcher
+# stops re-running after two attempts. Analysis costs ~6 minutes a block, so only blocks whose outcomes are
+# newer than their summary are redone; a block that gained a module since its last analysis is exactly that.
+reanalyse_stale() {
+  local o d m ds s n=0 bad=0
+  local L=/rodata/azradonc_dev/m253405/cf-transfer/logs/analysis
+  mkdir -p "$L"
+  for o in /rodata/azradonc_dev/m253405/cf-transfer/runs/*/*/outcomes; do
+    d=$(dirname "$o"); ds=$(basename "$d"); m=$(basename "$(dirname "$d")"); s="$d/summary.json"
+    if [ -f "$s" ] && [ -z "$(find "$d/outcomes" -name 'part-*' -newer "$s" -print -quit 2>/dev/null)" ]; then
+      continue
+    fi
+    python -m cftransfer.analysis --model-key "$m" --dataset "$ds" > "$L/$m-$ds-all.log" 2>&1 \
+      && n=$((n + 1)) || { bad=$((bad + 1)); echo "analysis failed: $m/$ds" >&2; }
+  done
+  [ "$bad" -eq 0 ] && echo "re-analysed $n stale blocks" >&2 || echo "re-analysed $n stale blocks, $bad FAILED" >&2
+  [ "$bad" -eq 0 ]
+}
+t reanalyse_stale
 t python -m cftransfer.manifest > /dev/null
 for r in geometry scale pairs validation refit round2 validfit; do t python scripts/mayo/robustness_$r.py > /rodata/azradonc_dev/m253405/cf-transfer/logs/robustness_$r.log 2>&1; done
 cd /rodata/azradonc_dev/m253405/concept-flow-paper
