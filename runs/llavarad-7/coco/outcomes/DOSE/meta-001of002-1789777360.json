@@ -1,0 +1,26 @@
+{
+ "model_key": "llavarad-7",
+ "dataset_id": "coco",
+ "module": "DOSE",
+ "shard": 1,
+ "n_shards": 2,
+ "rows": 100,
+ "scored_rows": 100,
+ "outcomes": 81000,
+ "seconds": 8020.0,
+ "throughput_per_s": 10.1,
+ "batch": 8,
+ "primary_template": "IY",
+ "numerics": "bf16-batched",
+ "fit_seed": null,
+ "batch_policy": "fixed composition per question: clean replicated baseline batch + padded steered batches",
+ "direction_block": "llavarad-7",
+ "tower_swap": null,
+ "replay": null,
+ "peak_gpu_memory_bytes": 15477035520,
+ "gpu_count": 1,
+ "gpu_models": [
+  "NVIDIA A100-SXM4-80GB"
+ ],
+ "ended_utc": "2026-09-19T00:22:40Z"
+}

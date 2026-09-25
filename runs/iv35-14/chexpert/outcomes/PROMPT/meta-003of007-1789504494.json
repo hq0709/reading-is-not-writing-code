@@ -1,0 +1,22 @@
+{
+ "model_key": "iv35-14",
+ "dataset_id": "chexpert",
+ "module": "PROMPT",
+ "shard": 3,
+ "n_shards": 7,
+ "rows": 86,
+ "scored_rows": 86,
+ "outcomes": 109220,
+ "seconds": 2576.3,
+ "throughput_per_s": 42.39,
+ "batch": 32,
+ "primary_template": "IY",
+ "numerics": "bf16-batched",
+ "batch_policy": "fixed composition per question: clean replicated baseline batch + padded steered batches",
+ "peak_gpu_memory_bytes": 34947038208,
+ "gpu_count": 1,
+ "gpu_models": [
+  "NVIDIA H100 80GB HBM3"
+ ],
+ "ended_utc": "2026-09-15T20:34:54Z"
+}

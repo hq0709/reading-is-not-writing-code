@@ -1,0 +1,492 @@
+{
+ "protocol_id": "cf-transfer-v1",
+ "run_id": "cf-transfer-v1:lingshu-32:coco:mayo",
+ "model_key": "lingshu-32",
+ "model_id": "lingshu-medical-mllm/Lingshu-32B",
+ "model_revision": "36b98277cacb60db86f34b75ce0540b1ea35183c",
+ "processor_revision": "36b98277cacb60db86f34b75ce0540b1ea35183c",
+ "dataset_id": "coco",
+ "dataset_release": "COCO 2017 train2017/val2017 + instances annotations (2017-09-01)",
+ "source_commit": "4701456a3dadcc2af35247e0feb174c0fbf68ebb",
+ "adapter_path": "src/cftransfer/adapters/",
+ "python_version": "3.12.13",
+ "torch_version": "2.13.0+cu130",
+ "transformers_version": "5.15.0",
+ "numpy_version": "2.3.5",
+ "sklearn_version": "1.9.0",
+ "weight_dtype": "bfloat16",
+ "activation_dtype": "bfloat16 (hook delta computed in float32, cast back)",
+ "logit_dtype": "float32",
+ "attention_backend": "sdpa",
+ "device_map": [
+  "cuda:0"
+ ],
+ "gpu_models": [
+  "NVIDIA A100-SXM4-80GB",
+  "NVIDIA H100 80GB HBM3"
+ ],
+ "gpu_count": 2,
+ "batch_size": [
+  1,
+  16
+ ],
+ "started_utc": "2026-09-13T16:07:43Z",
+ "ended_utc": "2026-09-15T19:30:25Z",
+ "wall_seconds": 161928.0,
+ "gpu_hours": 89.96,
+ "peak_gpu_memory_bytes": 32951947264,
+ "processing_settings": {
+  "processor_kwargs": {
+   "min_pixels": 112896,
+   "max_pixels": 112896
+  },
+  "image_processor": {
+   "size": {
+    "longest_edge": 112896,
+    "shortest_edge": 112896
+   },
+   "do_convert_rgb": true,
+   "do_normalize": true,
+   "do_rescale": true,
+   "do_resize": true,
+   "image_processor_type": "Qwen2VLImageProcessor",
+   "merge_size": 2,
+   "patch_size": 14,
+   "resample": 3,
+   "rescale_factor": 0.00392156862745098,
+   "temporal_patch_size": 2
+  },
+  "chat_template": "{% set image_count = namespace(value=0) %}{% set video_count = namespace(value=0) %}{% for message in messages %}{% if loop.first and message['role'] != 'system' %}<|im_start|>system\nYou are a helpful assistant.<|im_end|>\n{% endif %}<|im_start|>{{ message['role'] }}\n{% if message['content'] is string %}{{ message['content'] }}<|im_end|>\n{% else %}{% for content in message['content'] %}{% if content['type'] == 'image' or 'image' in content or 'image_url' in content %}{% set image_count.value = image_count.value + 1 %}{% if add_vision_id %}Picture {{ image_count.value }}: {% endif %}<|vision_start|><|image_pad|><|vision_end|>{% elif content['type'] == 'video' or 'video' in content %}{% set video_count.value = video_count.value + 1 %}{% if add_vision_id %}Video {{ video_count.value }}: {% endif %}<|vision_start|><|video_pad|><|vision_end|>{% elif 'text' in content %}{{ content['text'] }}{% endif %}{% endfor %}<|im_end|>\n{% endif %}{% endfor %}{% if add_generation_prompt %}<|im_start|>assistant\n{% endif %}",
+  "example_prompt_IY": "<|im_start|>system\nYou are a helpful assistant.<|im_end|>\n<|im_start|>user\n<|vision_start|><|image_pad|><|vision_end|>Is there X in this image? Answer yes or no.<|im_end|>\n<|im_start|>assistant\n",
+  "special_token_ids": {
+   "image_token_id": 151655,
+   "pad_token_id": 151643,
+   "eos_token_id": 151645
+  },
+  "attn_implementation": "sdpa",
+  "candidate_tokens": {
+   "WY": {
+    "positive_ids": [
+     9693,
+     9454,
+     9834,
+     7414
+    ],
+    "negative_ids": [
+     2152,
+     2753,
+     902,
+     2308
+    ],
+    "detail": {
+     "yes": {
+      "yes": 9693,
+      "Yes": 9454,
+      " yes": 9834,
+      " Yes": 7414
+     },
+     "no": {
+      "no": 2152,
+      "No": 2753,
+      " no": 902,
+      " No": 2308
+     }
+    }
+   },
+   "IY": {
+    "positive_ids": [
+     9693,
+     9454,
+     9834,
+     7414
+    ],
+    "negative_ids": [
+     2152,
+     2753,
+     902,
+     2308
+    ],
+    "detail": {
+     "yes": {
+      "yes": 9693,
+      "Yes": 9454,
+      " yes": 9834,
+      " Yes": 7414
+     },
+     "no": {
+      "no": 2152,
+      "No": 2753,
+      " no": 902,
+      " No": 2308
+     }
+    }
+   },
+   "IA": {
+    "positive_ids": [
+     32,
+     362
+    ],
+    "negative_ids": [
+     33,
+     425
+    ],
+    "detail": {
+     "A": {
+      "A": 32,
+      " A": 362
+     },
+     "B": {
+      "B": 33,
+      " B": 425
+     }
+    }
+   },
+   "WB": {
+    "positive_ids": [
+     33,
+     425
+    ],
+    "negative_ids": [
+     32,
+     362
+    ],
+    "detail": {
+     "A": {
+      "A": 32,
+      " A": 362
+     },
+     "B": {
+      "B": 33,
+      " B": 425
+     }
+    }
+   },
+   "IB": {
+    "positive_ids": [
+     33,
+     425
+    ],
+    "negative_ids": [
+     32,
+     362
+    ],
+    "detail": {
+     "A": {
+      "A": 32,
+      " A": 362
+     },
+     "B": {
+      "B": 33,
+      " B": 425
+     }
+    }
+   },
+   "WA": {
+    "positive_ids": [
+     32,
+     362
+    ],
+    "negative_ids": [
+     33,
+     425
+    ],
+    "detail": {
+     "A": {
+      "A": 32,
+      " A": 362
+     },
+     "B": {
+      "B": 33,
+      " B": 425
+     }
+    }
+   }
+  },
+  "model_config": {
+   "architectures": [
+    "Qwen2_5_VLForConditionalGeneration"
+   ],
+   "dtype": "bfloat16",
+   "image_token_id": 151655,
+   "model_type": "qwen2_5_vl",
+   "text_config": {
+    "attention_dropout": 0.0,
+    "bos_token_id": 151643,
+    "dtype": "bfloat16",
+    "eos_token_id": 151645,
+    "hidden_act": "silu",
+    "hidden_size": 5120,
+    "initializer_range": 0.02,
+    "intermediate_size": 27648,
+    "layer_types": [
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention"
+    ],
+    "max_position_embeddings": 128000,
+    "max_window_layers": 64,
+    "model_type": "qwen2_5_vl_text",
+    "num_attention_heads": 40,
+    "num_hidden_layers": 64,
+    "num_key_value_heads": 8,
+    "pad_token_id": 151643,
+    "rms_norm_eps": 1e-06,
+    "rope_parameters": {
+     "mrope_section": [
+      16,
+      24,
+      24
+     ],
+     "rope_theta": 1000000.0,
+     "rope_type": "default",
+     "type": "default"
+    },
+    "sliding_window": null,
+    "use_cache": false,
+    "use_sliding_window": false,
+    "vocab_size": 152064
+   },
+   "tie_word_embeddings": false,
+   "transformers_version": "5.15.0",
+   "video_token_id": 151656,
+   "vision_config": {
+    "depth": 32,
+    "dtype": "bfloat16",
+    "fullatt_block_indexes": [
+     7,
+     15,
+     23,
+     31
+    ],
+    "hidden_act": "silu",
+    "hidden_size": 1280,
+    "in_channels": 3,
+    "in_chans": 3,
+    "initializer_range": 0.02,
+    "intermediate_size": 3456,
+    "model_type": "qwen2_5_vl_vision",
+    "num_heads": 16,
+    "out_hidden_size": 5120,
+    "patch_size": 14,
+    "spatial_merge_size": 2,
+    "spatial_patch_size": 14,
+    "temporal_patch_size": 2,
+    "tokens_per_second": 2,
+    "window_size": 112
+   },
+   "vision_end_token_id": 151653,
+   "vision_start_token_id": 151652,
+   "vision_token_id": 151654
+  }
+ },
+ "loci": {
+  "vis.last": {
+   "locus_id": "vis.last",
+   "module_path": "model.visual.blocks.31",
+   "output_selection": "tensor output of the last vision block (window order)",
+   "hidden_dim": 1280,
+   "token_rule": "all patches of the image (flat contiguous slice); no CLS token exists",
+   "affected_branch": "main visual stream into merger",
+   "bypasses": "none",
+   "consumer": "model.visual.merger",
+   "prompt_independent": true,
+   "notes": ""
+  },
+  "connector": {
+   "locus_id": "connector",
+   "module_path": "model.visual.merger",
+   "output_selection": "tensor output of the patch merger",
+   "hidden_dim": 5120,
+   "token_rule": "all merged tokens of the image (flat contiguous slice)",
+   "affected_branch": "merged image embeddings scattered into <|image_pad|> positions",
+   "bypasses": "none",
+   "consumer": "language model input embeddings",
+   "prompt_independent": true,
+   "notes": ""
+  }
+ },
+ "fit_seeds": [
+  0,
+  1,
+  2
+ ],
+ "random_seed": 0,
+ "projection_seed": 0,
+ "cohort_file": "manifests/cohort.csv",
+ "primary_template": "IY",
+ "requested_modules": [
+  "CORE",
+  "CALIBRATION",
+  "PROMPT",
+  "DOSE",
+  "REFIT",
+  "LOCUS",
+  "LOCUS_CALIBRATION",
+  "ALTDIR",
+  "ANSDIR",
+  "ALTDIRD",
+  "ANSDIRT"
+ ],
+ "completed_modules": [
+  "CORE",
+  "CALIBRATION",
+  "PROMPT",
+  "DOSE",
+  "REFIT",
+  "LOCUS",
+  "LOCUS_CALIBRATION",
+  "ALTDIR",
+  "ANSDIR",
+  "ALTDIRD",
+  "ANSDIRT"
+ ],
+ "ineligible_modules": [],
+ "status": "COMPLETE",
+ "deviations": [],
+ "feature_extraction_seconds": 513.2,
+ "notes": "gpu_hours sums wall time x GPUs over runner shards recorded in outcomes/*/meta-*.json; CPU fitting time is in fits/*/summary.json",
+ "merged_outcomes": {
+  "CORE": {
+   "parts": 60,
+   "rows_raw": 457200,
+   "rows_unique": 457200,
+   "failed": 0
+  },
+  "CALIBRATION": {
+   "parts": 40,
+   "rows_raw": 6400,
+   "rows_unique": 6400,
+   "failed": 0
+  },
+  "PROMPT": {
+   "parts": 63,
+   "rows_raw": 762000,
+   "rows_unique": 762000,
+   "failed": 0
+  },
+  "DOSE": {
+   "parts": 20,
+   "rows_raw": 162000,
+   "rows_unique": 162000,
+   "failed": 0
+  },
+  "REFIT": {
+   "parts": 60,
+   "rows_raw": 50400,
+   "rows_unique": 50400,
+   "failed": 0
+  },
+  "LOCUS": {
+   "parts": 60,
+   "rows_raw": 457200,
+   "rows_unique": 457200,
+   "failed": 0
+  },
+  "LOCUS_CALIBRATION": {
+   "parts": 40,
+   "rows_raw": 2400,
+   "rows_unique": 2400,
+   "failed": 0
+  },
+  "ALTDIR": {
+   "parts": 60,
+   "rows_raw": 86400,
+   "rows_unique": 86400,
+   "failed": 0
+  },
+  "EXTCOMP": {},
+  "TOKENW": {},
+  "PRECISION": {},
+  "ANSDIR": {
+   "parts": 60,
+   "rows_raw": 25200,
+   "rows_unique": 25200,
+   "failed": 0
+  },
+  "ALTDIRD": {
+   "parts": 60,
+   "rows_raw": 43200,
+   "rows_unique": 43200,
+   "failed": 0
+  },
+  "ATTR": {},
+  "ANSDIRT": {
+   "parts": 60,
+   "rows_raw": 144000,
+   "rows_unique": 144000,
+   "failed": 0
+  },
+  "VALID": {},
+  "ATTRRAND": {},
+  "ATTRQ": {},
+  "VALIDFIT": {},
+  "PROJSEED": {},
+  "TOWERSWAP": {},
+  "TOWERSWAPD": {},
+  "REPLAY": {},
+  "SEMEND": {},
+  "FGOBJ": {},
+  "FGOBJ_CALIBRATION": {}
+ }
+}

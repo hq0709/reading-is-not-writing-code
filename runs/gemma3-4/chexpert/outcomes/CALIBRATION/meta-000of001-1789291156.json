@@ -1,0 +1,20 @@
+{
+ "model_key": "gemma3-4",
+ "dataset_id": "chexpert",
+ "module": "CALIBRATION",
+ "shard": 0,
+ "n_shards": 1,
+ "rows": 400,
+ "scored_rows": 400,
+ "outcomes": 2400,
+ "seconds": 344.1,
+ "throughput_per_s": 6.97,
+ "batch": 1,
+ "batch_policy": "fixed composition per question: clean replicated baseline batch + padded steered batches",
+ "peak_gpu_memory_bytes": 11414383616,
+ "gpu_count": 1,
+ "gpu_models": [
+  "NVIDIA A100-SXM4-80GB"
+ ],
+ "ended_utc": "2026-09-13T09:19:16Z"
+}

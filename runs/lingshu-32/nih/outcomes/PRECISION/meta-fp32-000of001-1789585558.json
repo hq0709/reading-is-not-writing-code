@@ -1,0 +1,22 @@
+{
+ "model_key": "lingshu-32",
+ "dataset_id": "nih",
+ "module": "PRECISION",
+ "shard": 0,
+ "n_shards": 1,
+ "rows": 200,
+ "scored_rows": 120,
+ "outcomes": 91440,
+ "seconds": 27626.9,
+ "throughput_per_s": 3.31,
+ "batch": 16,
+ "primary_template": "IY",
+ "numerics": "fp32",
+ "batch_policy": "fixed composition per question: clean replicated baseline batch + padded steered batches",
+ "peak_gpu_memory_bytes": 65729395200,
+ "gpu_count": 2,
+ "gpu_models": [
+  "NVIDIA H100 80GB HBM3"
+ ],
+ "ended_utc": "2026-09-16T19:05:58Z"
+}

@@ -1,0 +1,26 @@
+{
+ "model_key": "q25-72",
+ "dataset_id": "coco",
+ "module": "PROMPT",
+ "shard": 0,
+ "n_shards": 7,
+ "rows": 86,
+ "scored_rows": 86,
+ "outcomes": 109220,
+ "seconds": 6189.1,
+ "throughput_per_s": 17.65,
+ "batch": 8,
+ "primary_template": "IY",
+ "numerics": "bf16-batched",
+ "fit_seed": null,
+ "batch_policy": "fixed composition per question: clean replicated baseline batch + padded steered batches",
+ "direction_block": "q25-72",
+ "tower_swap": null,
+ "replay": null,
+ "peak_gpu_memory_bytes": 35952250880,
+ "gpu_count": 4,
+ "gpu_models": [
+  "NVIDIA H100 80GB HBM3"
+ ],
+ "ended_utc": "2026-09-19T05:42:24Z"
+}

@@ -1,0 +1,22 @@
+{
+ "model_key": "gemma3-27",
+ "dataset_id": "nih",
+ "module": "ALTDIR",
+ "shard": 0,
+ "n_shards": 1,
+ "rows": 600,
+ "scored_rows": 170,
+ "outcomes": 24480,
+ "seconds": 3752.2,
+ "throughput_per_s": 6.52,
+ "batch": 16,
+ "primary_template": "IY",
+ "numerics": "bf16-batched",
+ "batch_policy": "fixed composition per question: clean replicated baseline batch + padded steered batches",
+ "peak_gpu_memory_bytes": 35198121472,
+ "gpu_count": 2,
+ "gpu_models": [
+  "NVIDIA A100-SXM4-80GB"
+ ],
+ "ended_utc": "2026-09-15T20:13:17Z"
+}

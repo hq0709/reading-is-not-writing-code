@@ -1,0 +1,26 @@
+{
+ "model_key": "chexagent-8",
+ "dataset_id": "chexpert",
+ "module": "CORE",
+ "shard": 3,
+ "n_shards": 4,
+ "rows": 150,
+ "scored_rows": 120,
+ "outcomes": 91440,
+ "seconds": 3660.5,
+ "throughput_per_s": 24.98,
+ "batch": 16,
+ "primary_template": "IY",
+ "numerics": "bf16-batched",
+ "fit_seed": null,
+ "batch_policy": "fixed composition per question: clean replicated baseline batch + padded steered batches",
+ "direction_block": "chexagent-8",
+ "tower_swap": null,
+ "replay": null,
+ "peak_gpu_memory_bytes": 18782159360,
+ "gpu_count": 1,
+ "gpu_models": [
+  "NVIDIA A100-SXM4-80GB"
+ ],
+ "ended_utc": "2026-09-18T22:19:54Z"
+}

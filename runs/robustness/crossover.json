@@ -1,0 +1,4022 @@
+{
+ "meta": {
+  "generated_utc": "2026-09-17T13:42:03Z",
+  "run_root": "/rodata/azradonc_dev/m253405/cf-transfer/runs",
+  "draws": 2000,
+  "alpha": 0.25,
+  "quantities": [
+   "W_qq",
+   "O_q",
+   "M_q"
+  ],
+  "contrasts": [
+   "reader_effect_at_own_tower",
+   "reader_effect_at_partner_tower",
+   "tower_effect_at_own_reader",
+   "tower_effect_at_partner_reader"
+  ],
+  "seconds": 51.0,
+  "script": "scripts/mayo/robustness_crossover.py",
+  "blocks_whose_packaged_W_qq_crossover_predates_the_current_outcomes": [
+   "medgemma-4/nih"
+  ]
+ },
+ "blocks": [
+  {
+   "block": "gemma3-4/chexpert",
+   "model": "gemma3-4",
+   "dataset": "chexpert",
+   "reader": "gemma3-4",
+   "partner": "medgemma-4",
+   "n_rows": 200,
+   "alpha": 0.25,
+   "draws": 2000,
+   "arms": [
+    "tower=gemma3-4|reader=gemma3-4",
+    "tower=gemma3-4|reader=medgemma-4",
+    "tower=medgemma-4|reader=gemma3-4",
+    "tower=medgemma-4|reader=medgemma-4"
+   ],
+   "quantities": [
+    "W_qq",
+    "O_q",
+    "M_q"
+   ],
+   "crossover": {
+    "reader_effect_at_own_tower": {
+     "contrast": [
+      "tower=gemma3-4|reader=gemma3-4",
+      "tower=gemma3-4|reader=medgemma-4"
+     ],
+     "W_qq": {
+      "Effusion": {
+       "estimate": -0.026755878690752227,
+       "sd": 0.013853939746644098,
+       "ci95_percentile": [
+        -0.055318571098194484,
+        -0.00010283509629679206
+       ],
+       "max_t_lower": -0.06299014463415367,
+       "max_t_upper": 0.009478387252649215,
+       "nonzero_simultaneous": false
+      },
+      "Atelectasis": {
+       "estimate": 0.11306511091534256,
+       "sd": 0.020346572426712728,
+       "ci95_percentile": [
+        0.07522213345470581,
+        0.1539533642285585
+       ],
+       "max_t_lower": 0.059849698561266644,
+       "max_t_upper": 0.16628052326941847,
+       "nonzero_simultaneous": true
+      },
+      "Pneumothorax": {
+       "estimate": -1.054333851977959,
+       "sd": 0.041912147002760705,
+       "ci95_percentile": [
+        -1.1340117923338326,
+        -0.9715244025267425
+       ],
+       "max_t_lower": -1.163952914030314,
+       "max_t_upper": -0.944714789925604,
+       "nonzero_simultaneous": true
+      },
+      "Cardiomegaly": {
+       "estimate": -0.32524046392160216,
+       "sd": 0.042624363978832444,
+       "ci95_percentile": [
+        -0.40515997389667247,
+        -0.2385991258852475
+       ],
+       "max_t_lower": -0.4367222927964157,
+       "max_t_upper": -0.2137586350467886,
+       "nonzero_simultaneous": true
+      },
+      "Consolidation": {
+       "estimate": -0.23028564148812497,
+       "sd": 0.042734156760562,
+       "ci95_percentile": [
+        -0.31372795498381434,
+        -0.1474270970301071
+       ],
+       "max_t_lower": -0.3420546277293345,
+       "max_t_upper": -0.11851665524691544,
+       "nonzero_simultaneous": true
+      },
+      "Edema": {
+       "estimate": -0.5429081363142197,
+       "sd": 0.03335124401563807,
+       "ci95_percentile": [
+        -0.6059904895947991,
+        -0.4764980242932972
+       ],
+       "max_t_lower": -0.6301365974816386,
+       "max_t_upper": -0.45567967514680086,
+       "nonzero_simultaneous": true
+      },
+      "max_t_critical": 2.615448501006988,
+      "mean_abs_effect": 0.38209818055133343,
+      "mean_abs_effect_ci95": [
+       0.3526218422181787,
+       0.41210951434697984
+      ],
+      "n_simultaneously_nonzero": 5
+     },
+     "O_q": {
+      "Effusion": {
+       "estimate": 0.36773208214063463,
+       "sd": 0.028389222381151494,
+       "ci95_percentile": [
+        0.3131416468366254,
+        0.422847459351415
+       ],
+       "max_t_lower": 0.2930096263211181,
+       "max_t_upper": 0.44245453796015116,
+       "nonzero_simultaneous": true
+      },
+      "Atelectasis": {
+       "estimate": 0.12143307089237752,
+       "sd": 0.019690495280983076,
+       "ci95_percentile": [
+        0.08505497403818212,
+        0.16327224342563415
+       ],
+       "max_t_lower": 0.06960628451747089,
+       "max_t_upper": 0.17325985726728416,
+       "nonzero_simultaneous": true
+      },
+      "Pneumothorax": {
+       "estimate": -0.6629008781349327,
+       "sd": 0.05417514399523701,
+       "ci95_percentile": [
+        -0.7688315293536402,
+        -0.5580506348292795
+       ],
+       "max_t_lower": -0.8054937166900213,
+       "max_t_upper": -0.5203080395798441,
+       "nonzero_simultaneous": true
+      },
+      "Cardiomegaly": {
+       "estimate": -0.22742137674851254,
+       "sd": 0.03429678840894815,
+       "ci95_percentile": [
+        -0.29566800405334176,
+        -0.1615600027120484
+       ],
+       "max_t_lower": -0.3176929672215372,
+       "max_t_upper": -0.13714978627548785,
+       "nonzero_simultaneous": true
+      },
+      "Consolidation": {
+       "estimate": 0.21644743732776467,
+       "sd": 0.03607081624380049,
+       "ci95_percentile": [
+        0.15064815789926564,
+        0.2884527618941333
+       ],
+       "max_t_lower": 0.12150647920765861,
+       "max_t_upper": 0.3113883954478707,
+       "nonzero_simultaneous": true
+      },
+      "Edema": {
+       "estimate": -0.2221579873627626,
+       "sd": 0.04506214665321645,
+       "ci95_percentile": [
+        -0.3091756012439408,
+        -0.1316541030165832
+       ],
+       "max_t_lower": -0.34076476768313874,
+       "max_t_upper": -0.10355120704238645,
+       "nonzero_simultaneous": true
+      },
+      "max_t_critical": 2.6320712422587222,
+      "mean_abs_effect": 0.30301547210116414,
+      "mean_abs_effect_ci95": [
+       0.2731570538142742,
+       0.3323441306093829
+      ],
+      "n_simultaneously_nonzero": 6
+     },
+     "M_q": {
+      "Effusion": {
+       "estimate": 0.8164863846013687,
+       "sd": 0.021523732178092926,
+       "ci95_percentile": [
+        0.7799231509715109,
+        0.8654608984950081
+       ],
+       "max_t_lower": 0.7603969267061321,
+       "max_t_upper": 0.8725758424966052,
+       "nonzero_simultaneous": true
+      },
+      "Atelectasis": {
+       "estimate": 0.8658913363849416,
+       "sd": 0.03255421641447734,
+       "ci95_percentile": [
+        0.8042522017769363,
+        0.9278243474940167
+       ],
+       "max_t_lower": 0.7810571479744989,
+       "max_t_upper": 0.9507255247953844,
+       "nonzero_simultaneous": true
+      },
+      "Pneumothorax": {
+       "estimate": -0.32337644644673175,
+       "sd": 0.04374664572272733,
+       "ci95_percentile": [
+        -0.4072861222987499,
+        -0.23781844616530592
+       ],
+       "max_t_lower": -0.43737738378510715,
+       "max_t_upper": -0.20937550910835637,
+       "nonzero_simultaneous": true
+      },
+      "Cardiomegaly": {
+       "estimate": -0.5596825872131017,
+       "sd": 0.03593380901570153,
+       "ci95_percentile": [
+        -0.6275467792878002,
+        -0.487917218836409
+       ],
+       "max_t_lower": -0.6533237759774307,
+       "max_t_upper": -0.4660413984487727,
+       "nonzero_simultaneous": true
+      },
+      "Consolidation": {
+       "estimate": 0.3164785062293542,
+       "sd": 0.03212503155247023,
+       "ci95_percentile": [
+        0.2511756524132726,
+        0.3780779194842727
+       ],
+       "max_t_lower": 0.23276274588926815,
+       "max_t_upper": 0.40019426656944024,
+       "nonzero_simultaneous": true
+      },
+      "Edema": {
+       "estimate": -0.05820138268909769,
+       "sd": 0.03632884204245458,
+       "ci95_percentile": [
+        -0.12429738960411589,
+        0.014705227453782332
+       ],
+       "max_t_lower": -0.15287200204371465,
+       "max_t_upper": 0.03646923666551928,
+       "nonzero_simultaneous": false
+      },
+      "max_t_critical": 2.60593550556836,
+      "mean_abs_effect": 0.49001944059409924,
+      "mean_abs_effect_ci95": [
+       0.46504073668470924,
+       0.5148989973655196
+      ],
+      "n_simultaneously_nonzero": 5
+     }
+    },
+    "reader_effect_at_partner_tower": {
+     "contrast": [
+      "tower=medgemma-4|reader=gemma3-4",
+      "tower=medgemma-4|reader=medgemma-4"
+     ],
+     "W_qq": {
+      "Effusion": {
+       "estimate": -0.12091572745095365,
+       "sd": 0.025552594215840795,
+       "ci95_percentile": [
+        -0.17278169664646378,
+        -0.07329041085843538
+       ],
+       "max_t_lower": -0.18826266354047017,
+       "max_t_upper": -0.05356879136143715,
+       "nonzero_simultaneous": true
+      },
+      "Atelectasis": {
+       "estimate": 0.11562864494422473,
+       "sd": 0.018757889657566036,
+       "ci95_percentile": [
+        0.08017791083073156,
+        0.1519103656064725
+       ],
+       "max_t_lower": 0.06618997013604598,
+       "max_t_upper": 0.16506731975240346,
+       "nonzero_simultaneous": true
+      },
+      "Pneumothorax": {
+       "estimate": -0.01125435659506636,
+       "sd": 0.01160267485451165,
+       "ci95_percentile": [
+        -0.034335201412103174,
+        0.010930178789549256
+       ],
+       "max_t_lower": -0.04183460200160989,
+       "max_t_upper": 0.019325888811477166,
+       "nonzero_simultaneous": false
+      },
+      "Cardiomegaly": {
+       "estimate": -0.11857069514891604,
+       "sd": 0.026640165327631603,
+       "ci95_percentile": [
+        -0.1729332163017089,
+        -0.06898148520488326
+       ],
+       "max_t_lower": -0.18878405574077028,
+       "max_t_upper": -0.04835733455706179,
+       "nonzero_simultaneous": true
+      },
+      "Consolidation": {
+       "estimate": -0.057839693222575476,
+       "sd": 0.03884208344449571,
+       "ci95_percentile": [
+        -0.13463921913693996,
+        0.018523473173784288
+       ],
+       "max_t_lower": -0.16021267692919458,
+       "max_t_upper": 0.044533290484043635,
+       "nonzero_simultaneous": false
+      },
+      "Edema": {
+       "estimate": -0.328370147881934,
+       "sd": 0.03605089018422223,
+       "ci95_percentile": [
+        -0.40049790149668846,
+        -0.25935683980864704
+       ],
+       "max_t_lower": -0.42338660596437233,
+       "max_t_upper": -0.23335368979949572,
+       "nonzero_simultaneous": true
+      },
+      "max_t_critical": 2.63562030221441,
+      "mean_abs_effect": 0.12542987754061172,
+      "mean_abs_effect_ci95": [
+       0.10226626089139339,
+       0.1507825072003595
+      ],
+      "n_simultaneously_nonzero": 4
+     },
+     "O_q": {
+      "Effusion": {
+       "estimate": 0.2092781108661953,
+       "sd": 0.031101365613605558,
+       "ci95_percentile": [
+        0.14559777406949923,
+        0.268844420462433
+       ],
+       "max_t_lower": 0.12581568732425713,
+       "max_t_upper": 0.29274053440813347,
+       "nonzero_simultaneous": true
+      },
+      "Atelectasis": {
+       "estimate": 0.09213376412899967,
+       "sd": 0.01783661693574251,
+       "ci95_percentile": [
+        0.06119551788273233,
+        0.12921377364130565
+       ],
+       "max_t_lower": 0.04426810781855746,
+       "max_t_upper": 0.13999942043944186,
+       "nonzero_simultaneous": true
+      },
+      "Pneumothorax": {
+       "estimate": 0.5938876494236306,
+       "sd": 0.032059495396873035,
+       "ci95_percentile": [
+        0.532469531233392,
+        0.6610164719611342
+       ],
+       "max_t_lower": 0.5078540258008756,
+       "max_t_upper": 0.6799212730463856,
+       "nonzero_simultaneous": true
+      },
+      "Cardiomegaly": {
+       "estimate": -0.00026521322347644594,
+       "sd": 0.022790477102413373,
+       "ci95_percentile": [
+        -0.04494299377078971,
+        0.045216583334318376
+       ],
+       "max_t_lower": -0.061424857345738326,
+       "max_t_upper": 0.060894430898785434,
+       "nonzero_simultaneous": false
+      },
+      "Consolidation": {
+       "estimate": -0.24820795807755677,
+       "sd": 0.036711089026368,
+       "ci95_percentile": [
+        -0.32061982816883045,
+        -0.17785114388678083
+       ],
+       "max_t_lower": -0.3467244187073162,
+       "max_t_upper": -0.14969149744779736,
+       "nonzero_simultaneous": true
+      },
+      "Edema": {
+       "estimate": -0.1405883435948032,
+       "sd": 0.029702650766658643,
+       "ci95_percentile": [
+        -0.195463964830474,
+        -0.07774789176235564
+       ],
+       "max_t_lower": -0.22029722999561946,
+       "max_t_upper": -0.06087945719398695,
+       "nonzero_simultaneous": true
+      },
+      "max_t_critical": 2.6835613772993567,
+      "mean_abs_effect": 0.2140601732191103,
+      "mean_abs_effect_ci95": [
+       0.1942095333340083,
+       0.2399067831846641
+      ],
+      "n_simultaneously_nonzero": 5
+     },
+     "M_q": {
+      "Effusion": {
+       "estimate": 0.19746015866725508,
+       "sd": 0.030830389297107463,
+       "ci95_percentile": [
+        0.1341159023241687,
+        0.25523569822013153
+       ],
+       "max_t_lower": 0.11512626013088831,
+       "max_t_upper": 0.2797940572036218,
+       "nonzero_simultaneous": true
+      },
+      "Atelectasis": {
+       "estimate": 0.09617242510811765,
+       "sd": 0.017630313286959295,
+       "ci95_percentile": [
+        0.06553286641494988,
+        0.1341411530656019
+       ],
+       "max_t_lower": 0.04908990495748648,
+       "max_t_upper": 0.14325494525874882,
+       "nonzero_simultaneous": true
+      },
+      "Pneumothorax": {
+       "estimate": 0.5938876494236306,
+       "sd": 0.03206666064826031,
+       "ci95_percentile": [
+        0.5322476248218654,
+        0.6610164719611342
+       ],
+       "max_t_lower": 0.508252234354069,
+       "max_t_upper": 0.6795230644931922,
+       "nonzero_simultaneous": true
+      },
+      "Cardiomegaly": {
+       "estimate": -0.09391105232761555,
+       "sd": 0.031057827277765893,
+       "ci95_percentile": [
+        -0.15759273429255988,
+        -0.036947608555528685
+       ],
+       "max_t_lower": -0.17685233390551286,
+       "max_t_upper": -0.010969770749718263,
+       "nonzero_simultaneous": true
+      },
+      "Consolidation": {
+       "estimate": -0.31558448372368786,
+       "sd": 0.03448896916788719,
+       "ci95_percentile": [
+        -0.3809196515663624,
+        -0.2452851965598431
+       ],
+       "max_t_lower": -0.4076887792850521,
+       "max_t_upper": -0.22348018816232362,
+       "nonzero_simultaneous": true
+      },
+      "Edema": {
+       "estimate": -0.1405883435948032,
+       "sd": 0.029669646098921462,
+       "ci95_percentile": [
+        -0.19514161808598296,
+        -0.07776282158911754
+       ],
+       "max_t_lower": -0.21982242682279857,
+       "max_t_upper": -0.061354260366807856,
+       "nonzero_simultaneous": true
+      },
+      "max_t_critical": 2.6705435907061807,
+      "mean_abs_effect": 0.23960068547418498,
+      "mean_abs_effect_ci95": [
+       0.21379512753063631,
+       0.2628070777876175
+      ],
+      "n_simultaneously_nonzero": 6
+     }
+    },
+    "tower_effect_at_own_reader": {
+     "contrast": [
+      "tower=medgemma-4|reader=gemma3-4",
+      "tower=gemma3-4|reader=gemma3-4"
+     ],
+     "W_qq": {
+      "Effusion": {
+       "estimate": -0.009523824148804644,
+       "sd": 0.008229954076889765,
+       "ci95_percentile": [
+        -0.02769970223692181,
+        0.0037461114181919063
+       ],
+       "max_t_lower": -0.03132185378635409,
+       "max_t_upper": 0.0122742054887448,
+       "nonzero_simultaneous": false
+      },
+      "Atelectasis": {
+       "estimate": 0.06634137995672507,
+       "sd": 0.0055422090259149995,
+       "ci95_percentile": [
+        0.05568788315224975,
+        0.07765780120702877
+       ],
+       "max_t_lower": 0.051662168447680415,
+       "max_t_upper": 0.08102059146576972,
+       "nonzero_simultaneous": true
+      },
+      "Pneumothorax": {
+       "estimate": 0.6442925029275705,
+       "sd": 0.03263024039039731,
+       "ci95_percentile": [
+        0.5785506199664145,
+        0.7082885079511171
+       ],
+       "max_t_lower": 0.5578673612481595,
+       "max_t_upper": 0.7307176446069814,
+       "nonzero_simultaneous": true
+      },
+      "Cardiomegaly": {
+       "estimate": 0.07929489989108615,
+       "sd": 0.007646419482515122,
+       "ci95_percentile": [
+        0.06551606730188479,
+        0.09543075186717946
+       ],
+       "max_t_lower": 0.059042432265654386,
+       "max_t_upper": 0.09954736751651791,
+       "nonzero_simultaneous": true
+      },
+      "Consolidation": {
+       "estimate": 0.29783497974285394,
+       "sd": 0.042847755316745194,
+       "ci95_percentile": [
+        0.21524567696035954,
+        0.38295437956400974
+       ],
+       "max_t_lower": 0.18434751291486756,
+       "max_t_upper": 0.4113224465708403,
+       "nonzero_simultaneous": true
+      },
+      "Edema": {
+       "estimate": 0.51496614074046,
+       "sd": 0.0328136371501502,
+       "ci95_percentile": [
+        0.4495399322867062,
+        0.5789949919285994
+       ],
+       "max_t_lower": 0.4280552505420203,
+       "max_t_upper": 0.6018770309388997,
+       "nonzero_simultaneous": true
+      },
+      "max_t_critical": 2.6486210535195696,
+      "mean_abs_effect": 0.2687089545679167,
+      "mean_abs_effect_ci95": [
+       0.24456739965656915,
+       0.2929893761597328
+      ],
+      "n_simultaneously_nonzero": 5
+     },
+     "O_q": {
+      "Effusion": {
+       "estimate": -0.008920591174859147,
+       "sd": 0.00231087647732039,
+       "ci95_percentile": [
+        -0.01386531887004066,
+        -0.004898582131828719
+       ],
+       "max_t_lower": -0.015053925643215779,
+       "max_t_upper": -0.0027872567065025146,
+       "nonzero_simultaneous": true
+      },
+      "Atelectasis": {
+       "estimate": -0.009689792397154177,
+       "sd": 0.0007914951424119831,
+       "ci95_percentile": [
+        -0.0113248171621611,
+        -0.00812898503995879
+       ],
+       "max_t_lower": -0.01179051239934199,
+       "max_t_upper": -0.007589072394966363,
+       "nonzero_simultaneous": true
+      },
+      "Pneumothorax": {
+       "estimate": 0.6475851647569134,
+       "sd": 0.032430489773156955,
+       "ci95_percentile": [
+        0.5809036327416297,
+        0.7106953486387885
+       ],
+       "max_t_lower": 0.5615108796518798,
+       "max_t_upper": 0.733659449861947,
+       "nonzero_simultaneous": true
+      },
+      "Cardiomegaly": {
+       "estimate": 0.03583961522272622,
+       "sd": 0.006099418143808557,
+       "ci95_percentile": [
+        0.02563219124175731,
+        0.049333424024427905
+       ],
+       "max_t_lower": 0.019651051313970748,
+       "max_t_upper": 0.05202817913148169,
+       "nonzero_simultaneous": true
+      },
+      "Consolidation": {
+       "estimate": -0.10198946102719758,
+       "sd": 0.03791100552590284,
+       "ci95_percentile": [
+        -0.17556437041047493,
+        -0.027024116230900317
+       ],
+       "max_t_lower": -0.20260967123925597,
+       "max_t_upper": -0.0013692508151391947,
+       "nonzero_simultaneous": true
+      },
+      "Edema": {
+       "estimate": 0.5336710482645733,
+       "sd": 0.031038000427941536,
+       "ci95_percentile": [
+        0.4727632099994661,
+        0.5942271676575492
+       ],
+       "max_t_lower": 0.45129259155264045,
+       "max_t_upper": 0.6160495049765062,
+       "nonzero_simultaneous": true
+      },
+      "max_t_critical": 2.6541161020725035,
+      "mean_abs_effect": 0.22294927880723728,
+      "mean_abs_effect_ci95": [
+       0.2051744156247194,
+       0.24123741395308812
+      ],
+      "n_simultaneously_nonzero": 6
+     },
+     "M_q": {
+      "Effusion": {
+       "estimate": -0.016831532567887893,
+       "sd": 0.012359677347185282,
+       "ci95_percentile": [
+        -0.030858405895174912,
+        0.016331231011949537
+       ],
+       "max_t_lower": -0.050651066899630996,
+       "max_t_upper": 0.01698800176385521,
+       "nonzero_simultaneous": false
+      },
+      "Atelectasis": {
+       "estimate": -0.008834663754723115,
+       "sd": 0.0008777950248828731,
+       "ci95_percentile": [
+        -0.01056953221866139,
+        -0.007103104100892248
+       ],
+       "max_t_lower": -0.011236556469747774,
+       "max_t_upper": -0.006432771039698457,
+       "nonzero_simultaneous": true
+      },
+      "Pneumothorax": {
+       "estimate": 0.6475852127581126,
+       "sd": 0.032445774994241026,
+       "ci95_percentile": [
+        0.5809013192441628,
+        0.71069536748216
+       ],
+       "max_t_lower": 0.5588044970068524,
+       "max_t_upper": 0.7363659285093729,
+       "nonzero_simultaneous": true
+      },
+      "Cardiomegaly": {
+       "estimate": 0.8556126220149963,
+       "sd": 0.025047833451759947,
+       "ci95_percentile": [
+        0.8065468098701909,
+        0.9026251700171244
+       ],
+       "max_t_lower": 0.7870747435929116,
+       "max_t_upper": 0.924150500437081,
+       "nonzero_simultaneous": true
+      },
+      "Consolidation": {
+       "estimate": -0.16936598667332864,
+       "sd": 0.03463690492498703,
+       "ci95_percentile": [
+        -0.2358262154386261,
+        -0.10107206335864223
+       ],
+       "max_t_lower": -0.26414224679331383,
+       "max_t_upper": -0.07458972655334346,
+       "nonzero_simultaneous": true
+      },
+      "Edema": {
+       "estimate": 0.5336764600433638,
+       "sd": 0.031062351399636985,
+       "ci95_percentile": [
+        0.47241766568020405,
+        0.5942540798210391
+       ],
+       "max_t_lower": 0.4486811782026182,
+       "max_t_upper": 0.6186717418841093,
+       "nonzero_simultaneous": true
+      },
+      "max_t_critical": 2.7362797087453874,
+      "mean_abs_effect": 0.37198441296873536,
+      "mean_abs_effect_ci95": [
+       0.3521760313192204,
+       0.39014729059442843
+      ],
+      "n_simultaneously_nonzero": 5
+     }
+    },
+    "tower_effect_at_partner_reader": {
+     "contrast": [
+      "tower=gemma3-4|reader=medgemma-4",
+      "tower=medgemma-4|reader=medgemma-4"
+     ],
+     "W_qq": {
+      "Effusion": {
+       "estimate": -0.08463602461139677,
+       "sd": 0.02651254072725409,
+       "ci95_percentile": [
+        -0.13820020720206902,
+        -0.03470624649319186
+       ],
+       "max_t_lower": -0.15448094123626332,
+       "max_t_upper": -0.014791107986530216,
+       "nonzero_simultaneous": true
+      },
+      "Atelectasis": {
+       "estimate": -0.06377784592784291,
+       "sd": 0.027160430744420525,
+       "ci95_percentile": [
+        -0.11907905798193742,
+        -0.011764992538956161
+       ],
+       "max_t_lower": -0.1353295708400252,
+       "max_t_upper": 0.007773878984339372,
+       "nonzero_simultaneous": false
+      },
+      "Pneumothorax": {
+       "estimate": 0.3987869924553223,
+       "sd": 0.02931991764240082,
+       "ci95_percentile": [
+        0.34263168921622894,
+        0.45688305337144824
+       ],
+       "max_t_lower": 0.32154629250700256,
+       "max_t_upper": 0.476027692403642,
+       "nonzero_simultaneous": true
+      },
+      "Cardiomegaly": {
+       "estimate": 0.1273748688816,
+       "sd": 0.05105079791203798,
+       "ci95_percentile": [
+        0.027513411780653262,
+        0.22248401309465363
+       ],
+       "max_t_lower": -0.007113891003032113,
+       "max_t_upper": 0.2618636287662321,
+       "nonzero_simultaneous": false
+      },
+      "Consolidation": {
+       "estimate": -0.12538903147730446,
+       "sd": 0.03943843582884927,
+       "ci95_percentile": [
+        -0.20349681254010107,
+        -0.04917660823761107
+       ],
+       "max_t_lower": -0.2292860623435129,
+       "max_t_upper": -0.021492000611096004,
+       "nonzero_simultaneous": true
+      },
+      "Edema": {
+       "estimate": -0.3004281523081742,
+       "sd": 0.03380141680798858,
+       "ci95_percentile": [
+        -0.3643589201421433,
+        -0.23385618160311167
+       ],
+       "max_t_lower": -0.38947496087486266,
+       "max_t_upper": -0.2113813437414858,
+       "nonzero_simultaneous": true
+      },
+      "max_t_critical": 2.634410535881538,
+      "mean_abs_effect": 0.1833988192769401,
+      "mean_abs_effect_ci95": [
+       0.15282993226208288,
+       0.21675683076374022
+      ],
+      "n_simultaneously_nonzero": 4
+     },
+     "O_q": {
+      "Effusion": {
+       "estimate": -0.14953338009958017,
+       "sd": 0.04018660329523478,
+       "ci95_percentile": [
+        -0.23158532339483517,
+        -0.0738815971838941
+       ],
+       "max_t_lower": -0.2558656588910459,
+       "max_t_upper": -0.043201101308114456,
+       "nonzero_simultaneous": true
+      },
+      "Atelectasis": {
+       "estimate": -0.019609514366223685,
+       "sd": 0.027102260001033503,
+       "ci95_percentile": [
+        -0.07204252450418898,
+        0.03311034524677663
+       ],
+       "max_t_lower": -0.09132110056665296,
+       "max_t_upper": 0.05210207183420559,
+       "nonzero_simultaneous": false
+      },
+      "Pneumothorax": {
+       "estimate": 0.6092033628016499,
+       "sd": 0.048588154179779894,
+       "ci95_percentile": [
+        0.5148902026001246,
+        0.7075708042142126
+       ],
+       "max_t_lower": 0.4806408884305028,
+       "max_t_upper": 0.737765837172797,
+       "nonzero_simultaneous": true
+      },
+      "Cardiomegaly": {
+       "estimate": 0.19131654830230987,
+       "sd": 0.043090786424713284,
+       "ci95_percentile": [
+        0.10672907096680061,
+        0.27505076381750193
+       ],
+       "max_t_lower": 0.07729990743832739,
+       "max_t_upper": 0.3053331891662924,
+       "nonzero_simultaneous": true
+      },
+      "Consolidation": {
+       "estimate": -0.3626659343781239,
+       "sd": 0.03675357995011814,
+       "ci95_percentile": [
+        -0.4325696797179597,
+        -0.2885671258945716
+       ],
+       "max_t_lower": -0.4599145592775514,
+       "max_t_upper": -0.26541730947869635,
+       "nonzero_simultaneous": true
+      },
+      "Edema": {
+       "estimate": -0.452101404496614,
+       "sd": 0.04014592211357245,
+       "ci95_percentile": [
+        -0.5304054799008943,
+        -0.3725414663764958
+       ],
+       "max_t_lower": -0.5583260423730637,
+       "max_t_upper": -0.3458767666201643,
+       "nonzero_simultaneous": true
+      },
+      "max_t_critical": 2.645963332862081,
+      "mean_abs_effect": 0.2974050240740836,
+      "mean_abs_effect_ci95": [
+       0.26683124761073945,
+       0.3318031001493538
+      ],
+      "n_simultaneously_nonzero": 5
+     },
+     "M_q": {
+      "Effusion": {
+       "estimate": -0.6021946933662257,
+       "sd": 0.03530580699808016,
+       "ci95_percentile": [
+        -0.6823284240537928,
+        -0.5454440129210121
+       ],
+       "max_t_lower": -0.695190170989089,
+       "max_t_upper": -0.5091992157433624,
+       "nonzero_simultaneous": true
+      },
+      "Atelectasis": {
+       "estimate": -0.7608842475221009,
+       "sd": 0.037333593494592955,
+       "ci95_percentile": [
+        -0.8315827109380683,
+        -0.6875475448522054
+       ],
+       "max_t_lower": -0.8592209137423713,
+       "max_t_upper": -0.6625475813018306,
+       "nonzero_simultaneous": true
+      },
+      "Pneumothorax": {
+       "estimate": 0.2696788831122497,
+       "sd": 0.04287638516747706,
+       "ci95_percentile": [
+        0.1881009063428793,
+        0.3530137210099708
+       ],
+       "max_t_lower": 0.15674250645307292,
+       "max_t_upper": 0.38261525977142646,
+       "nonzero_simultaneous": true
+      },
+      "Cardiomegaly": {
+       "estimate": -0.38984108712951016,
+       "sd": 0.03874436107965115,
+       "ci95_percentile": [
+        -0.4690613331158272,
+        -0.31555599942296875
+       ],
+       "max_t_lower": -0.49189371444916774,
+       "max_t_upper": -0.28778845980985257,
+       "nonzero_simultaneous": true
+      },
+      "Consolidation": {
+       "estimate": -0.4626970032797134,
+       "sd": 0.03481656695055571,
+       "ci95_percentile": [
+        -0.5288019804686848,
+        -0.3892046475886898
+       ],
+       "max_t_lower": -0.5544038228669668,
+       "max_t_upper": -0.37099018369246,
+       "nonzero_simultaneous": true
+      },
+      "Edema": {
+       "estimate": -0.6160634209490694,
+       "sd": 0.03683396648941224,
+       "ci95_percentile": [
+        -0.6877866090260921,
+        -0.540554527640237
+       ],
+       "max_t_lower": -0.7130840698925618,
+       "max_t_upper": -0.519042772005577,
+       "nonzero_simultaneous": true
+      },
+      "max_t_critical": 2.633999489883354,
+      "mean_abs_effect": 0.5168932225598115,
+      "mean_abs_effect_ci95": [
+       0.4849410685779424,
+       0.5531172229415801
+      ],
+      "n_simultaneously_nonzero": 6
+     }
+    },
+    "mean_abs_reader_effect_W_qq": 0.25376402904597256,
+    "mean_abs_tower_effect_W_qq": 0.2260538869224284,
+    "mean_abs_reader_effect_W_qq_ci95": [
+     0.2347114937452374,
+     0.273730998618151
+    ],
+    "mean_abs_tower_effect_W_qq_ci95": [
+     0.20805591438535517,
+     0.2455308143805442
+    ],
+    "reader_minus_tower_W_qq": 0.027710142123544168,
+    "reader_minus_tower_W_qq_ci95": [
+     0.010346488498403217,
+     0.045650810141417336
+    ],
+    "reader_over_tower_W_qq": 1.1225820201581096,
+    "mean_abs_reader_effect_O_q": 0.25853782266013725,
+    "mean_abs_tower_effect_O_q": 0.26017715144066045,
+    "mean_abs_reader_effect_O_q_ci95": [
+     0.24042777407145066,
+     0.279790697581611
+    ],
+    "mean_abs_tower_effect_O_q_ci95": [
+     0.24332017635068498,
+     0.2793544933821917
+    ],
+    "reader_minus_tower_O_q": -0.001639328780523197,
+    "reader_minus_tower_O_q_ci95": [
+     -0.018862739159222444,
+     0.01643578662834383
+    ],
+    "reader_over_tower_O_q": 0.9936991823784453,
+    "mean_abs_reader_effect_M_q": 0.3648100630341421,
+    "mean_abs_tower_effect_M_q": 0.4444388177642734,
+    "mean_abs_reader_effect_M_q_ci95": [
+     0.34729528307778945,
+     0.38262671793911146
+    ],
+    "mean_abs_tower_effect_M_q_ci95": [
+     0.42537772245720507,
+     0.4656777371637529
+    ],
+    "reader_minus_tower_M_q": -0.07962875473013131,
+    "reader_minus_tower_M_q_ci95": [
+     -0.09988702316415707,
+     -0.0613576637836015
+    ],
+    "reader_over_tower_M_q": 0.8208330335979659
+   },
+   "tower_factor_carries": "the representation and the directions fitted on it; the reader factor changes neither, because a swapped arm writes the donor tower's own seed-0 fit",
+   "packaged_mean_abs_reader_effect": 0.2537640290459726,
+   "packaged_mean_abs_tower_effect": 0.22605388692242842,
+   "reproduces_packaged_W_qq": true
+  },
+  {
+   "block": "gemma3-4/coco",
+   "model": "gemma3-4",
+   "dataset": "coco",
+   "reader": "gemma3-4",
+   "partner": "medgemma-4",
+   "n_rows": 200,
+   "alpha": 0.25,
+   "draws": 2000,
+   "arms": [
+    "tower=gemma3-4|reader=gemma3-4",
+    "tower=gemma3-4|reader=medgemma-4",
+    "tower=medgemma-4|reader=gemma3-4",
+    "tower=medgemma-4|reader=medgemma-4"
+   ],
+   "quantities": [
+    "W_qq",
+    "O_q",
+    "M_q"
+   ],
+   "crossover": {
+    "reader_effect_at_own_tower": {
+     "contrast": [
+      "tower=gemma3-4|reader=gemma3-4",
+      "tower=gemma3-4|reader=medgemma-4"
+     ],
+     "W_qq": {
+      "person": {
+       "estimate": -0.0019455014250563951,
+       "sd": 0.01609301173418913,
+       "ci95_percentile": [
+        -0.03327019618860596,
+        0.02870743542026291
+       ],
+       "max_t_lower": -0.04444309028956205,
+       "max_t_upper": 0.04055208743944926,
+       "nonzero_simultaneous": false
+      },
+      "dog": {
+       "estimate": -0.06241322884628042,
+       "sd": 0.03797702313551626,
+       "ci95_percentile": [
+        -0.13728482674512077,
+        0.013065229661729292
+       ],
+       "max_t_lower": -0.16270097747708756,
+       "max_t_upper": 0.03787451978452673,
+       "nonzero_simultaneous": false
+      },
+      "car": {
+       "estimate": -0.11631010478164572,
+       "sd": 0.04386690055685889,
+       "ci95_percentile": [
+        -0.20150703407641984,
+        -0.03061053166088833
+       ],
+       "max_t_lower": -0.2321515355478351,
+       "max_t_upper": -0.0004686740154563329,
+       "nonzero_simultaneous": true
+      },
+      "chair": {
+       "estimate": -0.10526286366353604,
+       "sd": 0.04228330324396226,
+       "ci95_percentile": [
+        -0.1883887963394397,
+        -0.024157694562719583
+       ],
+       "max_t_lower": -0.21692241296204204,
+       "max_t_upper": 0.006396685634969951,
+       "nonzero_simultaneous": false
+      },
+      "bottle": {
+       "estimate": 0.05163214149727113,
+       "sd": 0.05226848741374565,
+       "ci95_percentile": [
+        -0.05204072062137,
+        0.1518400266755511
+       ],
+       "max_t_lower": -0.08639576312171932,
+       "max_t_upper": 0.18966004611626158,
+       "nonzero_simultaneous": false
+      },
+      "bicycle": {
+       "estimate": 0.09391100259626745,
+       "sd": 0.02562389111770399,
+       "ci95_percentile": [
+        0.04547913185546109,
+        0.14706117828253062
+       ],
+       "max_t_lower": 0.026244762875855587,
+       "max_t_upper": 0.1615772423166793,
+       "nonzero_simultaneous": true
+      },
+      "max_t_critical": 2.64074801947859,
+      "mean_abs_effect": 0.07191247380167619,
+      "mean_abs_effect_ci95": [
+       0.04938077226351406,
+       0.1043554503270925
+      ],
+      "n_simultaneously_nonzero": 2
+     },
+     "O_q": {
+      "person": {
+       "estimate": -0.06795934847898408,
+       "sd": 0.03381879089696158,
+       "ci95_percentile": [
+        -0.13504021943616137,
+        -0.002210243659214575
+       ],
+       "max_t_lower": -0.1570045940287325,
+       "max_t_upper": 0.021085897070764373,
+       "nonzero_simultaneous": false
+      },
+      "dog": {
+       "estimate": -0.13913852283426553,
+       "sd": 0.04437706229187846,
+       "ci95_percentile": [
+        -0.22058619819168632,
+        -0.04741507902888057
+       ],
+       "max_t_lower": -0.2559838122059747,
+       "max_t_upper": -0.022293233462556364,
+       "nonzero_simultaneous": true
+      },
+      "car": {
+       "estimate": 0.43442854627137345,
+       "sd": 0.05367594444508813,
+       "ci95_percentile": [
+        0.3266145362343976,
+        0.5362645942246567
+       ],
+       "max_t_lower": 0.2930991986968289,
+       "max_t_upper": 0.575757893845918,
+       "nonzero_simultaneous": true
+      },
+      "chair": {
+       "estimate": -0.22223274758743805,
+       "sd": 0.04390739705611606,
+       "ci95_percentile": [
+        -0.31222210060763855,
+        -0.14433276761353006
+       ],
+       "max_t_lower": -0.3378414032671839,
+       "max_t_upper": -0.10662409190769216,
+       "nonzero_simultaneous": true
+      },
+      "bottle": {
+       "estimate": 0.19679112602663548,
+       "sd": 0.05338260508323857,
+       "ci95_percentile": [
+        0.09169314955907376,
+        0.3042727521931588
+       ],
+       "max_t_lower": 0.05623414419351802,
+       "max_t_upper": 0.33734810785975294,
+       "nonzero_simultaneous": true
+      },
+      "bicycle": {
+       "estimate": -0.31261922936408193,
+       "sd": 0.041567172673427806,
+       "ci95_percentile": [
+        -0.39270091503592236,
+        -0.2323659506710514
+       ],
+       "max_t_lower": -0.42206604870163306,
+       "max_t_upper": -0.2031724100265308,
+       "nonzero_simultaneous": true
+      },
+      "max_t_critical": 2.633010914584431,
+      "mean_abs_effect": 0.2288615867604631,
+      "mean_abs_effect_ci95": [
+       0.18684735240743836,
+       0.2712538217283997
+      ],
+      "n_simultaneously_nonzero": 5
+     },
+     "M_q": {
+      "person": {
+       "estimate": -0.0047394389395096215,
+       "sd": 0.027802172920558907,
+       "ci95_percentile": [
+        -0.061335482402211365,
+        0.045252799378277746
+       ],
+       "max_t_lower": -0.07916586905931182,
+       "max_t_upper": 0.06968699118029258,
+       "nonzero_simultaneous": false
+      },
+      "dog": {
+       "estimate": -0.08017338954652492,
+       "sd": 0.044716598970568414,
+       "ci95_percentile": [
+        -0.17179476423580986,
+        0.0021583656924469732
+       ],
+       "max_t_lower": -0.19987974623986082,
+       "max_t_upper": 0.03953296714681098,
+       "nonzero_simultaneous": false
+      },
+      "car": {
+       "estimate": 0.2653627765497176,
+       "sd": 0.051738479925546185,
+       "ci95_percentile": [
+        0.17084658101167274,
+        0.36783646292929467
+       ],
+       "max_t_lower": 0.12685884120314037,
+       "max_t_upper": 0.40386671189629486,
+       "nonzero_simultaneous": true
+      },
+      "chair": {
+       "estimate": -0.2588822293635655,
+       "sd": 0.06509068406840865,
+       "ci95_percentile": [
+        -0.368290263138251,
+        -0.11644340434692642
+       ],
+       "max_t_lower": -0.4331300215454922,
+       "max_t_upper": -0.08463443718163877,
+       "nonzero_simultaneous": true
+      },
+      "bottle": {
+       "estimate": 0.0061602144606571485,
+       "sd": 0.0483115974915241,
+       "ci95_percentile": [
+        -0.09877813704525831,
+        0.08962582905344176
+       ],
+       "max_t_lower": -0.12316995498160405,
+       "max_t_upper": 0.13549038390291834,
+       "nonzero_simultaneous": false
+      },
+      "bicycle": {
+       "estimate": -0.24460504769327673,
+       "sd": 0.0423161878430585,
+       "ci95_percentile": [
+        -0.31582990381392195,
+        -0.15310507248399122
+       ],
+       "max_t_lower": -0.35788550265760416,
+       "max_t_upper": -0.1313245927289493,
+       "nonzero_simultaneous": true
+      },
+      "max_t_critical": 2.6770004751954475,
+      "mean_abs_effect": 0.14332051609220858,
+      "mean_abs_effect_ci95": [
+       0.11388763715101051,
+       0.1845301963036649
+      ],
+      "n_simultaneously_nonzero": 3
+     }
+    },
+    "reader_effect_at_partner_tower": {
+     "contrast": [
+      "tower=medgemma-4|reader=gemma3-4",
+      "tower=medgemma-4|reader=medgemma-4"
+     ],
+     "W_qq": {
+      "person": {
+       "estimate": -0.46782950799912626,
+       "sd": 0.03563856052505989,
+       "ci95_percentile": [
+        -0.5377977558440441,
+        -0.3994419157146295
+       ],
+       "max_t_lower": -0.5617471703847585,
+       "max_t_upper": -0.373911845613494,
+       "nonzero_simultaneous": true
+      },
+      "dog": {
+       "estimate": 0.0049342002419803035,
+       "sd": 0.021806328838924388,
+       "ci95_percentile": [
+        -0.03781681176560752,
+        0.047033333837266315
+       ],
+       "max_t_lower": -0.052531628893404916,
+       "max_t_upper": 0.06240002937736552,
+       "nonzero_simultaneous": false
+      },
+      "car": {
+       "estimate": -0.3180691395769171,
+       "sd": 0.04519876418327898,
+       "ci95_percentile": [
+        -0.4058531753782142,
+        -0.22904377781146618
+       ],
+       "max_t_lower": -0.4371806360086566,
+       "max_t_upper": -0.19895764314517767,
+       "nonzero_simultaneous": true
+      },
+      "chair": {
+       "estimate": -0.07673586260365484,
+       "sd": 0.0429835410499477,
+       "ci95_percentile": [
+        -0.1613423450291903,
+        0.008249788140747906
+       ],
+       "max_t_lower": -0.19000962105496277,
+       "max_t_upper": 0.03653789584765309,
+       "nonzero_simultaneous": false
+      },
+      "bottle": {
+       "estimate": -0.11860782442575596,
+       "sd": 0.0526238409108147,
+       "ci95_percentile": [
+        -0.22141553582428664,
+        -0.01787091066156012
+       ],
+       "max_t_lower": -0.25728649301625206,
+       "max_t_upper": 0.020070844164740115,
+       "nonzero_simultaneous": false
+      },
+      "bicycle": {
+       "estimate": 0.22371282039537155,
+       "sd": 0.04448178957458135,
+       "ci95_percentile": [
+        0.1389384752043719,
+        0.3127910891390259
+       ],
+       "max_t_lower": 0.10649075435157905,
+       "max_t_upper": 0.34093488643916403,
+       "nonzero_simultaneous": true
+      },
+      "max_t_critical": 2.6352821495018675,
+      "mean_abs_effect": 0.20164822587380102,
+      "mean_abs_effect_ci95": [
+       0.16983880079337094,
+       0.23931880085253454
+      ],
+      "n_simultaneously_nonzero": 3
+     },
+     "O_q": {
+      "person": {
+       "estimate": -0.6697425334935013,
+       "sd": 0.038449916835260646,
+       "ci95_percentile": [
+        -0.7400430359809013,
+        -0.5888297676940403
+       ],
+       "max_t_lower": -0.770641093842769,
+       "max_t_upper": -0.5688439731442336,
+       "nonzero_simultaneous": true
+      },
+      "dog": {
+       "estimate": -0.2074628883428507,
+       "sd": 0.029480016049656325,
+       "ci95_percentile": [
+        -0.2624582501366732,
+        -0.14585201841092937
+       ],
+       "max_t_lower": -0.2848230343017585,
+       "max_t_upper": -0.1301027423839429,
+       "nonzero_simultaneous": true
+      },
+      "car": {
+       "estimate": -0.5454834399907258,
+       "sd": 0.05385003513364626,
+       "ci95_percentile": [
+        -0.6525549989868217,
+        -0.4416720144532697
+       ],
+       "max_t_lower": -0.6867943053177394,
+       "max_t_upper": -0.4041725746637121,
+       "nonzero_simultaneous": true
+      },
+      "chair": {
+       "estimate": -0.36414990603262987,
+       "sd": 0.049768165910919884,
+       "ci95_percentile": [
+        -0.4661987778626803,
+        -0.27515670638211676
+       ],
+       "max_t_lower": -0.4947493118297914,
+       "max_t_upper": -0.2335505002354683,
+       "nonzero_simultaneous": true
+      },
+      "bottle": {
+       "estimate": -0.5552394525352916,
+       "sd": 0.048471534009398985,
+       "ci95_percentile": [
+        -0.6489307406488537,
+        -0.4611363455607739
+       ],
+       "max_t_lower": -0.6824362946097037,
+       "max_t_upper": -0.42804261046087955,
+       "nonzero_simultaneous": true
+      },
+      "bicycle": {
+       "estimate": -0.20570557441791792,
+       "sd": 0.05243052260184714,
+       "ci95_percentile": [
+        -0.30440851150316983,
+        -0.10247515561232966
+       ],
+       "max_t_lower": -0.3432914181416358,
+       "max_t_upper": -0.06811973069420008,
+       "nonzero_simultaneous": true
+      },
+      "max_t_critical": 2.6241554898953203,
+      "mean_abs_effect": 0.4246306324688196,
+      "mean_abs_effect_ci95": [
+       0.3900297682609631,
+       0.45901108557292475
+      ],
+      "n_simultaneously_nonzero": 6
+     },
+     "M_q": {
+      "person": {
+       "estimate": -0.628742884679013,
+       "sd": 0.035579323870040695,
+       "ci95_percentile": [
+        -0.6925699509631051,
+        -0.5572023610094354
+       ],
+       "max_t_lower": -0.7271130172778553,
+       "max_t_upper": -0.5303727520801707,
+       "nonzero_simultaneous": true
+      },
+      "dog": {
+       "estimate": -0.2145563884956604,
+       "sd": 0.025701818364924425,
+       "ci95_percentile": [
+        -0.271597306868022,
+        -0.16996630376035812
+       ],
+       "max_t_lower": -0.28561707783939194,
+       "max_t_upper": -0.1434956991519288,
+       "nonzero_simultaneous": true
+      },
+      "car": {
+       "estimate": -0.5473543816201103,
+       "sd": 0.04567933335061999,
+       "ci95_percentile": [
+        -0.657754028971897,
+        -0.48245328940334103
+       ],
+       "max_t_lower": -0.6736491390792567,
+       "max_t_upper": -0.42105962416096393,
+       "nonzero_simultaneous": true
+      },
+      "chair": {
+       "estimate": -0.4904394847409618,
+       "sd": 0.043588108908870556,
+       "ci95_percentile": [
+        -0.5539068425884194,
+        -0.3824180100640568
+       ],
+       "max_t_lower": -0.6109524002972031,
+       "max_t_upper": -0.36992656918472044,
+       "nonzero_simultaneous": true
+      },
+      "bottle": {
+       "estimate": -0.47109225091436,
+       "sd": 0.04668140331047029,
+       "ci95_percentile": [
+        -0.5529985532316266,
+        -0.3710614612814145
+       ],
+       "max_t_lower": -0.6001575431701722,
+       "max_t_upper": -0.3420269586585478,
+       "nonzero_simultaneous": true
+      },
+      "bicycle": {
+       "estimate": -0.24035197049927615,
+       "sd": 0.04438213158073548,
+       "ci95_percentile": [
+        -0.32785253452819113,
+        -0.15525930943939276
+       ],
+       "max_t_lower": -0.36306020926635596,
+       "max_t_upper": -0.11764373173219636,
+       "nonzero_simultaneous": true
+      },
+      "max_t_critical": 2.7648117473551577,
+      "mean_abs_effect": 0.43208956015823025,
+      "mean_abs_effect_ci95": [
+       0.3979783235973119,
+       0.4638652556518131
+      ],
+      "n_simultaneously_nonzero": 6
+     }
+    },
+    "tower_effect_at_own_reader": {
+     "contrast": [
+      "tower=medgemma-4|reader=gemma3-4",
+      "tower=gemma3-4|reader=gemma3-4"
+     ],
+     "W_qq": {
+      "person": {
+       "estimate": -0.4571079064126921,
+       "sd": 0.03574363138607993,
+       "ci95_percentile": [
+        -0.5260676884231219,
+        -0.38694841180885003
+       ],
+       "max_t_lower": -0.5502574675446827,
+       "max_t_upper": -0.3639583452807014,
+       "nonzero_simultaneous": true
+      },
+      "dog": {
+       "estimate": -0.5944108046736033,
+       "sd": 0.03732639499132396,
+       "ci95_percentile": [
+        -0.6699114537131291,
+        -0.5193456633433197
+       ],
+       "max_t_lower": -0.6916851211672326,
+       "max_t_upper": -0.49713648817997397,
+       "nonzero_simultaneous": true
+      },
+      "car": {
+       "estimate": -0.05924955398561388,
+       "sd": 0.05181729068398703,
+       "ci95_percentile": [
+        -0.15900879261478673,
+        0.04593871317372288
+       ],
+       "max_t_lower": -0.1942878167218932,
+       "max_t_upper": 0.07578870875066543,
+       "nonzero_simultaneous": false
+      },
+      "chair": {
+       "estimate": -0.15700722416859364,
+       "sd": 0.0461773564626435,
+       "ci95_percentile": [
+        -0.24870978463882,
+        -0.0678429244665602
+       ],
+       "max_t_lower": -0.27734755675175365,
+       "max_t_upper": -0.03666689158543361,
+       "nonzero_simultaneous": true
+      },
+      "bottle": {
+       "estimate": -0.22435721041294127,
+       "sd": 0.05911361897570963,
+       "ci95_percentile": [
+        -0.34367541652367245,
+        -0.11015048450759571
+       ],
+       "max_t_lower": -0.3784100430709989,
+       "max_t_upper": -0.07030437775488363,
+       "nonzero_simultaneous": true
+      },
+      "bicycle": {
+       "estimate": 0.2780955196231525,
+       "sd": 0.044098750891287446,
+       "ci95_percentile": [
+        0.19208990842741663,
+        0.3636960278799395
+       ],
+       "max_t_lower": 0.1631721295617792,
+       "max_t_upper": 0.3930189096845258,
+       "nonzero_simultaneous": true
+      },
+      "max_t_critical": 2.6060463786079393,
+      "mean_abs_effect": 0.29503803654609945,
+      "mean_abs_effect_ci95": [
+       0.26069026693762015,
+       0.3366785132055976
+      ],
+      "n_simultaneously_nonzero": 5
+     },
+     "O_q": {
+      "person": {
+       "estimate": -0.47644942549146907,
+       "sd": 0.0371515974470181,
+       "ci95_percentile": [
+        -0.5481963934845002,
+        -0.3998030541295566
+       ],
+       "max_t_lower": -0.5731449330985549,
+       "max_t_upper": -0.3797539178843833,
+       "nonzero_simultaneous": true
+      },
+      "dog": {
+       "estimate": -0.7089734446188638,
+       "sd": 0.047531705862868014,
+       "ci95_percentile": [
+        -0.8016393756562432,
+        -0.6153374190905732
+       ],
+       "max_t_lower": -0.8326855523524604,
+       "max_t_upper": -0.5852613368852672,
+       "nonzero_simultaneous": true
+      },
+      "car": {
+       "estimate": -0.26585889323318856,
+       "sd": 0.06088569628223103,
+       "ci95_percentile": [
+        -0.37749037183744016,
+        -0.14562389515643764
+       ],
+       "max_t_lower": -0.42432780742771736,
+       "max_t_upper": -0.10738997903865977,
+       "nonzero_simultaneous": true
+      },
+      "chair": {
+       "estimate": -0.49463549816455654,
+       "sd": 0.04987504322785147,
+       "ci95_percentile": [
+        -0.59076972948158,
+        -0.3937122507743217
+       ],
+       "max_t_lower": -0.6244466759670746,
+       "max_t_upper": -0.36482432036203843,
+       "nonzero_simultaneous": true
+      },
+      "bottle": {
+       "estimate": -0.7823394880842607,
+       "sd": 0.053984005661113874,
+       "ci95_percentile": [
+        -0.8860956799048543,
+        -0.6767107399593852
+       ],
+       "max_t_lower": -0.9228451779811611,
+       "max_t_upper": -0.6418337981873603,
+       "nonzero_simultaneous": true
+      },
+      "bicycle": {
+       "estimate": 0.2513214407251504,
+       "sd": 0.05754039105394345,
+       "ci95_percentile": [
+        0.13715561321292258,
+        0.36855484035047026
+       ],
+       "max_t_lower": 0.10155944653887197,
+       "max_t_upper": 0.40108343491142884,
+       "nonzero_simultaneous": true
+      },
+      "max_t_critical": 2.6027281261588624,
+      "mean_abs_effect": 0.4965963650529148,
+      "mean_abs_effect_ci95": [
+       0.452697837195202,
+       0.5401469446044362
+      ],
+      "n_simultaneously_nonzero": 6
+     },
+     "M_q": {
+      "person": {
+       "estimate": -0.47644942549146907,
+       "sd": 0.03502800113453726,
+       "ci95_percentile": [
+        -0.5480900711863284,
+        -0.410810084268999
+       ],
+       "max_t_lower": -0.5710263786268763,
+       "max_t_upper": -0.3818724723560618,
+       "nonzero_simultaneous": true
+      },
+      "dog": {
+       "estimate": -0.6513116386660385,
+       "sd": 0.04242785804105561,
+       "ci95_percentile": [
+        -0.7303159604785657,
+        -0.5643053688490395
+       ],
+       "max_t_lower": -0.7658684906591757,
+       "max_t_upper": -0.5367547866729012,
+       "nonzero_simultaneous": true
+      },
+      "car": {
+       "estimate": -0.15072150208327073,
+       "sd": 0.05200791587475208,
+       "ci95_percentile": [
+        -0.28063568118903776,
+        -0.07197049992514791
+       ],
+       "max_t_lower": -0.29114487946825063,
+       "max_t_upper": -0.010298124698290806,
+       "nonzero_simultaneous": true
+      },
+      "chair": {
+       "estimate": -0.4763590208544773,
+       "sd": 0.07048535635280753,
+       "ci95_percentile": [
+        -0.6096126710471713,
+        -0.3358049372769545
+       ],
+       "max_t_lower": -0.6666721996998172,
+       "max_t_upper": -0.2860458420091374,
+       "nonzero_simultaneous": true
+      },
+      "bottle": {
+       "estimate": -0.4743248277384896,
+       "sd": 0.04763603793785649,
+       "ci95_percentile": [
+        -0.5581318892783637,
+        -0.3752385117933858
+       ],
+       "max_t_lower": -0.6029439661900693,
+       "max_t_upper": -0.34570568928691,
+       "nonzero_simultaneous": true
+      },
+      "bicycle": {
+       "estimate": 0.21667504464379217,
+       "sd": 0.05423286213997749,
+       "ci95_percentile": [
+        0.09809010741672781,
+        0.3127646934579594
+       ],
+       "max_t_lower": 0.07024422658736773,
+       "max_t_upper": 0.3631058627002166,
+       "nonzero_simultaneous": true
+      },
+      "max_t_critical": 2.7000385426548172,
+      "mean_abs_effect": 0.4076402432462562,
+      "mean_abs_effect_ci95": [
+       0.36840453630161857,
+       0.44972580927381306
+      ],
+      "n_simultaneously_nonzero": 6
+     }
+    },
+    "tower_effect_at_partner_reader": {
+     "contrast": [
+      "tower=gemma3-4|reader=medgemma-4",
+      "tower=medgemma-4|reader=medgemma-4"
+     ],
+     "W_qq": {
+      "person": {
+       "estimate": -0.008776100161377753,
+       "sd": 0.013530757533973288,
+       "ci95_percentile": [
+        -0.036793291570839416,
+        0.01650529042204445
+       ],
+       "max_t_lower": -0.04512789825157859,
+       "max_t_upper": 0.027575697928823084,
+       "nonzero_simultaneous": false
+      },
+      "dog": {
+       "estimate": 0.661758233761864,
+       "sd": 0.03272858201179897,
+       "ci95_percentile": [
+        0.5981043501816368,
+        0.7264568340621368
+       ],
+       "max_t_lower": 0.5738294683483781,
+       "max_t_upper": 0.74968699917535,
+       "nonzero_simultaneous": true
+      },
+      "car": {
+       "estimate": -0.14250948080965753,
+       "sd": 0.04902597280176618,
+       "ci95_percentile": [
+        -0.24139731356241942,
+        -0.048843529535866875
+       ],
+       "max_t_lower": -0.27422289448888015,
+       "max_t_upper": -0.010796067130434905,
+       "nonzero_simultaneous": true
+      },
+      "chair": {
+       "estimate": 0.18553422522847485,
+       "sd": 0.03759495724576986,
+       "ci95_percentile": [
+        0.1114394219421024,
+        0.2605399694383536
+       ],
+       "max_t_lower": 0.08453143277013969,
+       "max_t_upper": 0.28653701768681,
+       "nonzero_simultaneous": true
+      },
+      "bottle": {
+       "estimate": 0.054117244489914174,
+       "sd": 0.043528944273768286,
+       "ci95_percentile": [
+        -0.03228323034573317,
+        0.14601384304484205
+       ],
+       "max_t_lower": -0.06282782597983742,
+       "max_t_upper": 0.17106231495966578,
+       "nonzero_simultaneous": false
+      },
+      "bicycle": {
+       "estimate": -0.14829370182404836,
+       "sd": 0.02612540295036331,
+       "ci95_percentile": [
+        -0.19987779179617704,
+        -0.09859673147093115
+       ],
+       "max_t_lower": -0.21848233469934789,
+       "max_t_upper": -0.07810506894874883,
+       "nonzero_simultaneous": true
+      },
+      "max_t_critical": 2.686604796437157,
+      "mean_abs_effect": 0.20016483104588945,
+      "mean_abs_effect_ci95": [
+       0.1746892080831391,
+       0.2270221371467922
+      ],
+      "n_simultaneously_nonzero": 4
+     },
+     "O_q": {
+      "person": {
+       "estimate": -0.12533375952304818,
+       "sd": 0.02651781400407391,
+       "ci95_percentile": [
+        -0.17206442491895066,
+        -0.06763496967761537
+       ],
+       "max_t_lower": -0.19574880608958517,
+       "max_t_upper": -0.0549187129565112,
+       "nonzero_simultaneous": true
+      },
+      "dog": {
+       "estimate": 0.6406490791102786,
+       "sd": 0.034595835215470126,
+       "ci95_percentile": [
+        0.5703731261714343,
+        0.7073841063465652
+       ],
+       "max_t_lower": 0.5487837636913184,
+       "max_t_upper": 0.7325143945292387,
+       "nonzero_simultaneous": true
+      },
+      "car": {
+       "estimate": -0.7140530930289106,
+       "sd": 0.05824835196983483,
+       "ci95_percentile": [
+        -0.830137405412286,
+        -0.6032116796208199
+       ],
+       "max_t_lower": -0.8687249832439123,
+       "max_t_upper": -0.5593812028139089,
+       "nonzero_simultaneous": true
+      },
+      "chair": {
+       "estimate": 0.3527183397193647,
+       "sd": 0.045233458075853494,
+       "ci95_percentile": [
+        0.26129636322718874,
+        0.43753790602818576
+       ],
+       "max_t_lower": 0.23260602366316963,
+       "max_t_upper": 0.4728306557755598,
+       "nonzero_simultaneous": true
+      },
+      "bottle": {
+       "estimate": 0.030308909522333616,
+       "sd": 0.0485078148560171,
+       "ci95_percentile": [
+        -0.06458444838841329,
+        0.12241435581590812
+       ],
+       "max_t_lower": -0.09849808947851355,
+       "max_t_upper": 0.15911590852318078,
+       "nonzero_simultaneous": false
+      },
+      "bicycle": {
+       "estimate": -0.14440778577898641,
+       "sd": 0.03189106957698481,
+       "ci95_percentile": [
+        -0.20810749906605158,
+        -0.082128776701573
+       ],
+       "max_t_lower": -0.2290909029082892,
+       "max_t_upper": -0.059724668649683635,
+       "nonzero_simultaneous": true
+      },
+      "max_t_critical": 2.6553865471610587,
+      "mean_abs_effect": 0.3345784944471537,
+      "mean_abs_effect_ci95": [
+       0.3067234530569331,
+       0.36383883132511835
+      ],
+      "n_simultaneously_nonzero": 5
+     },
+     "M_q": {
+      "person": {
+       "estimate": -0.14755402024803427,
+       "sd": 0.023119667157799843,
+       "ci95_percentile": [
+        -0.17947477328373837,
+        -0.09141953055757007
+       ],
+       "max_t_lower": -0.21070041073235307,
+       "max_t_upper": -0.08440762976371545,
+       "nonzero_simultaneous": true
+      },
+      "dog": {
+       "estimate": 0.5169286397169031,
+       "sd": 0.03265195490398889,
+       "ci95_percentile": [
+        0.448596638342645,
+        0.5761552070606102
+       ],
+       "max_t_lower": 0.4277468586656976,
+       "max_t_upper": 0.6061104207681085,
+       "nonzero_simultaneous": true
+      },
+      "car": {
+       "estimate": -0.6619956560865572,
+       "sd": 0.055058109744279785,
+       "ci95_percentile": [
+        -0.7740020054414315,
+        -0.5567377275857698
+       ],
+       "max_t_lower": -0.8123750224291144,
+       "max_t_upper": -0.511616289744,
+       "nonzero_simultaneous": true
+      },
+      "chair": {
+       "estimate": 0.24480176547708102,
+       "sd": 0.037579371468946646,
+       "ci95_percentile": [
+        0.17061505504070468,
+        0.31888954950194215
+       ],
+       "max_t_lower": 0.14216180752540267,
+       "max_t_upper": 0.34744172342875934,
+       "nonzero_simultaneous": true
+      },
+      "bottle": {
+       "estimate": -0.002927637636527536,
+       "sd": 0.04488911635973,
+       "ci95_percentile": [
+        -0.07834624783534258,
+        0.10223584291438259
+       ],
+       "max_t_lower": -0.12553258911790022,
+       "max_t_upper": 0.11967731384484515,
+       "nonzero_simultaneous": false
+      },
+      "bicycle": {
+       "estimate": -0.21242196744979158,
+       "sd": 0.030174399996308977,
+       "ci95_percentile": [
+        -0.26912379348322546,
+        -0.1514554706848892
+       ],
+       "max_t_lower": -0.2948368409768152,
+       "max_t_upper": -0.130007093922768,
+       "nonzero_simultaneous": true
+      },
+      "max_t_critical": 2.7312845835246047,
+      "mean_abs_effect": 0.2977716144358158,
+      "mean_abs_effect_ci95": [
+       0.27314437888280935,
+       0.3257509709493905
+      ],
+      "n_simultaneously_nonzero": 5
+     }
+    },
+    "mean_abs_reader_effect_W_qq": 0.1367803498377386,
+    "mean_abs_tower_effect_W_qq": 0.24760143379599445,
+    "mean_abs_reader_effect_W_qq_ci95": [
+     0.11857947729949779,
+     0.16125558004932275
+    ],
+    "mean_abs_tower_effect_W_qq_ci95": [
+     0.22808811070998475,
+     0.27108001753666866
+    ],
+    "reader_minus_tower_W_qq": -0.11082108395825585,
+    "reader_minus_tower_W_qq_ci95": [
+     -0.13734161372312112,
+     -0.08199828044307687
+    ],
+    "reader_over_tower_W_qq": 0.5524214772941729,
+    "mean_abs_reader_effect_O_q": 0.32674610961464134,
+    "mean_abs_tower_effect_O_q": 0.41558742975003427,
+    "mean_abs_reader_effect_O_q_ci95": [
+     0.2982574440298209,
+     0.3543676452975004
+    ],
+    "mean_abs_tower_effect_O_q_ci95": [
+     0.39152053908752715,
+     0.4407834977821597
+    ],
+    "reader_minus_tower_O_q": -0.08884132013539292,
+    "reader_minus_tower_O_q_ci95": [
+     -0.12049022700301683,
+     -0.06041451498449008
+    ],
+    "reader_over_tower_O_q": 0.7862271238838268,
+    "mean_abs_reader_effect_M_q": 0.2877050381252194,
+    "mean_abs_tower_effect_M_q": 0.352705928841036,
+    "mean_abs_reader_effect_M_q_ci95": [
+     0.2652561645507373,
+     0.31542081170218467
+    ],
+    "mean_abs_tower_effect_M_q_ci95": [
+     0.3308533342003698,
+     0.37865188744476025
+    ],
+    "reader_minus_tower_M_q": -0.0650008907158166,
+    "reader_minus_tower_M_q_ci95": [
+     -0.09691227466182044,
+     -0.03283290132381529
+    ],
+    "reader_over_tower_M_q": 0.8157079725611519
+   },
+   "tower_factor_carries": "the representation and the directions fitted on it; the reader factor changes neither, because a swapped arm writes the donor tower's own seed-0 fit",
+   "packaged_mean_abs_reader_effect": 0.13678034983773862,
+   "packaged_mean_abs_tower_effect": 0.24760143379599445,
+   "reproduces_packaged_W_qq": true
+  },
+  {
+   "block": "gemma3-4/nih",
+   "model": "gemma3-4",
+   "dataset": "nih",
+   "reader": "gemma3-4",
+   "partner": "medgemma-4",
+   "n_rows": 200,
+   "alpha": 0.25,
+   "draws": 2000,
+   "arms": [
+    "tower=gemma3-4|reader=gemma3-4",
+    "tower=gemma3-4|reader=medgemma-4",
+    "tower=medgemma-4|reader=gemma3-4",
+    "tower=medgemma-4|reader=medgemma-4"
+   ],
+   "quantities": [
+    "W_qq",
+    "O_q",
+    "M_q"
+   ],
+   "crossover": {
+    "reader_effect_at_own_tower": {
+     "contrast": [
+      "tower=gemma3-4|reader=gemma3-4",
+      "tower=gemma3-4|reader=medgemma-4"
+     ],
+     "W_qq": {
+      "Effusion": {
+       "estimate": -0.0015514097735372752,
+       "sd": 0.00692378260541464,
+       "ci95_percentile": [
+        -0.014977136657677149,
+        0.01314498227776822
+       ],
+       "max_t_lower": -0.020745787825249343,
+       "max_t_upper": 0.01764296827817479,
+       "nonzero_simultaneous": false
+      },
+      "Atelectasis": {
+       "estimate": 0.00854129257913062,
+       "sd": 0.010804726211911288,
+       "ci95_percentile": [
+        -0.01247360114934564,
+        0.02959653544626966
+       ],
+       "max_t_lower": -0.021411987510062513,
+       "max_t_upper": 0.038494572668323755,
+       "nonzero_simultaneous": false
+      },
+      "Pneumothorax": {
+       "estimate": -0.013631616373155318,
+       "sd": 0.0077625534342568355,
+       "ci95_percentile": [
+        -0.030474906735598616,
+        -0.0002548712842621261
+       ],
+       "max_t_lower": -0.0351512673724834,
+       "max_t_upper": 0.007888034626172762,
+       "nonzero_simultaneous": false
+      },
+      "Cardiomegaly": {
+       "estimate": -0.6006707904991025,
+       "sd": 0.042113287576049555,
+       "ci95_percentile": [
+        -0.6819186986050839,
+        -0.5193474085908568
+       ],
+       "max_t_lower": -0.7174188758741423,
+       "max_t_upper": -0.4839227051240627,
+       "nonzero_simultaneous": true
+      },
+      "Mass": {
+       "estimate": -0.054799208387963316,
+       "sd": 0.045783618754606015,
+       "ci95_percentile": [
+        -0.14171421584143018,
+        0.033925070573616774
+       ],
+       "max_t_lower": -0.18172232787818526,
+       "max_t_upper": 0.07212391110225863,
+       "nonzero_simultaneous": false
+      },
+      "Nodule": {
+       "estimate": -0.11866039589823343,
+       "sd": 0.053261992024400705,
+       "ci95_percentile": [
+        -0.2235803464480809,
+        -0.018402876016498697
+       ],
+       "max_t_lower": -0.2663153511396244,
+       "max_t_upper": 0.028994559343157533,
+       "nonzero_simultaneous": false
+      },
+      "max_t_critical": 2.7722386945975734,
+      "mean_abs_effect": 0.1329757855851871,
+      "mean_abs_effect_ci95": [
+       0.10561752316120836,
+       0.16881481571054802
+      ],
+      "n_simultaneously_nonzero": 1
+     },
+     "O_q": {
+      "Effusion": {
+       "estimate": 0.07419351636792801,
+       "sd": 0.017744614677304746,
+       "ci95_percentile": [
+        0.04208649212741039,
+        0.11200837460133865
+       ],
+       "max_t_lower": 0.0277919342176327,
+       "max_t_upper": 0.12059509851822331,
+       "nonzero_simultaneous": true
+      },
+      "Atelectasis": {
+       "estimate": -0.013028087075661764,
+       "sd": 0.01312072141282647,
+       "ci95_percentile": [
+        -0.03856510753627338,
+        0.012222369307743229
+       ],
+       "max_t_lower": -0.04733834083885483,
+       "max_t_upper": 0.021282166687531308,
+       "nonzero_simultaneous": false
+      },
+      "Pneumothorax": {
+       "estimate": 0.06285116584316215,
+       "sd": 0.01802837673145591,
+       "ci95_percentile": [
+        0.027763062390902458,
+        0.09828648540798841
+       ],
+       "max_t_lower": 0.015707555279949416,
+       "max_t_upper": 0.1099947764063749,
+       "nonzero_simultaneous": true
+      },
+      "Cardiomegaly": {
+       "estimate": -0.32231088524370427,
+       "sd": 0.050169432786043605,
+       "ci95_percentile": [
+        -0.41793508667644663,
+        -0.22502843677727935
+       ],
+       "max_t_lower": -0.45350229735324665,
+       "max_t_upper": -0.19111947313416192,
+       "nonzero_simultaneous": true
+      },
+      "Mass": {
+       "estimate": -0.03656441924194698,
+       "sd": 0.04913862672488079,
+       "ci95_percentile": [
+        -0.13263381603791294,
+        0.06349004254908337
+       ],
+       "max_t_lower": -0.16506030749831466,
+       "max_t_upper": 0.0919314690144207,
+       "nonzero_simultaneous": false
+      },
+      "Nodule": {
+       "estimate": 0.43835161443000265,
+       "sd": 0.04266093757126295,
+       "ci95_percentile": [
+        0.35546638579498746,
+        0.5226329384140065
+       ],
+       "max_t_lower": 0.3267946696712421,
+       "max_t_upper": 0.5499085591887632,
+       "nonzero_simultaneous": true
+      },
+      "max_t_critical": 2.614967019241204,
+      "mean_abs_effect": 0.15788328136706764,
+      "mean_abs_effect_ci95": [
+       0.13572391218723714,
+       0.18682688369214903
+      ],
+      "n_simultaneously_nonzero": 4
+     },
+     "M_q": {
+      "Effusion": {
+       "estimate": 0.7094964778979065,
+       "sd": 0.024008552149858784,
+       "ci95_percentile": [
+        0.668113017848041,
+        0.7619254956209254
+       ],
+       "max_t_lower": 0.6408753712346803,
+       "max_t_upper": 0.7781175845611327,
+       "nonzero_simultaneous": true
+      },
+      "Atelectasis": {
+       "estimate": 0.02488656498971956,
+       "sd": 0.012713856757341388,
+       "ci95_percentile": [
+        0.011162900933450938,
+        0.0589085121182864
+       ],
+       "max_t_lower": -0.011452107796578948,
+       "max_t_upper": 0.06122523777601807,
+       "nonzero_simultaneous": false
+      },
+      "Pneumothorax": {
+       "estimate": 0.8666211056897803,
+       "sd": 0.01834527096577092,
+       "ci95_percentile": [
+        0.8259255273004834,
+        0.89829036953824
+       ],
+       "max_t_lower": 0.8141867569689494,
+       "max_t_upper": 0.9190554544106113,
+       "nonzero_simultaneous": true
+      },
+      "Cardiomegaly": {
+       "estimate": 0.22908437430863932,
+       "sd": 0.04505661950574332,
+       "ci95_percentile": [
+        0.1412292821540558,
+        0.3167068791465856
+       ],
+       "max_t_lower": 0.10030380171562711,
+       "max_t_upper": 0.3578649469016515,
+       "nonzero_simultaneous": true
+      },
+      "Mass": {
+       "estimate": 0.41893481123111564,
+       "sd": 0.040202650031766575,
+       "ci95_percentile": [
+        0.3213059899257209,
+        0.48291492051810914
+       ],
+       "max_t_lower": 0.3040278264719188,
+       "max_t_upper": 0.5338417959903126,
+       "nonzero_simultaneous": true
+      },
+      "Nodule": {
+       "estimate": 0.30376495601915454,
+       "sd": 0.04671756011077039,
+       "ci95_percentile": [
+        0.21609464225210717,
+        0.39620694519451205
+       ],
+       "max_t_lower": 0.17023709247300936,
+       "max_t_upper": 0.43729281956529975,
+       "nonzero_simultaneous": true
+      },
+      "max_t_critical": 2.8581942898888957,
+      "mean_abs_effect": 0.4254647150227193,
+      "mean_abs_effect_ci95": [
+       0.3934619925849193,
+       0.4575398914080769
+      ],
+      "n_simultaneously_nonzero": 5
+     }
+    },
+    "reader_effect_at_partner_tower": {
+     "contrast": [
+      "tower=medgemma-4|reader=gemma3-4",
+      "tower=medgemma-4|reader=medgemma-4"
+     ],
+     "W_qq": {
+      "Effusion": {
+       "estimate": -0.04360737664677709,
+       "sd": 0.017753775567250614,
+       "ci95_percentile": [
+        -0.07915369029957657,
+        -0.010758958880573856
+       ],
+       "max_t_lower": -0.08985986794603563,
+       "max_t_upper": 0.002645114652481448,
+       "nonzero_simultaneous": false
+      },
+      "Atelectasis": {
+       "estimate": 0.398469422923215,
+       "sd": 0.030989129897015986,
+       "ci95_percentile": [
+        0.3382692672416559,
+        0.4618041650208991
+       ],
+       "max_t_lower": 0.317735921730528,
+       "max_t_upper": 0.47920292411590204,
+       "nonzero_simultaneous": true
+      },
+      "Pneumothorax": {
+       "estimate": -0.05084386022627672,
+       "sd": 0.015343869732357674,
+       "ci95_percentile": [
+        -0.08143430665527863,
+        -0.02359958829479939
+       ],
+       "max_t_lower": -0.09081801663061692,
+       "max_t_upper": -0.010869703821936506,
+       "nonzero_simultaneous": true
+      },
+      "Cardiomegaly": {
+       "estimate": -0.4234460050745643,
+       "sd": 0.03311113603899362,
+       "ci95_percentile": [
+        -0.4868843208156583,
+        -0.3569574725524825
+       ],
+       "max_t_lower": -0.5097077991223127,
+       "max_t_upper": -0.337184211026816,
+       "nonzero_simultaneous": true
+      },
+      "Mass": {
+       "estimate": 0.38319022154321436,
+       "sd": 0.028417472853959652,
+       "ci95_percentile": [
+        0.32818732122215405,
+        0.4407127070679807
+       ],
+       "max_t_lower": 0.30915645272903347,
+       "max_t_upper": 0.45722399035739525,
+       "nonzero_simultaneous": true
+      },
+      "Nodule": {
+       "estimate": -0.14030381474988113,
+       "sd": 0.03677242353344222,
+       "ci95_percentile": [
+        -0.21369343613173392,
+        -0.06850388735965444
+       ],
+       "max_t_lower": -0.23610406822782787,
+       "max_t_upper": -0.04450356127193439,
+       "nonzero_simultaneous": true
+      },
+      "max_t_critical": 2.6052200065307742,
+      "mean_abs_effect": 0.23997678352732144,
+      "mean_abs_effect_ci95": [
+       0.22098854665875522,
+       0.25881926920910453
+      ],
+      "n_simultaneously_nonzero": 5
+     },
+     "O_q": {
+      "Effusion": {
+       "estimate": 0.005945409581320112,
+       "sd": 0.017611646751290504,
+       "ci95_percentile": [
+        -0.027984038892995743,
+        0.03918654218290917
+       ],
+       "max_t_lower": -0.04065238473936619,
+       "max_t_upper": 0.052543203902006425,
+       "nonzero_simultaneous": false
+      },
+      "Atelectasis": {
+       "estimate": 0.5644388917954501,
+       "sd": 0.03304131387187957,
+       "ci95_percentile": [
+        0.49990183888112677,
+        0.6293716299594234
+       ],
+       "max_t_lower": 0.47701649628469167,
+       "max_t_upper": 0.6518612873062086,
+       "nonzero_simultaneous": true
+      },
+      "Pneumothorax": {
+       "estimate": -0.0014465607925531667,
+       "sd": 0.015214028680649359,
+       "ci95_percentile": [
+        -0.027722460507862888,
+        0.031732680631332735
+       ],
+       "max_t_lower": -0.04170061478656559,
+       "max_t_upper": 0.03880749320145925,
+       "nonzero_simultaneous": false
+      },
+      "Cardiomegaly": {
+       "estimate": -0.18823447542396987,
+       "sd": 0.043098095790473426,
+       "ci95_percentile": [
+        -0.26392259884302544,
+        -0.09612868020819107
+       ],
+       "max_t_lower": -0.3022656180887272,
+       "max_t_upper": -0.07420333275921256,
+       "nonzero_simultaneous": true
+      },
+      "Mass": {
+       "estimate": 0.25968098223767844,
+       "sd": 0.03264458796645284,
+       "ci95_percentile": [
+        0.1940297190294457,
+        0.32246435462502393
+       ],
+       "max_t_lower": 0.1733082643864726,
+       "max_t_upper": 0.34605370008888425,
+       "nonzero_simultaneous": true
+      },
+      "Nodule": {
+       "estimate": -0.24051861342421535,
+       "sd": 0.0273291471858305,
+       "ci95_percentile": [
+        -0.29657765441208717,
+        -0.18841515565144212
+       ],
+       "max_t_lower": -0.3128274666228396,
+       "max_t_upper": -0.1682097602255911,
+       "nonzero_simultaneous": true
+      },
+      "max_t_critical": 2.6458510654190714,
+      "mean_abs_effect": 0.21004415554253117,
+      "mean_abs_effect_ci95": [
+       0.19183582578990047,
+       0.23282155713602637
+      ],
+      "n_simultaneously_nonzero": 4
+     },
+     "M_q": {
+      "Effusion": {
+       "estimate": 0.23906142283320536,
+       "sd": 0.031171634849524486,
+       "ci95_percentile": [
+        0.1791188222003854,
+        0.30206460797084894
+       ],
+       "max_t_lower": 0.15714099004540832,
+       "max_t_upper": 0.3209818556210024,
+       "nonzero_simultaneous": true
+      },
+      "Atelectasis": {
+       "estimate": 0.5579723786388373,
+       "sd": 0.03282761267929496,
+       "ci95_percentile": [
+        0.4926882314464473,
+        0.6221282232728576
+       ],
+       "max_t_lower": 0.4716999629936553,
+       "max_t_upper": 0.6442447942840193,
+       "nonzero_simultaneous": true
+      },
+      "Pneumothorax": {
+       "estimate": 0.15156222219191556,
+       "sd": 0.019386498731905018,
+       "ci95_percentile": [
+        0.11787918032008635,
+        0.19407330225202946
+       ],
+       "max_t_lower": 0.10061364750135952,
+       "max_t_upper": 0.2025107968824716,
+       "nonzero_simultaneous": true
+      },
+      "Cardiomegaly": {
+       "estimate": -0.13882123315083456,
+       "sd": 0.032170995512744466,
+       "ci95_percentile": [
+        -0.1971696792922648,
+        -0.07270022130431898
+       ],
+       "max_t_lower": -0.2233680298889757,
+       "max_t_upper": -0.054274436412693416,
+       "nonzero_simultaneous": true
+      },
+      "Mass": {
+       "estimate": 0.3534732281247443,
+       "sd": 0.031810746995576546,
+       "ci95_percentile": [
+        0.29724463070704105,
+        0.42025945389515695
+       ],
+       "max_t_lower": 0.2698731803967215,
+       "max_t_upper": 0.4370732758527671,
+       "nonzero_simultaneous": true
+      },
+      "Nodule": {
+       "estimate": 0.2734653274989127,
+       "sd": 0.033917372171699545,
+       "ci95_percentile": [
+        0.21099569963334694,
+        0.3446597804540097
+       ],
+       "max_t_lower": 0.18432897578867202,
+       "max_t_upper": 0.3626016792091534,
+       "nonzero_simultaneous": true
+      },
+      "max_t_critical": 2.628044155632303,
+      "mean_abs_effect": 0.2857259687397416,
+      "mean_abs_effect_ci95": [
+       0.26815416558291355,
+       0.3090284195914226
+      ],
+      "n_simultaneously_nonzero": 6
+     }
+    },
+    "tower_effect_at_own_reader": {
+     "contrast": [
+      "tower=medgemma-4|reader=gemma3-4",
+      "tower=gemma3-4|reader=gemma3-4"
+     ],
+     "W_qq": {
+      "Effusion": {
+       "estimate": 0.026349768724130994,
+       "sd": 0.006278713599206043,
+       "ci95_percentile": [
+        0.015398822226481822,
+        0.04019308251791195
+       ],
+       "max_t_lower": 0.009655765970937587,
+       "max_t_upper": 0.0430437714773244,
+       "nonzero_simultaneous": true
+      },
+      "Atelectasis": {
+       "estimate": 0.07982304245732091,
+       "sd": 0.008357671909382034,
+       "ci95_percentile": [
+        0.06476700701833606,
+        0.09731633951897922
+       ],
+       "max_t_lower": 0.05760145269040531,
+       "max_t_upper": 0.10204463222423651,
+       "nonzero_simultaneous": true
+      },
+      "Pneumothorax": {
+       "estimate": 0.004118164921889388,
+       "sd": 0.008418647966838994,
+       "ci95_percentile": [
+        -0.01136081787765482,
+        0.02180592090900331
+       ],
+       "max_t_lower": -0.01826554953107562,
+       "max_t_upper": 0.026501879374854397,
+       "nonzero_simultaneous": false
+      },
+      "Cardiomegaly": {
+       "estimate": 0.04726269101123837,
+       "sd": 0.03191972585104645,
+       "ci95_percentile": [
+        -0.01513797464866557,
+        0.11026828030234002
+       ],
+       "max_t_lower": -0.037606284586873095,
+       "max_t_upper": 0.13213166660934983,
+       "nonzero_simultaneous": false
+      },
+      "Mass": {
+       "estimate": 0.6524781872165069,
+       "sd": 0.04469313315679506,
+       "ci95_percentile": [
+        0.5608937350156793,
+        0.7394985908967956
+       ],
+       "max_t_lower": 0.5336469527319903,
+       "max_t_upper": 0.7713094217010235,
+       "nonzero_simultaneous": true
+      },
+      "Nodule": {
+       "estimate": 0.17114238774131393,
+       "sd": 0.02867791568188705,
+       "ci95_percentile": [
+        0.11503204882099041,
+        0.22814468304127145
+       ],
+       "max_t_lower": 0.09489281913385114,
+       "max_t_upper": 0.24739195634877673,
+       "nonzero_simultaneous": true
+      },
+      "max_t_critical": 2.6588253293324926,
+      "mean_abs_effect": 0.16352904034540008,
+      "mean_abs_effect_ci95": [
+       0.1397910632735502,
+       0.18932170956240105
+      ],
+      "n_simultaneously_nonzero": 4
+     },
+     "O_q": {
+      "Effusion": {
+       "estimate": 0.003347832559305205,
+       "sd": 0.005098756275338286,
+       "ci95_percentile": [
+        -0.004710437856047363,
+        0.014544763939401642
+       ],
+       "max_t_lower": -0.010341973686942198,
+       "max_t_upper": 0.017037638805552608,
+       "nonzero_simultaneous": false
+      },
+      "Atelectasis": {
+       "estimate": -0.0027027947297302768,
+       "sd": 0.0029829576028128535,
+       "ci95_percentile": [
+        -0.008850873844358757,
+        0.00255684661511819
+       ],
+       "max_t_lower": -0.010711828583887039,
+       "max_t_upper": 0.005306239124426486,
+       "nonzero_simultaneous": false
+      },
+      "Pneumothorax": {
+       "estimate": 0.004050948271515706,
+       "sd": 0.00800935254056991,
+       "ci95_percentile": [
+        -0.010491727718625254,
+        0.021213001868580605
+       ],
+       "max_t_lower": -0.01745360666644645,
+       "max_t_upper": 0.02555550320947786,
+       "nonzero_simultaneous": false
+      },
+      "Cardiomegaly": {
+       "estimate": -0.05595596962164778,
+       "sd": 0.033044893663535,
+       "ci95_percentile": [
+        -0.12095237211138486,
+        0.010688400820364687
+       ],
+       "max_t_lower": -0.14467921255634342,
+       "max_t_upper": 0.03276727331304785,
+       "nonzero_simultaneous": false
+      },
+      "Mass": {
+       "estimate": 0.29159351866114935,
+       "sd": 0.042539545830409774,
+       "ci95_percentile": [
+        0.20795995919814747,
+        0.37773050189416757
+       ],
+       "max_t_lower": 0.17737779451712096,
+       "max_t_upper": 0.4058092428051777,
+       "nonzero_simultaneous": true
+      },
+      "Nodule": {
+       "estimate": -0.005671655865642333,
+       "sd": 0.024841131649522265,
+       "ci95_percentile": [
+        -0.05643355072360116,
+        0.04226592382059941
+       ],
+       "max_t_lower": -0.07236836793723893,
+       "max_t_upper": 0.06102505620595426,
+       "nonzero_simultaneous": false
+      },
+      "max_t_critical": 2.684930502064276,
+      "mean_abs_effect": 0.06055378661816511,
+      "mean_abs_effect_ci95": [
+       0.046421851209227594,
+       0.08024073282133945
+      ],
+      "n_simultaneously_nonzero": 1
+     },
+     "M_q": {
+      "Effusion": {
+       "estimate": 0.06259980599255757,
+       "sd": 0.019644942655911116,
+       "ci95_percentile": [
+        0.024759974960489775,
+        0.10135619456127602
+       ],
+       "max_t_lower": 0.007851709822680707,
+       "max_t_upper": 0.11734790216243443,
+       "nonzero_simultaneous": true
+      },
+      "Atelectasis": {
+       "estimate": -0.009161301285107597,
+       "sd": 0.0024095986388057013,
+       "ci95_percentile": [
+        -0.014395233576369616,
+        -0.005537434431739419
+       ],
+       "max_t_lower": -0.015876563341036494,
+       "max_t_upper": -0.0024460392291787026,
+       "nonzero_simultaneous": true
+      },
+      "Pneumothorax": {
+       "estimate": 0.004981617170729546,
+       "sd": 0.0079555940242744,
+       "ci95_percentile": [
+        -0.009585971895410468,
+        0.02205450689746933
+       ],
+       "max_t_lower": -0.017189668047983758,
+       "max_t_upper": 0.02715290238944285,
+       "nonzero_simultaneous": false
+      },
+      "Cardiomegaly": {
+       "estimate": -0.01469209584258968,
+       "sd": 0.03556682519679792,
+       "ci95_percentile": [
+        -0.08469340930641098,
+        0.055809400697424266
+       ],
+       "max_t_lower": -0.11381256671581871,
+       "max_t_upper": 0.08442837503063935,
+       "nonzero_simultaneous": false
+      },
+      "Mass": {
+       "estimate": 0.4565210921866233,
+       "sd": 0.04123124012693405,
+       "ci95_percentile": [
+        0.3913627454180355,
+        0.5570425993803316
+       ],
+       "max_t_lower": 0.3416145770997266,
+       "max_t_upper": 0.57142760727352,
+       "nonzero_simultaneous": true
+      },
+      "Nodule": {
+       "estimate": 0.27412411054410024,
+       "sd": 0.039663814901897854,
+       "ci95_percentile": [
+        0.19598034161631958,
+        0.34849747605753534
+       ],
+       "max_t_lower": 0.1635858213391738,
+       "max_t_upper": 0.3846623997490267,
+       "nonzero_simultaneous": true
+      },
+      "max_t_critical": 2.7868799175854706,
+      "mean_abs_effect": 0.13701333717028466,
+      "mean_abs_effect_ci95": [
+       0.12032921985165308,
+       0.16360227935402327
+      ],
+      "n_simultaneously_nonzero": 4
+     }
+    },
+    "tower_effect_at_partner_reader": {
+     "contrast": [
+      "tower=gemma3-4|reader=medgemma-4",
+      "tower=medgemma-4|reader=medgemma-4"
+     ],
+     "W_qq": {
+      "Effusion": {
+       "estimate": -0.06840573559737081,
+       "sd": 0.01863248093480066,
+       "ci95_percentile": [
+        -0.105664522997446,
+        -0.03331322143659344
+       ],
+       "max_t_lower": -0.11668151322199244,
+       "max_t_upper": -0.020129957972749184,
+       "nonzero_simultaneous": true
+      },
+      "Atelectasis": {
+       "estimate": 0.3101050878867635,
+       "sd": 0.03238334326353461,
+       "ci95_percentile": [
+        0.245338789631966,
+        0.375424866125741
+       ],
+       "max_t_lower": 0.22620154956555757,
+       "max_t_upper": 0.3940086262079694,
+       "nonzero_simultaneous": true
+      },
+      "Pneumothorax": {
+       "estimate": -0.04133040877501079,
+       "sd": 0.0142233773317172,
+       "ci95_percentile": [
+        -0.07009143496003852,
+        -0.015800929904130567
+       ],
+       "max_t_lower": -0.07818243097966465,
+       "max_t_upper": -0.004478386570356929,
+       "nonzero_simultaneous": true
+      },
+      "Cardiomegaly": {
+       "estimate": 0.12996209441329987,
+       "sd": 0.042704633832422324,
+       "ci95_percentile": [
+        0.043049952219435,
+        0.21066652836237515
+       ],
+       "max_t_lower": 0.019316635354523715,
+       "max_t_upper": 0.24060755347207602,
+       "nonzero_simultaneous": true
+      },
+      "Mass": {
+       "estimate": -0.21448875728532912,
+       "sd": 0.039398599414277036,
+       "ci95_percentile": [
+        -0.28879176909456356,
+        -0.1389802368210587
+       ],
+       "max_t_lower": -0.31656845513666276,
+       "max_t_upper": -0.11240905943399547,
+       "nonzero_simultaneous": true
+      },
+      "Nodule": {
+       "estimate": -0.19278580659296163,
+       "sd": 0.05482676695772567,
+       "ci95_percentile": [
+        -0.30293509056383916,
+        -0.08629695167228688
+       ],
+       "max_t_lower": -0.33483907468913715,
+       "max_t_upper": -0.050732538496786106,
+       "nonzero_simultaneous": true
+      },
+      "max_t_critical": 2.5909473780517844,
+      "mean_abs_effect": 0.15951298175845596,
+      "mean_abs_effect_ci95": [
+       0.12505521379196582,
+       0.19329212595607473
+      ],
+      "n_simultaneously_nonzero": 6
+     },
+     "O_q": {
+      "Effusion": {
+       "estimate": -0.0715959393459131,
+       "sd": 0.022747463909979605,
+       "ci95_percentile": [
+        -0.11705953446453543,
+        -0.028603937896494278
+       ],
+       "max_t_lower": -0.1310843242607559,
+       "max_t_upper": -0.012107554431070304,
+       "nonzero_simultaneous": true
+      },
+      "Atelectasis": {
+       "estimate": 0.5801697736008422,
+       "sd": 0.037297043447576866,
+       "ci95_percentile": [
+        0.507016730970666,
+        0.6536501771292924
+       ],
+       "max_t_lower": 0.48263182890619527,
+       "max_t_upper": 0.6777077182954891,
+       "nonzero_simultaneous": true
+      },
+      "Pneumothorax": {
+       "estimate": -0.06834867490723102,
+       "sd": 0.024042214722790622,
+       "ci95_percentile": [
+        -0.11353353118929134,
+        -0.021459596864501336
+       ],
+       "max_t_lower": -0.13122304759750741,
+       "max_t_upper": -0.005474302216954649,
+       "nonzero_simultaneous": true
+      },
+      "Cardiomegaly": {
+       "estimate": 0.19003237944138218,
+       "sd": 0.05698605376804187,
+       "ci95_percentile": [
+        0.0834342024013591,
+        0.30470581751834763
+       ],
+       "max_t_lower": 0.041004412422871506,
+       "max_t_upper": 0.33906034645989286,
+       "nonzero_simultaneous": true
+      },
+      "Mass": {
+       "estimate": 0.004651882818476061,
+       "sd": 0.03375288491994548,
+       "ci95_percentile": [
+        -0.060880822667703595,
+        0.07099379972760558
+       ],
+       "max_t_lower": -0.0836175004433308,
+       "max_t_upper": 0.09292126608028292,
+       "nonzero_simultaneous": false
+      },
+      "Nodule": {
+       "estimate": -0.6731985719885757,
+       "sd": 0.04572620315977128,
+       "ci95_percentile": [
+        -0.7604041662881015,
+        -0.5849429343486178
+       ],
+       "max_t_lower": -0.7927801651291366,
+       "max_t_upper": -0.5536169788480148,
+       "nonzero_simultaneous": true
+      },
+      "max_t_critical": 2.615165591657208,
+      "mean_abs_effect": 0.2646662036837367,
+      "mean_abs_effect_ci95": [
+       0.23912052682019697,
+       0.29887078452997295
+      ],
+      "n_simultaneously_nonzero": 5
+     },
+     "M_q": {
+      "Effusion": {
+       "estimate": -0.5330348610572587,
+       "sd": 0.03521202577778709,
+       "ci95_percentile": [
+        -0.6069804256383442,
+        -0.4713920406207904
+       ],
+       "max_t_lower": -0.6262715388739136,
+       "max_t_upper": -0.4397981832406038,
+       "nonzero_simultaneous": true
+      },
+      "Atelectasis": {
+       "estimate": 0.5422471149342254,
+       "sd": 0.035934002070976016,
+       "ci95_percentile": [
+        0.4651842918502011,
+        0.6076271831737378
+       ],
+       "max_t_lower": 0.4470987416228517,
+       "max_t_upper": 0.6373954882455991,
+       "nonzero_simultaneous": true
+      },
+      "Pneumothorax": {
+       "estimate": -0.7200405006685944,
+       "sd": 0.0253066775809113,
+       "ci95_percentile": [
+        -0.7641694349197863,
+        -0.6658108379596345
+       ],
+       "max_t_lower": -0.7870491572881135,
+       "max_t_upper": -0.6530318440490752,
+       "nonzero_simultaneous": true
+      },
+      "Cardiomegaly": {
+       "estimate": -0.3532135116168842,
+       "sd": 0.041689948437843564,
+       "ci95_percentile": [
+        -0.43286279253083515,
+        -0.27258271098601244
+       ],
+       "max_t_lower": -0.46360285175942845,
+       "max_t_upper": -0.24282417147433993,
+       "nonzero_simultaneous": true
+      },
+      "Mass": {
+       "estimate": -0.5219826752929946,
+       "sd": 0.030832906161752004,
+       "ci95_percentile": [
+        -0.5783706786196398,
+        -0.4592013009959374
+       ],
+       "max_t_lower": -0.6036240371418183,
+       "max_t_upper": -0.4403413134441708,
+       "nonzero_simultaneous": true
+      },
+      "Nodule": {
+       "estimate": -0.30442373906434206,
+       "sd": 0.0413494784017414,
+       "ci95_percentile": [
+        -0.37972540100894175,
+        -0.21917183989144332
+       ],
+       "max_t_lower": -0.4139115606386957,
+       "max_t_upper": -0.19493591748998843,
+       "nonzero_simultaneous": true
+      },
+      "max_t_critical": 2.6478646359355924,
+      "mean_abs_effect": 0.49582373377238315,
+      "mean_abs_effect_ci95": [
+       0.4624775530724338,
+       0.5245013480829713
+      ],
+      "n_simultaneously_nonzero": 6
+     }
+    },
+    "mean_abs_reader_effect_W_qq": 0.18647628455625426,
+    "mean_abs_tower_effect_W_qq": 0.161521011051928,
+    "mean_abs_reader_effect_W_qq_ci95": [
+     0.16987663055060226,
+     0.2068521331971601
+    ],
+    "mean_abs_tower_effect_W_qq_ci95": [
+     0.14038815067886667,
+     0.18227340410480763
+    ],
+    "reader_minus_tower_W_qq": 0.024955273504326247,
+    "reader_minus_tower_W_qq_ci95": [
+     -0.0024193539209580867,
+     0.05561555487363413
+    ],
+    "reader_over_tower_W_qq": 1.1545017167847178,
+    "mean_abs_reader_effect_O_q": 0.18396371845479942,
+    "mean_abs_tower_effect_O_q": 0.16260999515095093,
+    "mean_abs_reader_effect_O_q_ci95": [
+     0.16944957293729146,
+     0.20306229114419908
+    ],
+    "mean_abs_tower_effect_O_q_ci95": [
+     0.14927628937992612,
+     0.1845369333109694
+    ],
+    "reader_minus_tower_O_q": 0.021353723303848493,
+    "reader_minus_tower_O_q_ci95": [
+     0.0007641618216946228,
+     0.039294403260181174
+    ],
+    "reader_over_tower_O_q": 1.1313186393248817,
+    "mean_abs_reader_effect_M_q": 0.35559534188123043,
+    "mean_abs_tower_effect_M_q": 0.3164185354713339,
+    "mean_abs_reader_effect_M_q_ci95": [
+     0.33885710550004117,
+     0.37593896480536376
+    ],
+    "mean_abs_tower_effect_M_q_ci95": [
+     0.2985215664201463,
+     0.3376337051514409
+    ],
+    "reader_minus_tower_M_q": 0.039176806409896514,
+    "reader_minus_tower_M_q_ci95": [
+     0.011240791190457892,
+     0.06739797719821185
+    ],
+    "reader_over_tower_M_q": 1.1238132473862164
+   },
+   "tower_factor_carries": "the representation and the directions fitted on it; the reader factor changes neither, because a swapped arm writes the donor tower's own seed-0 fit",
+   "packaged_mean_abs_reader_effect": 0.18647628455625426,
+   "packaged_mean_abs_tower_effect": 0.161521011051928,
+   "reproduces_packaged_W_qq": true
+  },
+  {
+   "block": "medgemma-4/nih",
+   "model": "medgemma-4",
+   "dataset": "nih",
+   "reader": "medgemma-4",
+   "partner": "gemma3-4",
+   "n_rows": 200,
+   "alpha": 0.25,
+   "draws": 2000,
+   "arms": [
+    "tower=gemma3-4|reader=gemma3-4",
+    "tower=gemma3-4|reader=medgemma-4",
+    "tower=medgemma-4|reader=gemma3-4",
+    "tower=medgemma-4|reader=medgemma-4"
+   ],
+   "quantities": [
+    "W_qq",
+    "O_q",
+    "M_q"
+   ],
+   "crossover": {
+    "reader_effect_at_own_tower": {
+     "contrast": [
+      "tower=medgemma-4|reader=medgemma-4",
+      "tower=medgemma-4|reader=gemma3-4"
+     ],
+     "W_qq": {
+      "Effusion": {
+       "estimate": 0.04360737664677709,
+       "sd": 0.017753775567250614,
+       "ci95_percentile": [
+        0.010758958880573835,
+        0.07915369029957657
+       ],
+       "max_t_lower": -0.002645114652481448,
+       "max_t_upper": 0.08985986794603563,
+       "nonzero_simultaneous": false
+      },
+      "Atelectasis": {
+       "estimate": -0.398469422923215,
+       "sd": 0.030989129897015986,
+       "ci95_percentile": [
+        -0.46180416502089916,
+        -0.33826926724165596
+       ],
+       "max_t_lower": -0.47920292411590204,
+       "max_t_upper": -0.317735921730528,
+       "nonzero_simultaneous": true
+      },
+      "Pneumothorax": {
+       "estimate": 0.05084386022627672,
+       "sd": 0.015343869732357674,
+       "ci95_percentile": [
+        0.023599588294799387,
+        0.08143430665527863
+       ],
+       "max_t_lower": 0.010869703821936506,
+       "max_t_upper": 0.09081801663061692,
+       "nonzero_simultaneous": true
+      },
+      "Cardiomegaly": {
+       "estimate": 0.4234460050745643,
+       "sd": 0.03311113603899362,
+       "ci95_percentile": [
+        0.35695747255248245,
+        0.4868843208156583
+       ],
+       "max_t_lower": 0.337184211026816,
+       "max_t_upper": 0.5097077991223127,
+       "nonzero_simultaneous": true
+      },
+      "Mass": {
+       "estimate": -0.38319022154321436,
+       "sd": 0.028417472853959652,
+       "ci95_percentile": [
+        -0.44071270706798077,
+        -0.32818732122215405
+       ],
+       "max_t_lower": -0.45722399035739525,
+       "max_t_upper": -0.30915645272903347,
+       "nonzero_simultaneous": true
+      },
+      "Nodule": {
+       "estimate": 0.14030381474988113,
+       "sd": 0.03677242353344222,
+       "ci95_percentile": [
+        0.06850388735965443,
+        0.21369343613173392
+       ],
+       "max_t_lower": 0.04450356127193439,
+       "max_t_upper": 0.23610406822782787,
+       "nonzero_simultaneous": true
+      },
+      "max_t_critical": 2.6052200065307742,
+      "mean_abs_effect": 0.23997678352732144,
+      "mean_abs_effect_ci95": [
+       0.22098854665875522,
+       0.25881926920910453
+      ],
+      "n_simultaneously_nonzero": 5
+     },
+     "O_q": {
+      "Effusion": {
+       "estimate": -0.005945409581320112,
+       "sd": 0.017611646751290504,
+       "ci95_percentile": [
+        -0.03918654218290918,
+        0.0279840388929957
+       ],
+       "max_t_lower": -0.052543203902006425,
+       "max_t_upper": 0.04065238473936619,
+       "nonzero_simultaneous": false
+      },
+      "Atelectasis": {
+       "estimate": -0.5644388917954501,
+       "sd": 0.03304131387187957,
+       "ci95_percentile": [
+        -0.6293716299594234,
+        -0.4999018388811269
+       ],
+       "max_t_lower": -0.6518612873062086,
+       "max_t_upper": -0.47701649628469167,
+       "nonzero_simultaneous": true
+      },
+      "Pneumothorax": {
+       "estimate": 0.0014465607925531667,
+       "sd": 0.015214028680649359,
+       "ci95_percentile": [
+        -0.031732680631332756,
+        0.027722460507862888
+       ],
+       "max_t_lower": -0.03880749320145925,
+       "max_t_upper": 0.04170061478656559,
+       "nonzero_simultaneous": false
+      },
+      "Cardiomegaly": {
+       "estimate": 0.18823447542396987,
+       "sd": 0.043098095790473426,
+       "ci95_percentile": [
+        0.096128680208191,
+        0.2639225988430253
+       ],
+       "max_t_lower": 0.07420333275921256,
+       "max_t_upper": 0.3022656180887272,
+       "nonzero_simultaneous": true
+      },
+      "Mass": {
+       "estimate": -0.25968098223767844,
+       "sd": 0.03264458796645284,
+       "ci95_percentile": [
+        -0.32246435462502393,
+        -0.19402971902944574
+       ],
+       "max_t_lower": -0.34605370008888425,
+       "max_t_upper": -0.1733082643864726,
+       "nonzero_simultaneous": true
+      },
+      "Nodule": {
+       "estimate": 0.24051861342421535,
+       "sd": 0.0273291471858305,
+       "ci95_percentile": [
+        0.18841515565144212,
+        0.2965776544120871
+       ],
+       "max_t_lower": 0.1682097602255911,
+       "max_t_upper": 0.3128274666228396,
+       "nonzero_simultaneous": true
+      },
+      "max_t_critical": 2.6458510654190714,
+      "mean_abs_effect": 0.21004415554253117,
+      "mean_abs_effect_ci95": [
+       0.19183582578990047,
+       0.23282155713602637
+      ],
+      "n_simultaneously_nonzero": 4
+     },
+     "M_q": {
+      "Effusion": {
+       "estimate": -0.23906142283320536,
+       "sd": 0.031171634849524486,
+       "ci95_percentile": [
+        -0.302064607970849,
+        -0.1791188222003854
+       ],
+       "max_t_lower": -0.3209818556210024,
+       "max_t_upper": -0.15714099004540832,
+       "nonzero_simultaneous": true
+      },
+      "Atelectasis": {
+       "estimate": -0.5579723786388373,
+       "sd": 0.03282761267929496,
+       "ci95_percentile": [
+        -0.6221282232728576,
+        -0.49268823144644736
+       ],
+       "max_t_lower": -0.6442447942840193,
+       "max_t_upper": -0.4716999629936553,
+       "nonzero_simultaneous": true
+      },
+      "Pneumothorax": {
+       "estimate": -0.15156222219191556,
+       "sd": 0.019386498731905018,
+       "ci95_percentile": [
+        -0.19407330225202948,
+        -0.11787918032008635
+       ],
+       "max_t_lower": -0.2025107968824716,
+       "max_t_upper": -0.10061364750135952,
+       "nonzero_simultaneous": true
+      },
+      "Cardiomegaly": {
+       "estimate": 0.13882123315083456,
+       "sd": 0.032170995512744466,
+       "ci95_percentile": [
+        0.07270022130431893,
+        0.19716967929226478
+       ],
+       "max_t_lower": 0.054274436412693416,
+       "max_t_upper": 0.2233680298889757,
+       "nonzero_simultaneous": true
+      },
+      "Mass": {
+       "estimate": -0.3534732281247443,
+       "sd": 0.031810746995576546,
+       "ci95_percentile": [
+        -0.42025945389515695,
+        -0.2972446307070411
+       ],
+       "max_t_lower": -0.4370732758527671,
+       "max_t_upper": -0.2698731803967215,
+       "nonzero_simultaneous": true
+      },
+      "Nodule": {
+       "estimate": -0.2734653274989127,
+       "sd": 0.033917372171699545,
+       "ci95_percentile": [
+        -0.3446597804540097,
+        -0.21099569963334702
+       ],
+       "max_t_lower": -0.3626016792091534,
+       "max_t_upper": -0.18432897578867202,
+       "nonzero_simultaneous": true
+      },
+      "max_t_critical": 2.628044155632303,
+      "mean_abs_effect": 0.2857259687397416,
+      "mean_abs_effect_ci95": [
+       0.26815416558291355,
+       0.3090284195914226
+      ],
+      "n_simultaneously_nonzero": 6
+     }
+    },
+    "reader_effect_at_partner_tower": {
+     "contrast": [
+      "tower=gemma3-4|reader=medgemma-4",
+      "tower=gemma3-4|reader=gemma3-4"
+     ],
+     "W_qq": {
+      "Effusion": {
+       "estimate": 0.0015514097735372752,
+       "sd": 0.00692378260541464,
+       "ci95_percentile": [
+        -0.013144982277768223,
+        0.014977136657677149
+       ],
+       "max_t_lower": -0.01764296827817479,
+       "max_t_upper": 0.020745787825249343,
+       "nonzero_simultaneous": false
+      },
+      "Atelectasis": {
+       "estimate": -0.00854129257913062,
+       "sd": 0.010804726211911288,
+       "ci95_percentile": [
+        -0.02959653544626967,
+        0.012473601149345634
+       ],
+       "max_t_lower": -0.038494572668323755,
+       "max_t_upper": 0.021411987510062513,
+       "nonzero_simultaneous": false
+      },
+      "Pneumothorax": {
+       "estimate": 0.013631616373155318,
+       "sd": 0.0077625534342568355,
+       "ci95_percentile": [
+        0.00025487128426211764,
+        0.0304749067355986
+       ],
+       "max_t_lower": -0.007888034626172762,
+       "max_t_upper": 0.0351512673724834,
+       "nonzero_simultaneous": false
+      },
+      "Cardiomegaly": {
+       "estimate": 0.6006707904991025,
+       "sd": 0.042113287576049555,
+       "ci95_percentile": [
+        0.5193474085908567,
+        0.6819186986050839
+       ],
+       "max_t_lower": 0.4839227051240627,
+       "max_t_upper": 0.7174188758741423,
+       "nonzero_simultaneous": true
+      },
+      "Mass": {
+       "estimate": 0.054799208387963316,
+       "sd": 0.045783618754606015,
+       "ci95_percentile": [
+        -0.03392507057361688,
+        0.14171421584143015
+       ],
+       "max_t_lower": -0.07212391110225863,
+       "max_t_upper": 0.18172232787818526,
+       "nonzero_simultaneous": false
+      },
+      "Nodule": {
+       "estimate": 0.11866039589823343,
+       "sd": 0.053261992024400705,
+       "ci95_percentile": [
+        0.018402876016498603,
+        0.2235803464480808
+       ],
+       "max_t_lower": -0.028994559343157533,
+       "max_t_upper": 0.2663153511396244,
+       "nonzero_simultaneous": false
+      },
+      "max_t_critical": 2.7722386945975734,
+      "mean_abs_effect": 0.1329757855851871,
+      "mean_abs_effect_ci95": [
+       0.10561752316120836,
+       0.16881481571054802
+      ],
+      "n_simultaneously_nonzero": 1
+     },
+     "O_q": {
+      "Effusion": {
+       "estimate": -0.07419351636792801,
+       "sd": 0.017744614677304746,
+       "ci95_percentile": [
+        -0.11200837460133868,
+        -0.04208649212741039
+       ],
+       "max_t_lower": -0.12059509851822331,
+       "max_t_upper": -0.0277919342176327,
+       "nonzero_simultaneous": true
+      },
+      "Atelectasis": {
+       "estimate": 0.013028087075661764,
+       "sd": 0.01312072141282647,
+       "ci95_percentile": [
+        -0.01222236930774324,
+        0.03856510753627337
+       ],
+       "max_t_lower": -0.021282166687531308,
+       "max_t_upper": 0.04733834083885483,
+       "nonzero_simultaneous": false
+      },
+      "Pneumothorax": {
+       "estimate": -0.06285116584316215,
+       "sd": 0.01802837673145591,
+       "ci95_percentile": [
+        -0.09828648540798844,
+        -0.02776306239090246
+       ],
+       "max_t_lower": -0.1099947764063749,
+       "max_t_upper": -0.015707555279949416,
+       "nonzero_simultaneous": true
+      },
+      "Cardiomegaly": {
+       "estimate": 0.32231088524370427,
+       "sd": 0.050169432786043605,
+       "ci95_percentile": [
+        0.22502843677727935,
+        0.41793508667644647
+       ],
+       "max_t_lower": 0.19111947313416192,
+       "max_t_upper": 0.45350229735324665,
+       "nonzero_simultaneous": true
+      },
+      "Mass": {
+       "estimate": 0.03656441924194698,
+       "sd": 0.04913862672488079,
+       "ci95_percentile": [
+        -0.06349004254908339,
+        0.13263381603791294
+       ],
+       "max_t_lower": -0.0919314690144207,
+       "max_t_upper": 0.16506030749831466,
+       "nonzero_simultaneous": false
+      },
+      "Nodule": {
+       "estimate": -0.43835161443000265,
+       "sd": 0.04266093757126295,
+       "ci95_percentile": [
+        -0.5226329384140066,
+        -0.3554663857949875
+       ],
+       "max_t_lower": -0.5499085591887632,
+       "max_t_upper": -0.3267946696712421,
+       "nonzero_simultaneous": true
+      },
+      "max_t_critical": 2.614967019241204,
+      "mean_abs_effect": 0.15788328136706764,
+      "mean_abs_effect_ci95": [
+       0.13572391218723714,
+       0.18682688369214903
+      ],
+      "n_simultaneously_nonzero": 4
+     },
+     "M_q": {
+      "Effusion": {
+       "estimate": -0.7094964778979065,
+       "sd": 0.024008552149858784,
+       "ci95_percentile": [
+        -0.7619254956209255,
+        -0.668113017848041
+       ],
+       "max_t_lower": -0.7781175845611327,
+       "max_t_upper": -0.6408753712346803,
+       "nonzero_simultaneous": true
+      },
+      "Atelectasis": {
+       "estimate": -0.02488656498971956,
+       "sd": 0.012713856757341388,
+       "ci95_percentile": [
+        -0.058908512118286425,
+        -0.011162900933450943
+       ],
+       "max_t_lower": -0.06122523777601807,
+       "max_t_upper": 0.011452107796578948,
+       "nonzero_simultaneous": false
+      },
+      "Pneumothorax": {
+       "estimate": -0.8666211056897803,
+       "sd": 0.01834527096577092,
+       "ci95_percentile": [
+        -0.89829036953824,
+        -0.8259255273004834
+       ],
+       "max_t_lower": -0.9190554544106113,
+       "max_t_upper": -0.8141867569689494,
+       "nonzero_simultaneous": true
+      },
+      "Cardiomegaly": {
+       "estimate": -0.22908437430863932,
+       "sd": 0.04505661950574332,
+       "ci95_percentile": [
+        -0.31670687914658563,
+        -0.14122928215405586
+       ],
+       "max_t_lower": -0.3578649469016515,
+       "max_t_upper": -0.10030380171562711,
+       "nonzero_simultaneous": true
+      },
+      "Mass": {
+       "estimate": -0.41893481123111564,
+       "sd": 0.040202650031766575,
+       "ci95_percentile": [
+        -0.48291492051810936,
+        -0.32130598992572096
+       ],
+       "max_t_lower": -0.5338417959903126,
+       "max_t_upper": -0.3040278264719188,
+       "nonzero_simultaneous": true
+      },
+      "Nodule": {
+       "estimate": -0.30376495601915454,
+       "sd": 0.04671756011077039,
+       "ci95_percentile": [
+        -0.39620694519451205,
+        -0.21609464225210723
+       ],
+       "max_t_lower": -0.43729281956529975,
+       "max_t_upper": -0.17023709247300936,
+       "nonzero_simultaneous": true
+      },
+      "max_t_critical": 2.8581942898888957,
+      "mean_abs_effect": 0.4254647150227193,
+      "mean_abs_effect_ci95": [
+       0.3934619925849193,
+       0.4575398914080769
+      ],
+      "n_simultaneously_nonzero": 5
+     }
+    },
+    "tower_effect_at_own_reader": {
+     "contrast": [
+      "tower=gemma3-4|reader=medgemma-4",
+      "tower=medgemma-4|reader=medgemma-4"
+     ],
+     "W_qq": {
+      "Effusion": {
+       "estimate": -0.06840573559737081,
+       "sd": 0.01863248093480066,
+       "ci95_percentile": [
+        -0.105664522997446,
+        -0.03331322143659344
+       ],
+       "max_t_lower": -0.11668151322199244,
+       "max_t_upper": -0.020129957972749184,
+       "nonzero_simultaneous": true
+      },
+      "Atelectasis": {
+       "estimate": 0.3101050878867635,
+       "sd": 0.03238334326353461,
+       "ci95_percentile": [
+        0.245338789631966,
+        0.375424866125741
+       ],
+       "max_t_lower": 0.22620154956555757,
+       "max_t_upper": 0.3940086262079694,
+       "nonzero_simultaneous": true
+      },
+      "Pneumothorax": {
+       "estimate": -0.04133040877501079,
+       "sd": 0.0142233773317172,
+       "ci95_percentile": [
+        -0.07009143496003852,
+        -0.015800929904130567
+       ],
+       "max_t_lower": -0.07818243097966465,
+       "max_t_upper": -0.004478386570356929,
+       "nonzero_simultaneous": true
+      },
+      "Cardiomegaly": {
+       "estimate": 0.12996209441329987,
+       "sd": 0.042704633832422324,
+       "ci95_percentile": [
+        0.043049952219435,
+        0.21066652836237515
+       ],
+       "max_t_lower": 0.019316635354523715,
+       "max_t_upper": 0.24060755347207602,
+       "nonzero_simultaneous": true
+      },
+      "Mass": {
+       "estimate": -0.21448875728532912,
+       "sd": 0.039398599414277036,
+       "ci95_percentile": [
+        -0.28879176909456356,
+        -0.1389802368210587
+       ],
+       "max_t_lower": -0.31656845513666276,
+       "max_t_upper": -0.11240905943399547,
+       "nonzero_simultaneous": true
+      },
+      "Nodule": {
+       "estimate": -0.19278580659296163,
+       "sd": 0.05482676695772567,
+       "ci95_percentile": [
+        -0.30293509056383916,
+        -0.08629695167228688
+       ],
+       "max_t_lower": -0.33483907468913715,
+       "max_t_upper": -0.050732538496786106,
+       "nonzero_simultaneous": true
+      },
+      "max_t_critical": 2.5909473780517844,
+      "mean_abs_effect": 0.15951298175845596,
+      "mean_abs_effect_ci95": [
+       0.12505521379196582,
+       0.19329212595607473
+      ],
+      "n_simultaneously_nonzero": 6
+     },
+     "O_q": {
+      "Effusion": {
+       "estimate": -0.0715959393459131,
+       "sd": 0.022747463909979605,
+       "ci95_percentile": [
+        -0.11705953446453543,
+        -0.028603937896494278
+       ],
+       "max_t_lower": -0.1310843242607559,
+       "max_t_upper": -0.012107554431070304,
+       "nonzero_simultaneous": true
+      },
+      "Atelectasis": {
+       "estimate": 0.5801697736008422,
+       "sd": 0.037297043447576866,
+       "ci95_percentile": [
+        0.507016730970666,
+        0.6536501771292924
+       ],
+       "max_t_lower": 0.48263182890619527,
+       "max_t_upper": 0.6777077182954891,
+       "nonzero_simultaneous": true
+      },
+      "Pneumothorax": {
+       "estimate": -0.06834867490723102,
+       "sd": 0.024042214722790622,
+       "ci95_percentile": [
+        -0.11353353118929134,
+        -0.021459596864501336
+       ],
+       "max_t_lower": -0.13122304759750741,
+       "max_t_upper": -0.005474302216954649,
+       "nonzero_simultaneous": true
+      },
+      "Cardiomegaly": {
+       "estimate": 0.19003237944138218,
+       "sd": 0.05698605376804187,
+       "ci95_percentile": [
+        0.0834342024013591,
+        0.30470581751834763
+       ],
+       "max_t_lower": 0.041004412422871506,
+       "max_t_upper": 0.33906034645989286,
+       "nonzero_simultaneous": true
+      },
+      "Mass": {
+       "estimate": 0.004651882818476061,
+       "sd": 0.03375288491994548,
+       "ci95_percentile": [
+        -0.060880822667703595,
+        0.07099379972760558
+       ],
+       "max_t_lower": -0.0836175004433308,
+       "max_t_upper": 0.09292126608028292,
+       "nonzero_simultaneous": false
+      },
+      "Nodule": {
+       "estimate": -0.6731985719885757,
+       "sd": 0.04572620315977128,
+       "ci95_percentile": [
+        -0.7604041662881015,
+        -0.5849429343486178
+       ],
+       "max_t_lower": -0.7927801651291366,
+       "max_t_upper": -0.5536169788480148,
+       "nonzero_simultaneous": true
+      },
+      "max_t_critical": 2.615165591657208,
+      "mean_abs_effect": 0.2646662036837367,
+      "mean_abs_effect_ci95": [
+       0.23912052682019697,
+       0.29887078452997295
+      ],
+      "n_simultaneously_nonzero": 5
+     },
+     "M_q": {
+      "Effusion": {
+       "estimate": -0.5330348610572587,
+       "sd": 0.03521202577778709,
+       "ci95_percentile": [
+        -0.6069804256383442,
+        -0.4713920406207904
+       ],
+       "max_t_lower": -0.6262715388739136,
+       "max_t_upper": -0.4397981832406038,
+       "nonzero_simultaneous": true
+      },
+      "Atelectasis": {
+       "estimate": 0.5422471149342254,
+       "sd": 0.035934002070976016,
+       "ci95_percentile": [
+        0.4651842918502011,
+        0.6076271831737378
+       ],
+       "max_t_lower": 0.4470987416228517,
+       "max_t_upper": 0.6373954882455991,
+       "nonzero_simultaneous": true
+      },
+      "Pneumothorax": {
+       "estimate": -0.7200405006685944,
+       "sd": 0.0253066775809113,
+       "ci95_percentile": [
+        -0.7641694349197863,
+        -0.6658108379596345
+       ],
+       "max_t_lower": -0.7870491572881135,
+       "max_t_upper": -0.6530318440490752,
+       "nonzero_simultaneous": true
+      },
+      "Cardiomegaly": {
+       "estimate": -0.3532135116168842,
+       "sd": 0.041689948437843564,
+       "ci95_percentile": [
+        -0.43286279253083515,
+        -0.27258271098601244
+       ],
+       "max_t_lower": -0.46360285175942845,
+       "max_t_upper": -0.24282417147433993,
+       "nonzero_simultaneous": true
+      },
+      "Mass": {
+       "estimate": -0.5219826752929946,
+       "sd": 0.030832906161752004,
+       "ci95_percentile": [
+        -0.5783706786196398,
+        -0.4592013009959374
+       ],
+       "max_t_lower": -0.6036240371418183,
+       "max_t_upper": -0.4403413134441708,
+       "nonzero_simultaneous": true
+      },
+      "Nodule": {
+       "estimate": -0.30442373906434206,
+       "sd": 0.0413494784017414,
+       "ci95_percentile": [
+        -0.37972540100894175,
+        -0.21917183989144332
+       ],
+       "max_t_lower": -0.4139115606386957,
+       "max_t_upper": -0.19493591748998843,
+       "nonzero_simultaneous": true
+      },
+      "max_t_critical": 2.6478646359355924,
+      "mean_abs_effect": 0.49582373377238315,
+      "mean_abs_effect_ci95": [
+       0.4624775530724338,
+       0.5245013480829713
+      ],
+      "n_simultaneously_nonzero": 6
+     }
+    },
+    "tower_effect_at_partner_reader": {
+     "contrast": [
+      "tower=medgemma-4|reader=gemma3-4",
+      "tower=gemma3-4|reader=gemma3-4"
+     ],
+     "W_qq": {
+      "Effusion": {
+       "estimate": 0.026349768724130994,
+       "sd": 0.006278713599206043,
+       "ci95_percentile": [
+        0.015398822226481822,
+        0.04019308251791195
+       ],
+       "max_t_lower": 0.009655765970937587,
+       "max_t_upper": 0.0430437714773244,
+       "nonzero_simultaneous": true
+      },
+      "Atelectasis": {
+       "estimate": 0.07982304245732091,
+       "sd": 0.008357671909382034,
+       "ci95_percentile": [
+        0.06476700701833606,
+        0.09731633951897922
+       ],
+       "max_t_lower": 0.05760145269040531,
+       "max_t_upper": 0.10204463222423651,
+       "nonzero_simultaneous": true
+      },
+      "Pneumothorax": {
+       "estimate": 0.004118164921889388,
+       "sd": 0.008418647966838994,
+       "ci95_percentile": [
+        -0.01136081787765482,
+        0.02180592090900331
+       ],
+       "max_t_lower": -0.01826554953107562,
+       "max_t_upper": 0.026501879374854397,
+       "nonzero_simultaneous": false
+      },
+      "Cardiomegaly": {
+       "estimate": 0.04726269101123837,
+       "sd": 0.03191972585104645,
+       "ci95_percentile": [
+        -0.01513797464866557,
+        0.11026828030234002
+       ],
+       "max_t_lower": -0.037606284586873095,
+       "max_t_upper": 0.13213166660934983,
+       "nonzero_simultaneous": false
+      },
+      "Mass": {
+       "estimate": 0.6524781872165069,
+       "sd": 0.04469313315679506,
+       "ci95_percentile": [
+        0.5608937350156793,
+        0.7394985908967956
+       ],
+       "max_t_lower": 0.5336469527319903,
+       "max_t_upper": 0.7713094217010235,
+       "nonzero_simultaneous": true
+      },
+      "Nodule": {
+       "estimate": 0.17114238774131393,
+       "sd": 0.02867791568188705,
+       "ci95_percentile": [
+        0.11503204882099041,
+        0.22814468304127145
+       ],
+       "max_t_lower": 0.09489281913385114,
+       "max_t_upper": 0.24739195634877673,
+       "nonzero_simultaneous": true
+      },
+      "max_t_critical": 2.6588253293324926,
+      "mean_abs_effect": 0.16352904034540008,
+      "mean_abs_effect_ci95": [
+       0.1397910632735502,
+       0.18932170956240105
+      ],
+      "n_simultaneously_nonzero": 4
+     },
+     "O_q": {
+      "Effusion": {
+       "estimate": 0.003347832559305205,
+       "sd": 0.005098756275338286,
+       "ci95_percentile": [
+        -0.004710437856047363,
+        0.014544763939401642
+       ],
+       "max_t_lower": -0.010341973686942198,
+       "max_t_upper": 0.017037638805552608,
+       "nonzero_simultaneous": false
+      },
+      "Atelectasis": {
+       "estimate": -0.0027027947297302768,
+       "sd": 0.0029829576028128535,
+       "ci95_percentile": [
+        -0.008850873844358757,
+        0.00255684661511819
+       ],
+       "max_t_lower": -0.010711828583887039,
+       "max_t_upper": 0.005306239124426486,
+       "nonzero_simultaneous": false
+      },
+      "Pneumothorax": {
+       "estimate": 0.004050948271515706,
+       "sd": 0.00800935254056991,
+       "ci95_percentile": [
+        -0.010491727718625254,
+        0.021213001868580605
+       ],
+       "max_t_lower": -0.01745360666644645,
+       "max_t_upper": 0.02555550320947786,
+       "nonzero_simultaneous": false
+      },
+      "Cardiomegaly": {
+       "estimate": -0.05595596962164778,
+       "sd": 0.033044893663535,
+       "ci95_percentile": [
+        -0.12095237211138486,
+        0.010688400820364687
+       ],
+       "max_t_lower": -0.14467921255634342,
+       "max_t_upper": 0.03276727331304785,
+       "nonzero_simultaneous": false
+      },
+      "Mass": {
+       "estimate": 0.29159351866114935,
+       "sd": 0.042539545830409774,
+       "ci95_percentile": [
+        0.20795995919814747,
+        0.37773050189416757
+       ],
+       "max_t_lower": 0.17737779451712096,
+       "max_t_upper": 0.4058092428051777,
+       "nonzero_simultaneous": true
+      },
+      "Nodule": {
+       "estimate": -0.005671655865642333,
+       "sd": 0.024841131649522265,
+       "ci95_percentile": [
+        -0.05643355072360116,
+        0.04226592382059941
+       ],
+       "max_t_lower": -0.07236836793723893,
+       "max_t_upper": 0.06102505620595426,
+       "nonzero_simultaneous": false
+      },
+      "max_t_critical": 2.684930502064276,
+      "mean_abs_effect": 0.06055378661816511,
+      "mean_abs_effect_ci95": [
+       0.046421851209227594,
+       0.08024073282133945
+      ],
+      "n_simultaneously_nonzero": 1
+     },
+     "M_q": {
+      "Effusion": {
+       "estimate": 0.06259980599255757,
+       "sd": 0.019644942655911116,
+       "ci95_percentile": [
+        0.024759974960489775,
+        0.10135619456127602
+       ],
+       "max_t_lower": 0.007851709822680707,
+       "max_t_upper": 0.11734790216243443,
+       "nonzero_simultaneous": true
+      },
+      "Atelectasis": {
+       "estimate": -0.009161301285107597,
+       "sd": 0.0024095986388057013,
+       "ci95_percentile": [
+        -0.014395233576369616,
+        -0.005537434431739419
+       ],
+       "max_t_lower": -0.015876563341036494,
+       "max_t_upper": -0.0024460392291787026,
+       "nonzero_simultaneous": true
+      },
+      "Pneumothorax": {
+       "estimate": 0.004981617170729546,
+       "sd": 0.0079555940242744,
+       "ci95_percentile": [
+        -0.009585971895410468,
+        0.02205450689746933
+       ],
+       "max_t_lower": -0.017189668047983758,
+       "max_t_upper": 0.02715290238944285,
+       "nonzero_simultaneous": false
+      },
+      "Cardiomegaly": {
+       "estimate": -0.01469209584258968,
+       "sd": 0.03556682519679792,
+       "ci95_percentile": [
+        -0.08469340930641098,
+        0.055809400697424266
+       ],
+       "max_t_lower": -0.11381256671581871,
+       "max_t_upper": 0.08442837503063935,
+       "nonzero_simultaneous": false
+      },
+      "Mass": {
+       "estimate": 0.4565210921866233,
+       "sd": 0.04123124012693405,
+       "ci95_percentile": [
+        0.3913627454180355,
+        0.5570425993803316
+       ],
+       "max_t_lower": 0.3416145770997266,
+       "max_t_upper": 0.57142760727352,
+       "nonzero_simultaneous": true
+      },
+      "Nodule": {
+       "estimate": 0.27412411054410024,
+       "sd": 0.039663814901897854,
+       "ci95_percentile": [
+        0.19598034161631958,
+        0.34849747605753534
+       ],
+       "max_t_lower": 0.1635858213391738,
+       "max_t_upper": 0.3846623997490267,
+       "nonzero_simultaneous": true
+      },
+      "max_t_critical": 2.7868799175854706,
+      "mean_abs_effect": 0.13701333717028466,
+      "mean_abs_effect_ci95": [
+       0.12032921985165308,
+       0.16360227935402327
+      ],
+      "n_simultaneously_nonzero": 4
+     }
+    },
+    "mean_abs_reader_effect_W_qq": 0.18647628455625426,
+    "mean_abs_tower_effect_W_qq": 0.161521011051928,
+    "mean_abs_reader_effect_W_qq_ci95": [
+     0.16987663055060226,
+     0.2068521331971601
+    ],
+    "mean_abs_tower_effect_W_qq_ci95": [
+     0.14038815067886667,
+     0.18227340410480763
+    ],
+    "reader_minus_tower_W_qq": 0.024955273504326247,
+    "reader_minus_tower_W_qq_ci95": [
+     -0.0024193539209580867,
+     0.05561555487363413
+    ],
+    "reader_over_tower_W_qq": 1.1545017167847178,
+    "mean_abs_reader_effect_O_q": 0.18396371845479942,
+    "mean_abs_tower_effect_O_q": 0.16260999515095093,
+    "mean_abs_reader_effect_O_q_ci95": [
+     0.16944957293729146,
+     0.20306229114419908
+    ],
+    "mean_abs_tower_effect_O_q_ci95": [
+     0.14927628937992612,
+     0.1845369333109694
+    ],
+    "reader_minus_tower_O_q": 0.021353723303848493,
+    "reader_minus_tower_O_q_ci95": [
+     0.0007641618216946228,
+     0.039294403260181174
+    ],
+    "reader_over_tower_O_q": 1.1313186393248817,
+    "mean_abs_reader_effect_M_q": 0.35559534188123043,
+    "mean_abs_tower_effect_M_q": 0.3164185354713339,
+    "mean_abs_reader_effect_M_q_ci95": [
+     0.33885710550004117,
+     0.37593896480536376
+    ],
+    "mean_abs_tower_effect_M_q_ci95": [
+     0.2985215664201463,
+     0.3376337051514409
+    ],
+    "reader_minus_tower_M_q": 0.039176806409896514,
+    "reader_minus_tower_M_q_ci95": [
+     0.011240791190457892,
+     0.06739797719821185
+    ],
+    "reader_over_tower_M_q": 1.1238132473862164
+   },
+   "tower_factor_carries": "the representation and the directions fitted on it; the reader factor changes neither, because a swapped arm writes the donor tower's own seed-0 fit",
+   "packaged_mean_abs_reader_effect": 0.18103241218400867,
+   "packaged_mean_abs_tower_effect": 0.16193113937737297,
+   "reproduces_packaged_W_qq": false
+  }
+ ]
+}

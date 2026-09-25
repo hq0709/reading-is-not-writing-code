@@ -1,0 +1,32 @@
+{
+ "IY": {
+  "eligible": false,
+  "reason": "semantic mapping failed image-free preflight (check E)",
+  "source": "preflight.connector.json"
+ },
+ "WY": {
+  "eligible": false,
+  "reason": "semantic mapping failed image-free preflight (check E)",
+  "source": "preflight.connector.json"
+ },
+ "IA": {
+  "eligible": true,
+  "reason": "",
+  "source": "preflight.connector.json"
+ },
+ "IB": {
+  "eligible": false,
+  "reason": "semantic mapping failed image-free preflight (check E)",
+  "source": "preflight.connector.json"
+ },
+ "WA": {
+  "eligible": true,
+  "reason": "",
+  "source": "preflight.connector.json"
+ },
+ "WB": {
+  "eligible": false,
+  "reason": "semantic mapping failed image-free preflight (check E)",
+  "source": "preflight.connector.json"
+ }
+}

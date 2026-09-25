@@ -1,0 +1,569 @@
+{
+ "model_key": "iv35-8",
+ "dataset_id": "nih",
+ "locus_id": "vis.last",
+ "locus": {
+  "locus_id": "vis.last",
+  "module_path": "model.vision_tower.encoder.layer.23",
+  "output_selection": "tensor output of the last InternViT encoder layer (B, 1+patches, D)",
+  "hidden_dim": 1024,
+  "token_rule": "all patch tokens of the single 448x448 tile; CLS at index 0 is dropped by the consumer and excluded",
+  "affected_branch": "single tile visual stream into pixel-shuffle + projector",
+  "bypasses": "none",
+  "consumer": "model.multi_modal_projector",
+  "prompt_independent": true,
+  "notes": "vision_tower.layernorm is Identity between this block and the consumer; crop_to_patches=False (no dynamic tiling, no thumbnail)"
+ },
+ "revision": "741a7d03020411e666c6109218ab71e08151ef86",
+ "rows": [
+  "00009704_000",
+  "00003933_000",
+  "00006302_000",
+  "00004071_000",
+  "00009412_000",
+  "00001475_000",
+  "00001618_000",
+  "00000890_002",
+  "00000742_003",
+  "00001342_001",
+  "00005128_004",
+  "00002372_000",
+  "00005696_000",
+  "00001473_006",
+  "00006672_000",
+  "00005655_000"
+ ],
+ "checks": {
+  "A_determinism_max_abs_diff": 0.0,
+  "B_alpha0_max_abs_diff": 0.0,
+  "C_reach": {
+   "consumer_module": "model.multi_modal_projector",
+   "consumer_max_abs_change": 0.5703125,
+   "answer_logit_max_abs_change": 0.3951873779296875,
+   "mean_semantic_margin_change": 0.055388450622558594,
+   "hook_stats_steered": {
+    "token_norm_mean": [
+     43.5521,
+     42.8778,
+     43.2647,
+     43.9543
+    ],
+    "token_norm_median": [
+     40.0513,
+     39.5803,
+     40.8047,
+     40.3497
+    ],
+    "delta_norm_mean": [
+     10.888,
+     10.7195,
+     10.8162,
+     10.9886
+    ]
+   },
+   "locus_change_outside_consumed_tokens": 0.0,
+   "locus_change_inside_consumed_tokens": 5.140625
+  },
+  "D_batch_vs_single": {
+   "max_abs_candidate_logit_diff": 0.20179367065429688,
+   "max_abs_margin_diff": 0.08465957641601562,
+   "margin_sign_agreement": true,
+   "declared_tolerance_logit": 0.25,
+   "pass": true
+  },
+  "G_fp32_vs_model_logits": {
+   "max_abs_diff": 0.05931854248046875,
+   "max_diff_in_ulps": 0.4943084716796875,
+   "pass": true
+  },
+  "D2_replicated_batch_vs_single": {
+   "max_abs_candidate_logit_diff": 0.11100578308105469,
+   "within_batch_max_spread": 0.0,
+   "pass": true,
+   "within_batch_spread_pass": true
+  },
+  "E_semantic_direction": {
+   "cases": {
+    "IY": [
+     {
+      "statement": "The finding is present.",
+      "expected": 1,
+      "semantic_margin": 5.101541519165039,
+      "lse_margin": 5.10142707824707,
+      "raw_ab_margin": NaN,
+      "ok": true,
+      "text": "The finding is present. Is the finding present? Answer yes or no."
+     },
+     {
+      "statement": "The finding is absent.",
+      "expected": 0,
+      "semantic_margin": -5.885908126831055,
+      "lse_margin": -5.885852813720703,
+      "raw_ab_margin": NaN,
+      "ok": true,
+      "text": "The finding is absent. Is the finding present? Answer yes or no."
+     },
+     {
+      "statement": "The finding is explicitly reported as present.",
+      "expected": 1,
+      "semantic_margin": 5.402454376220703,
+      "lse_margin": 5.402435302734375,
+      "raw_ab_margin": NaN,
+      "ok": true,
+      "text": "The finding is explicitly reported as present. Is the finding present? Answer yes or no."
+     },
+     {
+      "statement": "The finding is explicitly reported as absent.",
+      "expected": 0,
+      "semantic_margin": -7.919231414794922,
+      "lse_margin": -7.919189453125,
+      "raw_ab_margin": NaN,
+      "ok": true,
+      "text": "The finding is explicitly reported as absent. Is the finding present? Answer yes or no."
+     }
+    ],
+    "WY": [
+     {
+      "statement": "The finding is present.",
+      "expected": 1,
+      "semantic_margin": 5.101541519165039,
+      "lse_margin": 5.10142707824707,
+      "raw_ab_margin": NaN,
+      "ok": true,
+      "text": "The finding is present. Is the finding present? Answer yes or no."
+     },
+     {
+      "statement": "The finding is absent.",
+      "expected": 0,
+      "semantic_margin": -5.885908126831055,
+      "lse_margin": -5.885852813720703,
+      "raw_ab_margin": NaN,
+      "ok": true,
+      "text": "The finding is absent. Is the finding present? Answer yes or no."
+     },
+     {
+      "statement": "The finding is explicitly reported as present.",
+      "expected": 1,
+      "semantic_margin": 5.402454376220703,
+      "lse_margin": 5.402435302734375,
+      "raw_ab_margin": NaN,
+      "ok": true,
+      "text": "The finding is explicitly reported as present. Is the finding present? Answer yes or no."
+     },
+     {
+      "statement": "The finding is explicitly reported as absent.",
+      "expected": 0,
+      "semantic_margin": -7.919231414794922,
+      "lse_margin": -7.919189453125,
+      "raw_ab_margin": NaN,
+      "ok": true,
+      "text": "The finding is explicitly reported as absent. Is the finding present? Answer yes or no."
+     }
+    ],
+    "IA": [
+     {
+      "statement": "The finding is present.",
+      "expected": 1,
+      "semantic_margin": 5.576353073120117,
+      "lse_margin": 5.576353073120117,
+      "raw_ab_margin": 5.576353073120117,
+      "ok": true,
+      "text": "The finding is present. Is the finding present? Answer A if the finding is present and B if it is absent. Reply with A or B only."
+     },
+     {
+      "statement": "The finding is absent.",
+      "expected": 0,
+      "semantic_margin": -6.464103698730469,
+      "lse_margin": -6.464103698730469,
+      "raw_ab_margin": -6.464103698730469,
+      "ok": true,
+      "text": "The finding is absent. Is the finding present? Answer A if the finding is present and B if it is absent. Reply with A or B only."
+     },
+     {
+      "statement": "The finding is explicitly reported as present.",
+      "expected": 1,
+      "semantic_margin": 8.704826354980469,
+      "lse_margin": 8.704826354980469,
+      "raw_ab_margin": 8.704826354980469,
+      "ok": true,
+      "text": "The finding is explicitly reported as present. Is the finding present? Answer A if the finding is present and B if it is absent. Reply with A or B only."
+     },
+     {
+      "statement": "The finding is explicitly reported as absent.",
+      "expected": 0,
+      "semantic_margin": -8.060497283935547,
+      "lse_margin": -8.060497283935547,
+      "raw_ab_margin": -8.060497283935547,
+      "ok": true,
+      "text": "The finding is explicitly reported as absent. Is the finding present? Answer A if the finding is present and B if it is absent. Reply with A or B only."
+     }
+    ],
+    "IB": [
+     {
+      "statement": "The finding is present.",
+      "expected": 1,
+      "semantic_margin": 4.861318588256836,
+      "lse_margin": 4.861318588256836,
+      "raw_ab_margin": -4.861318588256836,
+      "ok": true,
+      "text": "The finding is present. Is the finding present? Answer B if the finding is present and A if it is absent. Reply with A or B only."
+     },
+     {
+      "statement": "The finding is absent.",
+      "expected": 0,
+      "semantic_margin": -6.104372024536133,
+      "lse_margin": -6.104372024536133,
+      "raw_ab_margin": 6.104372024536133,
+      "ok": true,
+      "text": "The finding is absent. Is the finding present? Answer B if the finding is present and A if it is absent. Reply with A or B only."
+     },
+     {
+      "statement": "The finding is explicitly reported as present.",
+      "expected": 1,
+      "semantic_margin": 8.50328254699707,
+      "lse_margin": 8.50328254699707,
+      "raw_ab_margin": -8.50328254699707,
+      "ok": true,
+      "text": "The finding is explicitly reported as present. Is the finding present? Answer B if the finding is present and A if it is absent. Reply with A or B only."
+     },
+     {
+      "statement": "The finding is explicitly reported as absent.",
+      "expected": 0,
+      "semantic_margin": -7.093967437744141,
+      "lse_margin": -7.093967437744141,
+      "raw_ab_margin": 7.093967437744141,
+      "ok": true,
+      "text": "The finding is explicitly reported as absent. Is the finding present? Answer B if the finding is present and A if it is absent. Reply with A or B only."
+     }
+    ],
+    "WA": [
+     {
+      "statement": "The finding is present.",
+      "expected": 1,
+      "semantic_margin": 5.576353073120117,
+      "lse_margin": 5.576353073120117,
+      "raw_ab_margin": 5.576353073120117,
+      "ok": true,
+      "text": "The finding is present. Is the finding present? Answer A if the finding is present and B if it is absent. Reply with A or B only."
+     },
+     {
+      "statement": "The finding is absent.",
+      "expected": 0,
+      "semantic_margin": -6.464103698730469,
+      "lse_margin": -6.464103698730469,
+      "raw_ab_margin": -6.464103698730469,
+      "ok": true,
+      "text": "The finding is absent. Is the finding present? Answer A if the finding is present and B if it is absent. Reply with A or B only."
+     },
+     {
+      "statement": "The finding is explicitly reported as present.",
+      "expected": 1,
+      "semantic_margin": 8.704826354980469,
+      "lse_margin": 8.704826354980469,
+      "raw_ab_margin": 8.704826354980469,
+      "ok": true,
+      "text": "The finding is explicitly reported as present. Is the finding present? Answer A if the finding is present and B if it is absent. Reply with A or B only."
+     },
+     {
+      "statement": "The finding is explicitly reported as absent.",
+      "expected": 0,
+      "semantic_margin": -8.060497283935547,
+      "lse_margin": -8.060497283935547,
+      "raw_ab_margin": -8.060497283935547,
+      "ok": true,
+      "text": "The finding is explicitly reported as absent. Is the finding present? Answer A if the finding is present and B if it is absent. Reply with A or B only."
+     }
+    ],
+    "WB": [
+     {
+      "statement": "The finding is present.",
+      "expected": 1,
+      "semantic_margin": 4.861318588256836,
+      "lse_margin": 4.861318588256836,
+      "raw_ab_margin": -4.861318588256836,
+      "ok": true,
+      "text": "The finding is present. Is the finding present? Answer B if the finding is present and A if it is absent. Reply with A or B only."
+     },
+     {
+      "statement": "The finding is absent.",
+      "expected": 0,
+      "semantic_margin": -6.104372024536133,
+      "lse_margin": -6.104372024536133,
+      "raw_ab_margin": 6.104372024536133,
+      "ok": true,
+      "text": "The finding is absent. Is the finding present? Answer B if the finding is present and A if it is absent. Reply with A or B only."
+     },
+     {
+      "statement": "The finding is explicitly reported as present.",
+      "expected": 1,
+      "semantic_margin": 8.50328254699707,
+      "lse_margin": 8.50328254699707,
+      "raw_ab_margin": -8.50328254699707,
+      "ok": true,
+      "text": "The finding is explicitly reported as present. Is the finding present? Answer B if the finding is present and A if it is absent. Reply with A or B only."
+     },
+     {
+      "statement": "The finding is explicitly reported as absent.",
+      "expected": 0,
+      "semantic_margin": -7.093967437744141,
+      "lse_margin": -7.093967437744141,
+      "raw_ab_margin": 7.093967437744141,
+      "ok": true,
+      "text": "The finding is explicitly reported as absent. Is the finding present? Answer B if the finding is present and A if it is absent. Reply with A or B only."
+     }
+    ]
+   },
+   "pass": true,
+   "descriptive_image_phrased_variant": {
+    "IY": [
+     {
+      "statement": "The finding is present.",
+      "expected": 1,
+      "semantic_margin": 2.262950897216797,
+      "lse_margin": 2.263425827026367,
+      "raw_ab_margin": NaN,
+      "ok": true,
+      "text": "The target finding is effusion. The finding is present. Is there the finding in this chest radiograph? Answer yes or no."
+     },
+     {
+      "statement": "The finding is absent.",
+      "expected": 0,
+      "semantic_margin": -7.182613372802734,
+      "lse_margin": -7.182430267333984,
+      "raw_ab_margin": NaN,
+      "ok": true,
+      "text": "The target finding is effusion. The finding is absent. Is there the finding in this chest radiograph? Answer yes or no."
+     },
+     {
+      "statement": "The finding is explicitly reported as present.",
+      "expected": 1,
+      "semantic_margin": 2.2972984313964844,
+      "lse_margin": 2.2977523803710938,
+      "raw_ab_margin": NaN,
+      "ok": true,
+      "text": "The target finding is effusion. The finding is explicitly reported as present. Is there the finding in this chest radiograph? Answer yes or no."
+     },
+     {
+      "statement": "The finding is explicitly reported as absent.",
+      "expected": 0,
+      "semantic_margin": -7.263040542602539,
+      "lse_margin": -7.262859344482422,
+      "raw_ab_margin": NaN,
+      "ok": true,
+      "text": "The target finding is effusion. The finding is explicitly reported as absent. Is there the finding in this chest radiograph? Answer yes or no."
+     }
+    ],
+    "WY": [
+     {
+      "statement": "The finding is present.",
+      "expected": 1,
+      "semantic_margin": 2.4869384765625,
+      "lse_margin": 2.487112045288086,
+      "raw_ab_margin": NaN,
+      "ok": true,
+      "text": "The target finding is effusion. The finding is present. Does this chest radiograph show the finding? Answer yes or no."
+     },
+     {
+      "statement": "The finding is absent.",
+      "expected": 0,
+      "semantic_margin": -7.915044784545898,
+      "lse_margin": -7.914966583251953,
+      "raw_ab_margin": NaN,
+      "ok": true,
+      "text": "The target finding is effusion. The finding is absent. Does this chest radiograph show the finding? Answer yes or no."
+     },
+     {
+      "statement": "The finding is explicitly reported as present.",
+      "expected": 1,
+      "semantic_margin": 2.9173660278320312,
+      "lse_margin": 2.9175357818603516,
+      "raw_ab_margin": NaN,
+      "ok": true,
+      "text": "The target finding is effusion. The finding is explicitly reported as present. Does this chest radiograph show the finding? Answer yes or no."
+     },
+     {
+      "statement": "The finding is explicitly reported as absent.",
+      "expected": 0,
+      "semantic_margin": -6.785114288330078,
+      "lse_margin": -6.785051345825195,
+      "raw_ab_margin": NaN,
+      "ok": true,
+      "text": "The target finding is effusion. The finding is explicitly reported as absent. Does this chest radiograph show the finding? Answer yes or no."
+     }
+    ],
+    "IA": [
+     {
+      "statement": "The finding is present.",
+      "expected": 1,
+      "semantic_margin": 3.7002735137939453,
+      "lse_margin": 3.7002735137939453,
+      "raw_ab_margin": 3.7002735137939453,
+      "ok": true,
+      "text": "The target finding is effusion. The finding is present. Is there the finding in this chest radiograph? Answer A if the finding is present and B if it is absent. Reply with A or B only."
+     },
+     {
+      "statement": "The finding is absent.",
+      "expected": 0,
+      "semantic_margin": -8.225370407104492,
+      "lse_margin": -8.225370407104492,
+      "raw_ab_margin": -8.225370407104492,
+      "ok": true,
+      "text": "The target finding is effusion. The finding is absent. Is there the finding in this chest radiograph? Answer A if the finding is present and B if it is absent. Reply with A or B only."
+     },
+     {
+      "statement": "The finding is explicitly reported as present.",
+      "expected": 1,
+      "semantic_margin": 2.910755157470703,
+      "lse_margin": 2.910755157470703,
+      "raw_ab_margin": 2.910755157470703,
+      "ok": true,
+      "text": "The target finding is effusion. The finding is explicitly reported as present. Is there the finding in this chest radiograph? Answer A if the finding is present and B if it is absent. Reply with A or B only."
+     },
+     {
+      "statement": "The finding is explicitly reported as absent.",
+      "expected": 0,
+      "semantic_margin": -7.652040481567383,
+      "lse_margin": -7.652040481567383,
+      "raw_ab_margin": -7.652040481567383,
+      "ok": true,
+      "text": "The target finding is effusion. The finding is explicitly reported as absent. Is there the finding in this chest radiograph? Answer A if the finding is present and B if it is absent. Reply with A or B only."
+     }
+    ],
+    "IB": [
+     {
+      "statement": "The finding is present.",
+      "expected": 1,
+      "semantic_margin": 2.5867557525634766,
+      "lse_margin": 2.5867557525634766,
+      "raw_ab_margin": -2.5867557525634766,
+      "ok": true,
+      "text": "The target finding is effusion. The finding is present. Is there the finding in this chest radiograph? Answer B if the finding is present and A if it is absent. Reply with A or B only."
+     },
+     {
+      "statement": "The finding is absent.",
+      "expected": 0,
+      "semantic_margin": -6.584781646728516,
+      "lse_margin": -6.584781646728516,
+      "raw_ab_margin": 6.584781646728516,
+      "ok": true,
+      "text": "The target finding is effusion. The finding is absent. Is there the finding in this chest radiograph? Answer B if the finding is present and A if it is absent. Reply with A or B only."
+     },
+     {
+      "statement": "The finding is explicitly reported as present.",
+      "expected": 1,
+      "semantic_margin": 1.8537464141845703,
+      "lse_margin": 1.8537464141845703,
+      "raw_ab_margin": -1.8537464141845703,
+      "ok": true,
+      "text": "The target finding is effusion. The finding is explicitly reported as present. Is there the finding in this chest radiograph? Answer B if the finding is present and A if it is absent. Reply with A or B only."
+     },
+     {
+      "statement": "The finding is explicitly reported as absent.",
+      "expected": 0,
+      "semantic_margin": -6.185014724731445,
+      "lse_margin": -6.185014724731445,
+      "raw_ab_margin": 6.185014724731445,
+      "ok": true,
+      "text": "The target finding is effusion. The finding is explicitly reported as absent. Is there the finding in this chest radiograph? Answer B if the finding is present and A if it is absent. Reply with A or B only."
+     }
+    ],
+    "WA": [
+     {
+      "statement": "The finding is present.",
+      "expected": 1,
+      "semantic_margin": 4.388910293579102,
+      "lse_margin": 4.388910293579102,
+      "raw_ab_margin": 4.388910293579102,
+      "ok": true,
+      "text": "The target finding is effusion. The finding is present. Does this chest radiograph show the finding? Answer A if the finding is present and B if it is absent. Reply with A or B only."
+     },
+     {
+      "statement": "The finding is absent.",
+      "expected": 0,
+      "semantic_margin": -9.981660842895508,
+      "lse_margin": -9.981660842895508,
+      "raw_ab_margin": -9.981660842895508,
+      "ok": true,
+      "text": "The target finding is effusion. The finding is absent. Does this chest radiograph show the finding? Answer A if the finding is present and B if it is absent. Reply with A or B only."
+     },
+     {
+      "statement": "The finding is explicitly reported as present.",
+      "expected": 1,
+      "semantic_margin": 3.947488784790039,
+      "lse_margin": 3.947488784790039,
+      "raw_ab_margin": 3.947488784790039,
+      "ok": true,
+      "text": "The target finding is effusion. The finding is explicitly reported as present. Does this chest radiograph show the finding? Answer A if the finding is present and B if it is absent. Reply with A or B only."
+     },
+     {
+      "statement": "The finding is explicitly reported as absent.",
+      "expected": 0,
+      "semantic_margin": -8.680917739868164,
+      "lse_margin": -8.680917739868164,
+      "raw_ab_margin": -8.680917739868164,
+      "ok": true,
+      "text": "The target finding is effusion. The finding is explicitly reported as absent. Does this chest radiograph show the finding? Answer A if the finding is present and B if it is absent. Reply with A or B only."
+     }
+    ],
+    "WB": [
+     {
+      "statement": "The finding is present.",
+      "expected": 1,
+      "semantic_margin": 3.116497039794922,
+      "lse_margin": 3.116497039794922,
+      "raw_ab_margin": -3.116497039794922,
+      "ok": true,
+      "text": "The target finding is effusion. The finding is present. Does this chest radiograph show the finding? Answer B if the finding is present and A if it is absent. Reply with A or B only."
+     },
+     {
+      "statement": "The finding is absent.",
+      "expected": 0,
+      "semantic_margin": -7.954723358154297,
+      "lse_margin": -7.954723358154297,
+      "raw_ab_margin": 7.954723358154297,
+      "ok": true,
+      "text": "The target finding is effusion. The finding is absent. Does this chest radiograph show the finding? Answer B if the finding is present and A if it is absent. Reply with A or B only."
+     },
+     {
+      "statement": "The finding is explicitly reported as present.",
+      "expected": 1,
+      "semantic_margin": 2.489513397216797,
+      "lse_margin": 2.489513397216797,
+      "raw_ab_margin": -2.489513397216797,
+      "ok": true,
+      "text": "The target finding is effusion. The finding is explicitly reported as present. Does this chest radiograph show the finding? Answer B if the finding is present and A if it is absent. Reply with A or B only."
+     },
+     {
+      "statement": "The finding is explicitly reported as absent.",
+      "expected": 0,
+      "semantic_margin": -7.562717437744141,
+      "lse_margin": -7.562717437744141,
+      "raw_ab_margin": 7.562717437744141,
+      "ok": true,
+      "text": "The target finding is effusion. The finding is explicitly reported as absent. Does this chest radiograph show the finding? Answer B if the finding is present and A if it is absent. Reply with A or B only."
+     }
+    ]
+   }
+  },
+  "F_throughput": {
+   "image_conditions": 256,
+   "seconds": 9.38,
+   "rate_per_s": 27.29,
+   "gpu_count": 1,
+   "batch": 16,
+   "peak_gpu_memory_bytes": 20078465024,
+   "gpu_models": [
+    "NVIDIA A100-SXM4-80GB"
+   ]
+  }
+ },
+ "input_example": {
+  "prompt": "<|im_start|>user\n<IMG_CONTEXT>\nIs there a pleural effusion in this chest radiograph? Answer yes or no.<|im_end|>\n<|im_start|>assistant\n",
+  "input_token_count": 285,
+  "valid_token_count": 1024,
+  "processor_kwargs": {}
+ },
+ "batch_policy": "runner scores every condition of a question at one fixed batch composition (replicated image, clean replicated baseline batch with the hook passive), so single-vs-batch differences never enter W_qd; D/D2 are reported against the declared tolerance and recorded as a deviation when exceeded",
+ "pass": true,
+ "tolerance_deviations": []
+}

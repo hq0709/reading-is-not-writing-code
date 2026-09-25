@@ -1,0 +1,26 @@
+{
+ "model_key": "q25-72",
+ "dataset_id": "coco",
+ "module": "DOSE",
+ "shard": 1,
+ "n_shards": 2,
+ "rows": 100,
+ "scored_rows": 100,
+ "outcomes": 81000,
+ "seconds": 10011.7,
+ "throughput_per_s": 8.09,
+ "batch": 8,
+ "primary_template": "IY",
+ "numerics": "bf16-batched",
+ "fit_seed": null,
+ "batch_policy": "fixed composition per question: clean replicated baseline batch + padded steered batches",
+ "direction_block": "q25-72",
+ "tower_swap": null,
+ "replay": null,
+ "peak_gpu_memory_bytes": 35917199872,
+ "gpu_count": 4,
+ "gpu_models": [
+  "NVIDIA A100-SXM4-80GB"
+ ],
+ "ended_utc": "2026-09-19T04:42:00Z"
+}

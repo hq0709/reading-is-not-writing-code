@@ -1,0 +1,3427 @@
+{
+ "calibration": {
+  "Effusion": {
+   "n_pos": 117,
+   "n_neg": 93,
+   "n_unknown": 190,
+   "auroc_real": 0.9217902766289863,
+   "control_mean": 0.6658839559901926,
+   "control_min": 0.5742165242165242,
+   "control_max": 0.7749216950117781,
+   "selectivity": 0.2559063206387937,
+   "bootstrap_valid_draws": 2000,
+   "controls_used_per_draw_min": 20,
+   "controls_used_per_draw_mean": 20.0,
+   "selectivity_lower95_one_sided": 0.2221279808599433,
+   "selectivity_ci95": [
+    0.21557551169579056,
+    0.2916697499068623
+   ],
+   "auroc_real_ci95": [
+    0.8856800544993179,
+    0.9522714033154245
+   ],
+   "readable": true,
+   "readable_status": "readable",
+   "answer_auroc": 0.7695064791838986,
+   "answer_brier": 0.22418970724104026,
+   "answer_valid_draws": 2000,
+   "answer_auroc_lower95_one_sided": 0.7164602312466793,
+   "answer_capable": true
+  },
+  "Atelectasis": {
+   "n_pos": 67,
+   "n_neg": 4,
+   "n_unknown": 329,
+   "auroc_real": 0.6940298507462687,
+   "control_mean": 0.6229698587176288,
+   "control_min": 0.5427020202020202,
+   "control_max": 0.7460847505889052,
+   "selectivity": 0.07105999202863988,
+   "bootstrap_valid_draws": 1963,
+   "controls_used_per_draw_min": 20,
+   "controls_used_per_draw_mean": 20.0,
+   "selectivity_lower95_one_sided": -0.20305893007098968,
+   "selectivity_ci95": [
+    -0.3146791206943078,
+    0.3692040174783802
+   ],
+   "auroc_real_ci95": [
+    0.3066308243727599,
+    1.0
+   ],
+   "readable": false,
+   "readable_status": "insufficient_support",
+   "answer_auroc": 0.8694029850746269,
+   "answer_brier": 0.2542724058590219,
+   "answer_valid_draws": 1963,
+   "answer_auroc_lower95_one_sided": 0.7736810440577563,
+   "answer_capable": false
+  },
+  "Pneumothorax": {
+   "n_pos": 17,
+   "n_neg": 136,
+   "n_unknown": 247,
+   "auroc_real": 0.7262110726643598,
+   "control_mean": 0.6504341873106828,
+   "control_min": 0.5649606299212598,
+   "control_max": 0.7678625263792584,
+   "selectivity": 0.07577688535367699,
+   "bootstrap_valid_draws": 2000,
+   "controls_used_per_draw_min": 20,
+   "controls_used_per_draw_mean": 20.0,
+   "selectivity_lower95_one_sided": -0.024901051031772363,
+   "selectivity_ci95": [
+    -0.05070105587884979,
+    0.18662089982016167
+   ],
+   "auroc_real_ci95": [
+    0.6048662494303942,
+    0.832830237358101
+   ],
+   "readable": false,
+   "readable_status": "not_readable",
+   "answer_auroc": 0.6133217993079585,
+   "answer_brier": 0.15744328247336575,
+   "answer_valid_draws": 2000,
+   "answer_auroc_lower95_one_sided": 0.49357815765092344,
+   "answer_capable": false
+  },
+  "Cardiomegaly": {
+   "n_pos": 49,
+   "n_neg": 46,
+   "n_unknown": 305,
+   "auroc_real": 0.8611357586512867,
+   "control_mean": 0.627815409452528,
+   "control_min": 0.5367578307620383,
+   "control_max": 0.7779244648080557,
+   "selectivity": 0.23332034919875866,
+   "bootstrap_valid_draws": 2000,
+   "controls_used_per_draw_min": 20,
+   "controls_used_per_draw_mean": 20.0,
+   "selectivity_lower95_one_sided": 0.16832439368854818,
+   "selectivity_ci95": [
+    0.15132870111298566,
+    0.30650963479669385
+   ],
+   "auroc_real_ci95": [
+    0.7798636573555754,
+    0.9300565756448109
+   ],
+   "readable": true,
+   "readable_status": "readable",
+   "answer_auroc": 0.6827861579414374,
+   "answer_brier": 0.23607810166822538,
+   "answer_valid_draws": 2000,
+   "answer_auroc_lower95_one_sided": 0.5923054029304029,
+   "answer_capable": true
+  },
+  "Consolidation": {
+   "n_pos": 25,
+   "n_neg": 83,
+   "n_unknown": 292,
+   "auroc_real": 0.8409638554216867,
+   "control_mean": 0.632259001810666,
+   "control_min": 0.5464672364672364,
+   "control_max": 0.7386443573510201,
+   "selectivity": 0.20870485361102076,
+   "bootstrap_valid_draws": 2000,
+   "controls_used_per_draw_min": 20,
+   "controls_used_per_draw_mean": 20.0,
+   "selectivity_lower95_one_sided": 0.11448348348981033,
+   "selectivity_ci95": [
+    0.0938390302073509,
+    0.30586841343917404
+   ],
+   "auroc_real_ci95": [
+    0.7293726610690896,
+    0.9358426238008815
+   ],
+   "readable": true,
+   "readable_status": "readable",
+   "answer_auroc": 0.7233734939759037,
+   "answer_brier": 0.21304646635755875,
+   "answer_valid_draws": 2000,
+   "answer_auroc_lower95_one_sided": 0.6052140939073284,
+   "answer_capable": true
+  },
+  "Edema": {
+   "n_pos": 70,
+   "n_neg": 54,
+   "n_unknown": 276,
+   "auroc_real": 0.7780423280423282,
+   "control_mean": 0.6457655329029032,
+   "control_min": 0.5584983993597439,
+   "control_max": 0.7674147705210841,
+   "selectivity": 0.13227679513942503,
+   "bootstrap_valid_draws": 2000,
+   "controls_used_per_draw_min": 20,
+   "controls_used_per_draw_mean": 20.0,
+   "selectivity_lower95_one_sided": 0.058310921540026615,
+   "selectivity_ci95": [
+    0.04405333884404792,
+    0.2084286374564337
+   ],
+   "auroc_real_ci95": [
+    0.6936669699835603,
+    0.8509961770396366
+   ],
+   "readable": true,
+   "readable_status": "readable",
+   "answer_auroc": 0.7097883597883597,
+   "answer_brier": 0.24554233722789232,
+   "answer_valid_draws": 2000,
+   "answer_auroc_lower95_one_sided": 0.6264524452723027,
+   "answer_capable": true
+  }
+ },
+ "t3": {
+  "all|median_signed_dose_O_range": {
+   "estimate": 0.12193373467809643,
+   "ci_low": 0.11776153607765943,
+   "ci_high": 0.12651674907226548,
+   "status": "COMPLETE"
+  },
+  "all|median_refit_O_sd": {
+   "estimate": 0.04691715367198585,
+   "ci_low": 0.045984019702054006,
+   "ci_high": 0.047829651049439724,
+   "status": "COMPLETE"
+  },
+  "all|connector_median_O": {
+   "estimate": -0.04292171101064442,
+   "ci_low": -0.04509651501166654,
+   "ci_high": -0.040719562991660005,
+   "status": "COMPLETE"
+  },
+  "all|median_label_gap": {
+   "estimate": 0.06696751099123358,
+   "ci_low": NaN,
+   "ci_high": NaN,
+   "status": "INSUFFICIENT_DRAWS"
+  },
+  "Effusion|wording_IY_minus_WY_O": {
+   "estimate": null,
+   "ci_low": null,
+   "ci_high": null,
+   "status": "INELIGIBLE",
+   "reason": "primary template is IB, not IY"
+  },
+  "Effusion|mapping_IA_minus_IB_O": {
+   "estimate": null,
+   "ci_low": null,
+   "ci_high": null,
+   "status": "INELIGIBLE",
+   "reason": "primary template is IB, not IY"
+  },
+  "Edema|wording_IY_minus_WY_O": {
+   "estimate": null,
+   "ci_low": null,
+   "ci_high": null,
+   "status": "INELIGIBLE",
+   "reason": "primary template is IB, not IY"
+  },
+  "Edema|mapping_IA_minus_IB_O": {
+   "estimate": null,
+   "ci_low": null,
+   "ci_high": null,
+   "status": "INELIGIBLE",
+   "reason": "primary template is IB, not IY"
+  }
+ },
+ "primary_template": "IB",
+ "altdir": {
+  "n_rows": 600,
+  "alpha": 0.25,
+  "template_id": "IB",
+  "baseline_module": "CORE",
+  "draws": 2000,
+  "families": [
+   "dom",
+   "pattern",
+   "orth",
+   "resid"
+  ],
+  "logistic_reference": {
+   "Effusion": {
+    "W_logistic_qq": -0.0031530907929772463,
+    "max_other_logistic": 0.010947714506629893,
+    "argmax_other_logistic": "Atelectasis",
+    "O_logistic_q": -0.014100805299607139,
+    "random_p95": 0.09843719495900573,
+    "random_n": 119,
+    "abs_sham": 0.05915030770037411
+   },
+   "Atelectasis": {
+    "W_logistic_qq": -0.024697259005903038,
+    "max_other_logistic": 0.021789814933181828,
+    "argmax_other_logistic": "Edema",
+    "O_logistic_q": -0.04648707393908487,
+    "random_p95": 0.12874985174898285,
+    "random_n": 119,
+    "abs_sham": 0.034193314390092905
+   },
+   "Pneumothorax": {
+    "W_logistic_qq": -0.050101938619773696,
+    "max_other_logistic": 0.026593293190824596,
+    "argmax_other_logistic": "Atelectasis",
+    "O_logistic_q": -0.07669523181059829,
+    "random_p95": 0.11076170009912366,
+    "random_n": 119,
+    "abs_sham": 0.03771551311388195
+   },
+   "Cardiomegaly": {
+    "W_logistic_qq": -0.04932202094681883,
+    "max_other_logistic": 0.016826608071676685,
+    "argmax_other_logistic": "Atelectasis",
+    "O_logistic_q": -0.06614862901849553,
+    "random_p95": 0.11402860465507957,
+    "random_n": 119,
+    "abs_sham": 0.0632663452577893
+   },
+   "Consolidation": {
+    "W_logistic_qq": -0.03843690061709435,
+    "max_other_logistic": 0.008000756834160898,
+    "argmax_other_logistic": "Edema",
+    "O_logistic_q": -0.04643765745125525,
+    "random_p95": 0.10888467780381991,
+    "random_n": 119,
+    "abs_sham": 0.03678685285186409
+   },
+   "Edema": {
+    "W_logistic_qq": 0.001059010095053901,
+    "max_other_logistic": 0.011153645370527942,
+    "argmax_other_logistic": "Atelectasis",
+    "O_logistic_q": -0.01009463527547404,
+    "random_p95": 0.12066939474977924,
+    "random_n": 119,
+    "abs_sham": 0.02728460185159827
+   }
+  },
+  "cosines": {
+   "Effusion": {
+    "model": {
+     "logistic": {
+      "logistic": 1.0,
+      "dom": 0.1528176464149419,
+      "pattern": 0.16028333820544305,
+      "orth": 0.8916146883494996,
+      "resid": 0.5699203145121741
+     },
+     "dom": {
+      "logistic": 0.1528176464149419,
+      "dom": 0.9999999999999998,
+      "pattern": 0.9968474821024902,
+      "orth": 0.1087915283264262,
+      "resid": 0.09885477187962996
+     },
+     "pattern": {
+      "logistic": 0.16028333820544305,
+      "dom": 0.9968474821024902,
+      "pattern": 1.0,
+      "orth": 0.11474755593524191,
+      "resid": 0.10152671954973211
+     },
+     "orth": {
+      "logistic": 0.8916146883494996,
+      "dom": 0.1087915283264262,
+      "pattern": 0.11474755593524191,
+      "orth": 1.0000000000000002,
+      "resid": 0.5105322247651976
+     },
+     "resid": {
+      "logistic": 0.5699203145121741,
+      "dom": 0.09885477187962996,
+      "pattern": 0.10152671954973211,
+      "orth": 0.5105322247651976,
+      "resid": 1.0000000000000002
+     }
+    },
+    "projected": {
+     "logistic": {
+      "logistic": 0.9999999999999999,
+      "dom": 0.09756330464108252,
+      "pattern": 0.10401620448895578,
+      "orth": 0.8947435349571158,
+      "resid": 0.5636829348268113
+     },
+     "dom": {
+      "logistic": 0.09756330464108252,
+      "dom": 0.9999999999999999,
+      "pattern": 0.997248468908621,
+      "orth": 0.060952424323430204,
+      "resid": 0.06015791343529313
+     },
+     "pattern": {
+      "logistic": 0.10401620448895578,
+      "dom": 0.997248468908621,
+      "pattern": 1.0,
+      "orth": 0.06608719360911126,
+      "resid": 0.06282036290708155
+     },
+     "orth": {
+      "logistic": 0.8947435349571158,
+      "dom": 0.060952424323430204,
+      "pattern": 0.06608719360911126,
+      "orth": 1.0,
+      "resid": 0.48663979258928597
+     },
+     "resid": {
+      "logistic": 0.5636829348268113,
+      "dom": 0.06015791343529313,
+      "pattern": 0.06282036290708155,
+      "orth": 0.48663979258928597,
+      "resid": 0.9999999999999999
+     }
+    },
+    "orth_norm_removed_fraction": 0.10525646504288422,
+    "resid_cos_to_logistic_projected": 0.5636829401104654,
+    "resid_rows_used": 3440,
+    "resid_fallback": false,
+    "resid_covariates_used": [
+     "Edema"
+    ]
+   },
+   "Atelectasis": {
+    "model": {
+     "logistic": {
+      "logistic": 1.0,
+      "dom": 0.21019064568331244,
+      "pattern": 0.16146270752612277,
+      "orth": 0.9868532637096941,
+      "resid": 0.5662172725605968
+     },
+     "dom": {
+      "logistic": 0.21019064568331244,
+      "dom": 1.0,
+      "pattern": 0.9760411079392447,
+      "orth": 0.18982230859966653,
+      "resid": 0.18455577336717294
+     },
+     "pattern": {
+      "logistic": 0.16146270752612277,
+      "dom": 0.9760411079392447,
+      "pattern": 1.0000000000000002,
+      "orth": 0.14195305959533647,
+      "resid": 0.12893814260908976
+     },
+     "orth": {
+      "logistic": 0.9868532637096941,
+      "dom": 0.18982230859966653,
+      "pattern": 0.14195305959533647,
+      "orth": 1.0,
+      "resid": 0.5594449099568115
+     },
+     "resid": {
+      "logistic": 0.5662172725605968,
+      "dom": 0.18455577336717294,
+      "pattern": 0.12893814260908976,
+      "orth": 0.5594449099568115,
+      "resid": 1.0
+     }
+    },
+    "projected": {
+     "logistic": {
+      "logistic": 0.9999999999999998,
+      "dom": 0.1608276809568512,
+      "pattern": 0.12609258826886677,
+      "orth": 0.9784264217502446,
+      "resid": 0.588339138892238
+     },
+     "dom": {
+      "logistic": 0.1608276809568512,
+      "dom": 1.0,
+      "pattern": 0.9783857454680699,
+      "orth": 0.14210387049287196,
+      "resid": 0.14041258775447657
+     },
+     "pattern": {
+      "logistic": 0.12609258826886677,
+      "dom": 0.9783857454680699,
+      "pattern": 1.0,
+      "orth": 0.10932377824965198,
+      "resid": 0.10224064865602607
+     },
+     "orth": {
+      "logistic": 0.9784264217502446,
+      "dom": 0.14210387049287196,
+      "pattern": 0.10932377824965198,
+      "orth": 0.9999999999999998,
+      "resid": 0.5805941925151649
+     },
+     "resid": {
+      "logistic": 0.588339138892238,
+      "dom": 0.14041258775447657,
+      "pattern": 0.10224064865602607,
+      "orth": 0.5805941925151649,
+      "resid": 1.0000000000000002
+     }
+    },
+    "orth_norm_removed_fraction": 0.021573578249755032,
+    "resid_cos_to_logistic_projected": 0.5883391398834164,
+    "resid_rows_used": 1560,
+    "resid_fallback": false,
+    "resid_covariates_used": [
+     "Effusion"
+    ]
+   },
+   "Pneumothorax": {
+    "model": {
+     "logistic": {
+      "logistic": 1.0000000000000002,
+      "dom": 0.09800249196033609,
+      "pattern": 0.10300564198828148,
+      "orth": 0.9518342563968125,
+      "resid": 0.5160928529429114
+     },
+     "dom": {
+      "logistic": 0.09800249196033609,
+      "dom": 1.0000000000000002,
+      "pattern": 0.9833346550079243,
+      "orth": 0.05510007994619406,
+      "resid": 0.018384672318038284
+     },
+     "pattern": {
+      "logistic": 0.10300564198828148,
+      "dom": 0.9833346550079243,
+      "pattern": 1.0,
+      "orth": 0.06007181363812792,
+      "resid": 0.014889059036002988
+     },
+     "orth": {
+      "logistic": 0.9518342563968125,
+      "dom": 0.05510007994619406,
+      "pattern": 0.06007181363812792,
+      "orth": 1.0000000000000002,
+      "resid": 0.5155891163508309
+     },
+     "resid": {
+      "logistic": 0.5160928529429114,
+      "dom": 0.018384672318038284,
+      "pattern": 0.014889059036002988,
+      "orth": 0.5155891163508309,
+      "resid": 0.9999999999999999
+     }
+    },
+    "projected": {
+     "logistic": {
+      "logistic": 1.0000000000000002,
+      "dom": 0.12266194829565416,
+      "pattern": 0.12372623647924243,
+      "orth": 0.9528094682320863,
+      "resid": 0.5397134649673386
+     },
+     "dom": {
+      "logistic": 0.12266194829565416,
+      "dom": 0.9999999999999998,
+      "pattern": 0.9856126097289079,
+      "orth": 0.0944626161754567,
+      "resid": 0.0680767962768964
+     },
+     "pattern": {
+      "logistic": 0.12372623647924243,
+      "dom": 0.9856126097289079,
+      "pattern": 0.9999999999999998,
+      "orth": 0.09537404858517928,
+      "resid": 0.06513438027185635
+     },
+     "orth": {
+      "logistic": 0.9528094682320863,
+      "dom": 0.0944626161754567,
+      "pattern": 0.09537404858517928,
+      "orth": 1.0,
+      "resid": 0.5469384647655038
+     },
+     "resid": {
+      "logistic": 0.5397134649673386,
+      "dom": 0.0680767962768964,
+      "pattern": 0.06513438027185635,
+      "orth": 0.5469384647655038,
+      "resid": 1.0
+     }
+    },
+    "orth_norm_removed_fraction": 0.047190531767913546,
+    "resid_cos_to_logistic_projected": 0.5397134770974256,
+    "resid_rows_used": 3665,
+    "resid_fallback": false,
+    "resid_covariates_used": [
+     "Effusion"
+    ]
+   },
+   "Cardiomegaly": {
+    "model": {
+     "logistic": {
+      "logistic": 1.0,
+      "dom": 0.12166911715455048,
+      "pattern": 0.1326920714017425,
+      "orth": 0.9808786097763802,
+      "resid": 0.7290430054097279
+     },
+     "dom": {
+      "logistic": 0.12166911715455048,
+      "dom": 1.0000000000000002,
+      "pattern": 0.9926663255851454,
+      "orth": 0.1023425995262547,
+      "resid": 0.0858710938204105
+     },
+     "pattern": {
+      "logistic": 0.1326920714017425,
+      "dom": 0.9926663255851454,
+      "pattern": 1.0000000000000002,
+      "orth": 0.11149175960190423,
+      "resid": 0.09295876830408804
+     },
+     "orth": {
+      "logistic": 0.9808786097763802,
+      "dom": 0.1023425995262547,
+      "pattern": 0.11149175960190423,
+      "orth": 1.0,
+      "resid": 0.7229388376981449
+     },
+     "resid": {
+      "logistic": 0.7290430054097279,
+      "dom": 0.0858710938204105,
+      "pattern": 0.09295876830408804,
+      "orth": 0.7229388376981449,
+      "resid": 0.9999999999999999
+     }
+    },
+    "projected": {
+     "logistic": {
+      "logistic": 1.0,
+      "dom": 0.0815301957833531,
+      "pattern": 0.08888605433507256,
+      "orth": 0.9785215726090277,
+      "resid": 0.7009776773072206
+     },
+     "dom": {
+      "logistic": 0.0815301957833531,
+      "dom": 0.9999999999999999,
+      "pattern": 0.9933703692647837,
+      "orth": 0.065254233795452,
+      "resid": 0.05998239132422666
+     },
+     "pattern": {
+      "logistic": 0.08888605433507256,
+      "dom": 0.9933703692647837,
+      "pattern": 0.9999999999999998,
+      "orth": 0.07132257911902938,
+      "resid": 0.06285416152180051
+     },
+     "orth": {
+      "logistic": 0.9785215726090277,
+      "dom": 0.065254233795452,
+      "pattern": 0.07132257911902938,
+      "orth": 1.0,
+      "resid": 0.6908237544669513
+     },
+     "resid": {
+      "logistic": 0.7009776773072206,
+      "dom": 0.05998239132422666,
+      "pattern": 0.06285416152180051,
+      "orth": 0.6908237544669513,
+      "resid": 1.0
+     }
+    },
+    "orth_norm_removed_fraction": 0.021478427390972277,
+    "resid_cos_to_logistic_projected": 0.7009777035654899,
+    "resid_rows_used": 2566,
+    "resid_fallback": false,
+    "resid_covariates_used": [
+     "Effusion"
+    ]
+   },
+   "Consolidation": {
+    "model": {
+     "logistic": {
+      "logistic": 0.9999999999999999,
+      "dom": 0.10463110856975383,
+      "pattern": 0.11077205092275398,
+      "orth": 0.909007396054861,
+      "resid": 0.5268728426485373
+     },
+     "dom": {
+      "logistic": 0.10463110856975383,
+      "dom": 0.9999999999999998,
+      "pattern": 0.9938174612731875,
+      "orth": 0.04684176745931465,
+      "resid": 0.045947641903963554
+     },
+     "pattern": {
+      "logistic": 0.11077205092275398,
+      "dom": 0.9938174612731875,
+      "pattern": 1.0,
+      "orth": 0.05027999937876498,
+      "resid": 0.045840617579724775
+     },
+     "orth": {
+      "logistic": 0.909007396054861,
+      "dom": 0.04684176745931465,
+      "pattern": 0.05027999937876498,
+      "orth": 1.0000000000000002,
+      "resid": 0.46563285596369075
+     },
+     "resid": {
+      "logistic": 0.5268728426485373,
+      "dom": 0.045947641903963554,
+      "pattern": 0.045840617579724775,
+      "orth": 0.46563285596369075,
+      "resid": 1.0000000000000002
+     }
+    },
+    "projected": {
+     "logistic": {
+      "logistic": 1.0,
+      "dom": 0.07855650263977582,
+      "pattern": 0.08724709508651775,
+      "orth": 0.9146941440790516,
+      "resid": 0.551545447834504
+     },
+     "dom": {
+      "logistic": 0.07855650263977582,
+      "dom": 1.0,
+      "pattern": 0.9945031297958424,
+      "orth": 0.04036957710086032,
+      "resid": 0.05666503096531759
+     },
+     "pattern": {
+      "logistic": 0.08724709508651775,
+      "dom": 0.9945031297958424,
+      "pattern": 1.0,
+      "orth": 0.047564176711925595,
+      "resid": 0.06039286245368725
+     },
+     "orth": {
+      "logistic": 0.9146941440790516,
+      "dom": 0.04036957710086032,
+      "pattern": 0.047564176711925595,
+      "orth": 1.0000000000000002,
+      "resid": 0.4994290692553977
+     },
+     "resid": {
+      "logistic": 0.551545447834504,
+      "dom": 0.05666503096531759,
+      "pattern": 0.06039286245368725,
+      "orth": 0.4994290692553977,
+      "resid": 0.9999999999999999
+     }
+    },
+    "orth_norm_removed_fraction": 0.08530585592094841,
+    "resid_cos_to_logistic_projected": 0.5515454374470286,
+    "resid_rows_used": 2876,
+    "resid_fallback": false,
+    "resid_covariates_used": [
+     "Effusion"
+    ]
+   },
+   "Edema": {
+    "model": {
+     "logistic": {
+      "logistic": 1.0,
+      "dom": 0.1152721205138632,
+      "pattern": 0.11724320761253164,
+      "orth": 0.9405565186828633,
+      "resid": 0.6390508290599297
+     },
+     "dom": {
+      "logistic": 0.1152721205138632,
+      "dom": 1.0,
+      "pattern": 0.9944926553679824,
+      "orth": 0.07296906004823242,
+      "resid": 0.07219572284340461
+     },
+     "pattern": {
+      "logistic": 0.11724320761253164,
+      "dom": 0.9944926553679824,
+      "pattern": 0.9999999999999998,
+      "orth": 0.07602450807531572,
+      "resid": 0.07012374897078213
+     },
+     "orth": {
+      "logistic": 0.9405565186828633,
+      "dom": 0.07296906004823242,
+      "pattern": 0.07602450807531572,
+      "orth": 1.0,
+      "resid": 0.623457254545489
+     },
+     "resid": {
+      "logistic": 0.6390508290599297,
+      "dom": 0.07219572284340461,
+      "pattern": 0.07012374897078213,
+      "orth": 0.623457254545489,
+      "resid": 0.9999999999999998
+     }
+    },
+    "projected": {
+     "logistic": {
+      "logistic": 1.0,
+      "dom": 0.08963162674327603,
+      "pattern": 0.09291008887812378,
+      "orth": 0.9441227244715813,
+      "resid": 0.637356475322568
+     },
+     "dom": {
+      "logistic": 0.08963162674327603,
+      "dom": 1.0,
+      "pattern": 0.9952916628462347,
+      "orth": 0.06365104027191877,
+      "resid": 0.05510482291277153
+     },
+     "pattern": {
+      "logistic": 0.09291008887812378,
+      "dom": 0.9952916628462347,
+      "pattern": 0.9999999999999999,
+      "orth": 0.0681679085376652,
+      "resid": 0.05606035517452422
+     },
+     "orth": {
+      "logistic": 0.9441227244715813,
+      "dom": 0.06365104027191877,
+      "pattern": 0.0681679085376652,
+      "orth": 1.0,
+      "resid": 0.6334303390012108
+     },
+     "resid": {
+      "logistic": 0.637356475322568,
+      "dom": 0.05510482291277153,
+      "pattern": 0.05606035517452422,
+      "orth": 0.6334303390012108,
+      "resid": 1.0
+     }
+    },
+    "orth_norm_removed_fraction": 0.05587727552841859,
+    "resid_cos_to_logistic_projected": 0.6373565070704769,
+    "resid_rows_used": 3440,
+    "resid_fallback": false,
+    "resid_covariates_used": [
+     "Effusion"
+    ]
+   }
+  },
+  "dom": {
+   "W": {
+    "Effusion": {
+     "Atelectasis": 0.08611930238484732,
+     "Pneumothorax": 0.05132518985208049,
+     "Cardiomegaly": 0.08353985738678442,
+     "Consolidation": 0.108466077530476,
+     "Edema": 0.13366806446890814,
+     "Effusion": 0.0921847598417966
+    },
+    "Atelectasis": {
+     "Effusion": 0.09053992956852118,
+     "Pneumothorax": 0.05079920062102833,
+     "Cardiomegaly": 0.07894922911377289,
+     "Consolidation": 0.10841737519715565,
+     "Edema": 0.12974294413633,
+     "Atelectasis": 0.08613498387050847
+    },
+    "Pneumothorax": {
+     "Effusion": 0.10300833257984333,
+     "Atelectasis": 0.09927858330886245,
+     "Cardiomegaly": 0.10124758547195704,
+     "Consolidation": 0.1159119981176832,
+     "Edema": 0.13842843186454315,
+     "Pneumothorax": 0.04927888952765495
+    },
+    "Cardiomegaly": {
+     "Effusion": 0.0851400146168736,
+     "Atelectasis": 0.08305368106921644,
+     "Pneumothorax": 0.06332353779408803,
+     "Consolidation": 0.10165624522759087,
+     "Edema": 0.11518305387381547,
+     "Cardiomegaly": 0.0755445442199029
+    },
+    "Consolidation": {
+     "Effusion": 0.0813504278157393,
+     "Atelectasis": 0.07952990273050188,
+     "Pneumothorax": 0.04771817703860899,
+     "Cardiomegaly": 0.06431143732188778,
+     "Edema": 0.1233137645617155,
+     "Consolidation": 0.10327569622023404
+    },
+    "Edema": {
+     "Effusion": 0.1153062318092655,
+     "Atelectasis": 0.11382435425489912,
+     "Pneumothorax": 0.06956058818546726,
+     "Cardiomegaly": 0.10785944117635453,
+     "Consolidation": 0.13153462823470705,
+     "Edema": 0.1546397970438475
+    }
+   },
+   "n_scored_rows_min": 600,
+   "contrasts": {
+    "Effusion-Atelectasis": {
+     "estimate": 0.00606545745694928,
+     "sd": 0.0004425358792762118,
+     "lower": 0.0046986622077348885,
+     "upper": 0.007432252706163672
+    },
+    "Effusion-Pneumothorax": {
+     "estimate": 0.040859569989716106,
+     "sd": 0.0005195389795302803,
+     "lower": 0.039254946630893565,
+     "upper": 0.04246419334853865
+    },
+    "Effusion-Cardiomegaly": {
+     "estimate": 0.008644902455012177,
+     "sd": 0.0004044253762992531,
+     "lower": 0.007395813490990463,
+     "upper": 0.00989399141903389
+    },
+    "Effusion-Consolidation": {
+     "estimate": -0.01628131768867941,
+     "sd": 0.00038520876912515934,
+     "lower": -0.01747105515461575,
+     "upper": -0.015091580222743067
+    },
+    "Effusion-Edema": {
+     "estimate": -0.04148330462711154,
+     "sd": 0.0006138058046946893,
+     "lower": -0.04337907601443737,
+     "upper": -0.03958753323978571
+    },
+    "Atelectasis-Effusion": {
+     "estimate": -0.0044049456980127105,
+     "sd": 0.00041325236383323396,
+     "lower": -0.005681297275511216,
+     "upper": -0.0031285941205142043
+    },
+    "Atelectasis-Pneumothorax": {
+     "estimate": 0.03533578324948014,
+     "sd": 0.0005570340345803902,
+     "lower": 0.03361535444863256,
+     "upper": 0.03705621205032772
+    },
+    "Atelectasis-Cardiomegaly": {
+     "estimate": 0.0071857547567355795,
+     "sd": 0.0004231820794263408,
+     "lower": 0.0058787347323737225,
+     "upper": 0.008492774781097437
+    },
+    "Atelectasis-Consolidation": {
+     "estimate": -0.02228239132664718,
+     "sd": 0.0004689919772026427,
+     "lower": -0.023730897620438878,
+     "upper": -0.020833885032855482
+    },
+    "Atelectasis-Edema": {
+     "estimate": -0.04360796026582153,
+     "sd": 0.0005735762759209104,
+     "lower": -0.045379480645757704,
+     "upper": -0.04183643988588536
+    },
+    "Pneumothorax-Effusion": {
+     "estimate": -0.05372944305218839,
+     "sd": 0.0005309476043690741,
+     "lower": -0.05536930254656503,
+     "upper": -0.05208958355781174
+    },
+    "Pneumothorax-Atelectasis": {
+     "estimate": -0.049999693781207506,
+     "sd": 0.0005704646795791247,
+     "lower": -0.05176160383281419,
+     "upper": -0.048237783729600824
+    },
+    "Pneumothorax-Cardiomegaly": {
+     "estimate": -0.0519686959443021,
+     "sd": 0.0005501644254695095,
+     "lower": -0.05366790759748683,
+     "upper": -0.05026948429111736
+    },
+    "Pneumothorax-Consolidation": {
+     "estimate": -0.06663310859002824,
+     "sd": 0.0005613741733962711,
+     "lower": -0.06836694213700438,
+     "upper": -0.06489927504305211
+    },
+    "Pneumothorax-Edema": {
+     "estimate": -0.08914954233688821,
+     "sd": 0.0009075248857997026,
+     "lower": -0.09195248049522149,
+     "upper": -0.08634660417855493
+    },
+    "Cardiomegaly-Effusion": {
+     "estimate": -0.009595470396970687,
+     "sd": 0.00040987291235565455,
+     "lower": -0.010861384361518893,
+     "upper": -0.008329556432422482
+    },
+    "Cardiomegaly-Atelectasis": {
+     "estimate": -0.007509136849313536,
+     "sd": 0.0004594007438122924,
+     "lower": -0.008928020116259415,
+     "upper": -0.006090253582367655
+    },
+    "Cardiomegaly-Pneumothorax": {
+     "estimate": 0.012221006425814876,
+     "sd": 0.0005965788327422423,
+     "lower": 0.010378441443948117,
+     "upper": 0.014063571407681635
+    },
+    "Cardiomegaly-Consolidation": {
+     "estimate": -0.026111701007687962,
+     "sd": 0.0004759109981857439,
+     "lower": -0.02758157706029873,
+     "upper": -0.024641824955077194
+    },
+    "Cardiomegaly-Edema": {
+     "estimate": -0.039638509653912565,
+     "sd": 0.0006411082394895672,
+     "lower": -0.04161860604157657,
+     "upper": -0.03765841326624856
+    },
+    "Consolidation-Effusion": {
+     "estimate": 0.02192526840449474,
+     "sd": 0.0003457482621672627,
+     "lower": 0.02085740678177784,
+     "upper": 0.022993130027211643
+    },
+    "Consolidation-Atelectasis": {
+     "estimate": 0.02374579348973216,
+     "sd": 0.0005040916073155787,
+     "lower": 0.022188880149338935,
+     "upper": 0.025302706830125383
+    },
+    "Consolidation-Pneumothorax": {
+     "estimate": 0.05555751918162505,
+     "sd": 0.0006500710651933098,
+     "lower": 0.05354974063717988,
+     "upper": 0.05756529772607022
+    },
+    "Consolidation-Cardiomegaly": {
+     "estimate": 0.03896425889834626,
+     "sd": 0.0004939685413417287,
+     "lower": 0.03743861117759764,
+     "upper": 0.04048990661909488
+    },
+    "Consolidation-Edema": {
+     "estimate": -0.02003806834148146,
+     "sd": 0.0005656289029481614,
+     "lower": -0.021785042843599424,
+     "upper": -0.018291093839363497
+    },
+    "Edema-Effusion": {
+     "estimate": 0.03933356523458201,
+     "sd": 0.0007045098126114248,
+     "lower": 0.03715764976649133,
+     "upper": 0.041509480702672685
+    },
+    "Edema-Atelectasis": {
+     "estimate": 0.040815442788948386,
+     "sd": 0.0008466874349083152,
+     "lower": 0.038200404285189234,
+     "upper": 0.04343048129270754
+    },
+    "Edema-Pneumothorax": {
+     "estimate": 0.08507920885838025,
+     "sd": 0.0010584966676358714,
+     "lower": 0.08180998644188331,
+     "upper": 0.08834843127487718
+    },
+    "Edema-Cardiomegaly": {
+     "estimate": 0.046780355867492976,
+     "sd": 0.0008784190250113981,
+     "lower": 0.04406731268516664,
+     "upper": 0.04949339904981931
+    },
+    "Edema-Consolidation": {
+     "estimate": 0.02310516880914046,
+     "sd": 0.0006448687055235559,
+     "lower": 0.021113458025105936,
+     "upper": 0.02509687959317498
+    }
+   },
+   "max_t_critical": 3.088552393649639,
+   "per_question": {
+    "Effusion": {
+     "W_qq": 0.0921847598417966,
+     "O_q": -0.04148330462711154,
+     "max_other": 0.13366806446890814,
+     "argmax_other": "Edema",
+     "n_competitors": 5,
+     "O_q_ci95_percentile": [
+      -0.04264750052776008,
+      -0.04021017071798194
+     ],
+     "verdict": "stronger_competitor",
+     "own_minus_max_logistic_competitor": 0.08123704533516671,
+     "own_minus_max_logistic_competitor_ci95_percentile": [
+      0.0792566792287875,
+      0.08327844255757218
+     ],
+     "W_logistic_qq": -0.0031530907929772463,
+     "O_logistic_q": -0.014100805299607139,
+     "random_p95": 0.09843719495900573,
+     "abs_sham": 0.05915030770037411,
+     "steering_reference": false,
+     "cos_to_logistic_model": 0.1528176464149419,
+     "cos_to_logistic_projected": 0.09756330464108252
+    },
+    "Atelectasis": {
+     "W_qq": 0.08613498387050847,
+     "O_q": -0.04360796026582153,
+     "max_other": 0.12974294413633,
+     "argmax_other": "Edema",
+     "n_competitors": 5,
+     "O_q_ci95_percentile": [
+      -0.04472256489928663,
+      -0.04250141222188476
+     ],
+     "verdict": "stronger_competitor",
+     "own_minus_max_logistic_competitor": 0.06434516893732664,
+     "own_minus_max_logistic_competitor_ci95_percentile": [
+      0.06074143366184205,
+      0.06811219747321665
+     ],
+     "W_logistic_qq": -0.024697259005903038,
+     "O_logistic_q": -0.04648707393908487,
+     "random_p95": 0.12874985174898285,
+     "abs_sham": 0.034193314390092905,
+     "steering_reference": false,
+     "cos_to_logistic_model": 0.21019064568331244,
+     "cos_to_logistic_projected": 0.1608276809568512
+    },
+    "Pneumothorax": {
+     "W_qq": 0.04927888952765495,
+     "O_q": -0.08914954233688821,
+     "max_other": 0.13842843186454315,
+     "argmax_other": "Edema",
+     "n_competitors": 5,
+     "O_q_ci95_percentile": [
+      -0.0909503143669946,
+      -0.0872856922072955
+     ],
+     "verdict": "stronger_competitor",
+     "own_minus_max_logistic_competitor": 0.02268559633683035,
+     "own_minus_max_logistic_competitor_ci95_percentile": [
+      0.020794144951687535,
+      0.024570625606442974
+     ],
+     "W_logistic_qq": -0.050101938619773696,
+     "O_logistic_q": -0.07669523181059829,
+     "random_p95": 0.11076170009912366,
+     "abs_sham": 0.03771551311388195,
+     "steering_reference": false,
+     "cos_to_logistic_model": 0.09800249196033609,
+     "cos_to_logistic_projected": 0.12266194829565416
+    },
+    "Cardiomegaly": {
+     "W_qq": 0.0755445442199029,
+     "O_q": -0.039638509653912565,
+     "max_other": 0.11518305387381547,
+     "argmax_other": "Edema",
+     "n_competitors": 5,
+     "O_q_ci95_percentile": [
+      -0.04085786850497421,
+      -0.03833733146820511
+     ],
+     "verdict": "stronger_competitor",
+     "own_minus_max_logistic_competitor": 0.05871793614822622,
+     "own_minus_max_logistic_competitor_ci95_percentile": [
+      0.05661807722073823,
+      0.0607771006729926
+     ],
+     "W_logistic_qq": -0.04932202094681883,
+     "O_logistic_q": -0.06614862901849553,
+     "random_p95": 0.11402860465507957,
+     "abs_sham": 0.0632663452577893,
+     "steering_reference": false,
+     "cos_to_logistic_model": 0.12166911715455048,
+     "cos_to_logistic_projected": 0.0815301957833531
+    },
+    "Consolidation": {
+     "W_qq": 0.10327569622023404,
+     "O_q": -0.02003806834148146,
+     "max_other": 0.1233137645617155,
+     "argmax_other": "Edema",
+     "n_competitors": 5,
+     "O_q_ci95_percentile": [
+      -0.021129941753503217,
+      -0.01895905080192805
+     ],
+     "verdict": "stronger_competitor",
+     "own_minus_max_logistic_competitor": 0.09527493938607315,
+     "own_minus_max_logistic_competitor_ci95_percentile": [
+      0.09108194979971804,
+      0.09946851340697672
+     ],
+     "W_logistic_qq": -0.03843690061709435,
+     "O_logistic_q": -0.04643765745125525,
+     "random_p95": 0.10888467780381991,
+     "abs_sham": 0.03678685285186409,
+     "steering_reference": false,
+     "cos_to_logistic_model": 0.10463110856975383,
+     "cos_to_logistic_projected": 0.07855650263977582
+    },
+    "Edema": {
+     "W_qq": 0.1546397970438475,
+     "O_q": 0.02310516880914046,
+     "max_other": 0.13153462823470705,
+     "argmax_other": "Consolidation",
+     "n_competitors": 5,
+     "O_q_ci95_percentile": [
+      0.02183878319041007,
+      0.024411003060730244
+     ],
+     "verdict": "fixed_family_advantage",
+     "own_minus_max_logistic_competitor": 0.14348615167331957,
+     "own_minus_max_logistic_competitor_ci95_percentile": [
+      0.14105248742880813,
+      0.1458070341039628
+     ],
+     "W_logistic_qq": 0.001059010095053901,
+     "O_logistic_q": -0.01009463527547404,
+     "random_p95": 0.12066939474977924,
+     "abs_sham": 0.02728460185159827,
+     "steering_reference": true,
+     "cos_to_logistic_model": 0.1152721205138632,
+     "cos_to_logistic_projected": 0.08963162674327603
+    }
+   }
+  },
+  "pattern": {
+   "W": {
+    "Effusion": {
+     "Atelectasis": 0.10311778595355671,
+     "Pneumothorax": 0.055032628705709415,
+     "Cardiomegaly": 0.1013288094515353,
+     "Consolidation": 0.11547029104588027,
+     "Edema": 0.12573986470191761,
+     "Effusion": 0.1036187504225737
+    },
+    "Atelectasis": {
+     "Effusion": 0.10098235639944282,
+     "Pneumothorax": 0.055923095766850846,
+     "Cardiomegaly": 0.0961918491354176,
+     "Consolidation": 0.1142602616855698,
+     "Edema": 0.12442300670393955,
+     "Atelectasis": 0.1001969254517763
+    },
+    "Pneumothorax": {
+     "Effusion": 0.11154801300346612,
+     "Atelectasis": 0.11206364611711915,
+     "Cardiomegaly": 0.11391650723794589,
+     "Consolidation": 0.12093603937278052,
+     "Edema": 0.13009026256771772,
+     "Pneumothorax": 0.05411652940967324
+    },
+    "Cardiomegaly": {
+     "Effusion": 0.09192415353838676,
+     "Atelectasis": 0.09594967485346705,
+     "Pneumothorax": 0.06598189745521023,
+     "Consolidation": 0.10164656126970716,
+     "Edema": 0.11360126336241687,
+     "Cardiomegaly": 0.08658093367934193
+    },
+    "Consolidation": {
+     "Effusion": 0.09177606677852808,
+     "Atelectasis": 0.09433994101161676,
+     "Pneumothorax": 0.05486754460617585,
+     "Cardiomegaly": 0.08145605141024462,
+     "Edema": 0.1176409807097067,
+     "Consolidation": 0.1092379230663312
+    },
+    "Edema": {
+     "Effusion": 0.12642178358032952,
+     "Atelectasis": 0.128058167278744,
+     "Pneumothorax": 0.07123516444199704,
+     "Cardiomegaly": 0.12378399870653188,
+     "Consolidation": 0.1377808357577498,
+     "Edema": 0.14666145793521596
+    }
+   },
+   "n_scored_rows_min": 600,
+   "contrasts": {
+    "Effusion-Atelectasis": {
+     "estimate": 0.0005009644690169845,
+     "sd": 0.00043061254553933607,
+     "lower": -0.0008332317610536112,
+     "upper": 0.0018351606990875803
+    },
+    "Effusion-Pneumothorax": {
+     "estimate": 0.04858612171686428,
+     "sd": 0.0005751890734975988,
+     "lower": 0.04680397416592119,
+     "upper": 0.05036826926780737
+    },
+    "Effusion-Cardiomegaly": {
+     "estimate": 0.0022899409710383928,
+     "sd": 0.000423192028847939,
+     "lower": 0.000978736234126543,
+     "upper": 0.0036011457079502427
+    },
+    "Effusion-Consolidation": {
+     "estimate": -0.01185154062330658,
+     "sd": 0.00039251975942552515,
+     "lower": -0.013067711375131352,
+     "upper": -0.010635369871481809
+    },
+    "Effusion-Edema": {
+     "estimate": -0.02212111427934392,
+     "sd": 0.00048097233947015704,
+     "lower": -0.023611343694944397,
+     "upper": -0.020630884863743443
+    },
+    "Atelectasis-Effusion": {
+     "estimate": -0.0007854309476665183,
+     "sd": 0.00042745578308086966,
+     "lower": -0.002109846365229575,
+     "upper": 0.0005389844698965387
+    },
+    "Atelectasis-Pneumothorax": {
+     "estimate": 0.04427382968492546,
+     "sd": 0.0005658454926812267,
+     "lower": 0.042520631987928104,
+     "upper": 0.04602702738192281
+    },
+    "Atelectasis-Cardiomegaly": {
+     "estimate": 0.004005076316358699,
+     "sd": 0.00040153449493385724,
+     "lower": 0.0027609745944428546,
+     "upper": 0.005249178038274544
+    },
+    "Atelectasis-Consolidation": {
+     "estimate": -0.014063336233793494,
+     "sd": 0.00046336019079870123,
+     "lower": -0.015498996727507434,
+     "upper": -0.012627675740079555
+    },
+    "Atelectasis-Edema": {
+     "estimate": -0.024226081252163245,
+     "sd": 0.0005473061962400114,
+     "lower": -0.025921837382080728,
+     "upper": -0.022530325122245762
+    },
+    "Pneumothorax-Effusion": {
+     "estimate": -0.057431483593792874,
+     "sd": 0.0005708173439379809,
+     "lower": -0.05920008591676304,
+     "upper": -0.05566288127082271
+    },
+    "Pneumothorax-Atelectasis": {
+     "estimate": -0.05794711670744591,
+     "sd": 0.0005171369403191995,
+     "lower": -0.05954939737332839,
+     "upper": -0.05634483604156342
+    },
+    "Pneumothorax-Cardiomegaly": {
+     "estimate": -0.05979997782827264,
+     "sd": 0.0005862764665362976,
+     "lower": -0.0616164782055483,
+     "upper": -0.05798347745099698
+    },
+    "Pneumothorax-Consolidation": {
+     "estimate": -0.06681950996310729,
+     "sd": 0.0006308172520145553,
+     "lower": -0.06877401409499963,
+     "upper": -0.06486500583121495
+    },
+    "Pneumothorax-Edema": {
+     "estimate": -0.07597373315804448,
+     "sd": 0.0007659516834253998,
+     "lower": -0.07834693351885247,
+     "upper": -0.0736005327972365
+    },
+    "Cardiomegaly-Effusion": {
+     "estimate": -0.0053432198590448315,
+     "sd": 0.0003779307779059852,
+     "lower": -0.006514188574037256,
+     "upper": -0.004172251144052407
+    },
+    "Cardiomegaly-Atelectasis": {
+     "estimate": -0.009368741174125117,
+     "sd": 0.0004003396318578632,
+     "lower": -0.0106091407702484,
+     "upper": -0.008128341578001835
+    },
+    "Cardiomegaly-Pneumothorax": {
+     "estimate": 0.0205990362241317,
+     "sd": 0.0005941849523090563,
+     "lower": 0.018758032445798906,
+     "upper": 0.022440040002464495
+    },
+    "Cardiomegaly-Consolidation": {
+     "estimate": -0.015065627590365227,
+     "sd": 0.0004632231493994589,
+     "lower": -0.016500863479361708,
+     "upper": -0.013630391701368746
+    },
+    "Cardiomegaly-Edema": {
+     "estimate": -0.02702032968307494,
+     "sd": 0.0005221945859849496,
+     "lower": -0.028638280797601286,
+     "upper": -0.025402378568548593
+    },
+    "Consolidation-Effusion": {
+     "estimate": 0.017461856287803126,
+     "sd": 0.00037845715002219726,
+     "lower": 0.016289256678169245,
+     "upper": 0.018634455897437008
+    },
+    "Consolidation-Atelectasis": {
+     "estimate": 0.014897982054714445,
+     "sd": 0.0004609601248736654,
+     "lower": 0.013469757849009936,
+     "upper": 0.016326206260418957
+    },
+    "Consolidation-Pneumothorax": {
+     "estimate": 0.054370378460155355,
+     "sd": 0.0006754623006510826,
+     "lower": 0.0522775475279893,
+     "upper": 0.05646320939232141
+    },
+    "Consolidation-Cardiomegaly": {
+     "estimate": 0.027781871656086587,
+     "sd": 0.0004506234560059728,
+     "lower": 0.026385674256794535,
+     "upper": 0.02917806905537864
+    },
+    "Consolidation-Edema": {
+     "estimate": -0.008403057643375497,
+     "sd": 0.00042836424954359497,
+     "lower": -0.009730287824563696,
+     "upper": -0.007075827462187299
+    },
+    "Edema-Effusion": {
+     "estimate": 0.02023967435488644,
+     "sd": 0.0005743407040829992,
+     "lower": 0.01846015536478393,
+     "upper": 0.022019193344988947
+    },
+    "Edema-Atelectasis": {
+     "estimate": 0.018603290656471955,
+     "sd": 0.0007552305749022954,
+     "lower": 0.016263308237690694,
+     "upper": 0.020943273075253215
+    },
+    "Edema-Pneumothorax": {
+     "estimate": 0.07542629349321892,
+     "sd": 0.000955081626424971,
+     "lower": 0.07246709892588486,
+     "upper": 0.07838548806055297
+    },
+    "Edema-Cardiomegaly": {
+     "estimate": 0.022877459228684074,
+     "sd": 0.0006907541888244063,
+     "lower": 0.0207372483960417,
+     "upper": 0.02501767006132645
+    },
+    "Edema-Consolidation": {
+     "estimate": 0.008880622177466158,
+     "sd": 0.0005011980601898642,
+     "lower": 0.0073277260313808655,
+     "upper": 0.01043351832355145
+    }
+   },
+   "max_t_critical": 3.0983682289133823,
+   "per_question": {
+    "Effusion": {
+     "W_qq": 0.1036187504225737,
+     "O_q": -0.02212111427934392,
+     "max_other": 0.12573986470191761,
+     "argmax_other": "Edema",
+     "n_competitors": 5,
+     "O_q_ci95_percentile": [
+      -0.023042532135933515,
+      -0.021203634565954737
+     ],
+     "verdict": "stronger_competitor",
+     "own_minus_max_logistic_competitor": 0.0926710359159438,
+     "own_minus_max_logistic_competitor_ci95_percentile": [
+      0.09074317083191322,
+      0.09469897503090226
+     ],
+     "W_logistic_qq": -0.0031530907929772463,
+     "O_logistic_q": -0.014100805299607139,
+     "random_p95": 0.09843719495900573,
+     "abs_sham": 0.05915030770037411,
+     "steering_reference": true,
+     "cos_to_logistic_model": 0.16028333820544305,
+     "cos_to_logistic_projected": 0.10401620448895578
+    },
+    "Atelectasis": {
+     "W_qq": 0.1001969254517763,
+     "O_q": -0.024226081252163245,
+     "max_other": 0.12442300670393955,
+     "argmax_other": "Edema",
+     "n_competitors": 5,
+     "O_q_ci95_percentile": [
+      -0.025286082918713853,
+      -0.02315955377260629
+     ],
+     "verdict": "stronger_competitor",
+     "own_minus_max_logistic_competitor": 0.07840711051859448,
+     "own_minus_max_logistic_competitor_ci95_percentile": [
+      0.07478869165774796,
+      0.08223524049936182
+     ],
+     "W_logistic_qq": -0.024697259005903038,
+     "O_logistic_q": -0.04648707393908487,
+     "random_p95": 0.12874985174898285,
+     "abs_sham": 0.034193314390092905,
+     "steering_reference": false,
+     "cos_to_logistic_model": 0.16146270752612277,
+     "cos_to_logistic_projected": 0.12609258826886677
+    },
+    "Pneumothorax": {
+     "W_qq": 0.05411652940967324,
+     "O_q": -0.07597373315804448,
+     "max_other": 0.13009026256771772,
+     "argmax_other": "Edema",
+     "n_competitors": 5,
+     "O_q_ci95_percentile": [
+      -0.07746860164087373,
+      -0.07447647108526191
+     ],
+     "verdict": "stronger_competitor",
+     "own_minus_max_logistic_competitor": 0.027523236218848647,
+     "own_minus_max_logistic_competitor_ci95_percentile": [
+      0.025778121565660925,
+      0.02934170018624362
+     ],
+     "W_logistic_qq": -0.050101938619773696,
+     "O_logistic_q": -0.07669523181059829,
+     "random_p95": 0.11076170009912366,
+     "abs_sham": 0.03771551311388195,
+     "steering_reference": false,
+     "cos_to_logistic_model": 0.10300564198828148,
+     "cos_to_logistic_projected": 0.12372623647924243
+    },
+    "Cardiomegaly": {
+     "W_qq": 0.08658093367934193,
+     "O_q": -0.02702032968307494,
+     "max_other": 0.11360126336241687,
+     "argmax_other": "Edema",
+     "n_competitors": 5,
+     "O_q_ci95_percentile": [
+      -0.028022087693915097,
+      -0.02599626671508231
+     ],
+     "verdict": "stronger_competitor",
+     "own_minus_max_logistic_competitor": 0.06975432560766524,
+     "own_minus_max_logistic_competitor_ci95_percentile": [
+      0.06775755689043965,
+      0.07181503713803375
+     ],
+     "W_logistic_qq": -0.04932202094681883,
+     "O_logistic_q": -0.06614862901849553,
+     "random_p95": 0.11402860465507957,
+     "abs_sham": 0.0632663452577893,
+     "steering_reference": false,
+     "cos_to_logistic_model": 0.1326920714017425,
+     "cos_to_logistic_projected": 0.08888605433507256
+    },
+    "Consolidation": {
+     "W_qq": 0.1092379230663312,
+     "O_q": -0.008403057643375497,
+     "max_other": 0.1176409807097067,
+     "argmax_other": "Edema",
+     "n_competitors": 5,
+     "O_q_ci95_percentile": [
+      -0.009221495170021061,
+      -0.007559694358831618
+     ],
+     "verdict": "stronger_competitor",
+     "own_minus_max_logistic_competitor": 0.1012371662321703,
+     "own_minus_max_logistic_competitor_ci95_percentile": [
+      0.0971596970197049,
+      0.10528142378626358
+     ],
+     "W_logistic_qq": -0.03843690061709435,
+     "O_logistic_q": -0.04643765745125525,
+     "random_p95": 0.10888467780381991,
+     "abs_sham": 0.03678685285186409,
+     "steering_reference": true,
+     "cos_to_logistic_model": 0.11077205092275398,
+     "cos_to_logistic_projected": 0.08724709508651775
+    },
+    "Edema": {
+     "W_qq": 0.14666145793521596,
+     "O_q": 0.008880622177466158,
+     "max_other": 0.1377808357577498,
+     "argmax_other": "Consolidation",
+     "n_competitors": 5,
+     "O_q_ci95_percentile": [
+      0.007886484870217739,
+      0.009878307695042715
+     ],
+     "verdict": "fixed_family_advantage",
+     "own_minus_max_logistic_competitor": 0.13550781256468802,
+     "own_minus_max_logistic_competitor_ci95_percentile": [
+      0.13313526209951712,
+      0.13773570698108561
+     ],
+     "W_logistic_qq": 0.001059010095053901,
+     "O_logistic_q": -0.01009463527547404,
+     "random_p95": 0.12066939474977924,
+     "abs_sham": 0.02728460185159827,
+     "steering_reference": true,
+     "cos_to_logistic_model": 0.11724320761253164,
+     "cos_to_logistic_projected": 0.09291008887812378
+    }
+   }
+  },
+  "orth": {
+   "W": {
+    "Effusion": {
+     "Atelectasis": 0.013547427774302694,
+     "Pneumothorax": -0.038553639046999454,
+     "Cardiomegaly": -0.019793507874761557,
+     "Consolidation": -0.025690044921015922,
+     "Edema": 0.0008938952416799906,
+     "Effusion": 0.031332355428590926
+    },
+    "Atelectasis": {
+     "Effusion": 0.03687902508249187,
+     "Pneumothorax": -0.07349275615436089,
+     "Cardiomegaly": -0.03670836848182643,
+     "Consolidation": -0.022627027104579825,
+     "Edema": 0.020564001096537735,
+     "Atelectasis": -0.025762030955006954
+    },
+    "Pneumothorax": {
+     "Effusion": 0.03504396503145505,
+     "Atelectasis": 0.0294294352530665,
+     "Cardiomegaly": -0.017912650263942138,
+     "Consolidation": -0.025989207325651957,
+     "Edema": -0.030056573214644514,
+     "Pneumothorax": -0.03590766458013599
+    },
+    "Cardiomegaly": {
+     "Effusion": 0.02009175612267052,
+     "Atelectasis": 0.02164458779502624,
+     "Pneumothorax": -0.029845757210089818,
+     "Consolidation": -0.04840569886137745,
+     "Edema": 0.015205529528033281,
+     "Cardiomegaly": -0.043604132287019544
+    },
+    "Consolidation": {
+     "Effusion": 0.006034563736989607,
+     "Atelectasis": 0.003537331733642392,
+     "Pneumothorax": -0.038719682803618684,
+     "Cardiomegaly": -0.05514461117203087,
+     "Edema": 0.018086096927696745,
+     "Consolidation": -0.02462122453722035
+    },
+    "Edema": {
+     "Effusion": 0.04126847411608372,
+     "Atelectasis": 0.012444636452340695,
+     "Pneumothorax": -0.016596203697926644,
+     "Cardiomegaly": 0.0009119955639296836,
+     "Consolidation": -0.039286769294930426,
+     "Edema": -0.005073022583387177
+    }
+   },
+   "n_scored_rows_min": 600,
+   "contrasts": {
+    "Effusion-Atelectasis": {
+     "estimate": 0.017784927654288234,
+     "sd": 0.0014105107736839654,
+     "lower": 0.013529703339115205,
+     "upper": 0.022040151969461262
+    },
+    "Effusion-Pneumothorax": {
+     "estimate": 0.06988599447559038,
+     "sd": 0.0013692641063693378,
+     "lower": 0.06575520297224101,
+     "upper": 0.07401678597893975
+    },
+    "Effusion-Cardiomegaly": {
+     "estimate": 0.05112586330335248,
+     "sd": 0.0018486131163170279,
+     "lower": 0.045548973265600465,
+     "upper": 0.0567027533411045
+    },
+    "Effusion-Consolidation": {
+     "estimate": 0.057022400349606844,
+     "sd": 0.0015549755257900921,
+     "lower": 0.052331355240068746,
+     "upper": 0.06171344545914494
+    },
+    "Effusion-Edema": {
+     "estimate": 0.030438460186910935,
+     "sd": 0.0012398040532774913,
+     "lower": 0.026698223350734525,
+     "upper": 0.034178697023087345
+    },
+    "Atelectasis-Effusion": {
+     "estimate": -0.06264105603749882,
+     "sd": 0.001288864483624514,
+     "lower": -0.06652929822040524,
+     "upper": -0.058752813854592405
+    },
+    "Atelectasis-Pneumothorax": {
+     "estimate": 0.04773072519935394,
+     "sd": 0.001115513884112856,
+     "lower": 0.044365446541330955,
+     "upper": 0.05109600385737692
+    },
+    "Atelectasis-Cardiomegaly": {
+     "estimate": 0.010946337526819477,
+     "sd": 0.0010791541836179211,
+     "lower": 0.0076907486950105585,
+     "upper": 0.014201926358628396
+    },
+    "Atelectasis-Consolidation": {
+     "estimate": -0.003135003850427129,
+     "sd": 0.000844104056344025,
+     "lower": -0.005681494222641795,
+     "upper": -0.0005885134782124624
+    },
+    "Atelectasis-Edema": {
+     "estimate": -0.04632603205154469,
+     "sd": 0.0016424467781606382,
+     "lower": -0.051280960150784205,
+     "upper": -0.04137110395230517
+    },
+    "Pneumothorax-Effusion": {
+     "estimate": -0.07095162961159104,
+     "sd": 0.0010465632749111582,
+     "lower": -0.07410889829599662,
+     "upper": -0.06779436092718547
+    },
+    "Pneumothorax-Atelectasis": {
+     "estimate": -0.06533709983320249,
+     "sd": 0.0008972762674912556,
+     "lower": -0.06804399995909402,
+     "upper": -0.06263019970731096
+    },
+    "Pneumothorax-Cardiomegaly": {
+     "estimate": -0.01799501431619385,
+     "sd": 0.0010453651448655674,
+     "lower": -0.021148668485774125,
+     "upper": -0.014841360146613573
+    },
+    "Pneumothorax-Consolidation": {
+     "estimate": -0.00991845725448403,
+     "sd": 0.0009194848453746332,
+     "lower": -0.012692356145913481,
+     "upper": -0.007144558363054577
+    },
+    "Pneumothorax-Edema": {
+     "estimate": -0.005851091365491473,
+     "sd": 0.0009537895392353726,
+     "lower": -0.008728480545803677,
+     "upper": -0.0029737021851792703
+    },
+    "Cardiomegaly-Effusion": {
+     "estimate": -0.06369588840969007,
+     "sd": 0.0015165771094639863,
+     "lower": -0.06827109330172437,
+     "upper": -0.05912068351765575
+    },
+    "Cardiomegaly-Atelectasis": {
+     "estimate": -0.06524872008204578,
+     "sd": 0.0009549489121900599,
+     "lower": -0.0681296068549175,
+     "upper": -0.06236783330917407
+    },
+    "Cardiomegaly-Pneumothorax": {
+     "estimate": -0.013758375076929726,
+     "sd": 0.0012592832685961884,
+     "lower": -0.017557376746534615,
+     "upper": -0.009959373407324838
+    },
+    "Cardiomegaly-Consolidation": {
+     "estimate": 0.004801566574357909,
+     "sd": 0.000953648073693767,
+     "lower": 0.0019246041668315862,
+     "upper": 0.007678528981884231
+    },
+    "Cardiomegaly-Edema": {
+     "estimate": -0.05880966181505282,
+     "sd": 0.001423238548788238,
+     "lower": -0.06310328324077064,
+     "upper": -0.05451604038933501
+    },
+    "Consolidation-Effusion": {
+     "estimate": -0.030655788274209957,
+     "sd": 0.0020009693089417606,
+     "lower": -0.0366923059784212,
+     "upper": -0.024619270569998717
+    },
+    "Consolidation-Atelectasis": {
+     "estimate": -0.02815855627086274,
+     "sd": 0.0010663264689596507,
+     "lower": -0.03137544649480537,
+     "upper": -0.02494166604692011
+    },
+    "Consolidation-Pneumothorax": {
+     "estimate": 0.014098458266398335,
+     "sd": 0.0016128466943580964,
+     "lower": 0.009232827603717044,
+     "upper": 0.018964088929079626
+    },
+    "Consolidation-Cardiomegaly": {
+     "estimate": 0.030523386634810523,
+     "sd": 0.0009871200683642806,
+     "lower": 0.027545446022610647,
+     "upper": 0.033501327247010396
+    },
+    "Consolidation-Edema": {
+     "estimate": -0.0427073214649171,
+     "sd": 0.0018656797074179977,
+     "lower": -0.04833569793920323,
+     "upper": -0.03707894499063096
+    },
+    "Edema-Effusion": {
+     "estimate": -0.046341496699470894,
+     "sd": 0.0014375312569200511,
+     "lower": -0.05067823632060193,
+     "upper": -0.04200475707833986
+    },
+    "Edema-Atelectasis": {
+     "estimate": -0.01751765903572787,
+     "sd": 0.0015447082583831251,
+     "lower": -0.02217772988634102,
+     "upper": -0.012857588185114717
+    },
+    "Edema-Pneumothorax": {
+     "estimate": 0.011523181114539467,
+     "sd": 0.0012665809801641582,
+     "lower": 0.007702163732407946,
+     "upper": 0.015344198496670989
+    },
+    "Edema-Cardiomegaly": {
+     "estimate": -0.005985018147316861,
+     "sd": 0.002074805850641412,
+     "lower": -0.012244285690416632,
+     "upper": 0.00027424939578291063
+    },
+    "Edema-Consolidation": {
+     "estimate": 0.03421374671154325,
+     "sd": 0.0016533968186337401,
+     "lower": 0.029225784565813206,
+     "upper": 0.039201708857273296
+    }
+   },
+   "max_t_critical": 3.0167967480739284,
+   "per_question": {
+    "Effusion": {
+     "W_qq": 0.031332355428590926,
+     "O_q": 0.017784927654288234,
+     "max_other": 0.013547427774302694,
+     "argmax_other": "Atelectasis",
+     "n_competitors": 5,
+     "O_q_ci95_percentile": [
+      0.015095230385006837,
+      0.020434140115773623
+     ],
+     "verdict": "fixed_family_advantage",
+     "own_minus_max_logistic_competitor": 0.02038464092196103,
+     "own_minus_max_logistic_competitor_ci95_percentile": [
+      0.01769016413701645,
+      0.023030803277246353
+     ],
+     "W_logistic_qq": -0.0031530907929772463,
+     "O_logistic_q": -0.014100805299607139,
+     "random_p95": 0.09843719495900573,
+     "abs_sham": 0.05915030770037411,
+     "steering_reference": false,
+     "cos_to_logistic_model": 0.8916146883494996,
+     "cos_to_logistic_projected": 0.8947435349571158,
+     "norm_removed_fraction": 0.10525646504288422
+    },
+    "Atelectasis": {
+     "W_qq": -0.025762030955006954,
+     "O_q": -0.06264105603749882,
+     "max_other": 0.03687902508249187,
+     "argmax_other": "Effusion",
+     "n_competitors": 5,
+     "O_q_ci95_percentile": [
+      -0.0651195209875417,
+      -0.06000223481021633
+     ],
+     "verdict": "stronger_competitor",
+     "own_minus_max_logistic_competitor": -0.04755184588818878,
+     "own_minus_max_logistic_competitor_ci95_percentile": [
+      -0.050847005813148126,
+      -0.0440059032909782
+     ],
+     "W_logistic_qq": -0.024697259005903038,
+     "O_logistic_q": -0.04648707393908487,
+     "random_p95": 0.12874985174898285,
+     "abs_sham": 0.034193314390092905,
+     "steering_reference": false,
+     "cos_to_logistic_model": 0.9868532637096941,
+     "cos_to_logistic_projected": 0.9784264217502446,
+     "norm_removed_fraction": 0.021573578249755032
+    },
+    "Pneumothorax": {
+     "W_qq": -0.03590766458013599,
+     "O_q": -0.07095162961159104,
+     "max_other": 0.03504396503145505,
+     "argmax_other": "Effusion",
+     "n_competitors": 5,
+     "O_q_ci95_percentile": [
+      -0.07302071491212604,
+      -0.06887615668567619
+     ],
+     "verdict": "stronger_competitor",
+     "own_minus_max_logistic_competitor": -0.06250095777096058,
+     "own_minus_max_logistic_competitor_ci95_percentile": [
+      -0.06422787651886486,
+      -0.06067124374539255
+     ],
+     "W_logistic_qq": -0.050101938619773696,
+     "O_logistic_q": -0.07669523181059829,
+     "random_p95": 0.11076170009912366,
+     "abs_sham": 0.03771551311388195,
+     "steering_reference": false,
+     "cos_to_logistic_model": 0.9518342563968125,
+     "cos_to_logistic_projected": 0.9528094682320863,
+     "norm_removed_fraction": 0.047190531767913546
+    },
+    "Cardiomegaly": {
+     "W_qq": -0.043604132287019544,
+     "O_q": -0.06524872008204578,
+     "max_other": 0.02164458779502624,
+     "argmax_other": "Atelectasis",
+     "n_competitors": 5,
+     "O_q_ci95_percentile": [
+      -0.06720566827666236,
+      -0.0633281642937782
+     ],
+     "verdict": "stronger_competitor",
+     "own_minus_max_logistic_competitor": -0.06043074035869623,
+     "own_minus_max_logistic_competitor_ci95_percentile": [
+      -0.06243026769070383,
+      -0.058363485631086835
+     ],
+     "W_logistic_qq": -0.04932202094681883,
+     "O_logistic_q": -0.06614862901849553,
+     "random_p95": 0.11402860465507957,
+     "abs_sham": 0.0632663452577893,
+     "steering_reference": false,
+     "cos_to_logistic_model": 0.9808786097763802,
+     "cos_to_logistic_projected": 0.9785215726090277,
+     "norm_removed_fraction": 0.021478427390972277
+    },
+    "Consolidation": {
+     "W_qq": -0.02462122453722035,
+     "O_q": -0.0427073214649171,
+     "max_other": 0.018086096927696745,
+     "argmax_other": "Edema",
+     "n_competitors": 5,
+     "O_q_ci95_percentile": [
+      -0.046476787738744404,
+      -0.03902929525862132
+     ],
+     "verdict": "stronger_competitor",
+     "own_minus_max_logistic_competitor": -0.032621981371381246,
+     "own_minus_max_logistic_competitor_ci95_percentile": [
+      -0.03675058379057647,
+      -0.028667521167909743
+     ],
+     "W_logistic_qq": -0.03843690061709435,
+     "O_logistic_q": -0.04643765745125525,
+     "random_p95": 0.10888467780381991,
+     "abs_sham": 0.03678685285186409,
+     "steering_reference": false,
+     "cos_to_logistic_model": 0.909007396054861,
+     "cos_to_logistic_projected": 0.9146941440790516,
+     "norm_removed_fraction": 0.08530585592094841
+    },
+    "Edema": {
+     "W_qq": -0.005073022583387177,
+     "O_q": -0.046341496699470894,
+     "max_other": 0.04126847411608372,
+     "argmax_other": "Effusion",
+     "n_competitors": 5,
+     "O_q_ci95_percentile": [
+      -0.04903945808209558,
+      -0.04344051454007705
+     ],
+     "verdict": "stronger_competitor",
+     "own_minus_max_logistic_competitor": -0.01622666795391512,
+     "own_minus_max_logistic_competitor_ci95_percentile": [
+      -0.019145311176443337,
+      -0.013534958847385585
+     ],
+     "W_logistic_qq": 0.001059010095053901,
+     "O_logistic_q": -0.01009463527547404,
+     "random_p95": 0.12066939474977924,
+     "abs_sham": 0.02728460185159827,
+     "steering_reference": false,
+     "cos_to_logistic_model": 0.9405565186828633,
+     "cos_to_logistic_projected": 0.9441227244715813,
+     "norm_removed_fraction": 0.05587727552841859
+    }
+   }
+  },
+  "resid": {
+   "W": {
+    "Effusion": {
+     "Atelectasis": 0.035822495322195246,
+     "Pneumothorax": 0.012142037080290113,
+     "Cardiomegaly": 0.0016472757186059535,
+     "Consolidation": -0.0018584637374698184,
+     "Edema": 0.03176789674230179,
+     "Effusion": 0.03430795117848893
+    },
+    "Atelectasis": {
+     "Effusion": 0.05824498918856261,
+     "Pneumothorax": -0.015325134292437852,
+     "Cardiomegaly": -0.002161215713840341,
+     "Consolidation": -0.0020355504018355324,
+     "Edema": 0.023736686349358608,
+     "Atelectasis": 0.027460715190016055
+    },
+    "Pneumothorax": {
+     "Effusion": 0.04094117406505569,
+     "Atelectasis": 0.055965216749834186,
+     "Cardiomegaly": 0.010777983514592358,
+     "Consolidation": -0.001642866529796019,
+     "Edema": 0.022427304972466276,
+     "Pneumothorax": 0.026971901803819805
+    },
+    "Cardiomegaly": {
+     "Effusion": 0.051991214335856496,
+     "Atelectasis": 0.04701782439316768,
+     "Pneumothorax": 0.005337954874764014,
+     "Consolidation": -0.010217935386774955,
+     "Edema": 0.00514814947164389,
+     "Cardiomegaly": -0.013886280768087952
+    },
+    "Consolidation": {
+     "Effusion": 0.019634103729129247,
+     "Atelectasis": 0.03935429867844528,
+     "Pneumothorax": 0.01563651407368292,
+     "Cardiomegaly": -0.02921356353888547,
+     "Edema": 0.026472470173111752,
+     "Consolidation": -0.017905623046323652
+    },
+    "Edema": {
+     "Effusion": 0.078899327992527,
+     "Atelectasis": 0.05467740551094682,
+     "Pneumothorax": -0.0036968250275317516,
+     "Cardiomegaly": 0.018429326735124818,
+     "Consolidation": -0.011395738321299115,
+     "Edema": 0.015134921616080887
+    }
+   },
+   "n_scored_rows_min": 600,
+   "contrasts": {
+    "Effusion-Atelectasis": {
+     "estimate": -0.0015145441437063173,
+     "sd": 0.0011546619708862915,
+     "lower": -0.005074022986042795,
+     "upper": 0.0020449346986301607
+    },
+    "Effusion-Pneumothorax": {
+     "estimate": 0.022165914098198816,
+     "sd": 0.0010746825757500546,
+     "lower": 0.018852987902427624,
+     "upper": 0.025478840293970007
+    },
+    "Effusion-Cardiomegaly": {
+     "estimate": 0.03266067545988297,
+     "sd": 0.0013947324031571746,
+     "lower": 0.028361131000175493,
+     "upper": 0.036960219919590455
+    },
+    "Effusion-Consolidation": {
+     "estimate": 0.03616641491595875,
+     "sd": 0.0011968350696505766,
+     "lower": 0.0324769289749629,
+     "upper": 0.0398559008569546
+    },
+    "Effusion-Edema": {
+     "estimate": 0.002540054436187135,
+     "sd": 0.0012982792923463963,
+     "lower": -0.0014621538196225277,
+     "upper": 0.006542262691996798
+    },
+    "Atelectasis-Effusion": {
+     "estimate": -0.030784273998546552,
+     "sd": 0.0012896594700563457,
+     "lower": -0.03475990991038044,
+     "upper": -0.02680863808671266
+    },
+    "Atelectasis-Pneumothorax": {
+     "estimate": 0.04278584948245391,
+     "sd": 0.0017279671833944142,
+     "lower": 0.03745904147749028,
+     "upper": 0.04811265748741754
+    },
+    "Atelectasis-Cardiomegaly": {
+     "estimate": 0.029621930903856397,
+     "sd": 0.0012000648750737034,
+     "lower": 0.025922488435012263,
+     "upper": 0.03332137337270053
+    },
+    "Atelectasis-Consolidation": {
+     "estimate": 0.02949626559185159,
+     "sd": 0.0009593830482327527,
+     "lower": 0.0265387734876823,
+     "upper": 0.03245375769602088
+    },
+    "Atelectasis-Edema": {
+     "estimate": 0.003724028840657447,
+     "sd": 0.00131790501930619,
+     "lower": -0.00033867968418353853,
+     "upper": 0.007786737365498433
+    },
+    "Pneumothorax-Effusion": {
+     "estimate": -0.013969272261235881,
+     "sd": 0.0010538473800622628,
+     "lower": -0.017217969756230075,
+     "upper": -0.010720574766241688
+    },
+    "Pneumothorax-Atelectasis": {
+     "estimate": -0.02899331494601438,
+     "sd": 0.001214378448964659,
+     "lower": -0.032736881898653515,
+     "upper": -0.025249747993375246
+    },
+    "Pneumothorax-Cardiomegaly": {
+     "estimate": 0.01619391828922745,
+     "sd": 0.001307594820482363,
+     "lower": 0.012162993035593988,
+     "upper": 0.02022484354286091
+    },
+    "Pneumothorax-Consolidation": {
+     "estimate": 0.028614768333615825,
+     "sd": 0.0012567194217174033,
+     "lower": 0.02474067677682639,
+     "upper": 0.03248885989040526
+    },
+    "Pneumothorax-Edema": {
+     "estimate": 0.004544596831353529,
+     "sd": 0.0010814093594013364,
+     "lower": 0.001210933965727926,
+     "upper": 0.007878259696979133
+    },
+    "Cardiomegaly-Effusion": {
+     "estimate": -0.06587749510394444,
+     "sd": 0.0011421176633858415,
+     "lower": -0.06939830358364193,
+     "upper": -0.06235668662424695
+    },
+    "Cardiomegaly-Atelectasis": {
+     "estimate": -0.060904105161255634,
+     "sd": 0.0010030706146694612,
+     "lower": -0.06399627301670585,
+     "upper": -0.05781193730580541
+    },
+    "Cardiomegaly-Pneumothorax": {
+     "estimate": -0.019224235642851965,
+     "sd": 0.0016198170443751721,
+     "lower": -0.024217648990902056,
+     "upper": -0.014230822294801874
+    },
+    "Cardiomegaly-Consolidation": {
+     "estimate": -0.0036683453813129967,
+     "sd": 0.0009534920236919435,
+     "lower": -0.006607677211963797,
+     "upper": -0.0007290135506621961
+    },
+    "Cardiomegaly-Edema": {
+     "estimate": -0.019034430239731844,
+     "sd": 0.0010442616511708814,
+     "lower": -0.022253577788475486,
+     "upper": -0.0158152826909882
+    },
+    "Consolidation-Effusion": {
+     "estimate": -0.0375397267754529,
+     "sd": 0.0011420658157951754,
+     "lower": -0.04106037542447557,
+     "upper": -0.03401907812643023
+    },
+    "Consolidation-Atelectasis": {
+     "estimate": -0.05725992172476893,
+     "sd": 0.0012286776950382145,
+     "lower": -0.061047568992810775,
+     "upper": -0.05347227445672709
+    },
+    "Consolidation-Pneumothorax": {
+     "estimate": -0.033542137120006574,
+     "sd": 0.0017122059921833195,
+     "lower": -0.03882035806827269,
+     "upper": -0.02826391617174046
+    },
+    "Consolidation-Cardiomegaly": {
+     "estimate": 0.011307940492561817,
+     "sd": 0.0012115809542902667,
+     "lower": 0.007572997382533004,
+     "upper": 0.01504288360259063
+    },
+    "Consolidation-Edema": {
+     "estimate": -0.04437809321943541,
+     "sd": 0.0014214371399556812,
+     "lower": -0.048759960426424054,
+     "upper": -0.03999622601244676
+    },
+    "Edema-Effusion": {
+     "estimate": -0.0637644063764461,
+     "sd": 0.0014944921014812104,
+     "lower": -0.0683714802642075,
+     "upper": -0.059157332488684704
+    },
+    "Edema-Atelectasis": {
+     "estimate": -0.039542483894865935,
+     "sd": 0.0013785743305959246,
+     "lower": -0.04379221783091811,
+     "upper": -0.035292749958813756
+    },
+    "Edema-Pneumothorax": {
+     "estimate": 0.01883174664361264,
+     "sd": 0.0012578160677453327,
+     "lower": 0.014954274453848039,
+     "upper": 0.02270921883337724
+    },
+    "Edema-Cardiomegaly": {
+     "estimate": -0.003294405119043931,
+     "sd": 0.0014324555521962523,
+     "lower": -0.007710238808202552,
+     "upper": 0.0011214285701146897
+    },
+    "Edema-Consolidation": {
+     "estimate": 0.02653065993738,
+     "sd": 0.0010623244811767336,
+     "lower": 0.02325583006527275,
+     "upper": 0.029805489809487253
+    }
+   },
+   "max_t_critical": 3.082702065267037,
+   "per_question": {
+    "Effusion": {
+     "W_qq": 0.03430795117848893,
+     "O_q": -0.0015145441437063173,
+     "max_other": 0.035822495322195246,
+     "argmax_other": "Atelectasis",
+     "n_competitors": 5,
+     "O_q_ci95_percentile": [
+      -0.0037998401714660532,
+      0.0006609564332573022
+     ],
+     "verdict": "unresolved",
+     "own_minus_max_logistic_competitor": 0.023360236671859033,
+     "own_minus_max_logistic_competitor_ci95_percentile": [
+      0.02112263322702981,
+      0.02548908139337734
+     ],
+     "W_logistic_qq": -0.0031530907929772463,
+     "O_logistic_q": -0.014100805299607139,
+     "random_p95": 0.09843719495900573,
+     "abs_sham": 0.05915030770037411,
+     "steering_reference": false,
+     "cos_to_logistic_model": 0.5699203145121741,
+     "cos_to_logistic_projected": 0.5636829348268113,
+     "fallback": false,
+     "rows_used": 3440,
+     "covariates_used": [
+      "Edema"
+     ]
+    },
+    "Atelectasis": {
+     "W_qq": 0.027460715190016055,
+     "O_q": -0.030784273998546552,
+     "max_other": 0.05824498918856261,
+     "argmax_other": "Effusion",
+     "n_competitors": 5,
+     "O_q_ci95_percentile": [
+      -0.03345577969848188,
+      -0.028261395961519258
+     ],
+     "verdict": "stronger_competitor",
+     "own_minus_max_logistic_competitor": 0.005670900256834227,
+     "own_minus_max_logistic_competitor_ci95_percentile": [
+      0.0020103667928460323,
+      0.009385887203343489
+     ],
+     "W_logistic_qq": -0.024697259005903038,
+     "O_logistic_q": -0.04648707393908487,
+     "random_p95": 0.12874985174898285,
+     "abs_sham": 0.034193314390092905,
+     "steering_reference": false,
+     "cos_to_logistic_model": 0.5662172725605968,
+     "cos_to_logistic_projected": 0.588339138892238,
+     "fallback": false,
+     "rows_used": 1560,
+     "covariates_used": [
+      "Effusion"
+     ]
+    },
+    "Pneumothorax": {
+     "W_qq": 0.026971901803819805,
+     "O_q": -0.02899331494601438,
+     "max_other": 0.055965216749834186,
+     "argmax_other": "Atelectasis",
+     "n_competitors": 5,
+     "O_q_ci95_percentile": [
+      -0.03138662137452789,
+      -0.026544793555447248
+     ],
+     "verdict": "stronger_competitor",
+     "own_minus_max_logistic_competitor": 0.0003786086129952092,
+     "own_minus_max_logistic_competitor_ci95_percentile": [
+      -0.0019542672101947748,
+      0.0028524415637438036
+     ],
+     "W_logistic_qq": -0.050101938619773696,
+     "O_logistic_q": -0.07669523181059829,
+     "random_p95": 0.11076170009912366,
+     "abs_sham": 0.03771551311388195,
+     "steering_reference": false,
+     "cos_to_logistic_model": 0.5160928529429114,
+     "cos_to_logistic_projected": 0.5397134649673386,
+     "fallback": false,
+     "rows_used": 3665,
+     "covariates_used": [
+      "Effusion"
+     ]
+    },
+    "Cardiomegaly": {
+     "W_qq": -0.013886280768087952,
+     "O_q": -0.06587749510394444,
+     "max_other": 0.051991214335856496,
+     "argmax_other": "Effusion",
+     "n_competitors": 5,
+     "O_q_ci95_percentile": [
+      -0.06809538374604752,
+      -0.06368573449822226
+     ],
+     "verdict": "stronger_competitor",
+     "own_minus_max_logistic_competitor": -0.030712888839764637,
+     "own_minus_max_logistic_competitor_ci95_percentile": [
+      -0.03247204443876173,
+      -0.028955489352283165
+     ],
+     "W_logistic_qq": -0.04932202094681883,
+     "O_logistic_q": -0.06614862901849553,
+     "random_p95": 0.11402860465507957,
+     "abs_sham": 0.0632663452577893,
+     "steering_reference": false,
+     "cos_to_logistic_model": 0.7290430054097279,
+     "cos_to_logistic_projected": 0.7009776773072206,
+     "fallback": false,
+     "rows_used": 2566,
+     "covariates_used": [
+      "Effusion"
+     ]
+    },
+    "Consolidation": {
+     "W_qq": -0.017905623046323652,
+     "O_q": -0.05725992172476893,
+     "max_other": 0.03935429867844528,
+     "argmax_other": "Atelectasis",
+     "n_competitors": 5,
+     "O_q_ci95_percentile": [
+      -0.05963297532695502,
+      -0.05490220415916279
+     ],
+     "verdict": "stronger_competitor",
+     "own_minus_max_logistic_competitor": -0.02590637988048455,
+     "own_minus_max_logistic_competitor_ci95_percentile": [
+      -0.02923375752540124,
+      -0.02270491485538041
+     ],
+     "W_logistic_qq": -0.03843690061709435,
+     "O_logistic_q": -0.04643765745125525,
+     "random_p95": 0.10888467780381991,
+     "abs_sham": 0.03678685285186409,
+     "steering_reference": false,
+     "cos_to_logistic_model": 0.5268728426485373,
+     "cos_to_logistic_projected": 0.551545447834504,
+     "fallback": false,
+     "rows_used": 2876,
+     "covariates_used": [
+      "Effusion"
+     ]
+    },
+    "Edema": {
+     "W_qq": 0.015134921616080887,
+     "O_q": -0.0637644063764461,
+     "max_other": 0.078899327992527,
+     "argmax_other": "Effusion",
+     "n_competitors": 5,
+     "O_q_ci95_percentile": [
+      -0.06673737818687175,
+      -0.06102933163266042
+     ],
+     "verdict": "stronger_competitor",
+     "own_minus_max_logistic_competitor": 0.003981276245552945,
+     "own_minus_max_logistic_competitor_ci95_percentile": [
+      0.0016802619030761598,
+      0.006085949300678439
+     ],
+     "W_logistic_qq": 0.001059010095053901,
+     "O_logistic_q": -0.01009463527547404,
+     "random_p95": 0.12066939474977924,
+     "abs_sham": 0.02728460185159827,
+     "steering_reference": false,
+     "cos_to_logistic_model": 0.6390508290599297,
+     "cos_to_logistic_projected": 0.637356475322568,
+     "fallback": false,
+     "rows_used": 3440,
+     "covariates_used": [
+      "Effusion"
+     ]
+    }
+   }
+  }
+ },
+ "core": {
+  "n_rows": 600,
+  "alpha": 0.25,
+  "W": {
+   "Effusion": {
+    "concept:Atelectasis": 0.010947714506629893,
+    "concept:Cardiomegaly": -0.021777050376695355,
+    "concept:Consolidation": -0.04371660028955889,
+    "concept:Edema": -0.0017650108740245411,
+    "concept:Effusion": -0.0031530907929772463,
+    "concept:Pneumothorax": -0.05123539261969503,
+    "random:000": -0.045049291671581074,
+    "random:001": -0.08423506955179873,
+    "random:002": -0.046380280288384104,
+    "random:003": -0.0007115311682151448,
+    "random:004": 0.005946365097745319,
+    "random:005": 0.05262634646226979,
+    "random:006": 0.15661895532751544,
+    "random:007": 0.012912295124221767,
+    "random:008": -0.042839719082268184,
+    "random:009": -0.06317512311256372,
+    "random:010": -0.03355166045168873,
+    "random:011": 0.08688605803365917,
+    "random:012": 0.004501401098998964,
+    "random:013": -0.015095479594028962,
+    "random:014": 0.16455227784808035,
+    "random:015": -0.01000837891448399,
+    "random:016": -0.03758135147495683,
+    "random:017": -0.01785412165550612,
+    "random:018": 0.06490360894447131,
+    "random:019": 0.013567427824707419,
+    "random:020": 0.014234133639997903,
+    "random:021": -0.012955821877367723,
+    "random:022": 0.03412219858643327,
+    "random:023": -0.1270676042208576,
+    "random:024": -0.12276219767531674,
+    "random:025": 0.025287194038332798,
+    "random:026": -0.05576104710346551,
+    "random:027": -0.06452511534029814,
+    "random:028": -0.04427718090590883,
+    "random:029": 0.035841695722829255,
+    "random:030": -0.019232233826513945,
+    "random:031": 0.06331033450861677,
+    "random:032": 0.06261184932716832,
+    "random:033": -0.01661105388217882,
+    "random:034": -0.014903052763668328,
+    "random:035": -0.02871970491224582,
+    "random:036": 0.021511146738074634,
+    "random:037": 0.08475831727059785,
+    "random:038": -0.009156045122803724,
+    "random:039": 0.09744859764550834,
+    "random:040": 0.049082442200691766,
+    "random:041": 0.02726569566176518,
+    "random:042": 0.01415848214860981,
+    "random:043": 0.04508035426580504,
+    "random:044": 0.024355832671754864,
+    "random:045": -0.055211098084597246,
+    "random:046": 0.007600017443938512,
+    "random:047": 0.017752321465363808,
+    "random:048": -0.07049282337419824,
+    "random:049": -0.0353961807681145,
+    "random:050": 0.01935286980198395,
+    "random:051": 0.06927819874865293,
+    "random:052": 0.000541485495527857,
+    "random:053": -0.07927272207556572,
+    "random:054": -0.04875230534275883,
+    "random:055": 0.1544591927166042,
+    "random:056": -0.024839778716447356,
+    "random:057": -0.04767079330702647,
+    "random:058": 0.02734913182167578,
+    "random:059": 0.0030192176265181167,
+    "random:060": 0.037400643808380256,
+    "random:061": 0.13866317991265956,
+    "random:062": 0.0646019891541606,
+    "random:063": -0.023005958485159194,
+    "random:064": -0.043956107706756155,
+    "random:065": 0.027820656098316996,
+    "random:066": -0.003778079647072307,
+    "random:067": -0.0045331499446517485,
+    "random:068": 0.010416106781709077,
+    "random:069": 0.019879279370258462,
+    "random:070": -0.03480509305620883,
+    "random:071": 0.10733457078048272,
+    "random:072": -0.008192063247541096,
+    "random:073": -0.020741780708885736,
+    "random:074": -0.026498870696983555,
+    "random:075": 0.01221409367125685,
+    "random:076": 0.051046418501298006,
+    "random:077": 0.03569365433524968,
+    "random:078": -0.06214593487211745,
+    "random:079": 0.057925676889977754,
+    "random:080": -0.04291323199190111,
+    "random:081": -0.04516518172882774,
+    "random:082": -0.04729522271298194,
+    "random:083": 0.010340901833763159,
+    "random:084": -0.02865033066712085,
+    "random:085": -0.02016952464599048,
+    "random:086": 0.005124773907940948,
+    "random:087": 0.07778176621409637,
+    "random:088": -0.08345505124678539,
+    "random:089": 0.023356830469221337,
+    "random:090": -0.03549793142647615,
+    "random:091": 0.011773785890126263,
+    "random:092": 0.0642352593360442,
+    "random:093": 0.02941109949821375,
+    "random:094": 0.07458256682917622,
+    "random:095": 0.0902442312716702,
+    "random:096": -0.02348471172394801,
+    "random:097": 0.011380247035503102,
+    "random:098": -0.022347381212952818,
+    "random:099": 0.1436181140275818,
+    "random:100": 0.011013029384233644,
+    "random:101": -0.003986124141032052,
+    "random:102": 0.07926902474144754,
+    "random:103": -0.0006745205686656445,
+    "random:104": -0.12366961395166046,
+    "random:105": 0.03757488004050619,
+    "random:106": 0.017934712072504563,
+    "random:107": 0.07207384178967664,
+    "random:108": -0.006160669570183881,
+    "random:109": 0.03308398730346539,
+    "random:110": -0.027438243813098187,
+    "random:111": 0.031676648339326284,
+    "random:112": 0.023782858517222435,
+    "random:113": 0.018388988919818067,
+    "random:114": -0.01582108075540716,
+    "random:115": -0.010730420179647687,
+    "random:116": -0.07032538612387737,
+    "random:117": 0.08403504143298239,
+    "random:118": -0.07664106293124297,
+    "sham:Effusion": 0.05915030770037411
+   },
+   "Atelectasis": {
+    "concept:Atelectasis": -0.024697259005903038,
+    "concept:Cardiomegaly": -0.03208096457938389,
+    "concept:Consolidation": -0.03821472304745817,
+    "concept:Edema": 0.021789814933181828,
+    "concept:Effusion": 0.0032231231936571533,
+    "concept:Pneumothorax": -0.07477303590508372,
+    "random:000": -0.07616002954676938,
+    "random:001": -0.05905053465317025,
+    "random:002": -0.05897212819080436,
+    "random:003": -0.017740256281815282,
+    "random:004": -0.00448120599226346,
+    "random:005": 0.05428364252221466,
+    "random:006": 0.13920776232497264,
+    "random:007": -0.001033703941307678,
+    "random:008": -0.06194910099503443,
+    "random:009": -0.0859037520561679,
+    "random:010": -0.052104739997740936,
+    "random:011": 0.08814698597453006,
+    "random:012": 0.009350382414299979,
+    "random:013": -0.020284902867192242,
+    "random:014": 0.15431549999640135,
+    "random:015": -0.008585311671364544,
+    "random:016": -0.06136128857807145,
+    "random:017": -0.037287893565791104,
+    "random:018": 0.06503399142199867,
+    "random:019": -0.014548501296743413,
+    "random:020": 0.011641895906184526,
+    "random:021": -0.017523998257963448,
+    "random:022": 0.018143820729862613,
+    "random:023": -0.15709550146314025,
+    "random:024": -0.08727556566772142,
+    "random:025": 0.0001543814852925309,
+    "random:026": -0.04422038543432156,
+    "random:027": -0.08180892778427624,
+    "random:028": -0.0693145010595996,
+    "random:029": 0.019041299722445615,
+    "random:030": -0.02371094987158705,
+    "random:031": 0.07782838140058104,
+    "random:032": 0.07348462188850176,
+    "random:033": -0.039429005678328057,
+    "random:034": -0.03680075910467152,
+    "random:035": -0.05264004184674325,
+    "random:036": 0.03162547147034318,
+    "random:037": 0.12758786168498404,
+    "random:038": -0.04502108894824495,
+    "random:039": 0.0923598867142916,
+    "random:040": 0.06488807924296587,
+    "random:041": 0.04205048955747565,
+    "random:042": 0.028164544155376194,
+    "random:043": 0.09012881769302204,
+    "random:044": -0.010147763289114176,
+    "random:045": -0.06283321268708039,
+    "random:046": -0.01485518234288404,
+    "random:047": -0.012459100854636463,
+    "random:048": -0.0865178887209201,
+    "random:049": -0.040571973882403786,
+    "random:050": 0.0035983476302321625,
+    "random:051": 0.02043668387022891,
+    "random:052": -0.022734927626506682,
+    "random:053": -0.08721100313798576,
+    "random:054": -0.05383283066221388,
+    "random:055": 0.1693725725642281,
+    "random:056": -0.08207933769446121,
+    "random:057": -0.0745406152540601,
+    "random:058": 0.03583680651254305,
+    "random:059": 0.0007041254321170833,
+    "random:060": -0.001653875721245862,
+    "random:061": 0.14620466138675123,
+    "random:062": 0.03741872705513197,
+    "random:063": -0.049959372295102084,
+    "random:064": -0.0692491303493819,
+    "random:065": 0.03078975823519643,
+    "random:066": -0.0013878783947640445,
+    "random:067": -0.010307428869686153,
+    "random:068": 0.005683176051955857,
+    "random:069": 0.033427119482369164,
+    "random:070": -0.018625754683658086,
+    "random:071": 0.14602332405118137,
+    "random:072": -0.039934591305341625,
+    "random:073": -0.037417588110626995,
+    "random:074": -0.030098848158491384,
+    "random:075": -0.013497773882038712,
+    "random:076": 0.05307795486645736,
+    "random:077": -0.00038101938192846104,
+    "random:078": -0.08234635787127847,
+    "random:079": 0.04513336415334345,
+    "random:080": -0.07262995799515307,
+    "random:081": -0.04909767912024419,
+    "random:082": -0.050085196099601034,
+    "random:083": 0.00047599116965491034,
+    "random:084": -0.06131155788776766,
+    "random:085": -0.024650542984572546,
+    "random:086": -0.017075939208230338,
+    "random:087": 0.0963655619667265,
+    "random:088": -0.1026538092079771,
+    "random:089": 0.010810755048340894,
+    "random:090": -0.04220770798528049,
+    "random:091": -0.03005991194845335,
+    "random:092": 0.02436961545378735,
+    "random:093": 0.02676646716004799,
+    "random:094": 0.0819885238876172,
+    "random:095": 0.054169678571025365,
+    "random:096": -0.005982016937535942,
+    "random:097": 0.004580039943539198,
+    "random:098": -0.03793253474497038,
+    "random:099": 0.14048007555808406,
+    "random:100": -0.013862091823222362,
+    "random:101": 0.019061846613009994,
+    "random:102": 0.03436777150457889,
+    "random:103": 0.01019532201370807,
+    "random:104": -0.08554599251683309,
+    "random:105": 0.06303071090766373,
+    "random:106": 0.008857764183126685,
+    "random:107": 0.06323281563323002,
+    "random:108": -0.03176935727971638,
+    "random:109": 0.012629256086882234,
+    "random:110": -0.027089109690750075,
+    "random:111": 0.03629106164236228,
+    "random:112": 0.0516249608518674,
+    "random:113": 0.014868912374192984,
+    "random:114": -0.02445772510186832,
+    "random:115": -0.00815785810765617,
+    "random:116": -0.10627788428461887,
+    "random:117": 0.039333991640868086,
+    "random:118": -0.054140009717752,
+    "sham:Atelectasis": -0.034193314390092905
+   },
+   "Pneumothorax": {
+    "concept:Atelectasis": 0.026593293190824596,
+    "concept:Cardiomegaly": -0.025197676133565404,
+    "concept:Consolidation": -0.04155741046217108,
+    "concept:Edema": -0.03660888128544597,
+    "concept:Effusion": -0.003254119233362476,
+    "concept:Pneumothorax": -0.050101938619773696,
+    "random:000": 0.0028169375121704174,
+    "random:001": -0.05790771137869578,
+    "random:002": -0.006430337632201753,
+    "random:003": 0.011459427412511053,
+    "random:004": 0.020493877741310382,
+    "random:005": 0.04259264028152742,
+    "random:006": 0.1199186136423927,
+    "random:007": 0.014958607643356547,
+    "random:008": -0.0431666493788434,
+    "random:009": -0.08878600118090382,
+    "random:010": -0.03752325636739888,
+    "random:011": 0.08300086566346715,
+    "random:012": 0.012747243346270656,
+    "random:013": 0.014825974385813658,
+    "random:014": 0.17314316429051385,
+    "random:015": -0.002556716840486947,
+    "random:016": -0.026153066584172536,
+    "random:017": -0.039956082635765784,
+    "random:018": 0.08722274713281991,
+    "random:019": 0.02752668078705927,
+    "random:020": 0.01493758575999799,
+    "random:021": 0.005822002011673978,
+    "random:022": 0.025057319461314904,
+    "random:023": -0.10942073214329157,
+    "random:024": -0.1200607269852051,
+    "random:025": 0.03488801880280894,
+    "random:026": -0.021913507742540493,
+    "random:027": -0.04586175684768224,
+    "random:028": -0.018688467613413834,
+    "random:029": 0.02225328613753647,
+    "random:030": -0.011269622901115798,
+    "random:031": 0.0787635032291478,
+    "random:032": 0.0803741812520821,
+    "random:033": 0.0021146306813557684,
+    "random:034": 0.025879770052089527,
+    "random:035": -0.0004584690668914667,
+    "random:036": 0.0332975487739159,
+    "random:037": 0.09370718411582989,
+    "random:038": -0.011390583033064079,
+    "random:039": 0.109894672277565,
+    "random:040": 0.060211213158246416,
+    "random:041": 0.03296559914260344,
+    "random:042": 0.01578374064457661,
+    "random:043": 0.019707386428385442,
+    "random:044": 0.032563281179011604,
+    "random:045": -0.04967777421670837,
+    "random:046": 0.03249118175423746,
+    "random:047": 0.036684227241750925,
+    "random:048": -0.08739964222087482,
+    "random:049": -0.02821776438348944,
+    "random:050": -0.006802405322611715,
+    "random:051": 0.0689613681801174,
+    "random:052": -0.02048377186770369,
+    "random:053": -0.07258756450761818,
+    "random:054": -0.024008260381490044,
+    "random:055": 0.1856604311056662,
+    "random:056": -0.028657593989651443,
+    "random:057": -0.02365263444459201,
+    "random:058": 0.025413489636570315,
+    "random:059": 0.026453326475436096,
+    "random:060": 0.051176931915196136,
+    "random:061": 0.11856495049315205,
+    "random:062": 0.04522708955777611,
+    "random:063": -0.006780241256674032,
+    "random:064": -0.032423935049762764,
+    "random:065": 0.04312613661694757,
+    "random:066": 0.009967582725928101,
+    "random:067": -0.013196537504649445,
+    "random:068": 0.011379682058378339,
+    "random:069": -0.013113572956329943,
+    "random:070": -0.014856582311479839,
+    "random:071": 0.1286432719037442,
+    "random:072": 0.01529341599944534,
+    "random:073": -0.006838153386818513,
+    "random:074": -0.015105666902554847,
+    "random:075": 0.033786449967820764,
+    "random:076": 0.07335291061685786,
+    "random:077": 0.06276362381817059,
+    "random:078": -0.057442738367976816,
+    "random:079": 0.04149172330740598,
+    "random:080": -0.04909962072621886,
+    "random:081": -0.07346537538607034,
+    "random:082": -0.03607233118588196,
+    "random:083": -0.000760573083216395,
+    "random:084": -0.06985121143247129,
+    "random:085": -0.004908758854653797,
+    "random:086": 0.025020722088643484,
+    "random:087": 0.08346734201685344,
+    "random:088": -0.0545988276051213,
+    "random:089": 0.0724352364525275,
+    "random:090": -0.019446138812203674,
+    "random:091": 0.02799170647102314,
+    "random:092": 0.0810805312103398,
+    "random:093": 0.04738315518293973,
+    "random:094": 0.0631803471775803,
+    "random:095": 0.07957763452249604,
+    "random:096": 0.0005266024329561685,
+    "random:097": 0.02100882489985253,
+    "random:098": -0.03124486890115616,
+    "random:099": 0.13782796641803005,
+    "random:100": 0.01784372322404304,
+    "random:101": 0.018859228164930252,
+    "random:102": 0.10433908691664152,
+    "random:103": -0.0005771775315880391,
+    "random:104": -0.11466438258140703,
+    "random:105": 0.06376847367391447,
+    "random:106": 0.043622015713081566,
+    "random:107": 0.07595026347915662,
+    "random:108": -0.0017274083564886356,
+    "random:109": 0.01630048230961012,
+    "random:110": -0.0527977668358897,
+    "random:111": 0.029390717413054494,
+    "random:112": 0.031100040807157624,
+    "random:113": 0.012409808439968967,
+    "random:114": 0.015303572599196145,
+    "random:115": 0.016612352228105424,
+    "random:116": -0.07309768119621336,
+    "random:117": 0.08397857865121397,
+    "random:118": -0.04329469952983567,
+    "sham:Pneumothorax": 0.03771551311388195
+   },
+   "Cardiomegaly": {
+    "concept:Atelectasis": 0.016826608071676685,
+    "concept:Cardiomegaly": -0.04932202094681883,
+    "concept:Consolidation": -0.06542891427064956,
+    "concept:Edema": -0.0012572343015715298,
+    "concept:Effusion": -0.017048319258462983,
+    "concept:Pneumothorax": -0.044761131820847025,
+    "random:000": -0.041781887094268416,
+    "random:001": -0.0791107413968608,
+    "random:002": -0.016588608441688468,
+    "random:003": -0.007316459988278,
+    "random:004": -0.022600786155384533,
+    "random:005": 0.03576783532554484,
+    "random:006": 0.135924820413189,
+    "random:007": 1.6418667695219797e-05,
+    "random:008": -0.056940915210224055,
+    "random:009": -0.09800052465730644,
+    "random:010": -0.03751982141346004,
+    "random:011": 0.04803290876816481,
+    "random:012": -0.01619412837063646,
+    "random:013": -0.019521817667329532,
+    "random:014": 0.1309246394835189,
+    "random:015": -0.049448906490247226,
+    "random:016": -0.0046127486384416,
+    "random:017": -0.014529231896001958,
+    "random:018": 0.04210994036300248,
+    "random:019": -0.013654327860305354,
+    "random:020": -0.002124418422196667,
+    "random:021": 0.009665389266926446,
+    "random:022": 0.035760903163145535,
+    "random:023": -0.13045940076186682,
+    "random:024": -0.0962054094428202,
+    "random:025": 0.05958451326745249,
+    "random:026": -0.054124390209743065,
+    "random:027": -0.051321544496462174,
+    "random:028": -0.07375862491646008,
+    "random:029": 0.012001741833696991,
+    "random:030": -0.03173163384830367,
+    "random:031": 0.05526365594837787,
+    "random:032": 0.07490560309936008,
+    "random:033": -0.010851589043155706,
+    "random:034": 0.005373792878304355,
+    "random:035": -0.0054203112489703475,
+    "random:036": 0.03762255438255989,
+    "random:037": 0.04840542208610753,
+    "random:038": -0.011651544892914782,
+    "random:039": 0.08999343727519143,
+    "random:040": 0.03147056012108399,
+    "random:041": 0.06782086304239149,
+    "random:042": -0.013161119044842939,
+    "random:043": 0.07196772873498676,
+    "random:044": -0.020603234297505716,
+    "random:045": -0.061944099342403594,
+    "random:046": 0.0018798020099146428,
+    "random:047": 0.040913458330176504,
+    "random:048": -0.07003879164131797,
+    "random:049": -0.02615481189990079,
+    "random:050": 0.0028717338647658184,
+    "random:051": 0.03775542700677654,
+    "random:052": 0.017490113144583208,
+    "random:053": -0.08643565466109908,
+    "random:054": -0.06292504457348456,
+    "random:055": 0.14886301209878064,
+    "random:056": -0.020551873755769546,
+    "random:057": -0.03356989529657939,
+    "random:058": 0.03297008162769686,
+    "random:059": 0.010856604516644353,
+    "random:060": 0.04032399240009184,
+    "random:061": 0.15287847304037744,
+    "random:062": 0.050034505883007625,
+    "random:063": -0.02932612443776661,
+    "random:064": -0.05160589116534547,
+    "random:065": 0.01942053480362693,
+    "random:066": 0.02344566804494678,
+    "random:067": -0.006396409918258956,
+    "random:068": 0.003604471323008498,
+    "random:069": -0.014069619805050872,
+    "random:070": -0.04579847491753916,
+    "random:071": 0.11563145370729659,
+    "random:072": -0.002282786394621303,
+    "random:073": 0.0007996390054923905,
+    "random:074": -0.013328238716627073,
+    "random:075": 0.015609962680725408,
+    "random:076": 0.056687135123551474,
+    "random:077": 0.03294863639599662,
+    "random:078": -0.06993397994625794,
+    "random:079": 0.005466840924973689,
+    "random:080": -0.026450327781515307,
+    "random:081": -0.07975206024951681,
+    "random:082": -0.04041492731779324,
+    "random:083": -0.01518385985627658,
+    "random:084": -0.06245166966151262,
+    "random:085": -0.04252734227560974,
+    "random:086": 0.005435821921397541,
+    "random:087": 0.11385051031594436,
+    "random:088": -0.029374758649630066,
+    "random:089": 0.04417618191088251,
+    "random:090": -0.03392475268046076,
+    "random:091": 0.00326292031982217,
+    "random:092": 0.029968556865545802,
+    "random:093": 0.06559190607434645,
+    "random:094": 0.03225976440842246,
+    "random:095": 0.058921808010326884,
+    "random:096": -0.013037756734461817,
+    "random:097": -0.01846721136210215,
+    "random:098": -0.038407984168541895,
+    "random:099": 0.14762551541858765,
+    "random:100": -0.026848606680618944,
+    "random:101": 0.05725961736223389,
+    "random:102": 0.08788800018314849,
+    "random:103": 0.009493542184246277,
+    "random:104": -0.12337382229103513,
+    "random:105": 0.03329776900206228,
+    "random:106": -0.004284820771191262,
+    "random:107": 0.06965958385504367,
+    "random:108": -0.040130506091701136,
+    "random:109": 0.03711844447546922,
+    "random:110": -0.04926287932469282,
+    "random:111": 0.01351307567179969,
+    "random:112": 0.01885613748555955,
+    "random:113": 0.025827496044831245,
+    "random:114": -0.0056338495203140035,
+    "random:115": -0.01571670409128588,
+    "random:116": -0.07057663345020025,
+    "random:117": 0.05732961074186773,
+    "random:118": -0.04719090433098075,
+    "sham:Cardiomegaly": -0.0632663452577893
+   },
+   "Consolidation": {
+    "concept:Atelectasis": 0.00026540030415223947,
+    "concept:Cardiomegaly": -0.05393227355260133,
+    "concept:Consolidation": -0.03843690061709435,
+    "concept:Edema": 0.008000756834160898,
+    "concept:Effusion": -0.01729473899423287,
+    "concept:Pneumothorax": -0.04936952274752775,
+    "random:000": -0.055098868734637596,
+    "random:001": -0.08439057005906034,
+    "random:002": -0.02960753958544155,
+    "random:003": 0.009178553505451903,
+    "random:004": -0.0005669625430823336,
+    "random:005": 0.05783775715010602,
+    "random:006": 0.113794607227188,
+    "random:007": -0.0009045060176139655,
+    "random:008": -0.04779890294930916,
+    "random:009": -0.09794753875329403,
+    "random:010": -0.07410842005867332,
+    "random:011": 0.065989235297492,
+    "random:012": -0.051365568917980234,
+    "random:013": -0.0019772796441736924,
+    "random:014": 0.1459599693654636,
+    "random:015": -0.038143735707472544,
+    "random:016": -0.03212717946359184,
+    "random:017": -0.023520263295150532,
+    "random:018": 0.038761236223168204,
+    "random:019": -0.007751205269652048,
+    "random:020": -0.027337609414800335,
+    "random:021": -0.003990301331226842,
+    "random:022": 0.03349105517476208,
+    "random:023": -0.14753393852802768,
+    "random:024": -0.092708794983827,
+    "random:025": 0.010322260471984129,
+    "random:026": -0.022215628834389798,
+    "random:027": -0.09443821509813127,
+    "random:028": -0.10085398243605749,
+    "random:029": 0.00628029629924789,
+    "random:030": -0.031165602132551394,
+    "random:031": 0.06391492873818452,
+    "random:032": 0.05759613363870334,
+    "random:033": -0.032267425277563405,
+    "random:034": -0.015659277461751532,
+    "random:035": -0.009077239365664846,
+    "random:036": 0.036740163848325555,
+    "random:037": 0.0790597175401342,
+    "random:038": -0.022193770406054383,
+    "random:039": 0.07685708830323817,
+    "random:040": 0.04280958353946967,
+    "random:041": 0.047953311938109096,
+    "random:042": 0.011488399627610904,
+    "random:043": 0.10866808682215771,
+    "random:044": 0.015218996556373703,
+    "random:045": -0.051295185190108734,
+    "random:046": -0.01846572915508934,
+    "random:047": -0.007565487632661741,
+    "random:048": -0.03753435130869002,
+    "random:049": -0.0283512777871564,
+    "random:050": -0.008072870433589173,
+    "random:051": 0.016370225203394807,
+    "random:052": 0.0026924166689238777,
+    "random:053": -0.0767924561801023,
+    "random:054": -0.05462977483082226,
+    "random:055": 0.15355837213670714,
+    "random:056": -0.06329171858283504,
+    "random:057": -0.04623979615616513,
+    "random:058": 0.01731055508645697,
+    "random:059": 0.02883960634786397,
+    "random:060": 0.03904313325828824,
+    "random:061": 0.11083399663877984,
+    "random:062": 0.05495747442974692,
+    "random:063": -0.06061380135698621,
+    "random:064": -0.0582785899409703,
+    "random:065": -0.005188052067091286,
+    "random:066": -0.0025857689658285226,
+    "random:067": -0.003938556720965631,
+    "random:068": -0.00678501146933586,
+    "random:069": -0.030692554192058318,
+    "random:070": -0.024406290910039593,
+    "random:071": 0.129028816169525,
+    "random:072": -0.038002923985696796,
+    "random:073": -0.020336276384422817,
+    "random:074": -0.030551792433569928,
+    "random:075": -0.003893495726377907,
+    "random:076": 0.018951440201803,
+    "random:077": 0.01962656239132995,
+    "random:078": -0.05601218519058231,
+    "random:079": 0.07067469359969117,
+    "random:080": -0.05209600530559251,
+    "random:081": -0.04484950278073754,
+    "random:082": -0.05328531472907334,
+    "random:083": 0.017448721080465683,
+    "random:084": -0.08094374376985448,
+    "random:085": -0.04364195218478532,
+    "random:086": -0.010486526235353667,
+    "random:087": 0.10466714543648253,
+    "random:088": -0.08256718274255363,
+    "random:089": 0.03823311627266189,
+    "random:090": -0.012534207221707252,
+    "random:091": 0.003480982921519662,
+    "random:092": 0.04235559434592007,
+    "random:093": 0.024496945888357283,
+    "random:094": 0.08284423883190845,
+    "random:095": 0.07130816023033291,
+    "random:096": 0.010919082386836696,
+    "random:097": 0.0038831570582238168,
+    "random:098": -0.034855115149761355,
+    "random:099": 0.13357694688362412,
+    "random:100": 0.011548565153955456,
+    "random:101": 0.039333919943292404,
+    "random:102": 0.07733340540436075,
+    "random:103": -0.03785386770080305,
+    "random:104": -0.11616678918869013,
+    "random:105": 0.06226258660698107,
+    "random:106": 0.02918023259884439,
+    "random:107": 0.03971704817884627,
+    "random:108": -0.04715258718372786,
+    "random:109": 0.03922358223683564,
+    "random:110": -0.011094184729901905,
+    "random:111": 0.006005993299100851,
+    "random:112": 0.05278419869202809,
+    "random:113": 0.017683671668685643,
+    "random:114": -0.006301650605771349,
+    "random:115": -0.036707716561626164,
+    "random:116": -0.09759567195645412,
+    "random:117": 0.07393185789267236,
+    "random:118": -0.06404995211520216,
+    "sham:Consolidation": -0.03678685285186409
+   },
+   "Edema": {
+    "concept:Atelectasis": 0.011153645370527942,
+    "concept:Cardiomegaly": 0.001946985972173972,
+    "concept:Consolidation": -0.047817708281724984,
+    "concept:Edema": 0.001059010095053901,
+    "concept:Effusion": 0.009683223624178904,
+    "concept:Pneumothorax": -0.02768496719345174,
+    "random:000": -0.04320216668635135,
+    "random:001": -0.104619378675377,
+    "random:002": -0.020462190995626604,
+    "random:003": 0.010787490163751363,
+    "random:004": 0.0011859254738818207,
+    "random:005": 0.049874957843104396,
+    "random:006": 0.14475348006533342,
+    "random:007": 0.012871942315153963,
+    "random:008": -0.06823186325347237,
+    "random:009": -0.08910200140199208,
+    "random:010": -0.037455027226164596,
+    "random:011": 0.08464624944681375,
+    "random:012": -0.03103848039050833,
+    "random:013": 0.01968926071923777,
+    "random:014": 0.187057482479204,
+    "random:015": -0.02547224963036449,
+    "random:016": -0.009338010667204613,
+    "random:017": -0.03343831705097645,
+    "random:018": 0.07889558768172625,
+    "random:019": 0.027673714983490912,
+    "random:020": 0.0077287766597908605,
+    "random:021": 0.014454798047534636,
+    "random:022": 0.010665847361615178,
+    "random:023": -0.14551678009063074,
+    "random:024": -0.11432497039262188,
+    "random:025": 0.05245471921026637,
+    "random:026": -0.0438390209090653,
+    "random:027": -0.044879822141452974,
+    "random:028": -0.07313212473892448,
+    "random:029": 0.05077332661115285,
+    "random:030": 0.002524855991016949,
+    "random:031": 0.07374182702443338,
+    "random:032": 0.11111510494481593,
+    "random:033": -0.009682646071276129,
+    "random:034": 0.02819979213607038,
+    "random:035": -0.018390662284587148,
+    "random:036": 0.024345851464790322,
+    "random:037": 0.07484353115172072,
+    "random:038": 0.004631781531321494,
+    "random:039": 0.11860859378285032,
+    "random:040": 0.06877278739418982,
+    "random:041": 0.05799487388533459,
+    "random:042": 0.01006582879955616,
+    "random:043": 0.04240510040913563,
+    "random:044": -0.006065231886342616,
+    "random:045": -0.052766434277743135,
+    "random:046": 0.01549015389518958,
+    "random:047": 0.014255722012670464,
+    "random:048": -0.09688617343612908,
+    "random:049": -0.00735992575233027,
+    "random:050": 0.0021070979226219043,
+    "random:051": 0.06677250453170061,
+    "random:052": -0.02691854324121856,
+    "random:053": -0.08009927242478465,
+    "random:054": -0.04139167913135919,
+    "random:055": 0.2063291933479625,
+    "random:056": -0.02476313637877689,
+    "random:057": -0.009959115130509955,
+    "random:058": 0.040358387423726355,
+    "random:059": 0.02460301680873604,
+    "random:060": 0.047693831072772516,
+    "random:061": 0.15429353382422553,
+    "random:062": 0.0648589999714295,
+    "random:063": -0.013882982961347006,
+    "random:064": -0.06332673215130775,
+    "random:065": 0.027216625078691655,
+    "random:066": 0.009527896279595929,
+    "random:067": -0.03783689320537435,
+    "random:068": -0.003079412447012465,
+    "random:069": 0.006429558225236771,
+    "random:070": -0.051139992141438904,
+    "random:071": 0.13921660345214068,
+    "random:072": 0.014996052136262523,
+    "random:073": 0.0069346132949261435,
+    "random:074": -0.0029356851353634157,
+    "random:075": 0.008175384752074199,
+    "random:076": 0.0416805380139517,
+    "random:077": 0.04168729568287641,
+    "random:078": -0.06187117548974337,
+    "random:079": 0.021427813506669575,
+    "random:080": -0.052156392170761914,
+    "random:081": -0.0716186861150883,
+    "random:082": -0.0316177823000127,
+    "random:083": 0.009873201092263117,
+    "random:084": -0.06730224501104966,
+    "random:085": -0.009795476676777713,
+    "random:086": 0.026849750823407036,
+    "random:087": 0.11217918762589932,
+    "random:088": -0.08105004838220227,
+    "random:089": 0.04773304232490361,
+    "random:090": -0.043377538690473214,
+    "random:091": 0.04907635563764469,
+    "random:092": 0.08146546996920345,
+    "random:093": 0.05366624598462907,
+    "random:094": 0.10409727817135493,
+    "random:095": 0.09627979086835001,
+    "random:096": -0.021777218299796588,
+    "random:097": 0.02003644831241,
+    "random:098": -0.036879247919578265,
+    "random:099": 0.19721799916006857,
+    "random:100": 0.033770095357487526,
+    "random:101": 0.03670907384120712,
+    "random:102": 0.10703991521362385,
+    "random:103": -0.0042552876713970325,
+    "random:104": -0.1133628709332653,
+    "random:105": 0.03899881800979639,
+    "random:106": 0.014592390551591542,
+    "random:107": 0.05073225285627158,
+    "random:108": -0.02686528392391125,
+    "random:109": 0.011831111543904708,
+    "random:110": -0.06429145670147472,
+    "random:111": 0.017182533260048344,
+    "random:112": 0.022523029482172975,
+    "random:113": 0.016787137736662194,
+    "random:114": 0.00022123360230023287,
+    "random:115": 0.003946812455496712,
+    "random:116": -0.08448042753861514,
+    "random:117": 0.10047411160003358,
+    "random:118": -0.05264894901066245,
+    "sham:Edema": -0.02728460185159827
+   }
+  },
+  "per_question": {
+   "Effusion": {
+    "W_qq": -0.0031530907929772463,
+    "O_q": -0.014100805299607139,
+    "max_other_clinical": 0.010947714506629893,
+    "argmax_other": "Atelectasis",
+    "random_p95": 0.09843719495900573,
+    "random_max": 0.16455227784808035,
+    "random_n": 119,
+    "abs_sham": 0.05915030770037411,
+    "rank_in_random_family": 66,
+    "steering_reference": false,
+    "O_q_ci95_percentile": [
+     -0.016566488164744785,
+     -0.011584357593224728
+    ],
+    "verdict": "stronger_competitor"
+   },
+   "Atelectasis": {
+    "W_qq": -0.024697259005903038,
+    "O_q": -0.04648707393908487,
+    "max_other_clinical": 0.021789814933181828,
+    "argmax_other": "Edema",
+    "random_p95": 0.12874985174898285,
+    "random_max": 0.1693725725642281,
+    "random_n": 119,
+    "abs_sham": 0.034193314390092905,
+    "rank_in_random_family": 77,
+    "steering_reference": false,
+    "O_q_ci95_percentile": [
+     -0.04984029213938269,
+     -0.04309099758317363
+    ],
+    "verdict": "stronger_competitor"
+   },
+   "Pneumothorax": {
+    "W_qq": -0.050101938619773696,
+    "O_q": -0.07669523181059829,
+    "max_other_clinical": 0.026593293190824596,
+    "argmax_other": "Atelectasis",
+    "random_p95": 0.11076170009912366,
+    "random_max": 0.1856604311056662,
+    "random_n": 119,
+    "abs_sham": 0.03771551311388195,
+    "rank_in_random_family": 107,
+    "steering_reference": false,
+    "O_q_ci95_percentile": [
+     -0.0784589590694541,
+     -0.07493371128002196
+    ],
+    "verdict": "stronger_competitor"
+   },
+   "Cardiomegaly": {
+    "W_qq": -0.04932202094681883,
+    "O_q": -0.06614862901849553,
+    "max_other_clinical": 0.016826608071676685,
+    "argmax_other": "Atelectasis",
+    "random_p95": 0.11402860465507957,
+    "random_max": 0.15287847304037744,
+    "random_n": 119,
+    "abs_sham": 0.0632663452577893,
+    "rank_in_random_family": 101,
+    "steering_reference": false,
+    "O_q_ci95_percentile": [
+     -0.06801150202470206,
+     -0.06425022647994712
+    ],
+    "verdict": "stronger_competitor"
+   },
+   "Consolidation": {
+    "W_qq": -0.03843690061709435,
+    "O_q": -0.04643765745125525,
+    "max_other_clinical": 0.008000756834160898,
+    "argmax_other": "Edema",
+    "random_p95": 0.10888467780381991,
+    "random_max": 0.15355837213670714,
+    "random_n": 119,
+    "abs_sham": 0.03678685285186409,
+    "rank_in_random_family": 92,
+    "steering_reference": false,
+    "O_q_ci95_percentile": [
+     -0.04961956577296686,
+     -0.04310644665259553
+    ],
+    "verdict": "stronger_competitor"
+   },
+   "Edema": {
+    "W_qq": 0.001059010095053901,
+    "O_q": -0.01009463527547404,
+    "max_other_clinical": 0.011153645370527942,
+    "argmax_other": "Atelectasis",
+    "random_p95": 0.12066939474977924,
+    "random_max": 0.2063291933479625,
+    "random_n": 119,
+    "abs_sham": 0.02728460185159827,
+    "rank_in_random_family": 71,
+    "steering_reference": false,
+    "O_q_ci95_percentile": [
+     -0.013269165106674525,
+     -0.007174213167088634
+    ],
+    "verdict": "stronger_competitor"
+   }
+  },
+  "contrasts": {
+   "Effusion-Atelectasis": {
+    "estimate": -0.014100805299607142,
+    "sd": 0.0012794863069915366,
+    "lower": -0.017973116134139662,
+    "upper": -0.010228494465074622
+   },
+   "Effusion-Pneumothorax": {
+    "estimate": 0.04808230182671778,
+    "sd": 0.0012313182784573866,
+    "lower": 0.04435576947981083,
+    "upper": 0.051808834173624724
+   },
+   "Effusion-Cardiomegaly": {
+    "estimate": 0.018623959583718108,
+    "sd": 0.001634940567594883,
+    "lower": 0.013675881562781312,
+    "upper": 0.023572037604654903
+   },
+   "Effusion-Consolidation": {
+    "estimate": 0.040563509496581635,
+    "sd": 0.0012505024283658238,
+    "lower": 0.03677891713673371,
+    "upper": 0.04434810185642956
+   },
+   "Effusion-Edema": {
+    "estimate": -0.0013880799189527056,
+    "sd": 0.0010573495231996325,
+    "lower": -0.004588103234716735,
+    "upper": 0.0018119433968113241
+   },
+   "Atelectasis-Effusion": {
+    "estimate": -0.027920382199560195,
+    "sd": 0.00123613570998048,
+    "lower": -0.03166149429787171,
+    "upper": -0.02417927010124868
+   },
+   "Atelectasis-Pneumothorax": {
+    "estimate": 0.05007577689918067,
+    "sd": 0.00117952547477696,
+    "lower": 0.04650599326755627,
+    "upper": 0.05364556053080507
+   },
+   "Atelectasis-Cardiomegaly": {
+    "estimate": 0.007383705573480846,
+    "sd": 0.0010299478325578747,
+    "lower": 0.004266612307828942,
+    "upper": 0.01050079883913275
+   },
+   "Atelectasis-Consolidation": {
+    "estimate": 0.013517464041555129,
+    "sd": 0.0008225100877290323,
+    "lower": 0.011028172279055249,
+    "upper": 0.016006755804055008
+   },
+   "Atelectasis-Edema": {
+    "estimate": -0.04648707393908487,
+    "sd": 0.0017190415778257128,
+    "lower": -0.051689680086921055,
+    "upper": -0.04128446779124868
+   },
+   "Pneumothorax-Effusion": {
+    "estimate": -0.04684781938641122,
+    "sd": 0.0009024291402068197,
+    "lower": -0.04957898275871595,
+    "upper": -0.04411665601410649
+   },
+   "Pneumothorax-Atelectasis": {
+    "estimate": -0.0766952318105983,
+    "sd": 0.000894132490254075,
+    "lower": -0.07940128572504734,
+    "upper": -0.07398917789614926
+   },
+   "Pneumothorax-Cardiomegaly": {
+    "estimate": -0.02490426248620829,
+    "sd": 0.0010027446617032264,
+    "lower": -0.02793902651343186,
+    "upper": -0.02186949845898472
+   },
+   "Pneumothorax-Consolidation": {
+    "estimate": -0.008544528157602609,
+    "sd": 0.0007559281323790616,
+    "lower": -0.010832312466933818,
+    "upper": -0.0062567438482714
+   },
+   "Pneumothorax-Edema": {
+    "estimate": -0.013493057334327723,
+    "sd": 0.0010011438461623755,
+    "lower": -0.01652297656147094,
+    "upper": -0.010463138107184506
+   },
+   "Cardiomegaly-Effusion": {
+    "estimate": -0.03227370168835584,
+    "sd": 0.0014172816239725512,
+    "lower": -0.036563044183155244,
+    "upper": -0.027984359193556435
+   },
+   "Cardiomegaly-Atelectasis": {
+    "estimate": -0.06614862901849551,
+    "sd": 0.0009568261226171926,
+    "lower": -0.06904442254213719,
+    "upper": -0.06325283549485383
+   },
+   "Cardiomegaly-Pneumothorax": {
+    "estimate": -0.004560889125971803,
+    "sd": 0.0013072839758937092,
+    "lower": -0.00851732842196299,
+    "upper": -0.0006044498299806154
+   },
+   "Cardiomegaly-Consolidation": {
+    "estimate": 0.016106893323830727,
+    "sd": 0.000980777178572399,
+    "lower": 0.013138612949046492,
+    "upper": 0.019075173698614962
+   },
+   "Cardiomegaly-Edema": {
+    "estimate": -0.0480647866452473,
+    "sd": 0.001526643657311884,
+    "lower": -0.052685108677906815,
+    "upper": -0.04344446461258778
+   },
+   "Consolidation-Effusion": {
+    "estimate": -0.02114216162286148,
+    "sd": 0.0016168311419742629,
+    "lower": -0.02603543223815845,
+    "upper": -0.016248891007564513
+   },
+   "Consolidation-Atelectasis": {
+    "estimate": -0.03870230092124659,
+    "sd": 0.0010567218226953082,
+    "lower": -0.041900424528158356,
+    "upper": -0.03550417731433482
+   },
+   "Consolidation-Pneumothorax": {
+    "estimate": 0.010932622130433403,
+    "sd": 0.00135570615248598,
+    "lower": 0.006829635178538981,
+    "upper": 0.015035609082327825
+   },
+   "Consolidation-Cardiomegaly": {
+    "estimate": 0.015495372935506981,
+    "sd": 0.0010891709176919719,
+    "lower": 0.012199043524094025,
+    "upper": 0.018791702346919938
+   },
+   "Consolidation-Edema": {
+    "estimate": -0.04643765745125525,
+    "sd": 0.0016943383488953485,
+    "lower": -0.051565500328463,
+    "upper": -0.0413098145740475
+   },
+   "Edema-Effusion": {
+    "estimate": -0.008624213529125005,
+    "sd": 0.0012442636130491382,
+    "lower": -0.01238992438003185,
+    "upper": -0.004858502678218159
+   },
+   "Edema-Atelectasis": {
+    "estimate": -0.010094635275474039,
+    "sd": 0.0016319450995508486,
+    "lower": -0.015033647639906323,
+    "upper": -0.005155622911041754
+   },
+   "Edema-Pneumothorax": {
+    "estimate": 0.02874397728850564,
+    "sd": 0.0013586138922629034,
+    "lower": 0.024632190185972125,
+    "upper": 0.032855764391039155
+   },
+   "Edema-Cardiomegaly": {
+    "estimate": -0.0008879758771200707,
+    "sd": 0.002024186206699272,
+    "lower": -0.007014089252841193,
+    "upper": 0.0052381374986010506
+   },
+   "Edema-Consolidation": {
+    "estimate": 0.04887671837677889,
+    "sd": 0.0016664384382103152,
+    "lower": 0.04383331339143274,
+    "upper": 0.053920123362125046
+   }
+  },
+  "max_t_critical": 3.0264574254315435
+ }
+}

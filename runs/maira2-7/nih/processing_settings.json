@@ -1,0 +1,284 @@
+{
+ "processor_kwargs": {},
+ "image_processor": {
+  "auto_map": {
+   "AutoProcessor": "processing_maira2.Maira2Processor"
+  },
+  "crop_size": {
+   "height": 518,
+   "width": 518
+  },
+  "do_center_crop": true,
+  "do_convert_rgb": true,
+  "do_normalize": true,
+  "do_rescale": true,
+  "do_resize": true,
+  "image_processor_type": "BitImageProcessor",
+  "resample": 3,
+  "rescale_factor": 0.00392156862745098,
+  "size": {
+   "shortest_edge": 518
+  }
+ },
+ "chat_template": "{% if not add_generation_prompt is defined %}{% set add_generation_prompt = false %}{% endif %}You are an expert radiology assistant tasked with interpreting a chest X-ray study.  {% for message in messages %}{% if message[\"role\"] == \"user\" %}USER:  {% else %}ASSISTANT: {% endif %}{% for item in message[\"content\"] %}{% if item[\"type\"] == \"text\" %}{{ item[\"text\"] }}{% elif item[\"type\"] == \"image\" %}<image>{% endif %}{% endfor %}{% if message[\"role\"] == \"user\" %}  {% else %}{{eos_token}}{% endif %}{% endfor %}{% if add_generation_prompt %}ASSISTANT: {% endif %}",
+ "example_prompt_IY": "You are an expert radiology assistant tasked with interpreting a chest X-ray study.  USER:  <image>Is there X in this image? Answer yes or no.  ASSISTANT: ",
+ "special_token_ids": {
+  "image_token_id": 32204,
+  "pad_token_id": 0,
+  "eos_token_id": 2
+ },
+ "attn_implementation": "sdpa",
+ "candidate_tokens": {
+  "WY": {
+   "positive_ids": [
+    4874,
+    3869
+   ],
+   "negative_ids": [
+    694,
+    1939
+   ],
+   "detail": {
+    "yes": {
+     "yes": 4874,
+     "Yes": 3869,
+     " yes": 4874,
+     " Yes": 3869
+    },
+    "no": {
+     "no": 694,
+     "No": 1939,
+     " no": 694,
+     " No": 1939
+    }
+   }
+  },
+  "IY": {
+   "positive_ids": [
+    4874,
+    3869
+   ],
+   "negative_ids": [
+    694,
+    1939
+   ],
+   "detail": {
+    "yes": {
+     "yes": 4874,
+     "Yes": 3869,
+     " yes": 4874,
+     " Yes": 3869
+    },
+    "no": {
+     "no": 694,
+     "No": 1939,
+     " no": 694,
+     " No": 1939
+    }
+   }
+  },
+  "WA": {
+   "positive_ids": [
+    319
+   ],
+   "negative_ids": [
+    350
+   ],
+   "detail": {
+    "A": {
+     "A": 319,
+     " A": 319
+    },
+    "B": {
+     "B": 350,
+     " B": 350
+    }
+   }
+  },
+  "IA": {
+   "positive_ids": [
+    319
+   ],
+   "negative_ids": [
+    350
+   ],
+   "detail": {
+    "A": {
+     "A": 319,
+     " A": 319
+    },
+    "B": {
+     "B": 350,
+     " B": 350
+    }
+   }
+  },
+  "WB": {
+   "positive_ids": [
+    350
+   ],
+   "negative_ids": [
+    319
+   ],
+   "detail": {
+    "A": {
+     "A": 319,
+     " A": 319
+    },
+    "B": {
+     "B": 350,
+     " B": 350
+    }
+   }
+  },
+  "IB": {
+   "positive_ids": [
+    350
+   ],
+   "negative_ids": [
+    319
+   ],
+   "detail": {
+    "A": {
+     "A": 319,
+     " A": 319
+    },
+    "B": {
+     "B": 350,
+     " B": 350
+    }
+   }
+  }
+ },
+ "model_config": {
+  "architectures": [
+   "Maira2ForConditionalGeneration"
+  ],
+  "image_seq_length": 576,
+  "image_token_index": 32204,
+  "model_type": "llava",
+  "multimodal_projector_bias": true,
+  "pad_token_id": 0,
+  "projector_hidden_act": "gelu",
+  "projector_n_layers": 4,
+  "text_config": {
+   "attention_bias": false,
+   "attention_dropout": 0.0,
+   "bos_token_id": 1,
+   "eos_token_id": 2,
+   "head_dim": 128,
+   "hidden_act": "silu",
+   "hidden_size": 4096,
+   "initializer_range": 0.02,
+   "intermediate_size": 11008,
+   "max_position_embeddings": 4096,
+   "mlp_bias": false,
+   "model_type": "llama",
+   "num_attention_heads": 32,
+   "num_hidden_layers": 32,
+   "num_key_value_heads": 32,
+   "pad_token_id": 0,
+   "pretraining_tp": 1,
+   "rms_norm_eps": 1e-05,
+   "rope_parameters": {
+    "factor": 1.5,
+    "rope_theta": 10000.0,
+    "rope_type": "linear"
+   },
+   "tie_word_embeddings": false,
+   "use_cache": true,
+   "vocab_size": 32207
+  },
+  "tie_word_embeddings": false,
+  "transformers_version": "5.15.0",
+  "vision_config": {
+   "apply_layernorm": true,
+   "attention_probs_dropout_prob": 0.0,
+   "drop_path_rate": 0.0,
+   "hidden_act": "gelu",
+   "hidden_dropout_prob": 0.0,
+   "hidden_size": 768,
+   "image_size": 518,
+   "initializer_range": 0.02,
+   "layer_norm_eps": 1e-06,
+   "layerscale_value": 1.0,
+   "mlp_ratio": 4,
+   "model_type": "dinov2",
+   "num_attention_heads": 12,
+   "num_channels": 3,
+   "num_hidden_layers": 12,
+   "out_features": [
+    "stage12"
+   ],
+   "out_indices": [
+    12
+   ],
+   "patch_size": 14,
+   "qkv_bias": true,
+   "reshape_hidden_states": false,
+   "stage_names": [
+    "stem",
+    "stage1",
+    "stage2",
+    "stage3",
+    "stage4",
+    "stage5",
+    "stage6",
+    "stage7",
+    "stage8",
+    "stage9",
+    "stage10",
+    "stage11",
+    "stage12"
+   ],
+   "use_mask_token": true,
+   "use_swiglu_ffn": false
+  },
+  "vision_feature_layer": -1,
+  "vision_feature_select_strategy": "default"
+ },
+ "prompt_construction": "the snapshot's own chat template through its processor: 'You are an expert radiology assistant tasked with interpreting a chest X-ray study.  USER:  <image>{q}  ASSISTANT: '",
+ "image_processing": {
+  "pre_processor_step": "Maira2Processor._normalize_image: convert to greyscale, min-max rescale to [0, 255] per image, back to L; the checkpoint's own step, applied before the image processor",
+  "image_processor": {
+   "auto_map": {
+    "AutoProcessor": "processing_maira2.Maira2Processor"
+   },
+   "crop_size": {
+    "height": 518,
+    "width": 518
+   },
+   "do_center_crop": true,
+   "do_convert_rgb": true,
+   "do_normalize": true,
+   "do_rescale": true,
+   "do_resize": true,
+   "image_processor_type": "BitImageProcessor",
+   "resample": 3,
+   "rescale_factor": 0.00392156862745098,
+   "size": {
+    "shortest_edge": 518
+   }
+  },
+  "patch_tokens": 1369,
+  "consumed_tokens": 1369
+ },
+ "conversion_receipt": "/rodata/azradonc_dev/m253405/cache/converted/maira-2-hf/conversion.json",
+ "checkpoint_load": {
+  "shards": [
+   "model-00001-of-00003.safetensors",
+   "model-00002-of-00003.safetensors",
+   "model-00003-of-00003.safetensors"
+  ],
+  "checkpoint_tensors": 522,
+  "missing_keys": [],
+  "unexpected_keys": []
+ },
+ "device_map": {
+  "requested": "cuda:0",
+  "device": "cuda:0",
+  "parameter_dtypes": [
+   "torch.bfloat16"
+  ]
+ }
+}

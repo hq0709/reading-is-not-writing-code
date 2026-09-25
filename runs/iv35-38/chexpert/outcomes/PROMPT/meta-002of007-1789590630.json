@@ -1,0 +1,22 @@
+{
+ "model_key": "iv35-38",
+ "dataset_id": "chexpert",
+ "module": "PROMPT",
+ "shard": 2,
+ "n_shards": 7,
+ "rows": 86,
+ "scored_rows": 86,
+ "outcomes": 109220,
+ "seconds": 19175.8,
+ "throughput_per_s": 5.7,
+ "batch": 16,
+ "primary_template": "IY",
+ "numerics": "bf16-batched",
+ "batch_policy": "fixed composition per question: clean replicated baseline batch + padded steered batches",
+ "peak_gpu_memory_bytes": 43352402432,
+ "gpu_count": 2,
+ "gpu_models": [
+  "NVIDIA A100-SXM4-80GB"
+ ],
+ "ended_utc": "2026-09-16T20:30:30Z"
+}

@@ -1,0 +1,258 @@
+{
+ "processor_kwargs": {},
+ "image_processor": {
+  "crop_size": {
+   "height": 336,
+   "width": 336
+  },
+  "do_center_crop": true,
+  "do_convert_rgb": true,
+  "do_normalize": true,
+  "do_rescale": true,
+  "do_resize": true,
+  "image_processor_type": "CLIPImageProcessor",
+  "resample": 3,
+  "rescale_factor": 0.00392156862745098,
+  "size": {
+   "shortest_edge": 336
+  }
+ },
+ "chat_template": "{% for message in messages %}{% if loop.first and messages[0]['role'] != 'system' %}{{ '<|im_start|>system\nYou are a helpful assistant<|im_end|>\n' }}{% endif %}{{'<|im_start|>' + message['role'] + '\n' + message['content'] + '<|im_end|>' + '\n'}}{% endfor %}{% if add_generation_prompt %}{{ '<|im_start|>assistant\n' }}{% endif %}",
+ "example_prompt_IY": "<|user|>\n<image>\nIs there X in this image? Answer yes or no.\n<|assistant|>\n",
+ "special_token_ids": {
+  "image_token_id": 151646,
+  "pad_token_id": 151643,
+  "eos_token_id": 151643
+ },
+ "attn_implementation": "sdpa",
+ "candidate_tokens": {
+  "WY": {
+   "positive_ids": [
+    9693,
+    9454,
+    9834,
+    7414
+   ],
+   "negative_ids": [
+    2152,
+    2753,
+    902,
+    2308
+   ],
+   "detail": {
+    "yes": {
+     "yes": 9693,
+     "Yes": 9454,
+     " yes": 9834,
+     " Yes": 7414
+    },
+    "no": {
+     "no": 2152,
+     "No": 2753,
+     " no": 902,
+     " No": 2308
+    }
+   }
+  },
+  "IY": {
+   "positive_ids": [
+    9693,
+    9454,
+    9834,
+    7414
+   ],
+   "negative_ids": [
+    2152,
+    2753,
+    902,
+    2308
+   ],
+   "detail": {
+    "yes": {
+     "yes": 9693,
+     "Yes": 9454,
+     " yes": 9834,
+     " Yes": 7414
+    },
+    "no": {
+     "no": 2152,
+     "No": 2753,
+     " no": 902,
+     " No": 2308
+    }
+   }
+  },
+  "IB": {
+   "positive_ids": [
+    33,
+    425
+   ],
+   "negative_ids": [
+    32,
+    362
+   ],
+   "detail": {
+    "A": {
+     "A": 32,
+     " A": 362
+    },
+    "B": {
+     "B": 33,
+     " B": 425
+    }
+   }
+  },
+  "IA": {
+   "positive_ids": [
+    32,
+    362
+   ],
+   "negative_ids": [
+    33,
+    425
+   ],
+   "detail": {
+    "A": {
+     "A": 32,
+     " A": 362
+    },
+    "B": {
+     "B": 33,
+     " B": 425
+    }
+   }
+  },
+  "WA": {
+   "positive_ids": [
+    32,
+    362
+   ],
+   "negative_ids": [
+    33,
+    425
+   ],
+   "detail": {
+    "A": {
+     "A": 32,
+     " A": 362
+    },
+    "B": {
+     "B": 33,
+     " B": 425
+    }
+   }
+  },
+  "WB": {
+   "positive_ids": [
+    33,
+    425
+   ],
+   "negative_ids": [
+    32,
+    362
+   ],
+   "detail": {
+    "A": {
+     "A": 32,
+     " A": 362
+    },
+    "B": {
+     "B": 33,
+     " B": 425
+    }
+   }
+  }
+ },
+ "model_config": {
+  "architectures": [
+   "LlavaForConditionalGeneration"
+  ],
+  "dtype": "bfloat16",
+  "image_seq_length": 576,
+  "image_token_index": 151646,
+  "model_type": "llava",
+  "multimodal_projector_bias": true,
+  "pad_token_id": 151643,
+  "projector_hidden_act": "gelu",
+  "text_config": {
+   "attention_dropout": 0.0,
+   "bos_token_id": 151643,
+   "dtype": "bfloat16",
+   "eos_token_id": 151643,
+   "hidden_act": "silu",
+   "hidden_size": 3584,
+   "initializer_range": 0.02,
+   "intermediate_size": 18944,
+   "layer_types": [
+    "full_attention",
+    "full_attention",
+    "full_attention",
+    "full_attention",
+    "full_attention",
+    "full_attention",
+    "full_attention",
+    "full_attention",
+    "full_attention",
+    "full_attention",
+    "full_attention",
+    "full_attention",
+    "full_attention",
+    "full_attention",
+    "full_attention",
+    "full_attention",
+    "full_attention",
+    "full_attention",
+    "full_attention",
+    "full_attention",
+    "full_attention",
+    "full_attention",
+    "full_attention",
+    "full_attention",
+    "full_attention",
+    "full_attention",
+    "full_attention",
+    "full_attention"
+   ],
+   "max_position_embeddings": 131072,
+   "max_window_layers": 28,
+   "model_type": "qwen2",
+   "num_attention_heads": 28,
+   "num_hidden_layers": 28,
+   "num_key_value_heads": 4,
+   "pad_token_id": null,
+   "rms_norm_eps": 1e-06,
+   "rope_parameters": {
+    "rope_theta": 1000000.0,
+    "rope_type": "default"
+   },
+   "sliding_window": null,
+   "tie_word_embeddings": false,
+   "use_cache": true,
+   "use_sliding_window": false,
+   "vocab_size": 152064
+  },
+  "tie_word_embeddings": false,
+  "transformers_version": "5.15.0",
+  "vision_config": {
+   "attention_dropout": 0.0,
+   "dtype": "bfloat16",
+   "hidden_act": "quick_gelu",
+   "hidden_size": 1024,
+   "image_size": 336,
+   "initializer_factor": 1.0,
+   "initializer_range": 0.02,
+   "intermediate_size": 4096,
+   "layer_norm_eps": 1e-05,
+   "model_type": "clip_vision_model",
+   "num_attention_heads": 16,
+   "num_channels": 3,
+   "num_hidden_layers": 24,
+   "patch_size": 14,
+   "projection_dim": 768
+  },
+  "vision_feature_layer": -2,
+  "vision_feature_select_strategy": "default"
+ },
+ "prompt_construction": "the checkpoint's own recipe (HuatuoGPT-Vision cli.py): insert_image_placeholder puts '<image>\\n' before the question and preprocess_huatuo wraps it as '<|user|>\\n<image>\\n{q}\\n<|assistant|>\\n'; chunked tokenizer_image_token with 576 x <image>(151646); expand2square padding with the CLIP mean; answer logits over the source model's own 152064-row head",
+ "conversion_receipt": "/rodata/azradonc_dev/m253405/cache/converted/HuatuoGPT-Vision-7B-hf/conversion.json"
+}

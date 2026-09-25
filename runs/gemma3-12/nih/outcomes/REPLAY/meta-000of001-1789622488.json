@@ -1,0 +1,34 @@
+{
+ "model_key": "gemma3-12",
+ "dataset_id": "nih",
+ "module": "REPLAY",
+ "shard": 0,
+ "n_shards": 1,
+ "rows": 200,
+ "scored_rows": 200,
+ "outcomes": 152400,
+ "seconds": 14593.2,
+ "throughput_per_s": 10.44,
+ "batch": 32,
+ "primary_template": "IY",
+ "numerics": "bf16-batched",
+ "fit_seed": null,
+ "batch_policy": "fixed composition per question: clean replicated baseline batch + padded steered batches",
+ "direction_block": "gemma3-4",
+ "tower_swap": null,
+ "replay": {
+  "source_block": "gemma3-4",
+  "rows_replayed": 200,
+  "hook_calls": 6000,
+  "drift_max_abs": 0.0,
+  "drift_mean_abs": 0.0,
+  "block_mean_abs": 29.12375100135803,
+  "note": "drift = |this reader's own tower output - the stored tensor| before the replacement"
+ },
+ "peak_gpu_memory_bytes": 32254069248,
+ "gpu_count": 1,
+ "gpu_models": [
+  "NVIDIA A100-SXM4-80GB"
+ ],
+ "ended_utc": "2026-09-17T05:21:28Z"
+}

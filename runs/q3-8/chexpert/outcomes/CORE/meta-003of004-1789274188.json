@@ -1,0 +1,20 @@
+{
+ "model_key": "q3-8",
+ "dataset_id": "chexpert",
+ "module": "CORE",
+ "shard": 3,
+ "n_shards": 4,
+ "rows": 150,
+ "scored_rows": 150,
+ "outcomes": 114300,
+ "seconds": 4479.5,
+ "throughput_per_s": 25.52,
+ "batch": 32,
+ "batch_policy": "fixed composition per question: clean replicated baseline batch + padded steered batches",
+ "peak_gpu_memory_bytes": 22079723008,
+ "gpu_count": 1,
+ "gpu_models": [
+  "NVIDIA A100-SXM4-80GB"
+ ],
+ "ended_utc": "2026-09-13T04:36:28Z"
+}

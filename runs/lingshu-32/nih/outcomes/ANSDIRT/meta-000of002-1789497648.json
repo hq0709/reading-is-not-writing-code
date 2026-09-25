@@ -1,0 +1,22 @@
+{
+ "model_key": "lingshu-32",
+ "dataset_id": "nih",
+ "module": "ANSDIRT",
+ "shard": 0,
+ "n_shards": 2,
+ "rows": 300,
+ "scored_rows": 50,
+ "outcomes": 12000,
+ "seconds": 3401.6,
+ "throughput_per_s": 3.53,
+ "batch": 16,
+ "primary_template": "IY",
+ "numerics": "bf16-batched",
+ "batch_policy": "fixed composition per question: clean replicated baseline batch + padded steered batches",
+ "peak_gpu_memory_bytes": 32931390464,
+ "gpu_count": 2,
+ "gpu_models": [
+  "NVIDIA A100-SXM4-80GB"
+ ],
+ "ended_utc": "2026-09-15T18:40:48Z"
+}

@@ -1,0 +1,571 @@
+{
+ "model_key": "medgemma-27",
+ "dataset_id": "coco",
+ "locus_id": "connector",
+ "locus": {
+  "locus_id": "connector",
+  "module_path": "model.multi_modal_projector",
+  "output_selection": "tensor output of Gemma3MultiModalProjector",
+  "hidden_dim": 5376,
+  "token_rule": "all 256 pooled soft tokens",
+  "affected_branch": "image soft tokens scattered into <image_soft_token> positions",
+  "bypasses": "none",
+  "consumer": "language model input embeddings",
+  "prompt_independent": true,
+  "notes": ""
+ },
+ "revision": "2d3e00ea38b50018bf5dd3aa1009457cd2d5a48f",
+ "rows": [
+  "000000451643",
+  "000000183155",
+  "000000095891",
+  "000000325115",
+  "000000450649",
+  "000000520654",
+  "000000517522",
+  "000000157645",
+  "000000133200",
+  "000000415789",
+  "000000320428",
+  "000000556131",
+  "000000362608",
+  "000000523718",
+  "000000114894",
+  "000000306791"
+ ],
+ "checks": {
+  "A_determinism_max_abs_diff": 0.0,
+  "B_alpha0_max_abs_diff": 0.0,
+  "C_reach": {
+   "consumer_module": "lm_head",
+   "consumer_max_abs_change": 0.44140625,
+   "answer_logit_max_abs_change": 0.3476428985595703,
+   "mean_semantic_margin_change": -0.020890474319458008,
+   "hook_stats_steered": {
+    "token_norm_mean": [
+     24.6212,
+     24.4642,
+     24.9286,
+     24.8105
+    ],
+    "token_norm_median": [
+     23.2062,
+     24.1001,
+     24.1527,
+     23.8351
+    ],
+    "delta_norm_mean": [
+     6.1553,
+     6.1161,
+     6.2322,
+     6.2026
+    ]
+   },
+   "locus_change_outside_consumed_tokens": 0.0,
+   "locus_change_inside_consumed_tokens": 0.64453125
+  },
+  "D_batch_vs_single": {
+   "max_abs_candidate_logit_diff": 0.26844120025634766,
+   "max_abs_margin_diff": 0.14781475067138672,
+   "margin_sign_agreement": true,
+   "declared_tolerance_logit": 0.25,
+   "pass": false
+  },
+  "G_fp32_vs_model_logits": {
+   "max_abs_diff": 0.06717491149902344,
+   "max_diff_in_ulps": 0.5373992919921875,
+   "pass": true
+  },
+  "D2_replicated_batch_vs_single": {
+   "max_abs_candidate_logit_diff": 0.1334558129310608,
+   "within_batch_max_spread": 0.0,
+   "pass": true,
+   "within_batch_spread_pass": true
+  },
+  "E_semantic_direction": {
+   "cases": {
+    "IY": [
+     {
+      "statement": "The finding is present.",
+      "expected": 1,
+      "semantic_margin": 10.374373435974121,
+      "lse_margin": 10.369132995605469,
+      "raw_ab_margin": NaN,
+      "ok": true,
+      "text": "The finding is present. Is the finding present? Answer yes or no."
+     },
+     {
+      "statement": "The finding is absent.",
+      "expected": 0,
+      "semantic_margin": -9.303139686584473,
+      "lse_margin": -9.300005912780762,
+      "raw_ab_margin": NaN,
+      "ok": true,
+      "text": "The finding is absent. Is the finding present? Answer yes or no."
+     },
+     {
+      "statement": "The finding is explicitly reported as present.",
+      "expected": 1,
+      "semantic_margin": 12.207948684692383,
+      "lse_margin": 12.195504188537598,
+      "raw_ab_margin": NaN,
+      "ok": true,
+      "text": "The finding is explicitly reported as present. Is the finding present? Answer yes or no."
+     },
+     {
+      "statement": "The finding is explicitly reported as absent.",
+      "expected": 0,
+      "semantic_margin": -11.212892532348633,
+      "lse_margin": -11.210742950439453,
+      "raw_ab_margin": NaN,
+      "ok": true,
+      "text": "The finding is explicitly reported as absent. Is the finding present? Answer yes or no."
+     }
+    ],
+    "WY": [
+     {
+      "statement": "The finding is present.",
+      "expected": 1,
+      "semantic_margin": 10.374373435974121,
+      "lse_margin": 10.369132995605469,
+      "raw_ab_margin": NaN,
+      "ok": true,
+      "text": "The finding is present. Is the finding present? Answer yes or no."
+     },
+     {
+      "statement": "The finding is absent.",
+      "expected": 0,
+      "semantic_margin": -9.303139686584473,
+      "lse_margin": -9.300005912780762,
+      "raw_ab_margin": NaN,
+      "ok": true,
+      "text": "The finding is absent. Is the finding present? Answer yes or no."
+     },
+     {
+      "statement": "The finding is explicitly reported as present.",
+      "expected": 1,
+      "semantic_margin": 12.207948684692383,
+      "lse_margin": 12.195504188537598,
+      "raw_ab_margin": NaN,
+      "ok": true,
+      "text": "The finding is explicitly reported as present. Is the finding present? Answer yes or no."
+     },
+     {
+      "statement": "The finding is explicitly reported as absent.",
+      "expected": 0,
+      "semantic_margin": -11.212892532348633,
+      "lse_margin": -11.210742950439453,
+      "raw_ab_margin": NaN,
+      "ok": true,
+      "text": "The finding is explicitly reported as absent. Is the finding present? Answer yes or no."
+     }
+    ],
+    "IA": [
+     {
+      "statement": "The finding is present.",
+      "expected": 1,
+      "semantic_margin": 12.04941463470459,
+      "lse_margin": 12.04941463470459,
+      "raw_ab_margin": 12.04941463470459,
+      "ok": true,
+      "text": "The finding is present. Is the finding present? Answer A if the finding is present and B if it is absent. Reply with A or B only."
+     },
+     {
+      "statement": "The finding is absent.",
+      "expected": 0,
+      "semantic_margin": -9.985610008239746,
+      "lse_margin": -9.985610008239746,
+      "raw_ab_margin": -9.985610008239746,
+      "ok": true,
+      "text": "The finding is absent. Is the finding present? Answer A if the finding is present and B if it is absent. Reply with A or B only."
+     },
+     {
+      "statement": "The finding is explicitly reported as present.",
+      "expected": 1,
+      "semantic_margin": 13.042364120483398,
+      "lse_margin": 13.042364120483398,
+      "raw_ab_margin": 13.042364120483398,
+      "ok": true,
+      "text": "The finding is explicitly reported as present. Is the finding present? Answer A if the finding is present and B if it is absent. Reply with A or B only."
+     },
+     {
+      "statement": "The finding is explicitly reported as absent.",
+      "expected": 0,
+      "semantic_margin": -11.90778636932373,
+      "lse_margin": -11.90778636932373,
+      "raw_ab_margin": -11.90778636932373,
+      "ok": true,
+      "text": "The finding is explicitly reported as absent. Is the finding present? Answer A if the finding is present and B if it is absent. Reply with A or B only."
+     }
+    ],
+    "IB": [
+     {
+      "statement": "The finding is present.",
+      "expected": 1,
+      "semantic_margin": 7.2493133544921875,
+      "lse_margin": 7.2493133544921875,
+      "raw_ab_margin": -7.2493133544921875,
+      "ok": true,
+      "text": "The finding is present. Is the finding present? Answer B if the finding is present and A if it is absent. Reply with A or B only."
+     },
+     {
+      "statement": "The finding is absent.",
+      "expected": 0,
+      "semantic_margin": -10.414273262023926,
+      "lse_margin": -10.414273262023926,
+      "raw_ab_margin": 10.414273262023926,
+      "ok": true,
+      "text": "The finding is absent. Is the finding present? Answer B if the finding is present and A if it is absent. Reply with A or B only."
+     },
+     {
+      "statement": "The finding is explicitly reported as present.",
+      "expected": 1,
+      "semantic_margin": 8.768108367919922,
+      "lse_margin": 8.768108367919922,
+      "raw_ab_margin": -8.768108367919922,
+      "ok": true,
+      "text": "The finding is explicitly reported as present. Is the finding present? Answer B if the finding is present and A if it is absent. Reply with A or B only."
+     },
+     {
+      "statement": "The finding is explicitly reported as absent.",
+      "expected": 0,
+      "semantic_margin": -11.717430114746094,
+      "lse_margin": -11.717430114746094,
+      "raw_ab_margin": 11.717430114746094,
+      "ok": true,
+      "text": "The finding is explicitly reported as absent. Is the finding present? Answer B if the finding is present and A if it is absent. Reply with A or B only."
+     }
+    ],
+    "WA": [
+     {
+      "statement": "The finding is present.",
+      "expected": 1,
+      "semantic_margin": 12.04941463470459,
+      "lse_margin": 12.04941463470459,
+      "raw_ab_margin": 12.04941463470459,
+      "ok": true,
+      "text": "The finding is present. Is the finding present? Answer A if the finding is present and B if it is absent. Reply with A or B only."
+     },
+     {
+      "statement": "The finding is absent.",
+      "expected": 0,
+      "semantic_margin": -9.985610008239746,
+      "lse_margin": -9.985610008239746,
+      "raw_ab_margin": -9.985610008239746,
+      "ok": true,
+      "text": "The finding is absent. Is the finding present? Answer A if the finding is present and B if it is absent. Reply with A or B only."
+     },
+     {
+      "statement": "The finding is explicitly reported as present.",
+      "expected": 1,
+      "semantic_margin": 13.042364120483398,
+      "lse_margin": 13.042364120483398,
+      "raw_ab_margin": 13.042364120483398,
+      "ok": true,
+      "text": "The finding is explicitly reported as present. Is the finding present? Answer A if the finding is present and B if it is absent. Reply with A or B only."
+     },
+     {
+      "statement": "The finding is explicitly reported as absent.",
+      "expected": 0,
+      "semantic_margin": -11.90778636932373,
+      "lse_margin": -11.90778636932373,
+      "raw_ab_margin": -11.90778636932373,
+      "ok": true,
+      "text": "The finding is explicitly reported as absent. Is the finding present? Answer A if the finding is present and B if it is absent. Reply with A or B only."
+     }
+    ],
+    "WB": [
+     {
+      "statement": "The finding is present.",
+      "expected": 1,
+      "semantic_margin": 7.2493133544921875,
+      "lse_margin": 7.2493133544921875,
+      "raw_ab_margin": -7.2493133544921875,
+      "ok": true,
+      "text": "The finding is present. Is the finding present? Answer B if the finding is present and A if it is absent. Reply with A or B only."
+     },
+     {
+      "statement": "The finding is absent.",
+      "expected": 0,
+      "semantic_margin": -10.414273262023926,
+      "lse_margin": -10.414273262023926,
+      "raw_ab_margin": 10.414273262023926,
+      "ok": true,
+      "text": "The finding is absent. Is the finding present? Answer B if the finding is present and A if it is absent. Reply with A or B only."
+     },
+     {
+      "statement": "The finding is explicitly reported as present.",
+      "expected": 1,
+      "semantic_margin": 8.768108367919922,
+      "lse_margin": 8.768108367919922,
+      "raw_ab_margin": -8.768108367919922,
+      "ok": true,
+      "text": "The finding is explicitly reported as present. Is the finding present? Answer B if the finding is present and A if it is absent. Reply with A or B only."
+     },
+     {
+      "statement": "The finding is explicitly reported as absent.",
+      "expected": 0,
+      "semantic_margin": -11.717430114746094,
+      "lse_margin": -11.717430114746094,
+      "raw_ab_margin": 11.717430114746094,
+      "ok": true,
+      "text": "The finding is explicitly reported as absent. Is the finding present? Answer B if the finding is present and A if it is absent. Reply with A or B only."
+     }
+    ]
+   },
+   "pass": true,
+   "descriptive_image_phrased_variant": {
+    "IY": [
+     {
+      "statement": "The finding is present.",
+      "expected": 1,
+      "semantic_margin": 5.583271026611328,
+      "lse_margin": 5.584444046020508,
+      "raw_ab_margin": NaN,
+      "ok": true,
+      "text": "The target finding is person. The finding is present. Is there the finding in this photograph? Answer yes or no."
+     },
+     {
+      "statement": "The finding is absent.",
+      "expected": 0,
+      "semantic_margin": -7.296412467956543,
+      "lse_margin": -7.20689582824707,
+      "raw_ab_margin": NaN,
+      "ok": true,
+      "text": "The target finding is person. The finding is absent. Is there the finding in this photograph? Answer yes or no."
+     },
+     {
+      "statement": "The finding is explicitly reported as present.",
+      "expected": 1,
+      "semantic_margin": 5.965083122253418,
+      "lse_margin": 5.965797424316406,
+      "raw_ab_margin": NaN,
+      "ok": true,
+      "text": "The target finding is person. The finding is explicitly reported as present. Is there the finding in this photograph? Answer yes or no."
+     },
+     {
+      "statement": "The finding is explicitly reported as absent.",
+      "expected": 0,
+      "semantic_margin": -6.830537796020508,
+      "lse_margin": -6.815402984619141,
+      "raw_ab_margin": NaN,
+      "ok": true,
+      "text": "The target finding is person. The finding is explicitly reported as absent. Is there the finding in this photograph? Answer yes or no."
+     }
+    ],
+    "WY": [
+     {
+      "statement": "The finding is present.",
+      "expected": 1,
+      "semantic_margin": 6.745027542114258,
+      "lse_margin": 6.750746726989746,
+      "raw_ab_margin": NaN,
+      "ok": true,
+      "text": "The target finding is person. The finding is present. Does this photograph show the finding? Answer yes or no."
+     },
+     {
+      "statement": "The finding is absent.",
+      "expected": 0,
+      "semantic_margin": -6.690340042114258,
+      "lse_margin": -6.666723251342773,
+      "raw_ab_margin": NaN,
+      "ok": true,
+      "text": "The target finding is person. The finding is absent. Does this photograph show the finding? Answer yes or no."
+     },
+     {
+      "statement": "The finding is explicitly reported as present.",
+      "expected": 1,
+      "semantic_margin": 5.602992057800293,
+      "lse_margin": 5.621335983276367,
+      "raw_ab_margin": NaN,
+      "ok": true,
+      "text": "The target finding is person. The finding is explicitly reported as present. Does this photograph show the finding? Answer yes or no."
+     },
+     {
+      "statement": "The finding is explicitly reported as absent.",
+      "expected": 0,
+      "semantic_margin": -5.596607208251953,
+      "lse_margin": -5.578662872314453,
+      "raw_ab_margin": NaN,
+      "ok": true,
+      "text": "The target finding is person. The finding is explicitly reported as absent. Does this photograph show the finding? Answer yes or no."
+     }
+    ],
+    "IA": [
+     {
+      "statement": "The finding is present.",
+      "expected": 1,
+      "semantic_margin": 7.111658096313477,
+      "lse_margin": 7.111652374267578,
+      "raw_ab_margin": 7.111658096313477,
+      "ok": true,
+      "text": "The target finding is person. The finding is present. Is there the finding in this photograph? Answer A if the finding is present and B if it is absent. Reply with A or B only."
+     },
+     {
+      "statement": "The finding is absent.",
+      "expected": 0,
+      "semantic_margin": -8.392020225524902,
+      "lse_margin": -8.392019271850586,
+      "raw_ab_margin": -8.392020225524902,
+      "ok": true,
+      "text": "The target finding is person. The finding is absent. Is there the finding in this photograph? Answer A if the finding is present and B if it is absent. Reply with A or B only."
+     },
+     {
+      "statement": "The finding is explicitly reported as present.",
+      "expected": 1,
+      "semantic_margin": 5.836519241333008,
+      "lse_margin": 5.836513519287109,
+      "raw_ab_margin": 5.836519241333008,
+      "ok": true,
+      "text": "The target finding is person. The finding is explicitly reported as present. Is there the finding in this photograph? Answer A if the finding is present and B if it is absent. Reply with A or B only."
+     },
+     {
+      "statement": "The finding is explicitly reported as absent.",
+      "expected": 0,
+      "semantic_margin": -7.758785247802734,
+      "lse_margin": -7.758785247802734,
+      "raw_ab_margin": -7.758785247802734,
+      "ok": true,
+      "text": "The target finding is person. The finding is explicitly reported as absent. Is there the finding in this photograph? Answer A if the finding is present and B if it is absent. Reply with A or B only."
+     }
+    ],
+    "IB": [
+     {
+      "statement": "The finding is present.",
+      "expected": 1,
+      "semantic_margin": 4.250637054443359,
+      "lse_margin": 4.250637054443359,
+      "raw_ab_margin": -4.250637054443359,
+      "ok": true,
+      "text": "The target finding is person. The finding is present. Is there the finding in this photograph? Answer B if the finding is present and A if it is absent. Reply with A or B only."
+     },
+     {
+      "statement": "The finding is absent.",
+      "expected": 0,
+      "semantic_margin": -10.099294662475586,
+      "lse_margin": -10.09929370880127,
+      "raw_ab_margin": 10.099294662475586,
+      "ok": true,
+      "text": "The target finding is person. The finding is absent. Is there the finding in this photograph? Answer B if the finding is present and A if it is absent. Reply with A or B only."
+     },
+     {
+      "statement": "The finding is explicitly reported as present.",
+      "expected": 1,
+      "semantic_margin": 2.8816471099853516,
+      "lse_margin": 2.8816471099853516,
+      "raw_ab_margin": -2.8816471099853516,
+      "ok": true,
+      "text": "The target finding is person. The finding is explicitly reported as present. Is there the finding in this photograph? Answer B if the finding is present and A if it is absent. Reply with A or B only."
+     },
+     {
+      "statement": "The finding is explicitly reported as absent.",
+      "expected": 0,
+      "semantic_margin": -7.943727493286133,
+      "lse_margin": -7.9437255859375,
+      "raw_ab_margin": 7.943727493286133,
+      "ok": true,
+      "text": "The target finding is person. The finding is explicitly reported as absent. Is there the finding in this photograph? Answer B if the finding is present and A if it is absent. Reply with A or B only."
+     }
+    ],
+    "WA": [
+     {
+      "statement": "The finding is present.",
+      "expected": 1,
+      "semantic_margin": 8.12700080871582,
+      "lse_margin": 8.126996040344238,
+      "raw_ab_margin": 8.12700080871582,
+      "ok": true,
+      "text": "The target finding is person. The finding is present. Does this photograph show the finding? Answer A if the finding is present and B if it is absent. Reply with A or B only."
+     },
+     {
+      "statement": "The finding is absent.",
+      "expected": 0,
+      "semantic_margin": -8.788732528686523,
+      "lse_margin": -8.788732528686523,
+      "raw_ab_margin": -8.788732528686523,
+      "ok": true,
+      "text": "The target finding is person. The finding is absent. Does this photograph show the finding? Answer A if the finding is present and B if it is absent. Reply with A or B only."
+     },
+     {
+      "statement": "The finding is explicitly reported as present.",
+      "expected": 1,
+      "semantic_margin": 6.6635026931762695,
+      "lse_margin": 6.6634931564331055,
+      "raw_ab_margin": 6.6635026931762695,
+      "ok": true,
+      "text": "The target finding is person. The finding is explicitly reported as present. Does this photograph show the finding? Answer A if the finding is present and B if it is absent. Reply with A or B only."
+     },
+     {
+      "statement": "The finding is explicitly reported as absent.",
+      "expected": 0,
+      "semantic_margin": -7.703821182250977,
+      "lse_margin": -7.703821182250977,
+      "raw_ab_margin": -7.703821182250977,
+      "ok": true,
+      "text": "The target finding is person. The finding is explicitly reported as absent. Does this photograph show the finding? Answer A if the finding is present and B if it is absent. Reply with A or B only."
+     }
+    ],
+    "WB": [
+     {
+      "statement": "The finding is present.",
+      "expected": 1,
+      "semantic_margin": 4.784894943237305,
+      "lse_margin": 4.784894943237305,
+      "raw_ab_margin": -4.784894943237305,
+      "ok": true,
+      "text": "The target finding is person. The finding is present. Does this photograph show the finding? Answer B if the finding is present and A if it is absent. Reply with A or B only."
+     },
+     {
+      "statement": "The finding is absent.",
+      "expected": 0,
+      "semantic_margin": -10.193229675292969,
+      "lse_margin": -10.193228721618652,
+      "raw_ab_margin": 10.193229675292969,
+      "ok": true,
+      "text": "The target finding is person. The finding is absent. Does this photograph show the finding? Answer B if the finding is present and A if it is absent. Reply with A or B only."
+     },
+     {
+      "statement": "The finding is explicitly reported as present.",
+      "expected": 1,
+      "semantic_margin": 2.993844985961914,
+      "lse_margin": 2.993846893310547,
+      "raw_ab_margin": -2.993844985961914,
+      "ok": true,
+      "text": "The target finding is person. The finding is explicitly reported as present. Does this photograph show the finding? Answer B if the finding is present and A if it is absent. Reply with A or B only."
+     },
+     {
+      "statement": "The finding is explicitly reported as absent.",
+      "expected": 0,
+      "semantic_margin": -7.502815246582031,
+      "lse_margin": -7.502813339233398,
+      "raw_ab_margin": 7.502815246582031,
+      "ok": true,
+      "text": "The target finding is person. The finding is explicitly reported as absent. Does this photograph show the finding? Answer B if the finding is present and A if it is absent. Reply with A or B only."
+     }
+    ]
+   }
+  },
+  "F_throughput": {
+   "image_conditions": 256,
+   "seconds": 32.74,
+   "rate_per_s": 7.82,
+   "gpu_count": 2,
+   "batch": 16,
+   "peak_gpu_memory_bytes": 35077542912,
+   "gpu_models": [
+    "NVIDIA A100-SXM4-80GB"
+   ]
+  }
+ },
+ "input_example": {
+  "prompt": "<bos><start_of_turn>user\n<start_of_image>Is there a person in this photograph? Answer yes or no.<end_of_turn>\n<start_of_turn>model\n",
+  "input_token_count": 282,
+  "valid_token_count": 256,
+  "processor_kwargs": {}
+ },
+ "batch_policy": "runner scores every condition of a question at one fixed batch composition (replicated image, clean replicated baseline batch with the hook passive), so single-vs-batch differences never enter W_qd; D/D2 are reported against the declared tolerance and recorded as a deviation when exceeded",
+ "pass": true,
+ "tolerance_deviations": [
+  "D_batch_vs_single"
+ ]
+}

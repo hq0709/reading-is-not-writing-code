@@ -1,0 +1,26 @@
+{
+ "model_key": "llavarad-7",
+ "dataset_id": "nih",
+ "module": "PROMPT",
+ "shard": 4,
+ "n_shards": 7,
+ "rows": 86,
+ "scored_rows": 86,
+ "outcomes": 21844,
+ "seconds": 2293.6,
+ "throughput_per_s": 9.52,
+ "batch": 8,
+ "primary_template": "IY",
+ "numerics": "bf16-batched",
+ "fit_seed": null,
+ "batch_policy": "fixed composition per question: clean replicated baseline batch + padded steered batches",
+ "direction_block": "llavarad-7",
+ "tower_swap": null,
+ "replay": null,
+ "peak_gpu_memory_bytes": 15477623296,
+ "gpu_count": 1,
+ "gpu_models": [
+  "NVIDIA A100-SXM4-80GB"
+ ],
+ "ended_utc": "2026-09-18T02:50:50Z"
+}

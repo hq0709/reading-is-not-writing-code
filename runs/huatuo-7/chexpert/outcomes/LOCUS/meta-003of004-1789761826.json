@@ -1,0 +1,26 @@
+{
+ "model_key": "huatuo-7",
+ "dataset_id": "chexpert",
+ "module": "LOCUS",
+ "shard": 3,
+ "n_shards": 4,
+ "rows": 150,
+ "scored_rows": 150,
+ "outcomes": 114300,
+ "seconds": 2287.3,
+ "throughput_per_s": 49.97,
+ "batch": 16,
+ "primary_template": "IY",
+ "numerics": "bf16-batched",
+ "fit_seed": null,
+ "batch_policy": "fixed composition per question: clean replicated baseline batch + padded steered batches",
+ "direction_block": "huatuo-7",
+ "tower_swap": null,
+ "replay": null,
+ "peak_gpu_memory_bytes": 19552657920,
+ "gpu_count": 1,
+ "gpu_models": [
+  "NVIDIA H100 80GB HBM3"
+ ],
+ "ended_utc": "2026-09-18T20:03:46Z"
+}

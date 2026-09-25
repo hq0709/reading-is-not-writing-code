@@ -1,0 +1,20 @@
+{
+ "model_key": "q3-32",
+ "dataset_id": "coco",
+ "module": "PROMPT",
+ "shard": 3,
+ "n_shards": 7,
+ "rows": 86,
+ "scored_rows": 86,
+ "outcomes": 109220,
+ "seconds": 11151.4,
+ "throughput_per_s": 9.79,
+ "batch": 16,
+ "batch_policy": "fixed composition per question: clean replicated baseline batch + padded steered batches",
+ "peak_gpu_memory_bytes": 34304370176,
+ "gpu_count": 2,
+ "gpu_models": [
+  "NVIDIA A100-SXM4-80GB"
+ ],
+ "ended_utc": "2026-09-13T17:50:00Z"
+}

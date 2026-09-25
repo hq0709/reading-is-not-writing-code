@@ -1,0 +1,26 @@
+{
+ "model_key": "q3-32",
+ "dataset_id": "nih",
+ "module": "ATTRRAND",
+ "shard": 1,
+ "n_shards": 2,
+ "rows": 300,
+ "scored_rows": 300,
+ "outcomes": 107100,
+ "seconds": 11257.4,
+ "throughput_per_s": 9.51,
+ "batch": 16,
+ "primary_template": "IY",
+ "numerics": "bf16-batched",
+ "fit_seed": null,
+ "batch_policy": "fixed composition per question: clean replicated baseline batch + padded steered batches",
+ "direction_block": "q3-32",
+ "tower_swap": null,
+ "replay": null,
+ "peak_gpu_memory_bytes": 34287773696,
+ "gpu_count": 2,
+ "gpu_models": [
+  "NVIDIA A100-SXM4-80GB"
+ ],
+ "ended_utc": "2026-09-17T07:31:33Z"
+}

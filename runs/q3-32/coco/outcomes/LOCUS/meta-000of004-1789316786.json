@@ -1,0 +1,20 @@
+{
+ "model_key": "q3-32",
+ "dataset_id": "coco",
+ "module": "LOCUS",
+ "shard": 0,
+ "n_shards": 4,
+ "rows": 150,
+ "scored_rows": 150,
+ "outcomes": 114300,
+ "seconds": 11230.0,
+ "throughput_per_s": 10.18,
+ "batch": 16,
+ "batch_policy": "fixed composition per question: clean replicated baseline batch + padded steered batches",
+ "peak_gpu_memory_bytes": 34251366912,
+ "gpu_count": 2,
+ "gpu_models": [
+  "NVIDIA A100-SXM4-80GB"
+ ],
+ "ended_utc": "2026-09-13T16:26:26Z"
+}

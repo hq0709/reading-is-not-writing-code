@@ -1,0 +1,20 @@
+{
+ "model_key": "q3-32",
+ "dataset_id": "nih",
+ "module": "DOSE",
+ "shard": 0,
+ "n_shards": 2,
+ "rows": 100,
+ "scored_rows": 100,
+ "outcomes": 81000,
+ "seconds": 8317.2,
+ "throughput_per_s": 9.74,
+ "batch": 16,
+ "batch_policy": "fixed composition per question: clean replicated baseline batch + padded steered batches",
+ "peak_gpu_memory_bytes": 34268270080,
+ "gpu_count": 2,
+ "gpu_models": [
+  "NVIDIA A100-SXM4-80GB"
+ ],
+ "ended_utc": "2026-09-13T12:26:58Z"
+}

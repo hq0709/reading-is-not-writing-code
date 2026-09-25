@@ -1,0 +1,20 @@
+{
+ "model_key": "iv35-38",
+ "dataset_id": "nih",
+ "module": "LOCUS",
+ "shard": 3,
+ "n_shards": 4,
+ "rows": 150,
+ "scored_rows": 150,
+ "outcomes": 114300,
+ "seconds": 7993.4,
+ "throughput_per_s": 14.3,
+ "batch": 16,
+ "batch_policy": "fixed composition per question: clean replicated baseline batch + padded steered batches",
+ "peak_gpu_memory_bytes": 43374811648,
+ "gpu_count": 2,
+ "gpu_models": [
+  "NVIDIA H100 80GB HBM3"
+ ],
+ "ended_utc": "2026-09-14T10:29:36Z"
+}

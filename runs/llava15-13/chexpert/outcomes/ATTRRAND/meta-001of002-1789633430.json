@@ -1,0 +1,26 @@
+{
+ "model_key": "llava15-13",
+ "dataset_id": "chexpert",
+ "module": "ATTRRAND",
+ "shard": 1,
+ "n_shards": 2,
+ "rows": 300,
+ "scored_rows": 300,
+ "outcomes": 107100,
+ "seconds": 8762.6,
+ "throughput_per_s": 12.22,
+ "batch": 32,
+ "primary_template": "IY",
+ "numerics": "bf16-batched",
+ "fit_seed": null,
+ "batch_policy": "fixed composition per question: clean replicated baseline batch + padded steered batches",
+ "direction_block": "llava15-13",
+ "tower_swap": null,
+ "replay": null,
+ "peak_gpu_memory_bytes": 30035597824,
+ "gpu_count": 1,
+ "gpu_models": [
+  "NVIDIA A100-SXM4-80GB"
+ ],
+ "ended_utc": "2026-09-17T08:23:50Z"
+}

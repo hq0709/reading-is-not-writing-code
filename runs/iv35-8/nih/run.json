@@ -1,0 +1,501 @@
+{
+ "protocol_id": "cf-transfer-v1",
+ "run_id": "cf-transfer-v1:iv35-8:nih:mayo",
+ "model_key": "iv35-8",
+ "model_id": "OpenGVLab/InternVL3_5-8B-HF",
+ "model_revision": "741a7d03020411e666c6109218ab71e08151ef86",
+ "processor_revision": "741a7d03020411e666c6109218ab71e08151ef86",
+ "dataset_id": "nih",
+ "dataset_release": "ChestX-ray14 (NIH Box release, images_001..012.zip); labels Data_Entry_2017_v2020.csv",
+ "source_commit": "4701456a3dadcc2af35247e0feb174c0fbf68ebb",
+ "adapter_path": "src/cftransfer/adapters/",
+ "python_version": "3.12.13",
+ "torch_version": "2.13.0+cu130",
+ "transformers_version": "5.15.0",
+ "numpy_version": "2.3.5",
+ "sklearn_version": "1.9.0",
+ "weight_dtype": "bfloat16",
+ "activation_dtype": "bfloat16 (hook delta computed in float32, cast back)",
+ "logit_dtype": "float32",
+ "attention_backend": "sdpa",
+ "device_map": [
+  "cuda:0"
+ ],
+ "gpu_models": [
+  "NVIDIA A100-SXM4-80GB",
+  "NVIDIA H100 80GB HBM3"
+ ],
+ "gpu_count": 1,
+ "batch_size": [
+  1,
+  32
+ ],
+ "started_utc": "2026-09-13T01:01:06Z",
+ "ended_utc": "2026-09-17T06:30:49Z",
+ "wall_seconds": 105929.5,
+ "gpu_hours": 29.425,
+ "peak_gpu_memory_bytes": 36276544000,
+ "processing_settings": {
+  "processor_kwargs": {},
+  "image_processor": {
+   "crop_to_patches": false,
+   "data_format": "channels_first",
+   "default_to_square": true,
+   "do_convert_rgb": true,
+   "do_normalize": true,
+   "do_rescale": true,
+   "do_resize": true,
+   "image_processor_type": "GotOcr2ImageProcessor",
+   "max_patches": 12,
+   "min_patches": 1,
+   "resample": 3,
+   "rescale_factor": 0.00392156862745098,
+   "size": {
+    "height": 448,
+    "width": 448
+   }
+  },
+  "chat_template": "{% for message in messages %}{{'<|im_start|>' + message['role'] + '\n'}}{% if message['content'] is string %}{{ message['content'] }}{% else %}{% for content in message['content'] %}{% if content['type'] == 'image' %}{{ '<IMG_CONTEXT>\n' }}{% elif content['type'] == 'video' %}{{ '<video>\n' }}{% elif content['type'] == 'text' %}{{ content['text'] }}{% endif %}{% endfor %}{% endif %}{{'<|im_end|>\n'}}{% endfor %}{% if add_generation_prompt %}{{'<|im_start|>assistant\n' }}{% endif %}",
+  "example_prompt_IY": "<|im_start|>user\n<IMG_CONTEXT>\nIs there X in this image? Answer yes or no.<|im_end|>\n<|im_start|>assistant\n",
+  "special_token_ids": {
+   "image_token_id": 151671,
+   "pad_token_id": 151643,
+   "eos_token_id": 151645
+  },
+  "attn_implementation": "sdpa",
+  "candidate_tokens": {
+   "WY": {
+    "positive_ids": [
+     9693,
+     9454,
+     9834,
+     7414
+    ],
+    "negative_ids": [
+     2152,
+     2753,
+     902,
+     2308
+    ],
+    "detail": {
+     "yes": {
+      "yes": 9693,
+      "Yes": 9454,
+      " yes": 9834,
+      " Yes": 7414
+     },
+     "no": {
+      "no": 2152,
+      "No": 2753,
+      " no": 902,
+      " No": 2308
+     }
+    }
+   },
+   "IY": {
+    "positive_ids": [
+     9693,
+     9454,
+     9834,
+     7414
+    ],
+    "negative_ids": [
+     2152,
+     2753,
+     902,
+     2308
+    ],
+    "detail": {
+     "yes": {
+      "yes": 9693,
+      "Yes": 9454,
+      " yes": 9834,
+      " Yes": 7414
+     },
+     "no": {
+      "no": 2152,
+      "No": 2753,
+      " no": 902,
+      " No": 2308
+     }
+    }
+   },
+   "IA": {
+    "positive_ids": [
+     32,
+     362
+    ],
+    "negative_ids": [
+     33,
+     425
+    ],
+    "detail": {
+     "A": {
+      "A": 32,
+      " A": 362
+     },
+     "B": {
+      "B": 33,
+      " B": 425
+     }
+    }
+   },
+   "IB": {
+    "positive_ids": [
+     33,
+     425
+    ],
+    "negative_ids": [
+     32,
+     362
+    ],
+    "detail": {
+     "A": {
+      "A": 32,
+      " A": 362
+     },
+     "B": {
+      "B": 33,
+      " B": 425
+     }
+    }
+   },
+   "WB": {
+    "positive_ids": [
+     33,
+     425
+    ],
+    "negative_ids": [
+     32,
+     362
+    ],
+    "detail": {
+     "A": {
+      "A": 32,
+      " A": 362
+     },
+     "B": {
+      "B": 33,
+      " B": 425
+     }
+    }
+   },
+   "WA": {
+    "positive_ids": [
+     32,
+     362
+    ],
+    "negative_ids": [
+     33,
+     425
+    ],
+    "detail": {
+     "A": {
+      "A": 32,
+      " A": 362
+     },
+     "B": {
+      "B": 33,
+      " B": 425
+     }
+    }
+   }
+  },
+  "model_config": {
+   "architectures": [
+    "InternVLForConditionalGeneration"
+   ],
+   "downsample_ratio": 0.5,
+   "dtype": "bfloat16",
+   "image_seq_length": 256,
+   "image_token_id": 151671,
+   "model_type": "internvl",
+   "projector_hidden_act": "gelu",
+   "text_config": {
+    "_name_or_path": "/root/codespace/checkpoints/Qwen3-8B",
+    "architectures": [
+     "Qwen3ForCausalLM"
+    ],
+    "attention_bias": false,
+    "attention_dropout": 0.0,
+    "bos_token_id": 151643,
+    "debug": false,
+    "dtype": "bfloat16",
+    "eos_token_id": 151645,
+    "ep_size": 1,
+    "head_dim": 128,
+    "hidden_act": "silu",
+    "hidden_size": 4096,
+    "initializer_range": 0.02,
+    "intermediate_size": 12288,
+    "layer_types": [
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention",
+     "full_attention"
+    ],
+    "max_position_embeddings": 40960,
+    "max_window_layers": 36,
+    "micro_forward": false,
+    "model_type": "qwen3",
+    "num_attention_heads": 32,
+    "num_hidden_layers": 36,
+    "num_key_value_heads": 8,
+    "pad_token_id": null,
+    "rms_norm_eps": 1e-06,
+    "rope_parameters": {
+     "rope_theta": 1000000,
+     "rope_type": "default"
+    },
+    "skip_checkpoint": false,
+    "sliding_window": null,
+    "tie_word_embeddings": false,
+    "use_cache": true,
+    "use_deepep": false,
+    "use_sliding_window": false,
+    "vocab_size": 151936
+   },
+   "tie_word_embeddings": true,
+   "transformers_version": "5.15.0",
+   "vision_config": {
+    "architectures": [
+     "InternVisionModel"
+    ],
+    "attention_bias": true,
+    "attention_dropout": 0.0,
+    "dropout": 0.0,
+    "dtype": "bfloat16",
+    "hidden_act": "gelu",
+    "hidden_dropout_prob": 0.0,
+    "hidden_size": 1024,
+    "image_size": [
+     448,
+     448
+    ],
+    "initializer_factor": 0.1,
+    "initializer_range": 1e-10,
+    "intermediate_size": 4096,
+    "layer_norm_eps": 1e-06,
+    "layer_scale_init_value": 0.1,
+    "model_type": "internvl_vision",
+    "norm_type": "layer_norm",
+    "num_attention_heads": 16,
+    "num_channels": 3,
+    "num_hidden_layers": 24,
+    "patch_size": [
+     14,
+     14
+    ],
+    "projection_dropout": 0.0,
+    "use_absolute_position_embeddings": true,
+    "use_mask_token": false,
+    "use_mean_pooling": true,
+    "use_qk_norm": false
+   },
+   "vision_feature_layer": -1,
+   "vision_feature_select_strategy": "default"
+  }
+ },
+ "loci": {
+  "vis.last": {
+   "locus_id": "vis.last",
+   "module_path": "model.vision_tower.encoder.layer.23",
+   "output_selection": "tensor output of the last InternViT encoder layer (B, 1+patches, D)",
+   "hidden_dim": 1024,
+   "token_rule": "all patch tokens of the single 448x448 tile; CLS at index 0 is dropped by the consumer and excluded",
+   "affected_branch": "single tile visual stream into pixel-shuffle + projector",
+   "bypasses": "none",
+   "consumer": "model.multi_modal_projector",
+   "prompt_independent": true,
+   "notes": "vision_tower.layernorm is Identity between this block and the consumer; crop_to_patches=False (no dynamic tiling, no thumbnail)"
+  },
+  "connector": {
+   "locus_id": "connector",
+   "module_path": "model.multi_modal_projector",
+   "output_selection": "tensor output of the multimodal projector (B, 256, D_llm)",
+   "hidden_dim": 4096,
+   "token_rule": "all 256 projected tokens of the image",
+   "affected_branch": "image embeddings scattered into <IMG_CONTEXT> positions",
+   "bypasses": "none",
+   "consumer": "language model input embeddings",
+   "prompt_independent": true,
+   "notes": ""
+  }
+ },
+ "fit_seeds": [
+  0,
+  1,
+  2
+ ],
+ "random_seed": 0,
+ "projection_seed": 0,
+ "cohort_file": "manifests/cohort.csv",
+ "primary_template": "IY",
+ "requested_modules": [
+  "CORE",
+  "CALIBRATION",
+  "PROMPT",
+  "DOSE",
+  "REFIT",
+  "LOCUS",
+  "LOCUS_CALIBRATION",
+  "ALTDIR",
+  "EXTCOMP",
+  "PRECISION",
+  "ALTDIRD",
+  "ATTR",
+  "ATTRRAND",
+  "ATTRQ"
+ ],
+ "completed_modules": [
+  "CORE",
+  "CALIBRATION",
+  "PROMPT",
+  "DOSE",
+  "REFIT",
+  "LOCUS",
+  "LOCUS_CALIBRATION",
+  "ALTDIR",
+  "EXTCOMP",
+  "PRECISION",
+  "ALTDIRD",
+  "ATTR",
+  "ATTRRAND",
+  "ATTRQ"
+ ],
+ "ineligible_modules": [],
+ "status": "COMPLETE",
+ "deviations": [],
+ "feature_extraction_seconds": 445.5,
+ "notes": "gpu_hours sums wall time x GPUs over runner shards recorded in outcomes/*/meta-*.json; CPU fitting time is in fits/*/summary.json",
+ "merged_outcomes": {
+  "CORE": {
+   "parts": 60,
+   "rows_raw": 457200,
+   "rows_unique": 457200,
+   "failed": 0
+  },
+  "CALIBRATION": {
+   "parts": 40,
+   "rows_raw": 6400,
+   "rows_unique": 6400,
+   "failed": 0
+  },
+  "PROMPT": {
+   "parts": 63,
+   "rows_raw": 762000,
+   "rows_unique": 762000,
+   "failed": 0
+  },
+  "DOSE": {
+   "parts": 20,
+   "rows_raw": 162000,
+   "rows_unique": 162000,
+   "failed": 0
+  },
+  "REFIT": {
+   "parts": 60,
+   "rows_raw": 50400,
+   "rows_unique": 50400,
+   "failed": 0
+  },
+  "LOCUS": {
+   "parts": 60,
+   "rows_raw": 457200,
+   "rows_unique": 457200,
+   "failed": 0
+  },
+  "LOCUS_CALIBRATION": {
+   "parts": 40,
+   "rows_raw": 2400,
+   "rows_unique": 2400,
+   "failed": 0
+  },
+  "ALTDIR": {
+   "parts": 60,
+   "rows_raw": 86400,
+   "rows_unique": 86400,
+   "failed": 0
+  },
+  "EXTCOMP": {
+   "parts": 60,
+   "rows_raw": 10800,
+   "rows_unique": 10800,
+   "failed": 0
+  },
+  "TOKENW": {},
+  "PRECISION": {
+   "parts": 40,
+   "rows_raw": 304800,
+   "rows_unique": 304800,
+   "failed": 0
+  },
+  "ANSDIR": {},
+  "ALTDIRD": {
+   "parts": 60,
+   "rows_raw": 43200,
+   "rows_unique": 43200,
+   "failed": 0
+  },
+  "ATTR": {
+   "parts": 60,
+   "rows_raw": 55800,
+   "rows_unique": 55800,
+   "failed": 0
+  },
+  "ANSDIRT": {},
+  "VALID": {},
+  "ATTRRAND": {
+   "parts": 60,
+   "rows_raw": 214200,
+   "rows_unique": 214200,
+   "failed": 0
+  },
+  "ATTRQ": {
+   "parts": 40,
+   "rows_raw": 3600,
+   "rows_unique": 3600,
+   "failed": 0
+  },
+  "VALIDFIT": {},
+  "PROJSEED": {},
+  "TOWERSWAP": {},
+  "TOWERSWAPD": {},
+  "REPLAY": {},
+  "SEMEND": {},
+  "FGOBJ": {},
+  "FGOBJ_CALIBRATION": {}
+ }
+}

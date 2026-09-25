@@ -1,0 +1,20 @@
+{
+ "model_key": "lingshu-32",
+ "dataset_id": "chexpert",
+ "module": "CALIBRATION",
+ "shard": 0,
+ "n_shards": 1,
+ "rows": 400,
+ "scored_rows": 400,
+ "outcomes": 2400,
+ "seconds": 388.2,
+ "throughput_per_s": 6.18,
+ "batch": 1,
+ "batch_policy": "fixed composition per question: clean replicated baseline batch + padded steered batches",
+ "peak_gpu_memory_bytes": 32243824640,
+ "gpu_count": 2,
+ "gpu_models": [
+  "NVIDIA A100-SXM4-80GB"
+ ],
+ "ended_utc": "2026-09-13T19:20:10Z"
+}

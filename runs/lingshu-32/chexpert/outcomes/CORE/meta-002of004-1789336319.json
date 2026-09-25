@@ -1,0 +1,20 @@
+{
+ "model_key": "lingshu-32",
+ "dataset_id": "chexpert",
+ "module": "CORE",
+ "shard": 2,
+ "n_shards": 4,
+ "rows": 150,
+ "scored_rows": 150,
+ "outcomes": 114300,
+ "seconds": 8557.8,
+ "throughput_per_s": 13.36,
+ "batch": 16,
+ "batch_policy": "fixed composition per question: clean replicated baseline batch + padded steered batches",
+ "peak_gpu_memory_bytes": 32877735936,
+ "gpu_count": 2,
+ "gpu_models": [
+  "NVIDIA A100-SXM4-80GB"
+ ],
+ "ended_utc": "2026-09-13T21:51:59Z"
+}

@@ -1,0 +1,26 @@
+{
+ "model_key": "iv35-8",
+ "dataset_id": "coco",
+ "module": "FGOBJ_CALIBRATION",
+ "shard": 0,
+ "n_shards": 1,
+ "rows": 400,
+ "scored_rows": 400,
+ "outcomes": 2400,
+ "seconds": 138.8,
+ "throughput_per_s": 17.29,
+ "batch": 1,
+ "primary_template": "IY",
+ "numerics": "bf16-batched",
+ "fit_seed": null,
+ "batch_policy": "fixed composition per question: clean replicated baseline batch + padded steered batches",
+ "direction_block": "iv35-8",
+ "tower_swap": null,
+ "replay": null,
+ "peak_gpu_memory_bytes": 19589971968,
+ "gpu_count": 1,
+ "gpu_models": [
+  "NVIDIA A100-SXM4-80GB"
+ ],
+ "ended_utc": "2026-09-17T04:45:36Z"
+}

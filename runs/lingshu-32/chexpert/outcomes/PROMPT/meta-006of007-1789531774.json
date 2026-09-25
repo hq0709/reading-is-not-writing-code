@@ -1,0 +1,22 @@
+{
+ "model_key": "lingshu-32",
+ "dataset_id": "chexpert",
+ "module": "PROMPT",
+ "shard": 6,
+ "n_shards": 7,
+ "rows": 85,
+ "scored_rows": 85,
+ "outcomes": 107950,
+ "seconds": 8413.7,
+ "throughput_per_s": 12.83,
+ "batch": 16,
+ "primary_template": "IY",
+ "numerics": "bf16-batched",
+ "batch_policy": "fixed composition per question: clean replicated baseline batch + padded steered batches",
+ "peak_gpu_memory_bytes": 32932267008,
+ "gpu_count": 2,
+ "gpu_models": [
+  "NVIDIA A100-SXM4-80GB"
+ ],
+ "ended_utc": "2026-09-16T04:09:34Z"
+}

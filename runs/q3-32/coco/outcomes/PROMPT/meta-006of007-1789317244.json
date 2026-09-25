@@ -1,0 +1,20 @@
+{
+ "model_key": "q3-32",
+ "dataset_id": "coco",
+ "module": "PROMPT",
+ "shard": 6,
+ "n_shards": 7,
+ "rows": 85,
+ "scored_rows": 85,
+ "outcomes": 107950,
+ "seconds": 4541.3,
+ "throughput_per_s": 23.77,
+ "batch": 16,
+ "batch_policy": "fixed composition per question: clean replicated baseline batch + padded steered batches",
+ "peak_gpu_memory_bytes": 34329404928,
+ "gpu_count": 2,
+ "gpu_models": [
+  "NVIDIA H100 80GB HBM3"
+ ],
+ "ended_utc": "2026-09-13T16:34:04Z"
+}

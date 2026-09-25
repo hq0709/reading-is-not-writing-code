@@ -1,0 +1,466 @@
+{
+ "protocol_id": "cf-transfer-v1",
+ "run_id": "cf-transfer-v1:chexagent-8:coco:mayo",
+ "model_key": "chexagent-8",
+ "model_id": "StanfordAIMI/CheXagent-8b",
+ "model_revision": "4934e91451945c8218c267aae9c34929a7677829",
+ "processor_revision": "4934e91451945c8218c267aae9c34929a7677829",
+ "dataset_id": "coco",
+ "dataset_release": "COCO 2017 train2017/val2017 + instances annotations (2017-09-01)",
+ "source_commit": "4701456a3dadcc2af35247e0feb174c0fbf68ebb",
+ "adapter_path": "src/cftransfer/adapters/",
+ "python_version": "3.12.13",
+ "torch_version": "2.13.0+cu130",
+ "transformers_version": "5.15.0",
+ "numpy_version": "2.3.5",
+ "sklearn_version": "1.9.0",
+ "weight_dtype": "bfloat16",
+ "activation_dtype": "bfloat16 (hook delta computed in float32, cast back)",
+ "logit_dtype": "float32",
+ "attention_backend": "eager",
+ "device_map": [
+  "cuda:0"
+ ],
+ "gpu_models": [
+  "NVIDIA A100-SXM4-80GB",
+  "NVIDIA H100 80GB HBM3"
+ ],
+ "gpu_count": 1,
+ "batch_size": [
+  1,
+  16
+ ],
+ "started_utc": "2026-09-18T20:09:21Z",
+ "ended_utc": "2026-09-18T22:13:45Z",
+ "wall_seconds": 54493.6,
+ "gpu_hours": 15.137,
+ "peak_gpu_memory_bytes": 18807197184,
+ "processing_settings": {
+  "processor_kwargs": {},
+  "image_processor": {
+   "do_convert_rgb": true,
+   "do_normalize": true,
+   "do_rescale": true,
+   "do_resize": true,
+   "image_processor_type": "BlipImageProcessor",
+   "resample": 3,
+   "rescale_factor": 0.00392156862745098,
+   "size": {
+    "height": 448,
+    "width": 448
+   },
+   "auto_map": {
+    "AutoProcessor": "processing_chexagent.CheXagentProcessor"
+   }
+  },
+  "chat_template": null,
+  "example_prompt_IY": " USER: <s>Is there X in this image? Answer yes or no. ASSISTANT: <s>",
+  "special_token_ids": {
+   "image_token_id": null,
+   "pad_token_id": 2,
+   "eos_token_id": 2,
+   "visual_positions": "0..127 of inputs_embeds (prepended)"
+  },
+  "attn_implementation": "eager",
+  "candidate_tokens": {
+   "IY": {
+    "positive_ids": [
+     5081,
+     5592
+    ],
+    "negative_ids": [
+     708,
+     1770
+    ],
+    "detail": {
+     "yes": {
+      "yes": 5081,
+      "Yes": 5592,
+      " yes": 5081,
+      " Yes": 5592
+     },
+     "no": {
+      "no": 708,
+      "No": 1770,
+      " no": 708,
+      " No": 1770
+     }
+    }
+   },
+   "WY": {
+    "positive_ids": [
+     5081,
+     5592
+    ],
+    "negative_ids": [
+     708,
+     1770
+    ],
+    "detail": {
+     "yes": {
+      "yes": 5081,
+      "Yes": 5592,
+      " yes": 5081,
+      " Yes": 5592
+     },
+     "no": {
+      "no": 708,
+      "No": 1770,
+      " no": 708,
+      " No": 1770
+     }
+    }
+   },
+   "WB": {
+    "positive_ids": [
+     365
+    ],
+    "negative_ids": [
+     330
+    ],
+    "detail": {
+     "A": {
+      "A": 330,
+      " A": 330
+     },
+     "B": {
+      "B": 365,
+      " B": 365
+     }
+    }
+   },
+   "IA": {
+    "positive_ids": [
+     330
+    ],
+    "negative_ids": [
+     365
+    ],
+    "detail": {
+     "A": {
+      "A": 330,
+      " A": 330
+     },
+     "B": {
+      "B": 365,
+      " B": 365
+     }
+    }
+   },
+   "WA": {
+    "positive_ids": [
+     330
+    ],
+    "negative_ids": [
+     365
+    ],
+    "detail": {
+     "A": {
+      "A": 330,
+      " A": 330
+     },
+     "B": {
+      "B": 365,
+      " B": 365
+     }
+    }
+   },
+   "IB": {
+    "positive_ids": [
+     365
+    ],
+    "negative_ids": [
+     330
+    ],
+    "detail": {
+     "A": {
+      "A": 330,
+      " A": 330
+     },
+     "B": {
+      "B": 365,
+      " B": 365
+     }
+    }
+   }
+  },
+  "model_config": {
+   "architectures": [
+    "CheXagentForConditionalGeneration"
+   ],
+   "auto_map": {
+    "AutoConfig": "configuration_chexagent.CheXagentConfig",
+    "AutoModelForCausalLM": "modeling_chexagent.CheXagentForConditionalGeneration"
+   },
+   "dtype": "bfloat16",
+   "initializer_factor": 1.0,
+   "initializer_range": 0.02,
+   "model_type": "chexagent",
+   "num_max_images": 2,
+   "num_query_tokens": 128,
+   "qformer_config": {
+    "attention_probs_dropout_prob": 0.1,
+    "cross_attention_frequency": 2,
+    "encoder_hidden_size": 1408,
+    "hidden_act": "gelu",
+    "hidden_dropout_prob": 0.1,
+    "hidden_size": 768,
+    "initializer_range": 0.02,
+    "intermediate_size": 3072,
+    "layer_norm_eps": 1e-12,
+    "max_position_embeddings": 512,
+    "model_type": "chexagent_qformer",
+    "num_attention_heads": 12,
+    "num_hidden_layers": 12,
+    "pad_token_id": 0,
+    "position_embedding_type": "absolute",
+    "vocab_size": 30523
+   },
+   "text_config": {
+    "_name_or_path": "mistralai/Mistral-7B-v0.1",
+    "architectures": [
+     "MistralForCausalLM"
+    ],
+    "attention_bias": false,
+    "attention_dropout": 0.0,
+    "bos_token_id": 1,
+    "dtype": "bfloat16",
+    "eos_token_id": 2,
+    "head_dim": 128,
+    "hidden_act": "silu",
+    "hidden_size": 4096,
+    "initializer_range": 0.02,
+    "intermediate_size": 14336,
+    "max_position_embeddings": 32768,
+    "model_type": "mistral",
+    "num_attention_heads": 32,
+    "num_hidden_layers": 32,
+    "num_key_value_heads": 8,
+    "pad_token_id": null,
+    "pretraining_tp": 1,
+    "rms_norm_eps": 1e-05,
+    "rope_parameters": {
+     "rope_theta": 10000.0,
+     "rope_type": "default"
+    },
+    "sliding_window": 4096,
+    "tie_word_embeddings": false,
+    "use_cache": false,
+    "vocab_size": 32000
+   },
+   "tie_word_embeddings": false,
+   "transformers_version": "5.15.0",
+   "use_decoder_only_language_model": true,
+   "vision_config": {
+    "attention_dropout": 0.0,
+    "hidden_act": "gelu",
+    "hidden_size": 1408,
+    "image_size": 448,
+    "initializer_range": 1e-10,
+    "intermediate_size": 6144,
+    "layer_norm_eps": 1e-06,
+    "model_type": "chexagent_vision_model",
+    "num_attention_heads": 16,
+    "num_hidden_layers": 40,
+    "patch_size": 14,
+    "qkv_bias": true
+   }
+  },
+  "image_processing": {
+   "source": "the checkpoint's own BlipImageProcessor (preprocessor_config.json)",
+   "settings": {
+    "do_convert_rgb": true,
+    "do_normalize": true,
+    "do_rescale": true,
+    "do_resize": true,
+    "image_processor_type": "BlipImageProcessor",
+    "resample": 3,
+    "rescale_factor": 0.00392156862745098,
+    "size": {
+     "height": 448,
+     "width": 448
+    },
+    "auto_map": {
+     "AutoProcessor": "processing_chexagent.CheXagentProcessor"
+    }
+   },
+   "image_size": 448,
+   "patch_size": 14,
+   "vision_tokens": 1025,
+   "query_tokens": 128
+  },
+  "prompt_construction": "the checkpoint's own recipe (model card): ' USER: <s>{question} ASSISTANT: <s>' with add_special_tokens=True; the 128 projected query tokens are CONCATENATED in front of the prompt embeddings, so the prompt carries no image placeholder",
+  "remote_code_shim": {
+   "patched_symbols": [
+    "transformers.pytorch_utils.find_pruneable_heads_and_indices"
+   ],
+   "stubbed_modules": [],
+   "transformers_version_installed": "5.15.0",
+   "transformers_version_asserted_by_remote_code": null,
+   "restored_methods": [
+    "CheXagentQFormerModel.get_head_mask"
+   ]
+  },
+  "pad_token": "pad_token set to eos_token ('</s>', id 2)",
+  "device_map": {
+   "requested": "cuda:0",
+   "parameter_dtypes": [
+    "torch.bfloat16"
+   ]
+  }
+ },
+ "loci": {
+  "vis.last": {
+   "locus_id": "vis.last",
+   "module_path": "vision_model.encoder.layers.39",
+   "output_selection": "tensor output of vision encoder layer 39 of 40 (B, 1025, 1408); the tower's post_layernorm is applied to it and the result is what the Q-Former cross-attends to",
+   "hidden_dim": 1408,
+   "token_rule": "all 1025 tokens (CLS + 1024 patches of the 448x448 image); the Q-Former's encoder_attention_mask is all ones, so every row is read",
+   "affected_branch": "the single visual stream into the Q-Former's cross-attention",
+   "bypasses": "none: the tower's post_layernorm is ON the consumed path (unlike LLaVA and CheXagent-2, where the tower's final LayerNorm is computed and discarded), so a write here reaches the reader through it",
+   "consumer": "language_projection",
+   "prompt_independent": true,
+   "notes": "EVA-CLIP-shaped ViT, 40 layers at 448 px with 14 px patches, trained on chest radiographs by the CheXagent authors"
+  },
+  "connector": {
+   "locus_id": "connector",
+   "module_path": "language_projection",
+   "output_selection": "tensor output of the linear language_projection over the Q-Former's 128 query tokens, (B, 128, 4096)",
+   "hidden_dim": 4096,
+   "token_rule": "all 128 query tokens; the Q-Former is a perceiver-style resampler, so the token count is fixed and independent of the image",
+   "affected_branch": "the 128 visual embeddings concatenated in front of the prompt embeddings",
+   "bypasses": "none",
+   "consumer": "language model input embeddings",
+   "prompt_independent": true,
+   "notes": "the Q-Former takes no text input (query_embeds only), so the connector is prompt-independent"
+  }
+ },
+ "fit_seeds": [
+  0,
+  1,
+  2
+ ],
+ "random_seed": 0,
+ "projection_seed": 0,
+ "cohort_file": "manifests/cohort.csv",
+ "primary_template": "IY",
+ "requested_modules": [
+  "CORE",
+  "CALIBRATION",
+  "PROMPT",
+  "DOSE",
+  "REFIT",
+  "LOCUS",
+  "LOCUS_CALIBRATION"
+ ],
+ "completed_modules": [
+  "CORE",
+  "CALIBRATION",
+  "PROMPT",
+  "DOSE",
+  "REFIT",
+  "LOCUS",
+  "LOCUS_CALIBRATION"
+ ],
+ "ineligible_modules": [],
+ "status": "COMPLETE",
+ "deviations": [
+  {
+   "kind": "batch_vs_single_tolerance",
+   "locus_id": "connector",
+   "check": "D_batch_vs_single",
+   "value": 0.2592506408691406,
+   "declared_tolerance": 0.25,
+   "affected_modules": "none (fixed batch composition per question); recorded for transparency"
+  },
+  {
+   "kind": "preflight_not_passed",
+   "locus_id": "connector",
+   "failed_checks": [
+    "D_batch_vs_single",
+    "E_semantic_direction"
+   ]
+  },
+  {
+   "kind": "batch_vs_single_tolerance",
+   "locus_id": "vis.last",
+   "check": "D_batch_vs_single",
+   "value": 0.2592506408691406,
+   "declared_tolerance": 0.25,
+   "affected_modules": "none (fixed batch composition per question); recorded for transparency"
+  },
+  {
+   "kind": "preflight_not_passed",
+   "locus_id": "vis.last",
+   "failed_checks": [
+    "D_batch_vs_single",
+    "E_semantic_direction"
+   ]
+  }
+ ],
+ "feature_extraction_seconds": 616.4,
+ "notes": "gpu_hours sums wall time x GPUs over runner shards recorded in outcomes/*/meta-*.json; CPU fitting time is in fits/*/summary.json",
+ "merged_outcomes": {
+  "CORE": {
+   "parts": 60,
+   "rows_raw": 457200,
+   "rows_unique": 457200,
+   "failed": 0
+  },
+  "CALIBRATION": {
+   "parts": 40,
+   "rows_raw": 4800,
+   "rows_unique": 4800,
+   "failed": 0
+  },
+  "PROMPT": {
+   "parts": 63,
+   "rows_raw": 457200,
+   "rows_unique": 457200,
+   "failed": 0
+  },
+  "DOSE": {
+   "parts": 20,
+   "rows_raw": 162000,
+   "rows_unique": 162000,
+   "failed": 0
+  },
+  "REFIT": {
+   "parts": 60,
+   "rows_raw": 50400,
+   "rows_unique": 50400,
+   "failed": 0
+  },
+  "LOCUS": {
+   "parts": 60,
+   "rows_raw": 457200,
+   "rows_unique": 457200,
+   "failed": 0
+  },
+  "LOCUS_CALIBRATION": {
+   "parts": 40,
+   "rows_raw": 2400,
+   "rows_unique": 2400,
+   "failed": 0
+  },
+  "ALTDIR": {},
+  "EXTCOMP": {},
+  "TOKENW": {},
+  "PRECISION": {},
+  "ANSDIR": {},
+  "ALTDIRD": {},
+  "ATTR": {},
+  "ANSDIRT": {},
+  "VALID": {},
+  "ATTRRAND": {},
+  "ATTRQ": {},
+  "VALIDFIT": {},
+  "PROJSEED": {},
+  "TOWERSWAP": {},
+  "TOWERSWAPD": {},
+  "REPLAY": {},
+  "SEMEND": {},
+  "FGOBJ": {},
+  "FGOBJ_CALIBRATION": {}
+ }
+}

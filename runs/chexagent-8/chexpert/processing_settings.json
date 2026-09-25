@@ -1,0 +1,274 @@
+{
+ "processor_kwargs": {},
+ "image_processor": {
+  "do_convert_rgb": true,
+  "do_normalize": true,
+  "do_rescale": true,
+  "do_resize": true,
+  "image_processor_type": "BlipImageProcessor",
+  "resample": 3,
+  "rescale_factor": 0.00392156862745098,
+  "size": {
+   "height": 448,
+   "width": 448
+  },
+  "auto_map": {
+   "AutoProcessor": "processing_chexagent.CheXagentProcessor"
+  }
+ },
+ "chat_template": null,
+ "example_prompt_IY": " USER: <s>Is there X in this image? Answer yes or no. ASSISTANT: <s>",
+ "special_token_ids": {
+  "image_token_id": null,
+  "pad_token_id": 2,
+  "eos_token_id": 2,
+  "visual_positions": "0..127 of inputs_embeds (prepended)"
+ },
+ "attn_implementation": "eager",
+ "candidate_tokens": {
+  "WY": {
+   "positive_ids": [
+    5081,
+    5592
+   ],
+   "negative_ids": [
+    708,
+    1770
+   ],
+   "detail": {
+    "yes": {
+     "yes": 5081,
+     "Yes": 5592,
+     " yes": 5081,
+     " Yes": 5592
+    },
+    "no": {
+     "no": 708,
+     "No": 1770,
+     " no": 708,
+     " No": 1770
+    }
+   }
+  },
+  "IY": {
+   "positive_ids": [
+    5081,
+    5592
+   ],
+   "negative_ids": [
+    708,
+    1770
+   ],
+   "detail": {
+    "yes": {
+     "yes": 5081,
+     "Yes": 5592,
+     " yes": 5081,
+     " Yes": 5592
+    },
+    "no": {
+     "no": 708,
+     "No": 1770,
+     " no": 708,
+     " No": 1770
+    }
+   }
+  },
+  "IA": {
+   "positive_ids": [
+    330
+   ],
+   "negative_ids": [
+    365
+   ],
+   "detail": {
+    "A": {
+     "A": 330,
+     " A": 330
+    },
+    "B": {
+     "B": 365,
+     " B": 365
+    }
+   }
+  },
+  "WA": {
+   "positive_ids": [
+    330
+   ],
+   "negative_ids": [
+    365
+   ],
+   "detail": {
+    "A": {
+     "A": 330,
+     " A": 330
+    },
+    "B": {
+     "B": 365,
+     " B": 365
+    }
+   }
+  },
+  "WB": {
+   "positive_ids": [
+    365
+   ],
+   "negative_ids": [
+    330
+   ],
+   "detail": {
+    "A": {
+     "A": 330,
+     " A": 330
+    },
+    "B": {
+     "B": 365,
+     " B": 365
+    }
+   }
+  },
+  "IB": {
+   "positive_ids": [
+    365
+   ],
+   "negative_ids": [
+    330
+   ],
+   "detail": {
+    "A": {
+     "A": 330,
+     " A": 330
+    },
+    "B": {
+     "B": 365,
+     " B": 365
+    }
+   }
+  }
+ },
+ "model_config": {
+  "architectures": [
+   "CheXagentForConditionalGeneration"
+  ],
+  "auto_map": {
+   "AutoConfig": "configuration_chexagent.CheXagentConfig",
+   "AutoModelForCausalLM": "modeling_chexagent.CheXagentForConditionalGeneration"
+  },
+  "dtype": "bfloat16",
+  "initializer_factor": 1.0,
+  "initializer_range": 0.02,
+  "model_type": "chexagent",
+  "num_max_images": 2,
+  "num_query_tokens": 128,
+  "qformer_config": {
+   "attention_probs_dropout_prob": 0.1,
+   "cross_attention_frequency": 2,
+   "encoder_hidden_size": 1408,
+   "hidden_act": "gelu",
+   "hidden_dropout_prob": 0.1,
+   "hidden_size": 768,
+   "initializer_range": 0.02,
+   "intermediate_size": 3072,
+   "layer_norm_eps": 1e-12,
+   "max_position_embeddings": 512,
+   "model_type": "chexagent_qformer",
+   "num_attention_heads": 12,
+   "num_hidden_layers": 12,
+   "pad_token_id": 0,
+   "position_embedding_type": "absolute",
+   "vocab_size": 30523
+  },
+  "text_config": {
+   "_name_or_path": "mistralai/Mistral-7B-v0.1",
+   "architectures": [
+    "MistralForCausalLM"
+   ],
+   "attention_bias": false,
+   "attention_dropout": 0.0,
+   "bos_token_id": 1,
+   "dtype": "bfloat16",
+   "eos_token_id": 2,
+   "head_dim": 128,
+   "hidden_act": "silu",
+   "hidden_size": 4096,
+   "initializer_range": 0.02,
+   "intermediate_size": 14336,
+   "max_position_embeddings": 32768,
+   "model_type": "mistral",
+   "num_attention_heads": 32,
+   "num_hidden_layers": 32,
+   "num_key_value_heads": 8,
+   "pad_token_id": null,
+   "pretraining_tp": 1,
+   "rms_norm_eps": 1e-05,
+   "rope_parameters": {
+    "rope_theta": 10000.0,
+    "rope_type": "default"
+   },
+   "sliding_window": 4096,
+   "tie_word_embeddings": false,
+   "use_cache": false,
+   "vocab_size": 32000
+  },
+  "tie_word_embeddings": false,
+  "transformers_version": "5.15.0",
+  "use_decoder_only_language_model": true,
+  "vision_config": {
+   "attention_dropout": 0.0,
+   "hidden_act": "gelu",
+   "hidden_size": 1408,
+   "image_size": 448,
+   "initializer_range": 1e-10,
+   "intermediate_size": 6144,
+   "layer_norm_eps": 1e-06,
+   "model_type": "chexagent_vision_model",
+   "num_attention_heads": 16,
+   "num_hidden_layers": 40,
+   "patch_size": 14,
+   "qkv_bias": true
+  }
+ },
+ "image_processing": {
+  "source": "the checkpoint's own BlipImageProcessor (preprocessor_config.json)",
+  "settings": {
+   "do_convert_rgb": true,
+   "do_normalize": true,
+   "do_rescale": true,
+   "do_resize": true,
+   "image_processor_type": "BlipImageProcessor",
+   "resample": 3,
+   "rescale_factor": 0.00392156862745098,
+   "size": {
+    "height": 448,
+    "width": 448
+   },
+   "auto_map": {
+    "AutoProcessor": "processing_chexagent.CheXagentProcessor"
+   }
+  },
+  "image_size": 448,
+  "patch_size": 14,
+  "vision_tokens": 1025,
+  "query_tokens": 128
+ },
+ "prompt_construction": "the checkpoint's own recipe (model card): ' USER: <s>{question} ASSISTANT: <s>' with add_special_tokens=True; the 128 projected query tokens are CONCATENATED in front of the prompt embeddings, so the prompt carries no image placeholder",
+ "remote_code_shim": {
+  "patched_symbols": [
+   "transformers.pytorch_utils.find_pruneable_heads_and_indices"
+  ],
+  "stubbed_modules": [],
+  "transformers_version_installed": "5.15.0",
+  "transformers_version_asserted_by_remote_code": null,
+  "restored_methods": [
+   "CheXagentQFormerModel.get_head_mask"
+  ]
+ },
+ "pad_token": "pad_token set to eos_token ('</s>', id 2)",
+ "device_map": {
+  "requested": "cuda:0",
+  "parameter_dtypes": [
+   "torch.bfloat16"
+  ]
+ }
+}

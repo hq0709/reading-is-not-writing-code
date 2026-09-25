@@ -1,0 +1,211 @@
+{
+ "processor_kwargs": {},
+ "image_processor": {
+  "crop_size": {
+   "height": 336,
+   "width": 336
+  },
+  "do_center_crop": true,
+  "do_convert_rgb": true,
+  "do_normalize": true,
+  "do_rescale": true,
+  "do_resize": true,
+  "image_processor_type": "CLIPImageProcessor",
+  "resample": 3,
+  "rescale_factor": 0.00392156862745098,
+  "size": {
+   "shortest_edge": 336
+  }
+ },
+ "chat_template": "{{ bos_token }}{% for message in messages %}{% if (message['role'] == 'user') != (loop.index0 % 2 == 0) %}{{ raise_exception('Conversation roles must alternate user/assistant/user/assistant/...') }}{% endif %}{% if message['role'] == 'user' %}{{ '[INST] ' + message['content'] + ' [/INST]' }}{% elif message['role'] == 'assistant' %}{{ message['content'] + eos_token}}{% else %}{{ raise_exception('Only user and assistant roles are supported!') }}{% endif %}{% endfor %}",
+ "example_prompt_IY": "[INST] <image>\nIs there X in this image? Answer yes or no. [/INST]",
+ "special_token_ids": {
+  "image_token_id": 32000,
+  "pad_token_id": 0,
+  "eos_token_id": 2
+ },
+ "attn_implementation": "sdpa",
+ "candidate_tokens": {
+  "WY": {
+   "positive_ids": [
+    5081,
+    5592
+   ],
+   "negative_ids": [
+    708,
+    1770
+   ],
+   "detail": {
+    "yes": {
+     "yes": 5081,
+     "Yes": 5592,
+     " yes": 5081,
+     " Yes": 5592
+    },
+    "no": {
+     "no": 708,
+     "No": 1770,
+     " no": 708,
+     " No": 1770
+    }
+   }
+  },
+  "IY": {
+   "positive_ids": [
+    5081,
+    5592
+   ],
+   "negative_ids": [
+    708,
+    1770
+   ],
+   "detail": {
+    "yes": {
+     "yes": 5081,
+     "Yes": 5592,
+     " yes": 5081,
+     " Yes": 5592
+    },
+    "no": {
+     "no": 708,
+     "No": 1770,
+     " no": 708,
+     " No": 1770
+    }
+   }
+  },
+  "WB": {
+   "positive_ids": [
+    365
+   ],
+   "negative_ids": [
+    330
+   ],
+   "detail": {
+    "A": {
+     "A": 330,
+     " A": 330
+    },
+    "B": {
+     "B": 365,
+     " B": 365
+    }
+   }
+  },
+  "IB": {
+   "positive_ids": [
+    365
+   ],
+   "negative_ids": [
+    330
+   ],
+   "detail": {
+    "A": {
+     "A": 330,
+     " A": 330
+    },
+    "B": {
+     "B": 365,
+     " B": 365
+    }
+   }
+  },
+  "IA": {
+   "positive_ids": [
+    330
+   ],
+   "negative_ids": [
+    365
+   ],
+   "detail": {
+    "A": {
+     "A": 330,
+     " A": 330
+    },
+    "B": {
+     "B": 365,
+     " B": 365
+    }
+   }
+  },
+  "WA": {
+   "positive_ids": [
+    330
+   ],
+   "negative_ids": [
+    365
+   ],
+   "detail": {
+    "A": {
+     "A": 330,
+     " A": 330
+    },
+    "B": {
+     "B": 365,
+     " B": 365
+    }
+   }
+  }
+ },
+ "model_config": {
+  "architectures": [
+   "LlavaForConditionalGeneration"
+  ],
+  "dtype": "bfloat16",
+  "image_seq_length": 576,
+  "image_token_index": 32000,
+  "model_type": "llava",
+  "multimodal_projector_bias": true,
+  "pad_token_id": 0,
+  "projector_hidden_act": "gelu",
+  "text_config": {
+   "attention_dropout": 0.0,
+   "bos_token_id": 1,
+   "dtype": "bfloat16",
+   "eos_token_id": 2,
+   "head_dim": 128,
+   "hidden_act": "silu",
+   "hidden_size": 4096,
+   "initializer_range": 0.02,
+   "intermediate_size": 14336,
+   "max_position_embeddings": 32768,
+   "model_type": "mistral",
+   "num_attention_heads": 32,
+   "num_hidden_layers": 32,
+   "num_key_value_heads": 8,
+   "pad_token_id": null,
+   "rms_norm_eps": 1e-05,
+   "rope_parameters": {
+    "rope_theta": 1000000.0,
+    "rope_type": "default"
+   },
+   "sliding_window": null,
+   "tie_word_embeddings": false,
+   "use_cache": true,
+   "vocab_size": 32001
+  },
+  "tie_word_embeddings": false,
+  "transformers_version": "5.15.0",
+  "vision_config": {
+   "attention_dropout": 0.0,
+   "dtype": "bfloat16",
+   "hidden_act": "quick_gelu",
+   "hidden_size": 1024,
+   "image_size": 336,
+   "initializer_factor": 1.0,
+   "initializer_range": 0.02,
+   "intermediate_size": 4096,
+   "layer_norm_eps": 1e-05,
+   "model_type": "clip_vision_model",
+   "num_attention_heads": 16,
+   "num_channels": 3,
+   "num_hidden_layers": 24,
+   "patch_size": 14,
+   "projection_dim": 768
+  },
+  "vision_feature_layer": -2,
+  "vision_feature_select_strategy": "default"
+ },
+ "prompt_construction": "official LLaVA-Med mistral_instruct conversation '[INST] <image>\\n{q} [/INST]'; chunked tokenizer_image_token with 576 x <image>(32000); expand2square padding with CLIP mean; answer logits over the original 32,000-token vocabulary",
+ "conversion_receipt": "/rodata/azradonc_dev/m253405/cache/converted/llava-med-v1.5-mistral-7b-hf/conversion.json"
+}

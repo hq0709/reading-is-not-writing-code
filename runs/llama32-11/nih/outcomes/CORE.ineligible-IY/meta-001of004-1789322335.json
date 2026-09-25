@@ -1,0 +1,18 @@
+{
+ "model_key": "llama32-11",
+ "dataset_id": "nih",
+ "module": "CORE",
+ "shard": 1,
+ "n_shards": 4,
+ "rows": 150,
+ "scored_rows": 0,
+ "outcomes": 0,
+ "seconds": 0.0,
+ "throughput_per_s": 0.0,
+ "batch": 16,
+ "ineligible_templates": [
+  "IY"
+ ],
+ "note": "every template of this module is INELIGIBLE by preflight check E; the shard is terminal with no outcomes (coverage records the disposition)",
+ "ended_utc": "2026-09-13T17:58:55Z"
+}

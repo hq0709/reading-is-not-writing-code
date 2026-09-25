@@ -1,0 +1,1394 @@
+{
+ "chexpert|Effusion|IY": {
+  "dataset_id": "chexpert",
+  "concept": "Effusion",
+  "template_id": "IY",
+  "is_primary": true,
+  "question": "Is there a pleural effusion in this chest radiograph? Answer yes or no.",
+  "rendered_prompt": "<bos><start_of_turn>user\n<start_of_image>Is there a pleural effusion in this chest radiograph? Answer yes or no.<end_of_turn>\n<start_of_turn>model\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   4443,
+   10784,
+   11262,
+   8438
+  ],
+  "negative_token_ids": [
+   1904,
+   3771,
+   951,
+   2301
+  ],
+  "candidate_detail": {
+   "yes": {
+    "yes": 4443,
+    "Yes": 10784,
+    " yes": 11262,
+    " Yes": 8438
+   },
+   "no": {
+    "no": 1904,
+    "No": 3771,
+    " no": 951,
+    " No": 2301
+   }
+  },
+  "raw_ab": null,
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "chexpert|Effusion|WY": {
+  "dataset_id": "chexpert",
+  "concept": "Effusion",
+  "template_id": "WY",
+  "is_primary": false,
+  "question": "Does this chest radiograph show a pleural effusion? Answer yes or no.",
+  "rendered_prompt": "<bos><start_of_turn>user\n<start_of_image>Does this chest radiograph show a pleural effusion? Answer yes or no.<end_of_turn>\n<start_of_turn>model\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   4443,
+   10784,
+   11262,
+   8438
+  ],
+  "negative_token_ids": [
+   1904,
+   3771,
+   951,
+   2301
+  ],
+  "candidate_detail": {
+   "yes": {
+    "yes": 4443,
+    "Yes": 10784,
+    " yes": 11262,
+    " Yes": 8438
+   },
+   "no": {
+    "no": 1904,
+    "No": 3771,
+    " no": 951,
+    " No": 2301
+   }
+  },
+  "raw_ab": null,
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "chexpert|Effusion|IA": {
+  "dataset_id": "chexpert",
+  "concept": "Effusion",
+  "template_id": "IA",
+  "is_primary": false,
+  "question": "Is there a pleural effusion in this chest radiograph? Answer A if the finding is present and B if it is absent. Reply with A or B only.",
+  "rendered_prompt": "<bos><start_of_turn>user\n<start_of_image>Is there a pleural effusion in this chest radiograph? Answer A if the finding is present and B if it is absent. Reply with A or B only.<end_of_turn>\n<start_of_turn>model\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   236776,
+   562
+  ],
+  "negative_token_ids": [
+   236799,
+   603
+  ],
+  "candidate_detail": {
+   "A": {
+    "A": 236776,
+    " A": 562
+   },
+   "B": {
+    "B": 236799,
+    " B": 603
+   }
+  },
+  "raw_ab": {
+   "A_ids": [
+    236776,
+    562
+   ],
+   "B_ids": [
+    236799,
+    603
+   ]
+  },
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "chexpert|Effusion|IB": {
+  "dataset_id": "chexpert",
+  "concept": "Effusion",
+  "template_id": "IB",
+  "is_primary": false,
+  "question": "Is there a pleural effusion in this chest radiograph? Answer B if the finding is present and A if it is absent. Reply with A or B only.",
+  "rendered_prompt": "<bos><start_of_turn>user\n<start_of_image>Is there a pleural effusion in this chest radiograph? Answer B if the finding is present and A if it is absent. Reply with A or B only.<end_of_turn>\n<start_of_turn>model\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   236799,
+   603
+  ],
+  "negative_token_ids": [
+   236776,
+   562
+  ],
+  "candidate_detail": {
+   "A": {
+    "A": 236776,
+    " A": 562
+   },
+   "B": {
+    "B": 236799,
+    " B": 603
+   }
+  },
+  "raw_ab": {
+   "A_ids": [
+    236776,
+    562
+   ],
+   "B_ids": [
+    236799,
+    603
+   ]
+  },
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "chexpert|Effusion|WA": {
+  "dataset_id": "chexpert",
+  "concept": "Effusion",
+  "template_id": "WA",
+  "is_primary": false,
+  "question": "Does this chest radiograph show a pleural effusion? Answer A if the finding is present and B if it is absent. Reply with A or B only.",
+  "rendered_prompt": "<bos><start_of_turn>user\n<start_of_image>Does this chest radiograph show a pleural effusion? Answer A if the finding is present and B if it is absent. Reply with A or B only.<end_of_turn>\n<start_of_turn>model\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   236776,
+   562
+  ],
+  "negative_token_ids": [
+   236799,
+   603
+  ],
+  "candidate_detail": {
+   "A": {
+    "A": 236776,
+    " A": 562
+   },
+   "B": {
+    "B": 236799,
+    " B": 603
+   }
+  },
+  "raw_ab": {
+   "A_ids": [
+    236776,
+    562
+   ],
+   "B_ids": [
+    236799,
+    603
+   ]
+  },
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "chexpert|Effusion|WB": {
+  "dataset_id": "chexpert",
+  "concept": "Effusion",
+  "template_id": "WB",
+  "is_primary": false,
+  "question": "Does this chest radiograph show a pleural effusion? Answer B if the finding is present and A if it is absent. Reply with A or B only.",
+  "rendered_prompt": "<bos><start_of_turn>user\n<start_of_image>Does this chest radiograph show a pleural effusion? Answer B if the finding is present and A if it is absent. Reply with A or B only.<end_of_turn>\n<start_of_turn>model\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   236799,
+   603
+  ],
+  "negative_token_ids": [
+   236776,
+   562
+  ],
+  "candidate_detail": {
+   "A": {
+    "A": 236776,
+    " A": 562
+   },
+   "B": {
+    "B": 236799,
+    " B": 603
+   }
+  },
+  "raw_ab": {
+   "A_ids": [
+    236776,
+    562
+   ],
+   "B_ids": [
+    236799,
+    603
+   ]
+  },
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "chexpert|Atelectasis|IY": {
+  "dataset_id": "chexpert",
+  "concept": "Atelectasis",
+  "template_id": "IY",
+  "is_primary": true,
+  "question": "Is there atelectasis in this chest radiograph? Answer yes or no.",
+  "rendered_prompt": "<bos><start_of_turn>user\n<start_of_image>Is there atelectasis in this chest radiograph? Answer yes or no.<end_of_turn>\n<start_of_turn>model\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   4443,
+   10784,
+   11262,
+   8438
+  ],
+  "negative_token_ids": [
+   1904,
+   3771,
+   951,
+   2301
+  ],
+  "candidate_detail": {
+   "yes": {
+    "yes": 4443,
+    "Yes": 10784,
+    " yes": 11262,
+    " Yes": 8438
+   },
+   "no": {
+    "no": 1904,
+    "No": 3771,
+    " no": 951,
+    " No": 2301
+   }
+  },
+  "raw_ab": null,
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "chexpert|Atelectasis|WY": {
+  "dataset_id": "chexpert",
+  "concept": "Atelectasis",
+  "template_id": "WY",
+  "is_primary": false,
+  "question": "Does this chest radiograph show atelectasis? Answer yes or no.",
+  "rendered_prompt": "<bos><start_of_turn>user\n<start_of_image>Does this chest radiograph show atelectasis? Answer yes or no.<end_of_turn>\n<start_of_turn>model\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   4443,
+   10784,
+   11262,
+   8438
+  ],
+  "negative_token_ids": [
+   1904,
+   3771,
+   951,
+   2301
+  ],
+  "candidate_detail": {
+   "yes": {
+    "yes": 4443,
+    "Yes": 10784,
+    " yes": 11262,
+    " Yes": 8438
+   },
+   "no": {
+    "no": 1904,
+    "No": 3771,
+    " no": 951,
+    " No": 2301
+   }
+  },
+  "raw_ab": null,
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "chexpert|Atelectasis|IA": {
+  "dataset_id": "chexpert",
+  "concept": "Atelectasis",
+  "template_id": "IA",
+  "is_primary": false,
+  "question": "Is there atelectasis in this chest radiograph? Answer A if the finding is present and B if it is absent. Reply with A or B only.",
+  "rendered_prompt": "<bos><start_of_turn>user\n<start_of_image>Is there atelectasis in this chest radiograph? Answer A if the finding is present and B if it is absent. Reply with A or B only.<end_of_turn>\n<start_of_turn>model\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   236776,
+   562
+  ],
+  "negative_token_ids": [
+   236799,
+   603
+  ],
+  "candidate_detail": {
+   "A": {
+    "A": 236776,
+    " A": 562
+   },
+   "B": {
+    "B": 236799,
+    " B": 603
+   }
+  },
+  "raw_ab": {
+   "A_ids": [
+    236776,
+    562
+   ],
+   "B_ids": [
+    236799,
+    603
+   ]
+  },
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "chexpert|Atelectasis|IB": {
+  "dataset_id": "chexpert",
+  "concept": "Atelectasis",
+  "template_id": "IB",
+  "is_primary": false,
+  "question": "Is there atelectasis in this chest radiograph? Answer B if the finding is present and A if it is absent. Reply with A or B only.",
+  "rendered_prompt": "<bos><start_of_turn>user\n<start_of_image>Is there atelectasis in this chest radiograph? Answer B if the finding is present and A if it is absent. Reply with A or B only.<end_of_turn>\n<start_of_turn>model\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   236799,
+   603
+  ],
+  "negative_token_ids": [
+   236776,
+   562
+  ],
+  "candidate_detail": {
+   "A": {
+    "A": 236776,
+    " A": 562
+   },
+   "B": {
+    "B": 236799,
+    " B": 603
+   }
+  },
+  "raw_ab": {
+   "A_ids": [
+    236776,
+    562
+   ],
+   "B_ids": [
+    236799,
+    603
+   ]
+  },
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "chexpert|Atelectasis|WA": {
+  "dataset_id": "chexpert",
+  "concept": "Atelectasis",
+  "template_id": "WA",
+  "is_primary": false,
+  "question": "Does this chest radiograph show atelectasis? Answer A if the finding is present and B if it is absent. Reply with A or B only.",
+  "rendered_prompt": "<bos><start_of_turn>user\n<start_of_image>Does this chest radiograph show atelectasis? Answer A if the finding is present and B if it is absent. Reply with A or B only.<end_of_turn>\n<start_of_turn>model\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   236776,
+   562
+  ],
+  "negative_token_ids": [
+   236799,
+   603
+  ],
+  "candidate_detail": {
+   "A": {
+    "A": 236776,
+    " A": 562
+   },
+   "B": {
+    "B": 236799,
+    " B": 603
+   }
+  },
+  "raw_ab": {
+   "A_ids": [
+    236776,
+    562
+   ],
+   "B_ids": [
+    236799,
+    603
+   ]
+  },
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "chexpert|Atelectasis|WB": {
+  "dataset_id": "chexpert",
+  "concept": "Atelectasis",
+  "template_id": "WB",
+  "is_primary": false,
+  "question": "Does this chest radiograph show atelectasis? Answer B if the finding is present and A if it is absent. Reply with A or B only.",
+  "rendered_prompt": "<bos><start_of_turn>user\n<start_of_image>Does this chest radiograph show atelectasis? Answer B if the finding is present and A if it is absent. Reply with A or B only.<end_of_turn>\n<start_of_turn>model\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   236799,
+   603
+  ],
+  "negative_token_ids": [
+   236776,
+   562
+  ],
+  "candidate_detail": {
+   "A": {
+    "A": 236776,
+    " A": 562
+   },
+   "B": {
+    "B": 236799,
+    " B": 603
+   }
+  },
+  "raw_ab": {
+   "A_ids": [
+    236776,
+    562
+   ],
+   "B_ids": [
+    236799,
+    603
+   ]
+  },
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "chexpert|Pneumothorax|IY": {
+  "dataset_id": "chexpert",
+  "concept": "Pneumothorax",
+  "template_id": "IY",
+  "is_primary": true,
+  "question": "Is there a pneumothorax in this chest radiograph? Answer yes or no.",
+  "rendered_prompt": "<bos><start_of_turn>user\n<start_of_image>Is there a pneumothorax in this chest radiograph? Answer yes or no.<end_of_turn>\n<start_of_turn>model\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   4443,
+   10784,
+   11262,
+   8438
+  ],
+  "negative_token_ids": [
+   1904,
+   3771,
+   951,
+   2301
+  ],
+  "candidate_detail": {
+   "yes": {
+    "yes": 4443,
+    "Yes": 10784,
+    " yes": 11262,
+    " Yes": 8438
+   },
+   "no": {
+    "no": 1904,
+    "No": 3771,
+    " no": 951,
+    " No": 2301
+   }
+  },
+  "raw_ab": null,
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "chexpert|Pneumothorax|WY": {
+  "dataset_id": "chexpert",
+  "concept": "Pneumothorax",
+  "template_id": "WY",
+  "is_primary": false,
+  "question": "Does this chest radiograph show a pneumothorax? Answer yes or no.",
+  "rendered_prompt": "<bos><start_of_turn>user\n<start_of_image>Does this chest radiograph show a pneumothorax? Answer yes or no.<end_of_turn>\n<start_of_turn>model\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   4443,
+   10784,
+   11262,
+   8438
+  ],
+  "negative_token_ids": [
+   1904,
+   3771,
+   951,
+   2301
+  ],
+  "candidate_detail": {
+   "yes": {
+    "yes": 4443,
+    "Yes": 10784,
+    " yes": 11262,
+    " Yes": 8438
+   },
+   "no": {
+    "no": 1904,
+    "No": 3771,
+    " no": 951,
+    " No": 2301
+   }
+  },
+  "raw_ab": null,
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "chexpert|Pneumothorax|IA": {
+  "dataset_id": "chexpert",
+  "concept": "Pneumothorax",
+  "template_id": "IA",
+  "is_primary": false,
+  "question": "Is there a pneumothorax in this chest radiograph? Answer A if the finding is present and B if it is absent. Reply with A or B only.",
+  "rendered_prompt": "<bos><start_of_turn>user\n<start_of_image>Is there a pneumothorax in this chest radiograph? Answer A if the finding is present and B if it is absent. Reply with A or B only.<end_of_turn>\n<start_of_turn>model\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   236776,
+   562
+  ],
+  "negative_token_ids": [
+   236799,
+   603
+  ],
+  "candidate_detail": {
+   "A": {
+    "A": 236776,
+    " A": 562
+   },
+   "B": {
+    "B": 236799,
+    " B": 603
+   }
+  },
+  "raw_ab": {
+   "A_ids": [
+    236776,
+    562
+   ],
+   "B_ids": [
+    236799,
+    603
+   ]
+  },
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "chexpert|Pneumothorax|IB": {
+  "dataset_id": "chexpert",
+  "concept": "Pneumothorax",
+  "template_id": "IB",
+  "is_primary": false,
+  "question": "Is there a pneumothorax in this chest radiograph? Answer B if the finding is present and A if it is absent. Reply with A or B only.",
+  "rendered_prompt": "<bos><start_of_turn>user\n<start_of_image>Is there a pneumothorax in this chest radiograph? Answer B if the finding is present and A if it is absent. Reply with A or B only.<end_of_turn>\n<start_of_turn>model\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   236799,
+   603
+  ],
+  "negative_token_ids": [
+   236776,
+   562
+  ],
+  "candidate_detail": {
+   "A": {
+    "A": 236776,
+    " A": 562
+   },
+   "B": {
+    "B": 236799,
+    " B": 603
+   }
+  },
+  "raw_ab": {
+   "A_ids": [
+    236776,
+    562
+   ],
+   "B_ids": [
+    236799,
+    603
+   ]
+  },
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "chexpert|Pneumothorax|WA": {
+  "dataset_id": "chexpert",
+  "concept": "Pneumothorax",
+  "template_id": "WA",
+  "is_primary": false,
+  "question": "Does this chest radiograph show a pneumothorax? Answer A if the finding is present and B if it is absent. Reply with A or B only.",
+  "rendered_prompt": "<bos><start_of_turn>user\n<start_of_image>Does this chest radiograph show a pneumothorax? Answer A if the finding is present and B if it is absent. Reply with A or B only.<end_of_turn>\n<start_of_turn>model\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   236776,
+   562
+  ],
+  "negative_token_ids": [
+   236799,
+   603
+  ],
+  "candidate_detail": {
+   "A": {
+    "A": 236776,
+    " A": 562
+   },
+   "B": {
+    "B": 236799,
+    " B": 603
+   }
+  },
+  "raw_ab": {
+   "A_ids": [
+    236776,
+    562
+   ],
+   "B_ids": [
+    236799,
+    603
+   ]
+  },
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "chexpert|Pneumothorax|WB": {
+  "dataset_id": "chexpert",
+  "concept": "Pneumothorax",
+  "template_id": "WB",
+  "is_primary": false,
+  "question": "Does this chest radiograph show a pneumothorax? Answer B if the finding is present and A if it is absent. Reply with A or B only.",
+  "rendered_prompt": "<bos><start_of_turn>user\n<start_of_image>Does this chest radiograph show a pneumothorax? Answer B if the finding is present and A if it is absent. Reply with A or B only.<end_of_turn>\n<start_of_turn>model\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   236799,
+   603
+  ],
+  "negative_token_ids": [
+   236776,
+   562
+  ],
+  "candidate_detail": {
+   "A": {
+    "A": 236776,
+    " A": 562
+   },
+   "B": {
+    "B": 236799,
+    " B": 603
+   }
+  },
+  "raw_ab": {
+   "A_ids": [
+    236776,
+    562
+   ],
+   "B_ids": [
+    236799,
+    603
+   ]
+  },
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "chexpert|Cardiomegaly|IY": {
+  "dataset_id": "chexpert",
+  "concept": "Cardiomegaly",
+  "template_id": "IY",
+  "is_primary": true,
+  "question": "Is there cardiomegaly in this chest radiograph? Answer yes or no.",
+  "rendered_prompt": "<bos><start_of_turn>user\n<start_of_image>Is there cardiomegaly in this chest radiograph? Answer yes or no.<end_of_turn>\n<start_of_turn>model\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   4443,
+   10784,
+   11262,
+   8438
+  ],
+  "negative_token_ids": [
+   1904,
+   3771,
+   951,
+   2301
+  ],
+  "candidate_detail": {
+   "yes": {
+    "yes": 4443,
+    "Yes": 10784,
+    " yes": 11262,
+    " Yes": 8438
+   },
+   "no": {
+    "no": 1904,
+    "No": 3771,
+    " no": 951,
+    " No": 2301
+   }
+  },
+  "raw_ab": null,
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "chexpert|Cardiomegaly|WY": {
+  "dataset_id": "chexpert",
+  "concept": "Cardiomegaly",
+  "template_id": "WY",
+  "is_primary": false,
+  "question": "Does this chest radiograph show cardiomegaly? Answer yes or no.",
+  "rendered_prompt": "<bos><start_of_turn>user\n<start_of_image>Does this chest radiograph show cardiomegaly? Answer yes or no.<end_of_turn>\n<start_of_turn>model\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   4443,
+   10784,
+   11262,
+   8438
+  ],
+  "negative_token_ids": [
+   1904,
+   3771,
+   951,
+   2301
+  ],
+  "candidate_detail": {
+   "yes": {
+    "yes": 4443,
+    "Yes": 10784,
+    " yes": 11262,
+    " Yes": 8438
+   },
+   "no": {
+    "no": 1904,
+    "No": 3771,
+    " no": 951,
+    " No": 2301
+   }
+  },
+  "raw_ab": null,
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "chexpert|Cardiomegaly|IA": {
+  "dataset_id": "chexpert",
+  "concept": "Cardiomegaly",
+  "template_id": "IA",
+  "is_primary": false,
+  "question": "Is there cardiomegaly in this chest radiograph? Answer A if the finding is present and B if it is absent. Reply with A or B only.",
+  "rendered_prompt": "<bos><start_of_turn>user\n<start_of_image>Is there cardiomegaly in this chest radiograph? Answer A if the finding is present and B if it is absent. Reply with A or B only.<end_of_turn>\n<start_of_turn>model\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   236776,
+   562
+  ],
+  "negative_token_ids": [
+   236799,
+   603
+  ],
+  "candidate_detail": {
+   "A": {
+    "A": 236776,
+    " A": 562
+   },
+   "B": {
+    "B": 236799,
+    " B": 603
+   }
+  },
+  "raw_ab": {
+   "A_ids": [
+    236776,
+    562
+   ],
+   "B_ids": [
+    236799,
+    603
+   ]
+  },
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "chexpert|Cardiomegaly|IB": {
+  "dataset_id": "chexpert",
+  "concept": "Cardiomegaly",
+  "template_id": "IB",
+  "is_primary": false,
+  "question": "Is there cardiomegaly in this chest radiograph? Answer B if the finding is present and A if it is absent. Reply with A or B only.",
+  "rendered_prompt": "<bos><start_of_turn>user\n<start_of_image>Is there cardiomegaly in this chest radiograph? Answer B if the finding is present and A if it is absent. Reply with A or B only.<end_of_turn>\n<start_of_turn>model\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   236799,
+   603
+  ],
+  "negative_token_ids": [
+   236776,
+   562
+  ],
+  "candidate_detail": {
+   "A": {
+    "A": 236776,
+    " A": 562
+   },
+   "B": {
+    "B": 236799,
+    " B": 603
+   }
+  },
+  "raw_ab": {
+   "A_ids": [
+    236776,
+    562
+   ],
+   "B_ids": [
+    236799,
+    603
+   ]
+  },
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "chexpert|Cardiomegaly|WA": {
+  "dataset_id": "chexpert",
+  "concept": "Cardiomegaly",
+  "template_id": "WA",
+  "is_primary": false,
+  "question": "Does this chest radiograph show cardiomegaly? Answer A if the finding is present and B if it is absent. Reply with A or B only.",
+  "rendered_prompt": "<bos><start_of_turn>user\n<start_of_image>Does this chest radiograph show cardiomegaly? Answer A if the finding is present and B if it is absent. Reply with A or B only.<end_of_turn>\n<start_of_turn>model\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   236776,
+   562
+  ],
+  "negative_token_ids": [
+   236799,
+   603
+  ],
+  "candidate_detail": {
+   "A": {
+    "A": 236776,
+    " A": 562
+   },
+   "B": {
+    "B": 236799,
+    " B": 603
+   }
+  },
+  "raw_ab": {
+   "A_ids": [
+    236776,
+    562
+   ],
+   "B_ids": [
+    236799,
+    603
+   ]
+  },
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "chexpert|Cardiomegaly|WB": {
+  "dataset_id": "chexpert",
+  "concept": "Cardiomegaly",
+  "template_id": "WB",
+  "is_primary": false,
+  "question": "Does this chest radiograph show cardiomegaly? Answer B if the finding is present and A if it is absent. Reply with A or B only.",
+  "rendered_prompt": "<bos><start_of_turn>user\n<start_of_image>Does this chest radiograph show cardiomegaly? Answer B if the finding is present and A if it is absent. Reply with A or B only.<end_of_turn>\n<start_of_turn>model\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   236799,
+   603
+  ],
+  "negative_token_ids": [
+   236776,
+   562
+  ],
+  "candidate_detail": {
+   "A": {
+    "A": 236776,
+    " A": 562
+   },
+   "B": {
+    "B": 236799,
+    " B": 603
+   }
+  },
+  "raw_ab": {
+   "A_ids": [
+    236776,
+    562
+   ],
+   "B_ids": [
+    236799,
+    603
+   ]
+  },
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "chexpert|Consolidation|IY": {
+  "dataset_id": "chexpert",
+  "concept": "Consolidation",
+  "template_id": "IY",
+  "is_primary": true,
+  "question": "Is there consolidation in this chest radiograph? Answer yes or no.",
+  "rendered_prompt": "<bos><start_of_turn>user\n<start_of_image>Is there consolidation in this chest radiograph? Answer yes or no.<end_of_turn>\n<start_of_turn>model\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   4443,
+   10784,
+   11262,
+   8438
+  ],
+  "negative_token_ids": [
+   1904,
+   3771,
+   951,
+   2301
+  ],
+  "candidate_detail": {
+   "yes": {
+    "yes": 4443,
+    "Yes": 10784,
+    " yes": 11262,
+    " Yes": 8438
+   },
+   "no": {
+    "no": 1904,
+    "No": 3771,
+    " no": 951,
+    " No": 2301
+   }
+  },
+  "raw_ab": null,
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "chexpert|Consolidation|WY": {
+  "dataset_id": "chexpert",
+  "concept": "Consolidation",
+  "template_id": "WY",
+  "is_primary": false,
+  "question": "Does this chest radiograph show consolidation? Answer yes or no.",
+  "rendered_prompt": "<bos><start_of_turn>user\n<start_of_image>Does this chest radiograph show consolidation? Answer yes or no.<end_of_turn>\n<start_of_turn>model\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   4443,
+   10784,
+   11262,
+   8438
+  ],
+  "negative_token_ids": [
+   1904,
+   3771,
+   951,
+   2301
+  ],
+  "candidate_detail": {
+   "yes": {
+    "yes": 4443,
+    "Yes": 10784,
+    " yes": 11262,
+    " Yes": 8438
+   },
+   "no": {
+    "no": 1904,
+    "No": 3771,
+    " no": 951,
+    " No": 2301
+   }
+  },
+  "raw_ab": null,
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "chexpert|Consolidation|IA": {
+  "dataset_id": "chexpert",
+  "concept": "Consolidation",
+  "template_id": "IA",
+  "is_primary": false,
+  "question": "Is there consolidation in this chest radiograph? Answer A if the finding is present and B if it is absent. Reply with A or B only.",
+  "rendered_prompt": "<bos><start_of_turn>user\n<start_of_image>Is there consolidation in this chest radiograph? Answer A if the finding is present and B if it is absent. Reply with A or B only.<end_of_turn>\n<start_of_turn>model\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   236776,
+   562
+  ],
+  "negative_token_ids": [
+   236799,
+   603
+  ],
+  "candidate_detail": {
+   "A": {
+    "A": 236776,
+    " A": 562
+   },
+   "B": {
+    "B": 236799,
+    " B": 603
+   }
+  },
+  "raw_ab": {
+   "A_ids": [
+    236776,
+    562
+   ],
+   "B_ids": [
+    236799,
+    603
+   ]
+  },
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "chexpert|Consolidation|IB": {
+  "dataset_id": "chexpert",
+  "concept": "Consolidation",
+  "template_id": "IB",
+  "is_primary": false,
+  "question": "Is there consolidation in this chest radiograph? Answer B if the finding is present and A if it is absent. Reply with A or B only.",
+  "rendered_prompt": "<bos><start_of_turn>user\n<start_of_image>Is there consolidation in this chest radiograph? Answer B if the finding is present and A if it is absent. Reply with A or B only.<end_of_turn>\n<start_of_turn>model\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   236799,
+   603
+  ],
+  "negative_token_ids": [
+   236776,
+   562
+  ],
+  "candidate_detail": {
+   "A": {
+    "A": 236776,
+    " A": 562
+   },
+   "B": {
+    "B": 236799,
+    " B": 603
+   }
+  },
+  "raw_ab": {
+   "A_ids": [
+    236776,
+    562
+   ],
+   "B_ids": [
+    236799,
+    603
+   ]
+  },
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "chexpert|Consolidation|WA": {
+  "dataset_id": "chexpert",
+  "concept": "Consolidation",
+  "template_id": "WA",
+  "is_primary": false,
+  "question": "Does this chest radiograph show consolidation? Answer A if the finding is present and B if it is absent. Reply with A or B only.",
+  "rendered_prompt": "<bos><start_of_turn>user\n<start_of_image>Does this chest radiograph show consolidation? Answer A if the finding is present and B if it is absent. Reply with A or B only.<end_of_turn>\n<start_of_turn>model\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   236776,
+   562
+  ],
+  "negative_token_ids": [
+   236799,
+   603
+  ],
+  "candidate_detail": {
+   "A": {
+    "A": 236776,
+    " A": 562
+   },
+   "B": {
+    "B": 236799,
+    " B": 603
+   }
+  },
+  "raw_ab": {
+   "A_ids": [
+    236776,
+    562
+   ],
+   "B_ids": [
+    236799,
+    603
+   ]
+  },
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "chexpert|Consolidation|WB": {
+  "dataset_id": "chexpert",
+  "concept": "Consolidation",
+  "template_id": "WB",
+  "is_primary": false,
+  "question": "Does this chest radiograph show consolidation? Answer B if the finding is present and A if it is absent. Reply with A or B only.",
+  "rendered_prompt": "<bos><start_of_turn>user\n<start_of_image>Does this chest radiograph show consolidation? Answer B if the finding is present and A if it is absent. Reply with A or B only.<end_of_turn>\n<start_of_turn>model\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   236799,
+   603
+  ],
+  "negative_token_ids": [
+   236776,
+   562
+  ],
+  "candidate_detail": {
+   "A": {
+    "A": 236776,
+    " A": 562
+   },
+   "B": {
+    "B": 236799,
+    " B": 603
+   }
+  },
+  "raw_ab": {
+   "A_ids": [
+    236776,
+    562
+   ],
+   "B_ids": [
+    236799,
+    603
+   ]
+  },
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "chexpert|Edema|IY": {
+  "dataset_id": "chexpert",
+  "concept": "Edema",
+  "template_id": "IY",
+  "is_primary": true,
+  "question": "Is there pulmonary edema in this chest radiograph? Answer yes or no.",
+  "rendered_prompt": "<bos><start_of_turn>user\n<start_of_image>Is there pulmonary edema in this chest radiograph? Answer yes or no.<end_of_turn>\n<start_of_turn>model\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   4443,
+   10784,
+   11262,
+   8438
+  ],
+  "negative_token_ids": [
+   1904,
+   3771,
+   951,
+   2301
+  ],
+  "candidate_detail": {
+   "yes": {
+    "yes": 4443,
+    "Yes": 10784,
+    " yes": 11262,
+    " Yes": 8438
+   },
+   "no": {
+    "no": 1904,
+    "No": 3771,
+    " no": 951,
+    " No": 2301
+   }
+  },
+  "raw_ab": null,
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "chexpert|Edema|WY": {
+  "dataset_id": "chexpert",
+  "concept": "Edema",
+  "template_id": "WY",
+  "is_primary": false,
+  "question": "Does this chest radiograph show pulmonary edema? Answer yes or no.",
+  "rendered_prompt": "<bos><start_of_turn>user\n<start_of_image>Does this chest radiograph show pulmonary edema? Answer yes or no.<end_of_turn>\n<start_of_turn>model\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   4443,
+   10784,
+   11262,
+   8438
+  ],
+  "negative_token_ids": [
+   1904,
+   3771,
+   951,
+   2301
+  ],
+  "candidate_detail": {
+   "yes": {
+    "yes": 4443,
+    "Yes": 10784,
+    " yes": 11262,
+    " Yes": 8438
+   },
+   "no": {
+    "no": 1904,
+    "No": 3771,
+    " no": 951,
+    " No": 2301
+   }
+  },
+  "raw_ab": null,
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "chexpert|Edema|IA": {
+  "dataset_id": "chexpert",
+  "concept": "Edema",
+  "template_id": "IA",
+  "is_primary": false,
+  "question": "Is there pulmonary edema in this chest radiograph? Answer A if the finding is present and B if it is absent. Reply with A or B only.",
+  "rendered_prompt": "<bos><start_of_turn>user\n<start_of_image>Is there pulmonary edema in this chest radiograph? Answer A if the finding is present and B if it is absent. Reply with A or B only.<end_of_turn>\n<start_of_turn>model\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   236776,
+   562
+  ],
+  "negative_token_ids": [
+   236799,
+   603
+  ],
+  "candidate_detail": {
+   "A": {
+    "A": 236776,
+    " A": 562
+   },
+   "B": {
+    "B": 236799,
+    " B": 603
+   }
+  },
+  "raw_ab": {
+   "A_ids": [
+    236776,
+    562
+   ],
+   "B_ids": [
+    236799,
+    603
+   ]
+  },
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "chexpert|Edema|IB": {
+  "dataset_id": "chexpert",
+  "concept": "Edema",
+  "template_id": "IB",
+  "is_primary": false,
+  "question": "Is there pulmonary edema in this chest radiograph? Answer B if the finding is present and A if it is absent. Reply with A or B only.",
+  "rendered_prompt": "<bos><start_of_turn>user\n<start_of_image>Is there pulmonary edema in this chest radiograph? Answer B if the finding is present and A if it is absent. Reply with A or B only.<end_of_turn>\n<start_of_turn>model\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   236799,
+   603
+  ],
+  "negative_token_ids": [
+   236776,
+   562
+  ],
+  "candidate_detail": {
+   "A": {
+    "A": 236776,
+    " A": 562
+   },
+   "B": {
+    "B": 236799,
+    " B": 603
+   }
+  },
+  "raw_ab": {
+   "A_ids": [
+    236776,
+    562
+   ],
+   "B_ids": [
+    236799,
+    603
+   ]
+  },
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "chexpert|Edema|WA": {
+  "dataset_id": "chexpert",
+  "concept": "Edema",
+  "template_id": "WA",
+  "is_primary": false,
+  "question": "Does this chest radiograph show pulmonary edema? Answer A if the finding is present and B if it is absent. Reply with A or B only.",
+  "rendered_prompt": "<bos><start_of_turn>user\n<start_of_image>Does this chest radiograph show pulmonary edema? Answer A if the finding is present and B if it is absent. Reply with A or B only.<end_of_turn>\n<start_of_turn>model\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   236776,
+   562
+  ],
+  "negative_token_ids": [
+   236799,
+   603
+  ],
+  "candidate_detail": {
+   "A": {
+    "A": 236776,
+    " A": 562
+   },
+   "B": {
+    "B": 236799,
+    " B": 603
+   }
+  },
+  "raw_ab": {
+   "A_ids": [
+    236776,
+    562
+   ],
+   "B_ids": [
+    236799,
+    603
+   ]
+  },
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "chexpert|Edema|WB": {
+  "dataset_id": "chexpert",
+  "concept": "Edema",
+  "template_id": "WB",
+  "is_primary": false,
+  "question": "Does this chest radiograph show pulmonary edema? Answer B if the finding is present and A if it is absent. Reply with A or B only.",
+  "rendered_prompt": "<bos><start_of_turn>user\n<start_of_image>Does this chest radiograph show pulmonary edema? Answer B if the finding is present and A if it is absent. Reply with A or B only.<end_of_turn>\n<start_of_turn>model\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   236799,
+   603
+  ],
+  "negative_token_ids": [
+   236776,
+   562
+  ],
+  "candidate_detail": {
+   "A": {
+    "A": 236776,
+    " A": 562
+   },
+   "B": {
+    "B": 236799,
+    " B": 603
+   }
+  },
+  "raw_ab": {
+   "A_ids": [
+    236776,
+    562
+   ],
+   "B_ids": [
+    236799,
+    603
+   ]
+  },
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ }
+}

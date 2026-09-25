@@ -1,0 +1,20 @@
+{
+ "model_key": "medgemma-4",
+ "dataset_id": "coco",
+ "module": "CORE",
+ "shard": 3,
+ "n_shards": 4,
+ "rows": 150,
+ "scored_rows": 150,
+ "outcomes": 114300,
+ "seconds": 7697.8,
+ "throughput_per_s": 14.85,
+ "batch": 32,
+ "batch_policy": "fixed composition per question: clean replicated baseline batch + padded steered batches",
+ "peak_gpu_memory_bytes": 15112985600,
+ "gpu_count": 1,
+ "gpu_models": [
+  "NVIDIA A100-SXM4-80GB"
+ ],
+ "ended_utc": "2026-09-13T04:41:08Z"
+}

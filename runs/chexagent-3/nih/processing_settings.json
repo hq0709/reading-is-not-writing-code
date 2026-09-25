@@ -1,0 +1,244 @@
+{
+ "processor_kwargs": {},
+ "image_processor": {},
+ "chat_template": "{% for message in messages %}\n{% if message['from'] == 'human' %}\n{{ '<|user|>\n' + message['value'] + eos_token }}\n{% elif message['from'] == 'system' %}\n{{ '<|system|>\n' + message['value'] + eos_token }}\n{% elif message['from'] == 'gpt' %}\n{{ '<|assistant|>\n'  + message['value'] + eos_token }}\n{% endif %}\n{% if loop.last and add_generation_prompt %}\n{{ '<|assistant|>' }}\n{% endif %}\n{% endfor %}",
+ "example_prompt_IY": "<|system|>\nYou are a helpful assistant.<|endoftext|>\n<|user|>\nPicture 1:<|img|>cf-transfer-image<|/img|>\nIs there X in this image? Answer yes or no.<|endoftext|>\n<|assistant|>\n",
+ "special_token_ids": {
+  "image_token_id": null,
+  "pad_token_id": 50256,
+  "eos_token_id": 50256,
+  "img_start_id": 50295,
+  "img_end_id": 50296,
+  "img_pad_id": 50297,
+  "img_token_span": 1024
+ },
+ "attn_implementation": "eager",
+ "candidate_tokens": {
+  "IY": {
+   "positive_ids": [
+    8505,
+    5297,
+    3763,
+    3363
+   ],
+   "negative_ids": [
+    3919,
+    2949,
+    645,
+    1400
+   ],
+   "detail": {
+    "yes": {
+     "yes": 8505,
+     "Yes": 5297,
+     " yes": 3763,
+     " Yes": 3363
+    },
+    "no": {
+     "no": 3919,
+     "No": 2949,
+     " no": 645,
+     " No": 1400
+    }
+   }
+  },
+  "WY": {
+   "positive_ids": [
+    8505,
+    5297,
+    3763,
+    3363
+   ],
+   "negative_ids": [
+    3919,
+    2949,
+    645,
+    1400
+   ],
+   "detail": {
+    "yes": {
+     "yes": 8505,
+     "Yes": 5297,
+     " yes": 3763,
+     " Yes": 3363
+    },
+    "no": {
+     "no": 3919,
+     "No": 2949,
+     " no": 645,
+     " No": 1400
+    }
+   }
+  },
+  "IB": {
+   "positive_ids": [
+    33,
+    347
+   ],
+   "negative_ids": [
+    32,
+    317
+   ],
+   "detail": {
+    "A": {
+     "A": 32,
+     " A": 317
+    },
+    "B": {
+     "B": 33,
+     " B": 347
+    }
+   }
+  },
+  "WA": {
+   "positive_ids": [
+    32,
+    317
+   ],
+   "negative_ids": [
+    33,
+    347
+   ],
+   "detail": {
+    "A": {
+     "A": 32,
+     " A": 317
+    },
+    "B": {
+     "B": 33,
+     " B": 347
+    }
+   }
+  },
+  "WB": {
+   "positive_ids": [
+    33,
+    347
+   ],
+   "negative_ids": [
+    32,
+    317
+   ],
+   "detail": {
+    "A": {
+     "A": 32,
+     " A": 317
+    },
+    "B": {
+     "B": 33,
+     " B": 347
+    }
+   }
+  },
+  "IA": {
+   "positive_ids": [
+    32,
+    317
+   ],
+   "negative_ids": [
+    33,
+    347
+   ],
+   "detail": {
+    "A": {
+     "A": 32,
+     " A": 317
+    },
+    "B": {
+     "B": 33,
+     " B": 347
+    }
+   }
+  }
+ },
+ "model_config": {
+  "architectures": [
+   "CheXagentForCausalLM"
+  ],
+  "attention_dropout": 0.0,
+  "auto_map": {
+   "AutoConfig": "configuration_chexagent.CheXagentConfig",
+   "AutoModelForCausalLM": "modeling_chexagent.CheXagentForCausalLM"
+  },
+  "bos_token_id": 50256,
+  "dtype": "float32",
+  "embd_pdrop": 0.0,
+  "eos_token_id": 50256,
+  "hidden_act": "gelu_new",
+  "hidden_size": 2560,
+  "initializer_range": 0.02,
+  "intermediate_size": 10240,
+  "layer_norm_eps": 1e-05,
+  "max_position_embeddings": 2048,
+  "model_type": "phi",
+  "num_attention_heads": 32,
+  "num_hidden_layers": 32,
+  "num_key_value_heads": 32,
+  "pad_token_id": null,
+  "partial_rotary_factor": 0.4,
+  "qk_layernorm": false,
+  "resid_pdrop": 0.1,
+  "rope_parameters": null,
+  "rope_theta": 10000.0,
+  "tie_word_embeddings": false,
+  "transformers_version": "5.15.0",
+  "use_cache": false,
+  "visual": {
+   "image_size": 512,
+   "output_dim": 2560,
+   "vision_model_name_or_path": "StanfordAIMI/XraySigLIP__vit-l-16-siglip-384__webli"
+  },
+  "vocab_size": 51200
+ },
+ "image_processing": {
+  "source": "modeling_visual.CLIPModel.image_transform (the checkpoint's own transform)",
+  "steps": [
+   "Resize(size=(512, 512), interpolation=bicubic, max_size=None, antialias=True)",
+   "ToTensor()",
+   "Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5))"
+  ],
+  "image_size": 512,
+  "patch_size": 16,
+  "patch_tokens": 1024,
+  "vision_model_name_or_path": "StanfordAIMI/XraySigLIP__vit-l-16-siglip-384__webli"
+ },
+ "prompt_construction": "the checkpoint's own recipe: tokenizer.from_list_format renders the image as 'Picture 1:<|img|>cf-transfer-image<|/img|>\\n' before the question, the conversation is [system: 'You are a helpful assistant.', human: <query>] and the chat template adds the assistant header; the tokenizer expands the image tag to a fixed 1024-token span",
+ "remote_code_shim": {
+  "stubbed_modules": [
+   "albumentations",
+   "albumentations.pytorch",
+   "tensorflow"
+  ],
+  "patched_symbols": [
+   "transformers.utils.is_tf_available"
+  ],
+  "transformers_version_installed": "5.15.0",
+  "transformers_version_reported_during_import": "4.40.0",
+  "config_defaults_restored": [
+   "pad_token_id=None (absent in transformers 5.x, defined as None by 4.40)",
+   "rope_scaling=None (config.json says null; 5.x synthesised {'rope_theta': 10000.0, 'partial_rotary_factor': 0.4, 'rope_type': 'default'})"
+  ],
+  "checkpoint_load": {
+   "shards": [
+    "model-00001-of-00003.safetensors",
+    "model-00002-of-00003.safetensors",
+    "model-00003-of-00003.safetensors"
+   ],
+   "checkpoint_tensors": 861,
+   "missing_keys": [],
+   "unexpected_keys": []
+  }
+ },
+ "image_bridge": "CheXagentModel.forward reads an image PATH out of the prompt: its tokenizer.decode is replaced with the inert prompt slot and CLIPModel.encode with the same forward on the staged pixel batch, called through __call__ so the connector locus is hookable; the transform and the forward are the checkpoint's own",
+ "device_map": {
+  "requested": "cuda:0",
+  "device": "cuda:0",
+  "parameter_dtypes_after_construction": [
+   "torch.bfloat16",
+   "torch.float32"
+  ],
+  "parameter_dtypes": [
+   "torch.bfloat16"
+  ]
+ }
+}

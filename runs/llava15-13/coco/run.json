@@ -1,0 +1,423 @@
+{
+ "protocol_id": "cf-transfer-v1",
+ "run_id": "cf-transfer-v1:llava15-13:coco:mayo",
+ "model_key": "llava15-13",
+ "model_id": "llava-hf/llava-1.5-13b-hf",
+ "model_revision": "5dda2880bda009266dda7c4baff660b95ca64540",
+ "processor_revision": "5dda2880bda009266dda7c4baff660b95ca64540",
+ "dataset_id": "coco",
+ "dataset_release": "COCO 2017 train2017/val2017 + instances annotations (2017-09-01)",
+ "source_commit": "4701456a3dadcc2af35247e0feb174c0fbf68ebb",
+ "adapter_path": "src/cftransfer/adapters/",
+ "python_version": "3.12.13",
+ "torch_version": "2.13.0+cu130",
+ "transformers_version": "5.15.0",
+ "numpy_version": "2.3.5",
+ "sklearn_version": "1.9.0",
+ "weight_dtype": "bfloat16",
+ "activation_dtype": "bfloat16 (hook delta computed in float32, cast back)",
+ "logit_dtype": "float32",
+ "attention_backend": "sdpa",
+ "device_map": [
+  "cuda:0"
+ ],
+ "gpu_models": [
+  "NVIDIA A100-SXM4-80GB"
+ ],
+ "gpu_count": 1,
+ "batch_size": [
+  1,
+  32
+ ],
+ "started_utc": "2026-09-13T06:41:20Z",
+ "ended_utc": "2026-09-15T14:42:38Z",
+ "wall_seconds": 153616.2,
+ "gpu_hours": 42.671,
+ "peak_gpu_memory_bytes": 30254972416,
+ "processing_settings": {
+  "processor_kwargs": {},
+  "image_processor": {
+   "crop_size": {
+    "height": 336,
+    "width": 336
+   },
+   "do_center_crop": true,
+   "do_convert_rgb": true,
+   "do_normalize": true,
+   "do_rescale": true,
+   "do_resize": true,
+   "image_processor_type": "CLIPImageProcessor",
+   "resample": 3,
+   "rescale_factor": 0.00392156862745098,
+   "size": {
+    "shortest_edge": 336
+   }
+  },
+  "chat_template": "{% for message in messages %}{% if message['role'] != 'system' %}{{ message['role'].upper() + ': '}}{% endif %}{# Render all images first #}{% for content in message['content'] | selectattr('type', 'equalto', 'image') %}{{ '<image>\n' }}{% endfor %}{# Render all text next #}{% if message['role'] != 'assistant' %}{% for content in message['content'] | selectattr('type', 'equalto', 'text') %}{{ content['text'] + ' '}}{% endfor %}{% else %}{% for content in message['content'] | selectattr('type', 'equalto', 'text') %}{% generation %}{{ content['text'] + ' '}}{% endgeneration %}{% endfor %}{% endif %}{% endfor %}{% if add_generation_prompt %}{{ 'ASSISTANT:' }}{% endif %}",
+  "example_prompt_IY": "USER: <image>\nIs there X in this image? Answer yes or no. ASSISTANT:",
+  "special_token_ids": {
+   "image_token_id": 32000,
+   "pad_token_id": 32001,
+   "eos_token_id": 2
+  },
+  "attn_implementation": "sdpa",
+  "candidate_tokens": {
+   "IY": {
+    "positive_ids": [
+     4874,
+     3869
+    ],
+    "negative_ids": [
+     694,
+     1939
+    ],
+    "detail": {
+     "yes": {
+      "yes": 4874,
+      "Yes": 3869,
+      " yes": null,
+      " Yes": null
+     },
+     "no": {
+      "no": 694,
+      "No": 1939,
+      " no": null,
+      " No": null
+     }
+    }
+   },
+   "WY": {
+    "positive_ids": [
+     4874,
+     3869
+    ],
+    "negative_ids": [
+     694,
+     1939
+    ],
+    "detail": {
+     "yes": {
+      "yes": 4874,
+      "Yes": 3869,
+      " yes": null,
+      " Yes": null
+     },
+     "no": {
+      "no": 694,
+      "No": 1939,
+      " no": null,
+      " No": null
+     }
+    }
+   },
+   "IB": {
+    "positive_ids": [
+     350
+    ],
+    "negative_ids": [
+     319
+    ],
+    "detail": {
+     "A": {
+      "A": 319,
+      " A": null
+     },
+     "B": {
+      "B": 350,
+      " B": null
+     }
+    }
+   },
+   "WA": {
+    "positive_ids": [
+     319
+    ],
+    "negative_ids": [
+     350
+    ],
+    "detail": {
+     "A": {
+      "A": 319,
+      " A": null
+     },
+     "B": {
+      "B": 350,
+      " B": null
+     }
+    }
+   },
+   "WB": {
+    "positive_ids": [
+     350
+    ],
+    "negative_ids": [
+     319
+    ],
+    "detail": {
+     "A": {
+      "A": 319,
+      " A": null
+     },
+     "B": {
+      "B": 350,
+      " B": null
+     }
+    }
+   },
+   "IA": {
+    "positive_ids": [
+     319
+    ],
+    "negative_ids": [
+     350
+    ],
+    "detail": {
+     "A": {
+      "A": 319,
+      " A": null
+     },
+     "B": {
+      "B": 350,
+      " B": null
+     }
+    }
+   }
+  },
+  "model_config": {
+   "architectures": [
+    "LlavaForConditionalGeneration"
+   ],
+   "dtype": "bfloat16",
+   "ignore_index": -100,
+   "image_seq_length": 576,
+   "image_token_index": 32000,
+   "model_type": "llava",
+   "multimodal_projector_bias": true,
+   "pad_token_id": 32001,
+   "projector_hidden_act": "gelu",
+   "text_config": {
+    "_name_or_path": "meta-llama/Llama-2-13b-hf",
+    "architectures": [
+     "LlamaForCausalLM"
+    ],
+    "attention_bias": false,
+    "attention_dropout": 0.0,
+    "bos_token_id": 1,
+    "dtype": "bfloat16",
+    "eos_token_id": 2,
+    "head_dim": 128,
+    "hidden_act": "silu",
+    "hidden_size": 5120,
+    "initializer_range": 0.02,
+    "intermediate_size": 13824,
+    "max_position_embeddings": 4096,
+    "mlp_bias": false,
+    "model_type": "llama",
+    "num_attention_heads": 40,
+    "num_hidden_layers": 40,
+    "num_key_value_heads": 40,
+    "pad_token_id": null,
+    "pretraining_tp": 1,
+    "rms_norm_eps": 1e-05,
+    "rope_parameters": {
+     "rope_theta": 10000.0,
+     "rope_type": "default"
+    },
+    "tie_word_embeddings": false,
+    "use_cache": true,
+    "vocab_size": 32064
+   },
+   "tie_word_embeddings": false,
+   "transformers_version": "5.15.0",
+   "vision_config": {
+    "attention_dropout": 0.0,
+    "dtype": "bfloat16",
+    "hidden_act": "quick_gelu",
+    "hidden_size": 1024,
+    "image_size": 336,
+    "initializer_factor": 1.0,
+    "initializer_range": 0.02,
+    "intermediate_size": 4096,
+    "layer_norm_eps": 1e-05,
+    "model_type": "clip_vision_model",
+    "num_attention_heads": 16,
+    "num_channels": 3,
+    "num_hidden_layers": 24,
+    "patch_size": 14,
+    "projection_dim": 768,
+    "vocab_size": 32000
+   },
+   "vision_feature_layer": -2,
+   "vision_feature_select_strategy": "default",
+   "vocab_size": 32064
+  }
+ },
+ "loci": {
+  "vis.last": {
+   "locus_id": "vis.last",
+   "module_path": "model.vision_tower.encoder.layers.22",
+   "output_selection": "tensor output of CLIP encoder layer 22 of 24 = hidden_states[-2] (the block the projector consumes; the final block 23 is computed and discarded)",
+   "hidden_dim": 1024,
+   "token_rule": "batched (B, 1+576, D); index 0 is the CLS token and is NOT consumed (strategy 'default'); tokens 1..576 pooled",
+   "affected_branch": "the single image-token stream selected by vision_feature_layer",
+   "bypasses": "none",
+   "consumer": "model.multi_modal_projector",
+   "prompt_independent": true,
+   "notes": "transformers 5.x records hidden_states via forward hooks on each encoder layer; the steering hook is prepended so the recorder and the projector observe the steered output"
+  },
+  "connector": {
+   "locus_id": "connector",
+   "module_path": "model.multi_modal_projector",
+   "output_selection": "tensor output of the two-layer MLP projector",
+   "hidden_dim": 5120,
+   "token_rule": "batched (B, 576, D_text); all tokens consumed",
+   "affected_branch": "projected image embeddings scattered into <image> placeholder positions",
+   "bypasses": "none",
+   "consumer": "language model input embeddings",
+   "prompt_independent": true,
+   "notes": ""
+  }
+ },
+ "fit_seeds": [
+  0,
+  1,
+  2
+ ],
+ "random_seed": 0,
+ "projection_seed": 0,
+ "cohort_file": "manifests/cohort.csv",
+ "primary_template": "IY",
+ "requested_modules": [
+  "CORE",
+  "CALIBRATION",
+  "PROMPT",
+  "DOSE",
+  "REFIT",
+  "LOCUS",
+  "LOCUS_CALIBRATION",
+  "ALTDIR",
+  "ALTDIRD"
+ ],
+ "completed_modules": [
+  "CORE",
+  "CALIBRATION",
+  "PROMPT",
+  "DOSE",
+  "REFIT",
+  "LOCUS",
+  "LOCUS_CALIBRATION",
+  "ALTDIR",
+  "ALTDIRD"
+ ],
+ "ineligible_modules": [],
+ "status": "COMPLETE",
+ "deviations": [
+  {
+   "kind": "batch_vs_single_tolerance",
+   "locus_id": "connector",
+   "check": "D_batch_vs_single",
+   "value": 0.3145866394042969,
+   "declared_tolerance": 0.25,
+   "affected_modules": "none (fixed batch composition per question); recorded for transparency"
+  },
+  {
+   "kind": "preflight_not_passed",
+   "locus_id": "connector",
+   "failed_checks": [
+    "D_batch_vs_single",
+    "E_semantic_direction"
+   ]
+  },
+  {
+   "kind": "batch_vs_single_tolerance",
+   "locus_id": "vis.last",
+   "check": "D_batch_vs_single",
+   "value": 0.3145866394042969,
+   "declared_tolerance": 0.25,
+   "affected_modules": "none (fixed batch composition per question); recorded for transparency"
+  },
+  {
+   "kind": "preflight_not_passed",
+   "locus_id": "vis.last",
+   "failed_checks": [
+    "D_batch_vs_single",
+    "E_semantic_direction"
+   ]
+  }
+ ],
+ "feature_extraction_seconds": 205.7,
+ "notes": "gpu_hours sums wall time x GPUs over runner shards recorded in outcomes/*/meta-*.json; CPU fitting time is in fits/*/summary.json",
+ "merged_outcomes": {
+  "CORE": {
+   "parts": 60,
+   "rows_raw": 457200,
+   "rows_unique": 457200,
+   "failed": 0
+  },
+  "CALIBRATION": {
+   "parts": 40,
+   "rows_raw": 4800,
+   "rows_unique": 4800,
+   "failed": 0
+  },
+  "PROMPT": {
+   "parts": 63,
+   "rows_raw": 457200,
+   "rows_unique": 457200,
+   "failed": 0
+  },
+  "DOSE": {
+   "parts": 20,
+   "rows_raw": 162000,
+   "rows_unique": 162000,
+   "failed": 0
+  },
+  "REFIT": {
+   "parts": 60,
+   "rows_raw": 50400,
+   "rows_unique": 50400,
+   "failed": 0
+  },
+  "LOCUS": {
+   "parts": 60,
+   "rows_raw": 457200,
+   "rows_unique": 457200,
+   "failed": 0
+  },
+  "LOCUS_CALIBRATION": {
+   "parts": 40,
+   "rows_raw": 2400,
+   "rows_unique": 2400,
+   "failed": 0
+  },
+  "ALTDIR": {
+   "parts": 60,
+   "rows_raw": 86400,
+   "rows_unique": 86400,
+   "failed": 0
+  },
+  "EXTCOMP": {},
+  "TOKENW": {},
+  "PRECISION": {},
+  "ANSDIR": {},
+  "ALTDIRD": {
+   "parts": 60,
+   "rows_raw": 43200,
+   "rows_unique": 43200,
+   "failed": 0
+  },
+  "ATTR": {},
+  "ANSDIRT": {},
+  "VALID": {},
+  "ATTRRAND": {},
+  "ATTRQ": {},
+  "VALIDFIT": {},
+  "PROJSEED": {},
+  "TOWERSWAP": {},
+  "TOWERSWAPD": {},
+  "REPLAY": {},
+  "SEMEND": {},
+  "FGOBJ": {},
+  "FGOBJ_CALIBRATION": {}
+ }
+}

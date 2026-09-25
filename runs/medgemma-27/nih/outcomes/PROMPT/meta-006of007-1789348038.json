@@ -1,0 +1,20 @@
+{
+ "model_key": "medgemma-27",
+ "dataset_id": "nih",
+ "module": "PROMPT",
+ "shard": 6,
+ "n_shards": 7,
+ "rows": 85,
+ "scored_rows": 5,
+ "outcomes": 6350,
+ "seconds": 853.8,
+ "throughput_per_s": 7.44,
+ "batch": 16,
+ "batch_policy": "fixed composition per question: clean replicated baseline batch + padded steered batches",
+ "peak_gpu_memory_bytes": 35200708096,
+ "gpu_count": 2,
+ "gpu_models": [
+  "NVIDIA A100-SXM4-80GB"
+ ],
+ "ended_utc": "2026-09-14T01:07:18Z"
+}

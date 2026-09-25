@@ -1,0 +1,21 @@
+{
+ "model_key": "q25-32",
+ "dataset_id": "chexpert",
+ "module": "DOSE",
+ "shard": 1,
+ "n_shards": 2,
+ "rows": 100,
+ "scored_rows": 100,
+ "outcomes": 81000,
+ "seconds": 6263.0,
+ "throughput_per_s": 12.93,
+ "batch": 16,
+ "primary_template": "IY",
+ "batch_policy": "fixed composition per question: clean replicated baseline batch + padded steered batches",
+ "peak_gpu_memory_bytes": 32877735936,
+ "gpu_count": 2,
+ "gpu_models": [
+  "NVIDIA A100-SXM4-80GB"
+ ],
+ "ended_utc": "2026-09-14T23:57:32Z"
+}

@@ -1,0 +1,49 @@
+{
+ "model_key": "medgemma-4",
+ "dataset_id": "coco",
+ "module": "TOWERSWAPD",
+ "shard": 0,
+ "n_shards": 1,
+ "rows": 200,
+ "scored_rows": 200,
+ "outcomes": 152400,
+ "seconds": 10171.5,
+ "throughput_per_s": 14.98,
+ "batch": 32,
+ "primary_template": "IY",
+ "numerics": "bf16-batched",
+ "fit_seed": null,
+ "batch_policy": "fixed composition per question: clean replicated baseline batch + padded steered batches",
+ "direction_block": "medgemma-4",
+ "tower_swap": {
+  "host_model_key": "medgemma-4",
+  "host_model_id": "google/medgemma-4b-it",
+  "host_revision": "290cda5eeccbee130f987c4ad74a59ae6f196408",
+  "donor_model_key": "gemma3-4",
+  "donor_model_id": "google/gemma-3-4b-it",
+  "donor_revision": "093f9f388b31de276ce2de164bdc2081324b9767",
+  "tower_root": "model.vision_tower",
+  "n_tensors_replaced": 437,
+  "n_params_replaced": 416866032,
+  "runtime_dtype": "torch.bfloat16",
+  "donor_tower_sha256": "a7da2ab8b7090651d0b323e37547384e4f0c7dac46b3a486e9f50c00e541c19d",
+  "n_tower_tensors_changed": 437,
+  "n_tower_tensors": 438,
+  "buffers_built_by_the_module": [
+   "embeddings.position_ids"
+  ],
+  "n_tensors_outside_tower": 451,
+  "n_tensors_outside_tower_changed": 0,
+  "verified_bitwise_equal_to_donor": true,
+  "verified_rest_unchanged": true,
+  "seconds": 2.8,
+  "note": "reader = multimodal projector + language model, kept from the host; only the tower was replaced"
+ },
+ "replay": null,
+ "peak_gpu_memory_bytes": 22698146816,
+ "gpu_count": 1,
+ "gpu_models": [
+  "NVIDIA A100-SXM4-80GB"
+ ],
+ "ended_utc": "2026-09-17T16:36:56Z"
+}

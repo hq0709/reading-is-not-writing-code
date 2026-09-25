@@ -1,0 +1,20 @@
+{
+ "model_key": "gemma3-27",
+ "dataset_id": "coco",
+ "module": "CORE",
+ "shard": 0,
+ "n_shards": 4,
+ "rows": 150,
+ "scored_rows": 150,
+ "outcomes": 114300,
+ "seconds": 14773.2,
+ "throughput_per_s": 7.74,
+ "batch": 16,
+ "batch_policy": "fixed composition per question: clean replicated baseline batch + padded steered batches",
+ "peak_gpu_memory_bytes": 35197431808,
+ "gpu_count": 2,
+ "gpu_models": [
+  "NVIDIA A100-SXM4-80GB"
+ ],
+ "ended_utc": "2026-09-14T07:47:17Z"
+}

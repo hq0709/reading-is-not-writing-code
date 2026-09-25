@@ -1,0 +1,20 @@
+{
+ "model_key": "llava15-13",
+ "dataset_id": "coco",
+ "module": "CORE",
+ "shard": 2,
+ "n_shards": 4,
+ "rows": 150,
+ "scored_rows": 90,
+ "outcomes": 68580,
+ "seconds": 6427.2,
+ "throughput_per_s": 10.67,
+ "batch": 32,
+ "batch_policy": "fixed composition per question: clean replicated baseline batch + padded steered batches",
+ "peak_gpu_memory_bytes": 29992464384,
+ "gpu_count": 1,
+ "gpu_models": [
+  "NVIDIA A100-SXM4-80GB"
+ ],
+ "ended_utc": "2026-09-13T09:42:19Z"
+}

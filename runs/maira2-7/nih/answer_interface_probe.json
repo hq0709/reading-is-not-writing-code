@@ -1,0 +1,2252 @@
+{
+ "model_key": "maira2-7",
+ "dataset_id": "nih",
+ "revision": "795a2b1cd4a310624b4e3d14b5a23e41fd273deb",
+ "question_IY": "Is there a pleural effusion in this chest radiograph? Answer yes or no.",
+ "candidates": {
+  "WY": {
+   "positive_ids": [
+    4874,
+    3869
+   ],
+   "negative_ids": [
+    694,
+    1939
+   ],
+   "positive_tokens": [
+    "\u2581yes",
+    "\u2581Yes"
+   ],
+   "negative_tokens": [
+    "\u2581no",
+    "\u2581No"
+   ]
+  },
+  "IY": {
+   "positive_ids": [
+    4874,
+    3869
+   ],
+   "negative_ids": [
+    694,
+    1939
+   ],
+   "positive_tokens": [
+    "\u2581yes",
+    "\u2581Yes"
+   ],
+   "negative_tokens": [
+    "\u2581no",
+    "\u2581No"
+   ]
+  },
+  "WA": {
+   "positive_ids": [
+    319
+   ],
+   "negative_ids": [
+    350
+   ],
+   "positive_tokens": [
+    "\u2581A"
+   ],
+   "negative_tokens": [
+    "\u2581B"
+   ]
+  },
+  "IB": {
+   "positive_ids": [
+    350
+   ],
+   "negative_ids": [
+    319
+   ],
+   "positive_tokens": [
+    "\u2581B"
+   ],
+   "negative_tokens": [
+    "\u2581A"
+   ]
+  },
+  "IA": {
+   "positive_ids": [
+    319
+   ],
+   "negative_ids": [
+    350
+   ],
+   "positive_tokens": [
+    "\u2581A"
+   ],
+   "negative_tokens": [
+    "\u2581B"
+   ]
+  },
+  "WB": {
+   "positive_ids": [
+    350
+   ],
+   "negative_ids": [
+    319
+   ],
+   "positive_tokens": [
+    "\u2581B"
+   ],
+   "negative_tokens": [
+    "\u2581A"
+   ]
+  }
+ },
+ "with_image_IY": [
+  {
+   "row_id": "00009704_000",
+   "semantic_margin": -6.9164,
+   "p_present": 0.00099,
+   "candidate_mass": 0.567768,
+   "top_tokens": [
+    {
+     "token": "\u2581No",
+     "id": 1939,
+     "p": 0.55998
+    },
+    {
+     "token": "\u2581There",
+     "id": 1670,
+     "p": 0.26042
+    },
+    {
+     "token": "\u2581The",
+     "id": 450,
+     "p": 0.04998
+    },
+    {
+     "token": "\u2581A",
+     "id": 319,
+     "p": 0.01685
+    },
+    {
+     "token": "\u2581M",
+     "id": 341,
+     "p": 0.01033
+    }
+   ]
+  },
+  {
+   "row_id": "00003933_000",
+   "semantic_margin": -7.6634,
+   "p_present": 0.00047,
+   "candidate_mass": 0.662024,
+   "top_tokens": [
+    {
+     "token": "\u2581No",
+     "id": 1939,
+     "p": 0.65503
+    },
+    {
+     "token": "\u2581There",
+     "id": 1670,
+     "p": 0.21313
+    },
+    {
+     "token": "\u2581The",
+     "id": 450,
+     "p": 0.0237
+    },
+    {
+     "token": "\u2581A",
+     "id": 319,
+     "p": 0.01665
+    },
+    {
+     "token": "\u2581no",
+     "id": 694,
+     "p": 0.0066
+    }
+   ]
+  },
+  {
+   "row_id": "00006302_000",
+   "semantic_margin": -7.1054,
+   "p_present": 0.00082,
+   "candidate_mass": 0.33682,
+   "top_tokens": [
+    {
+     "token": "\u2581No",
+     "id": 1939,
+     "p": 0.3295
+    },
+    {
+     "token": "\u2581There",
+     "id": 1670,
+     "p": 0.28188
+    },
+    {
+     "token": "\u2581A",
+     "id": 319,
+     "p": 0.07357
+    },
+    {
+     "token": "\u2581Port",
+     "id": 3371,
+     "p": 0.07219
+    },
+    {
+     "token": "\u2581The",
+     "id": 450,
+     "p": 0.0359
+    }
+   ]
+  },
+  {
+   "row_id": "00004071_000",
+   "semantic_margin": -7.2567,
+   "p_present": 0.0007,
+   "candidate_mass": 0.679953,
+   "top_tokens": [
+    {
+     "token": "\u2581No",
+     "id": 1939,
+     "p": 0.66845
+    },
+    {
+     "token": "\u2581There",
+     "id": 1670,
+     "p": 0.21259
+    },
+    {
+     "token": "\u2581The",
+     "id": 450,
+     "p": 0.02716
+    },
+    {
+     "token": "\u2581A",
+     "id": 319,
+     "p": 0.01383
+    },
+    {
+     "token": "\u2581no",
+     "id": 694,
+     "p": 0.01085
+    }
+   ]
+  },
+  {
+   "row_id": "00009412_000",
+   "semantic_margin": -7.9798,
+   "p_present": 0.00034,
+   "candidate_mass": 0.731727,
+   "top_tokens": [
+    {
+     "token": "\u2581No",
+     "id": 1939,
+     "p": 0.72607
+    },
+    {
+     "token": "\u2581There",
+     "id": 1670,
+     "p": 0.14544
+    },
+    {
+     "token": "\u2581A",
+     "id": 319,
+     "p": 0.0285
+    },
+    {
+     "token": "\u2581Port",
+     "id": 3371,
+     "p": 0.02135
+    },
+    {
+     "token": "\u2581The",
+     "id": 450,
+     "p": 0.01952
+    }
+   ]
+  },
+  {
+   "row_id": "00001475_000",
+   "semantic_margin": -7.1937,
+   "p_present": 0.00075,
+   "candidate_mass": 0.658426,
+   "top_tokens": [
+    {
+     "token": "\u2581No",
+     "id": 1939,
+     "p": 0.64953
+    },
+    {
+     "token": "\u2581There",
+     "id": 1670,
+     "p": 0.2247
+    },
+    {
+     "token": "\u2581The",
+     "id": 450,
+     "p": 0.02357
+    },
+    {
+     "token": "\u2581A",
+     "id": 319,
+     "p": 0.02186
+    },
+    {
+     "token": "\u2581no",
+     "id": 694,
+     "p": 0.00828
+    }
+   ]
+  },
+  {
+   "row_id": "00001618_000",
+   "semantic_margin": -7.0951,
+   "p_present": 0.00083,
+   "candidate_mass": 0.684815,
+   "top_tokens": [
+    {
+     "token": "\u2581No",
+     "id": 1939,
+     "p": 0.67207
+    },
+    {
+     "token": "\u2581There",
+     "id": 1670,
+     "p": 0.21091
+    },
+    {
+     "token": "\u2581The",
+     "id": 450,
+     "p": 0.0281
+    },
+    {
+     "token": "\u2581no",
+     "id": 694,
+     "p": 0.01194
+    },
+    {
+     "token": "\u2581A",
+     "id": 319,
+     "p": 0.0104
+    }
+   ]
+  },
+  {
+   "row_id": "00000890_002",
+   "semantic_margin": -7.0496,
+   "p_present": 0.00087,
+   "candidate_mass": 0.666304,
+   "top_tokens": [
+    {
+     "token": "\u2581No",
+     "id": 1939,
+     "p": 0.66165
+    },
+    {
+     "token": "\u2581There",
+     "id": 1670,
+     "p": 0.18777
+    },
+    {
+     "token": "\u2581A",
+     "id": 319,
+     "p": 0.03116
+    },
+    {
+     "token": "\u2581The",
+     "id": 450,
+     "p": 0.02996
+    },
+    {
+     "token": "\u2581M",
+     "id": 341,
+     "p": 0.00632
+    }
+   ]
+  },
+  {
+   "row_id": "00000742_003",
+   "semantic_margin": -8.2119,
+   "p_present": 0.00027,
+   "candidate_mass": 0.797681,
+   "top_tokens": [
+    {
+     "token": "\u2581No",
+     "id": 1939,
+     "p": 0.78253
+    },
+    {
+     "token": "\u2581There",
+     "id": 1670,
+     "p": 0.12557
+    },
+    {
+     "token": "\u2581The",
+     "id": 450,
+     "p": 0.01806
+    },
+    {
+     "token": "\u2581no",
+     "id": 694,
+     "p": 0.01486
+    },
+    {
+     "token": "\u2581A",
+     "id": 319,
+     "p": 0.00755
+    }
+   ]
+  },
+  {
+   "row_id": "00001342_001",
+   "semantic_margin": -6.6212,
+   "p_present": 0.00133,
+   "candidate_mass": 0.417126,
+   "top_tokens": [
+    {
+     "token": "\u2581No",
+     "id": 1939,
+     "p": 0.4131
+    },
+    {
+     "token": "\u2581There",
+     "id": 1670,
+     "p": 0.30558
+    },
+    {
+     "token": "\u2581A",
+     "id": 319,
+     "p": 0.05663
+    },
+    {
+     "token": "\u2581The",
+     "id": 450,
+     "p": 0.04111
+    },
+    {
+     "token": "\u2581M",
+     "id": 341,
+     "p": 0.01718
+    }
+   ]
+  },
+  {
+   "row_id": "00005128_004",
+   "semantic_margin": -6.7174,
+   "p_present": 0.00121,
+   "candidate_mass": 0.690761,
+   "top_tokens": [
+    {
+     "token": "\u2581No",
+     "id": 1939,
+     "p": 0.68438
+    },
+    {
+     "token": "\u2581There",
+     "id": 1670,
+     "p": 0.17998
+    },
+    {
+     "token": "\u2581The",
+     "id": 450,
+     "p": 0.0287
+    },
+    {
+     "token": "\u2581A",
+     "id": 319,
+     "p": 0.01714
+    },
+    {
+     "token": "\u2581M",
+     "id": 341,
+     "p": 0.00779
+    }
+   ]
+  },
+  {
+   "row_id": "00002372_000",
+   "semantic_margin": -7.3208,
+   "p_present": 0.00066,
+   "candidate_mass": 0.739048,
+   "top_tokens": [
+    {
+     "token": "\u2581No",
+     "id": 1939,
+     "p": 0.72609
+    },
+    {
+     "token": "\u2581There",
+     "id": 1670,
+     "p": 0.17837
+    },
+    {
+     "token": "\u2581The",
+     "id": 450,
+     "p": 0.02134
+    },
+    {
+     "token": "\u2581no",
+     "id": 694,
+     "p": 0.01227
+    },
+    {
+     "token": "\u2581A",
+     "id": 319,
+     "p": 0.00793
+    }
+   ]
+  },
+  {
+   "row_id": "00005696_000",
+   "semantic_margin": -7.0734,
+   "p_present": 0.00085,
+   "candidate_mass": 0.550226,
+   "top_tokens": [
+    {
+     "token": "\u2581No",
+     "id": 1939,
+     "p": 0.54456
+    },
+    {
+     "token": "\u2581There",
+     "id": 1670,
+     "p": 0.31586
+    },
+    {
+     "token": "\u2581The",
+     "id": 450,
+     "p": 0.02752
+    },
+    {
+     "token": "\u2581A",
+     "id": 319,
+     "p": 0.02243
+    },
+    {
+     "token": "\u2581M",
+     "id": 341,
+     "p": 0.00914
+    }
+   ]
+  },
+  {
+   "row_id": "00001473_006",
+   "semantic_margin": -7.4609,
+   "p_present": 0.00057,
+   "candidate_mass": 0.699694,
+   "top_tokens": [
+    {
+     "token": "\u2581No",
+     "id": 1939,
+     "p": 0.69082
+    },
+    {
+     "token": "\u2581There",
+     "id": 1670,
+     "p": 0.17464
+    },
+    {
+     "token": "\u2581A",
+     "id": 319,
+     "p": 0.02616
+    },
+    {
+     "token": "\u2581The",
+     "id": 450,
+     "p": 0.02087
+    },
+    {
+     "token": "\u2581no",
+     "id": 694,
+     "p": 0.00837
+    }
+   ]
+  },
+  {
+   "row_id": "00006672_000",
+   "semantic_margin": -6.3358,
+   "p_present": 0.00177,
+   "candidate_mass": 0.739591,
+   "top_tokens": [
+    {
+     "token": "\u2581No",
+     "id": 1939,
+     "p": 0.73249
+    },
+    {
+     "token": "\u2581There",
+     "id": 1670,
+     "p": 0.1638
+    },
+    {
+     "token": "\u2581The",
+     "id": 450,
+     "p": 0.02655
+    },
+    {
+     "token": "\u2581A",
+     "id": 319,
+     "p": 0.01208
+    },
+    {
+     "token": "\u2581M",
+     "id": 341,
+     "p": 0.00621
+    }
+   ]
+  },
+  {
+   "row_id": "00005655_000",
+   "semantic_margin": -6.7413,
+   "p_present": 0.00118,
+   "candidate_mass": 0.647199,
+   "top_tokens": [
+    {
+     "token": "\u2581No",
+     "id": 1939,
+     "p": 0.6423
+    },
+    {
+     "token": "\u2581There",
+     "id": 1670,
+     "p": 0.22581
+    },
+    {
+     "token": "\u2581The",
+     "id": 450,
+     "p": 0.02778
+    },
+    {
+     "token": "\u2581A",
+     "id": 319,
+     "p": 0.0147
+    },
+    {
+     "token": "\u2581Card",
+     "id": 9160,
+     "p": 0.00538
+    }
+   ]
+  }
+ ],
+ "with_image_IY_summary": {
+  "candidate_mass_min": 0.33682,
+  "candidate_mass_max": 0.797681,
+  "candidate_mass_mean": 0.641823,
+  "p_present_min": 0.00027,
+  "p_present_max": 0.00177,
+  "distinct_top1_tokens": [
+   "\u2581No"
+  ]
+ },
+ "image_free_by_template": {
+  "IY": [
+   {
+    "statement": "The finding is present.",
+    "expected": 1,
+    "semantic_margin": -4.3483,
+    "candidate_mass": 0.702715,
+    "top_tokens": [
+     {
+      "token": "\u2581No",
+      "id": 1939,
+      "p": 0.69146
+     },
+     {
+      "token": "\u2581The",
+      "id": 450,
+      "p": 0.15846
+     },
+     {
+      "token": "\u2581There",
+      "id": 1670,
+      "p": 0.02485
+     },
+     {
+      "token": "\u2581In",
+      "id": 512,
+      "p": 0.00918
+     },
+     {
+      "token": "\u2581Is",
+      "id": 1317,
+      "p": 0.009
+     }
+    ]
+   },
+   {
+    "statement": "The finding is absent.",
+    "expected": 0,
+    "semantic_margin": -6.3678,
+    "candidate_mass": 0.903026,
+    "top_tokens": [
+     {
+      "token": "\u2581No",
+      "id": 1939,
+      "p": 0.90003
+     },
+     {
+      "token": "\u2581The",
+      "id": 450,
+      "p": 0.0602
+     },
+     {
+      "token": "\u2581There",
+      "id": 1670,
+      "p": 0.00685
+     },
+     {
+      "token": "\u2581In",
+      "id": 512,
+      "p": 0.00245
+     },
+     {
+      "token": "\u2581Find",
+      "id": 10987,
+      "p": 0.00196
+     }
+    ]
+   },
+   {
+    "statement": "The finding is explicitly reported as present.",
+    "expected": 1,
+    "semantic_margin": -4.1762,
+    "candidate_mass": 0.835644,
+    "top_tokens": [
+     {
+      "token": "\u2581No",
+      "id": 1939,
+      "p": 0.82016
+     },
+     {
+      "token": "\u2581The",
+      "id": 450,
+      "p": 0.06535
+     },
+     {
+      "token": "\u2581There",
+      "id": 1670,
+      "p": 0.02036
+     },
+     {
+      "token": "\u2581Yes",
+      "id": 3869,
+      "p": 0.0126
+     },
+     {
+      "token": "\u2581I",
+      "id": 306,
+      "p": 0.00885
+     }
+    ]
+   },
+   {
+    "statement": "The finding is explicitly reported as absent.",
+    "expected": 0,
+    "semantic_margin": -6.2607,
+    "candidate_mass": 0.978892,
+    "top_tokens": [
+     {
+      "token": "\u2581No",
+      "id": 1939,
+      "p": 0.97618
+     },
+     {
+      "token": "\u2581The",
+      "id": 450,
+      "p": 0.01267
+     },
+     {
+      "token": "\u2581Yes",
+      "id": 3869,
+      "p": 0.00186
+     },
+     {
+      "token": "\u2581There",
+      "id": 1670,
+      "p": 0.00119
+     },
+     {
+      "token": "\u2581In",
+      "id": 512,
+      "p": 0.00098
+     }
+    ]
+   }
+  ],
+  "WY": [
+   {
+    "statement": "The finding is present.",
+    "expected": 1,
+    "semantic_margin": -4.3483,
+    "candidate_mass": 0.702715,
+    "top_tokens": [
+     {
+      "token": "\u2581No",
+      "id": 1939,
+      "p": 0.69146
+     },
+     {
+      "token": "\u2581The",
+      "id": 450,
+      "p": 0.15846
+     },
+     {
+      "token": "\u2581There",
+      "id": 1670,
+      "p": 0.02485
+     },
+     {
+      "token": "\u2581In",
+      "id": 512,
+      "p": 0.00918
+     },
+     {
+      "token": "\u2581Is",
+      "id": 1317,
+      "p": 0.009
+     }
+    ]
+   },
+   {
+    "statement": "The finding is absent.",
+    "expected": 0,
+    "semantic_margin": -6.3678,
+    "candidate_mass": 0.903026,
+    "top_tokens": [
+     {
+      "token": "\u2581No",
+      "id": 1939,
+      "p": 0.90003
+     },
+     {
+      "token": "\u2581The",
+      "id": 450,
+      "p": 0.0602
+     },
+     {
+      "token": "\u2581There",
+      "id": 1670,
+      "p": 0.00685
+     },
+     {
+      "token": "\u2581In",
+      "id": 512,
+      "p": 0.00245
+     },
+     {
+      "token": "\u2581Find",
+      "id": 10987,
+      "p": 0.00196
+     }
+    ]
+   },
+   {
+    "statement": "The finding is explicitly reported as present.",
+    "expected": 1,
+    "semantic_margin": -4.1762,
+    "candidate_mass": 0.835644,
+    "top_tokens": [
+     {
+      "token": "\u2581No",
+      "id": 1939,
+      "p": 0.82016
+     },
+     {
+      "token": "\u2581The",
+      "id": 450,
+      "p": 0.06535
+     },
+     {
+      "token": "\u2581There",
+      "id": 1670,
+      "p": 0.02036
+     },
+     {
+      "token": "\u2581Yes",
+      "id": 3869,
+      "p": 0.0126
+     },
+     {
+      "token": "\u2581I",
+      "id": 306,
+      "p": 0.00885
+     }
+    ]
+   },
+   {
+    "statement": "The finding is explicitly reported as absent.",
+    "expected": 0,
+    "semantic_margin": -6.2607,
+    "candidate_mass": 0.978892,
+    "top_tokens": [
+     {
+      "token": "\u2581No",
+      "id": 1939,
+      "p": 0.97618
+     },
+     {
+      "token": "\u2581The",
+      "id": 450,
+      "p": 0.01267
+     },
+     {
+      "token": "\u2581Yes",
+      "id": 3869,
+      "p": 0.00186
+     },
+     {
+      "token": "\u2581There",
+      "id": 1670,
+      "p": 0.00119
+     },
+     {
+      "token": "\u2581In",
+      "id": 512,
+      "p": 0.00098
+     }
+    ]
+   }
+  ],
+  "IA": [
+   {
+    "statement": "The finding is present.",
+    "expected": 1,
+    "semantic_margin": 7.0942,
+    "candidate_mass": 0.96729,
+    "top_tokens": [
+     {
+      "token": "\u2581A",
+      "id": 319,
+      "p": 0.9665
+     },
+     {
+      "token": "\u2581No",
+      "id": 1939,
+      "p": 0.01687
+     },
+     {
+      "token": "\u2581The",
+      "id": 450,
+      "p": 0.00419
+     },
+     {
+      "token": "\u2581There",
+      "id": 1670,
+      "p": 0.00293
+     },
+     {
+      "token": "\u2581Pres",
+      "id": 4360,
+      "p": 0.00087
+     }
+    ]
+   },
+   {
+    "statement": "The finding is absent.",
+    "expected": 0,
+    "semantic_margin": 6.6658,
+    "candidate_mass": 0.889744,
+    "top_tokens": [
+     {
+      "token": "\u2581A",
+      "id": 319,
+      "p": 0.88862
+     },
+     {
+      "token": "\u2581No",
+      "id": 1939,
+      "p": 0.08697
+     },
+     {
+      "token": "\u2581The",
+      "id": 450,
+      "p": 0.00565
+     },
+     {
+      "token": "\u2581There",
+      "id": 1670,
+      "p": 0.00501
+     },
+     {
+      "token": "\u2581Ab",
+      "id": 1976,
+      "p": 0.00303
+     }
+    ]
+   },
+   {
+    "statement": "The finding is explicitly reported as present.",
+    "expected": 1,
+    "semantic_margin": 7.0047,
+    "candidate_mass": 0.969755,
+    "top_tokens": [
+     {
+      "token": "\u2581A",
+      "id": 319,
+      "p": 0.96889
+     },
+     {
+      "token": "\u2581No",
+      "id": 1939,
+      "p": 0.01362
+     },
+     {
+      "token": "\u2581There",
+      "id": 1670,
+      "p": 0.00476
+     },
+     {
+      "token": "\u2581The",
+      "id": 450,
+      "p": 0.00368
+     },
+     {
+      "token": "\u2581Pres",
+      "id": 4360,
+      "p": 0.00119
+     }
+    ]
+   },
+   {
+    "statement": "The finding is explicitly reported as absent.",
+    "expected": 0,
+    "semantic_margin": 6.7353,
+    "candidate_mass": 0.862383,
+    "top_tokens": [
+     {
+      "token": "\u2581A",
+      "id": 319,
+      "p": 0.86137
+     },
+     {
+      "token": "\u2581No",
+      "id": 1939,
+      "p": 0.11466
+     },
+     {
+      "token": "\u2581The",
+      "id": 450,
+      "p": 0.00693
+     },
+     {
+      "token": "\u2581There",
+      "id": 1670,
+      "p": 0.00502
+     },
+     {
+      "token": "\u2581Ab",
+      "id": 1976,
+      "p": 0.00172
+     }
+    ]
+   }
+  ],
+  "IB": [
+   {
+    "statement": "The finding is present.",
+    "expected": 1,
+    "semantic_margin": -2.3511,
+    "candidate_mass": 0.891072,
+    "top_tokens": [
+     {
+      "token": "\u2581A",
+      "id": 319,
+      "p": 0.81359
+     },
+     {
+      "token": "\u2581B",
+      "id": 350,
+      "p": 0.0775
+     },
+     {
+      "token": "\u2581No",
+      "id": 1939,
+      "p": 0.05247
+     },
+     {
+      "token": "\u2581The",
+      "id": 450,
+      "p": 0.02075
+     },
+     {
+      "token": "\u2581There",
+      "id": 1670,
+      "p": 0.00658
+     }
+    ]
+   },
+   {
+    "statement": "The finding is absent.",
+    "expected": 0,
+    "semantic_margin": -2.1734,
+    "candidate_mass": 0.790836,
+    "top_tokens": [
+     {
+      "token": "\u2581A",
+      "id": 319,
+      "p": 0.71006
+     },
+     {
+      "token": "\u2581No",
+      "id": 1939,
+      "p": 0.15582
+     },
+     {
+      "token": "\u2581B",
+      "id": 350,
+      "p": 0.0808
+     },
+     {
+      "token": "\u2581The",
+      "id": 450,
+      "p": 0.01606
+     },
+     {
+      "token": "\u2581There",
+      "id": 1670,
+      "p": 0.00784
+     }
+    ]
+   },
+   {
+    "statement": "The finding is explicitly reported as present.",
+    "expected": 1,
+    "semantic_margin": -2.0693,
+    "candidate_mass": 0.933697,
+    "top_tokens": [
+     {
+      "token": "\u2581A",
+      "id": 319,
+      "p": 0.82903
+     },
+     {
+      "token": "\u2581B",
+      "id": 350,
+      "p": 0.10469
+     },
+     {
+      "token": "\u2581No",
+      "id": 1939,
+      "p": 0.02812
+     },
+     {
+      "token": "\u2581The",
+      "id": 450,
+      "p": 0.0106
+     },
+     {
+      "token": "\u2581There",
+      "id": 1670,
+      "p": 0.00703
+     }
+    ]
+   },
+   {
+    "statement": "The finding is explicitly reported as absent.",
+    "expected": 0,
+    "semantic_margin": -1.5818,
+    "candidate_mass": 0.735379,
+    "top_tokens": [
+     {
+      "token": "\u2581A",
+      "id": 319,
+      "p": 0.60998
+     },
+     {
+      "token": "\u2581No",
+      "id": 1939,
+      "p": 0.21855
+     },
+     {
+      "token": "\u2581B",
+      "id": 350,
+      "p": 0.12541
+     },
+     {
+      "token": "\u2581The",
+      "id": 450,
+      "p": 0.01621
+     },
+     {
+      "token": "\u2581There",
+      "id": 1670,
+      "p": 0.00572
+     }
+    ]
+   }
+  ],
+  "WA": [
+   {
+    "statement": "The finding is present.",
+    "expected": 1,
+    "semantic_margin": 7.0942,
+    "candidate_mass": 0.96729,
+    "top_tokens": [
+     {
+      "token": "\u2581A",
+      "id": 319,
+      "p": 0.9665
+     },
+     {
+      "token": "\u2581No",
+      "id": 1939,
+      "p": 0.01687
+     },
+     {
+      "token": "\u2581The",
+      "id": 450,
+      "p": 0.00419
+     },
+     {
+      "token": "\u2581There",
+      "id": 1670,
+      "p": 0.00293
+     },
+     {
+      "token": "\u2581Pres",
+      "id": 4360,
+      "p": 0.00087
+     }
+    ]
+   },
+   {
+    "statement": "The finding is absent.",
+    "expected": 0,
+    "semantic_margin": 6.6658,
+    "candidate_mass": 0.889744,
+    "top_tokens": [
+     {
+      "token": "\u2581A",
+      "id": 319,
+      "p": 0.88862
+     },
+     {
+      "token": "\u2581No",
+      "id": 1939,
+      "p": 0.08697
+     },
+     {
+      "token": "\u2581The",
+      "id": 450,
+      "p": 0.00565
+     },
+     {
+      "token": "\u2581There",
+      "id": 1670,
+      "p": 0.00501
+     },
+     {
+      "token": "\u2581Ab",
+      "id": 1976,
+      "p": 0.00303
+     }
+    ]
+   },
+   {
+    "statement": "The finding is explicitly reported as present.",
+    "expected": 1,
+    "semantic_margin": 7.0047,
+    "candidate_mass": 0.969755,
+    "top_tokens": [
+     {
+      "token": "\u2581A",
+      "id": 319,
+      "p": 0.96889
+     },
+     {
+      "token": "\u2581No",
+      "id": 1939,
+      "p": 0.01362
+     },
+     {
+      "token": "\u2581There",
+      "id": 1670,
+      "p": 0.00476
+     },
+     {
+      "token": "\u2581The",
+      "id": 450,
+      "p": 0.00368
+     },
+     {
+      "token": "\u2581Pres",
+      "id": 4360,
+      "p": 0.00119
+     }
+    ]
+   },
+   {
+    "statement": "The finding is explicitly reported as absent.",
+    "expected": 0,
+    "semantic_margin": 6.7353,
+    "candidate_mass": 0.862383,
+    "top_tokens": [
+     {
+      "token": "\u2581A",
+      "id": 319,
+      "p": 0.86137
+     },
+     {
+      "token": "\u2581No",
+      "id": 1939,
+      "p": 0.11466
+     },
+     {
+      "token": "\u2581The",
+      "id": 450,
+      "p": 0.00693
+     },
+     {
+      "token": "\u2581There",
+      "id": 1670,
+      "p": 0.00502
+     },
+     {
+      "token": "\u2581Ab",
+      "id": 1976,
+      "p": 0.00172
+     }
+    ]
+   }
+  ],
+  "WB": [
+   {
+    "statement": "The finding is present.",
+    "expected": 1,
+    "semantic_margin": -2.3511,
+    "candidate_mass": 0.891072,
+    "top_tokens": [
+     {
+      "token": "\u2581A",
+      "id": 319,
+      "p": 0.81359
+     },
+     {
+      "token": "\u2581B",
+      "id": 350,
+      "p": 0.0775
+     },
+     {
+      "token": "\u2581No",
+      "id": 1939,
+      "p": 0.05247
+     },
+     {
+      "token": "\u2581The",
+      "id": 450,
+      "p": 0.02075
+     },
+     {
+      "token": "\u2581There",
+      "id": 1670,
+      "p": 0.00658
+     }
+    ]
+   },
+   {
+    "statement": "The finding is absent.",
+    "expected": 0,
+    "semantic_margin": -2.1734,
+    "candidate_mass": 0.790836,
+    "top_tokens": [
+     {
+      "token": "\u2581A",
+      "id": 319,
+      "p": 0.71006
+     },
+     {
+      "token": "\u2581No",
+      "id": 1939,
+      "p": 0.15582
+     },
+     {
+      "token": "\u2581B",
+      "id": 350,
+      "p": 0.0808
+     },
+     {
+      "token": "\u2581The",
+      "id": 450,
+      "p": 0.01606
+     },
+     {
+      "token": "\u2581There",
+      "id": 1670,
+      "p": 0.00784
+     }
+    ]
+   },
+   {
+    "statement": "The finding is explicitly reported as present.",
+    "expected": 1,
+    "semantic_margin": -2.0693,
+    "candidate_mass": 0.933697,
+    "top_tokens": [
+     {
+      "token": "\u2581A",
+      "id": 319,
+      "p": 0.82903
+     },
+     {
+      "token": "\u2581B",
+      "id": 350,
+      "p": 0.10469
+     },
+     {
+      "token": "\u2581No",
+      "id": 1939,
+      "p": 0.02812
+     },
+     {
+      "token": "\u2581The",
+      "id": 450,
+      "p": 0.0106
+     },
+     {
+      "token": "\u2581There",
+      "id": 1670,
+      "p": 0.00703
+     }
+    ]
+   },
+   {
+    "statement": "The finding is explicitly reported as absent.",
+    "expected": 0,
+    "semantic_margin": -1.5818,
+    "candidate_mass": 0.735379,
+    "top_tokens": [
+     {
+      "token": "\u2581A",
+      "id": 319,
+      "p": 0.60998
+     },
+     {
+      "token": "\u2581No",
+      "id": 1939,
+      "p": 0.21855
+     },
+     {
+      "token": "\u2581B",
+      "id": 350,
+      "p": 0.12541
+     },
+     {
+      "token": "\u2581The",
+      "id": 450,
+      "p": 0.01621
+     },
+     {
+      "token": "\u2581There",
+      "id": 1670,
+      "p": 0.00572
+     }
+    ]
+   }
+  ]
+ },
+ "image_free_image_phrased_by_template": {
+  "IY": [
+   {
+    "statement": "The finding is present.",
+    "expected": 1,
+    "semantic_margin": -4.8129,
+    "candidate_mass": 0.883549,
+    "top_tokens": [
+     {
+      "token": "\u2581No",
+      "id": 1939,
+      "p": 0.87551
+     },
+     {
+      "token": "\u2581There",
+      "id": 1670,
+      "p": 0.04504
+     },
+     {
+      "token": "\u2581The",
+      "id": 450,
+      "p": 0.03525
+     },
+     {
+      "token": "\u2581Yes",
+      "id": 3869,
+      "p": 0.00711
+     },
+     {
+      "token": "\u2581A",
+      "id": 319,
+      "p": 0.00379
+     }
+    ]
+   },
+   {
+    "statement": "The finding is absent.",
+    "expected": 0,
+    "semantic_margin": -8.8635,
+    "candidate_mass": 0.994402,
+    "top_tokens": [
+     {
+      "token": "\u2581No",
+      "id": 1939,
+      "p": 0.99378
+     },
+     {
+      "token": "\u2581The",
+      "id": 450,
+      "p": 0.00165
+     },
+     {
+      "token": "\u2581There",
+      "id": 1670,
+      "p": 0.00161
+     },
+     {
+      "token": "\u2581no",
+      "id": 694,
+      "p": 0.00048
+     },
+     {
+      "token": "\u2581A",
+      "id": 319,
+      "p": 0.00023
+     }
+    ]
+   },
+   {
+    "statement": "The finding is explicitly reported as present.",
+    "expected": 1,
+    "semantic_margin": -4.2858,
+    "candidate_mass": 0.904214,
+    "top_tokens": [
+     {
+      "token": "\u2581No",
+      "id": 1939,
+      "p": 0.89048
+     },
+     {
+      "token": "\u2581The",
+      "id": 450,
+      "p": 0.03303
+     },
+     {
+      "token": "\u2581There",
+      "id": 1670,
+      "p": 0.02865
+     },
+     {
+      "token": "\u2581Yes",
+      "id": 3869,
+      "p": 0.01226
+     },
+     {
+      "token": "\u2581In",
+      "id": 512,
+      "p": 0.00267
+     }
+    ]
+   },
+   {
+    "statement": "The finding is explicitly reported as absent.",
+    "expected": 0,
+    "semantic_margin": -7.3542,
+    "candidate_mass": 0.992131,
+    "top_tokens": [
+     {
+      "token": "\u2581No",
+      "id": 1939,
+      "p": 0.99088
+     },
+     {
+      "token": "\u2581The",
+      "id": 450,
+      "p": 0.00302
+     },
+     {
+      "token": "\u2581There",
+      "id": 1670,
+      "p": 0.00167
+     },
+     {
+      "token": "\u2581Yes",
+      "id": 3869,
+      "p": 0.00063
+     },
+     {
+      "token": "\u2581no",
+      "id": 694,
+      "p": 0.00057
+     }
+    ]
+   }
+  ],
+  "WY": [
+   {
+    "statement": "The finding is present.",
+    "expected": 1,
+    "semantic_margin": -5.593,
+    "candidate_mass": 0.946976,
+    "top_tokens": [
+     {
+      "token": "\u2581No",
+      "id": 1939,
+      "p": 0.94313
+     },
+     {
+      "token": "\u2581The",
+      "id": 450,
+      "p": 0.0283
+     },
+     {
+      "token": "\u2581There",
+      "id": 1670,
+      "p": 0.00837
+     },
+     {
+      "token": "\u2581Yes",
+      "id": 3869,
+      "p": 0.00351
+     },
+     {
+      "token": "\u2581A",
+      "id": 319,
+      "p": 0.00261
+     }
+    ]
+   },
+   {
+    "statement": "The finding is absent.",
+    "expected": 0,
+    "semantic_margin": -8.9108,
+    "candidate_mass": 0.9974,
+    "top_tokens": [
+     {
+      "token": "\u2581No",
+      "id": 1939,
+      "p": 0.99712
+     },
+     {
+      "token": "\u2581The",
+      "id": 450,
+      "p": 0.00142
+     },
+     {
+      "token": "\u2581There",
+      "id": 1670,
+      "p": 0.00024
+     },
+     {
+      "token": "\u2581no",
+      "id": 694,
+      "p": 0.00014
+     },
+     {
+      "token": "\u2581Yes",
+      "id": 3869,
+      "p": 0.00013
+     }
+    ]
+   },
+   {
+    "statement": "The finding is explicitly reported as present.",
+    "expected": 1,
+    "semantic_margin": -4.2385,
+    "candidate_mass": 0.951796,
+    "top_tokens": [
+     {
+      "token": "\u2581No",
+      "id": 1939,
+      "p": 0.93739
+     },
+     {
+      "token": "\u2581The",
+      "id": 450,
+      "p": 0.02533
+     },
+     {
+      "token": "\u2581Yes",
+      "id": 3869,
+      "p": 0.01353
+     },
+     {
+      "token": "\u2581There",
+      "id": 1670,
+      "p": 0.00499
+     },
+     {
+      "token": "\u2581In",
+      "id": 512,
+      "p": 0.002
+     }
+    ]
+   },
+   {
+    "statement": "The finding is explicitly reported as absent.",
+    "expected": 0,
+    "semantic_margin": -7.1017,
+    "candidate_mass": 0.992744,
+    "top_tokens": [
+     {
+      "token": "\u2581No",
+      "id": 1939,
+      "p": 0.99157
+     },
+     {
+      "token": "\u2581The",
+      "id": 450,
+      "p": 0.00412
+     },
+     {
+      "token": "\u2581Yes",
+      "id": 3869,
+      "p": 0.00082
+     },
+     {
+      "token": "\u2581There",
+      "id": 1670,
+      "p": 0.00056
+     },
+     {
+      "token": "\u2581no",
+      "id": 694,
+      "p": 0.00032
+     }
+    ]
+   }
+  ],
+  "IA": [
+   {
+    "statement": "The finding is present.",
+    "expected": 1,
+    "semantic_margin": 6.7929,
+    "candidate_mass": 0.954733,
+    "top_tokens": [
+     {
+      "token": "\u2581A",
+      "id": 319,
+      "p": 0.95367
+     },
+     {
+      "token": "\u2581No",
+      "id": 1939,
+      "p": 0.03241
+     },
+     {
+      "token": "\u2581There",
+      "id": 1670,
+      "p": 0.00714
+     },
+     {
+      "token": "\u2581The",
+      "id": 450,
+      "p": 0.0014
+     },
+     {
+      "token": "\u2581B",
+      "id": 350,
+      "p": 0.00107
+     }
+    ]
+   },
+   {
+    "statement": "The finding is absent.",
+    "expected": 0,
+    "semantic_margin": 5.5045,
+    "candidate_mass": 0.52374,
+    "top_tokens": [
+     {
+      "token": "\u2581A",
+      "id": 319,
+      "p": 0.52162
+     },
+     {
+      "token": "\u2581No",
+      "id": 1939,
+      "p": 0.46718
+     },
+     {
+      "token": "\u2581There",
+      "id": 1670,
+      "p": 0.0047
+     },
+     {
+      "token": "\u2581B",
+      "id": 350,
+      "p": 0.00212
+     },
+     {
+      "token": "\u2581no",
+      "id": 694,
+      "p": 0.00118
+     }
+    ]
+   },
+   {
+    "statement": "The finding is explicitly reported as present.",
+    "expected": 1,
+    "semantic_margin": 5.9507,
+    "candidate_mass": 0.966897,
+    "top_tokens": [
+     {
+      "token": "\u2581A",
+      "id": 319,
+      "p": 0.9644
+     },
+     {
+      "token": "\u2581No",
+      "id": 1939,
+      "p": 0.0211
+     },
+     {
+      "token": "\u2581There",
+      "id": 1670,
+      "p": 0.00608
+     },
+     {
+      "token": "\u2581B",
+      "id": 350,
+      "p": 0.00251
+     },
+     {
+      "token": "\u2581The",
+      "id": 450,
+      "p": 0.00166
+     }
+    ]
+   },
+   {
+    "statement": "The finding is explicitly reported as absent.",
+    "expected": 0,
+    "semantic_margin": 4.858,
+    "candidate_mass": 0.785757,
+    "top_tokens": [
+     {
+      "token": "\u2581A",
+      "id": 319,
+      "p": 0.77971
+     },
+     {
+      "token": "\u2581No",
+      "id": 1939,
+      "p": 0.19881
+     },
+     {
+      "token": "\u2581There",
+      "id": 1670,
+      "p": 0.01049
+     },
+     {
+      "token": "\u2581B",
+      "id": 350,
+      "p": 0.00606
+     },
+     {
+      "token": "\u2581The",
+      "id": 450,
+      "p": 0.00102
+     }
+    ]
+   }
+  ],
+  "IB": [
+   {
+    "statement": "The finding is present.",
+    "expected": 1,
+    "semantic_margin": -1.295,
+    "candidate_mass": 0.893622,
+    "top_tokens": [
+     {
+      "token": "\u2581A",
+      "id": 319,
+      "p": 0.7015
+     },
+     {
+      "token": "\u2581B",
+      "id": 350,
+      "p": 0.19214
+     },
+     {
+      "token": "\u2581No",
+      "id": 1939,
+      "p": 0.07003
+     },
+     {
+      "token": "\u2581There",
+      "id": 1670,
+      "p": 0.01628
+     },
+     {
+      "token": "\u2581The",
+      "id": 450,
+      "p": 0.00511
+     }
+    ]
+   },
+   {
+    "statement": "The finding is absent.",
+    "expected": 0,
+    "semantic_margin": -2.1519,
+    "candidate_mass": 0.42394,
+    "top_tokens": [
+     {
+      "token": "\u2581No",
+      "id": 1939,
+      "p": 0.5616
+     },
+     {
+      "token": "\u2581A",
+      "id": 319,
+      "p": 0.37979
+     },
+     {
+      "token": "\u2581B",
+      "id": 350,
+      "p": 0.04416
+     },
+     {
+      "token": "\u2581There",
+      "id": 1670,
+      "p": 0.00712
+     },
+     {
+      "token": "\u2581no",
+      "id": 694,
+      "p": 0.00143
+     }
+    ]
+   },
+   {
+    "statement": "The finding is explicitly reported as present.",
+    "expected": 1,
+    "semantic_margin": -1.2958,
+    "candidate_mass": 0.93733,
+    "top_tokens": [
+     {
+      "token": "\u2581A",
+      "id": 319,
+      "p": 0.73594
+     },
+     {
+      "token": "\u2581B",
+      "id": 350,
+      "p": 0.20141
+     },
+     {
+      "token": "\u2581No",
+      "id": 1939,
+      "p": 0.03701
+     },
+     {
+      "token": "\u2581There",
+      "id": 1670,
+      "p": 0.00915
+     },
+     {
+      "token": "\u2581The",
+      "id": 450,
+      "p": 0.00412
+     }
+    ]
+   },
+   {
+    "statement": "The finding is explicitly reported as absent.",
+    "expected": 0,
+    "semantic_margin": -1.2735,
+    "candidate_mass": 0.679228,
+    "top_tokens": [
+     {
+      "token": "\u2581A",
+      "id": 319,
+      "p": 0.53072
+     },
+     {
+      "token": "\u2581No",
+      "id": 1939,
+      "p": 0.29127
+     },
+     {
+      "token": "\u2581B",
+      "id": 350,
+      "p": 0.14852
+     },
+     {
+      "token": "\u2581There",
+      "id": 1670,
+      "p": 0.01581
+     },
+     {
+      "token": "\u2581The",
+      "id": 450,
+      "p": 0.00296
+     }
+    ]
+   }
+  ],
+  "WA": [
+   {
+    "statement": "The finding is present.",
+    "expected": 1,
+    "semantic_margin": 7.9121,
+    "candidate_mass": 0.943248,
+    "top_tokens": [
+     {
+      "token": "\u2581A",
+      "id": 319,
+      "p": 0.94291
+     },
+     {
+      "token": "\u2581No",
+      "id": 1939,
+      "p": 0.04777
+     },
+     {
+      "token": "\u2581There",
+      "id": 1670,
+      "p": 0.00364
+     },
+     {
+      "token": "\u2581The",
+      "id": 450,
+      "p": 0.00174
+     },
+     {
+      "token": "\u2581Yes",
+      "id": 3869,
+      "p": 0.00094
+     }
+    ]
+   },
+   {
+    "statement": "The finding is absent.",
+    "expected": 0,
+    "semantic_margin": 6.4954,
+    "candidate_mass": 0.52933,
+    "top_tokens": [
+     {
+      "token": "\u2581A",
+      "id": 319,
+      "p": 0.52853
+     },
+     {
+      "token": "\u2581No",
+      "id": 1939,
+      "p": 0.46609
+     },
+     {
+      "token": "\u2581There",
+      "id": 1670,
+      "p": 0.00135
+     },
+     {
+      "token": "\u2581no",
+      "id": 694,
+      "p": 0.00089
+     },
+     {
+      "token": "\u2581B",
+      "id": 350,
+      "p": 0.0008
+     }
+    ]
+   },
+   {
+    "statement": "The finding is explicitly reported as present.",
+    "expected": 1,
+    "semantic_margin": 7.1959,
+    "candidate_mass": 0.970073,
+    "top_tokens": [
+     {
+      "token": "\u2581A",
+      "id": 319,
+      "p": 0.96935
+     },
+     {
+      "token": "\u2581No",
+      "id": 1939,
+      "p": 0.02308
+     },
+     {
+      "token": "\u2581There",
+      "id": 1670,
+      "p": 0.00203
+     },
+     {
+      "token": "\u2581The",
+      "id": 450,
+      "p": 0.00172
+     },
+     {
+      "token": "\u2581B",
+      "id": 350,
+      "p": 0.00073
+     }
+    ]
+   },
+   {
+    "statement": "The finding is explicitly reported as absent.",
+    "expected": 0,
+    "semantic_margin": 5.5855,
+    "candidate_mass": 0.737462,
+    "top_tokens": [
+     {
+      "token": "\u2581A",
+      "id": 319,
+      "p": 0.73471
+     },
+     {
+      "token": "\u2581No",
+      "id": 1939,
+      "p": 0.2553
+     },
+     {
+      "token": "\u2581B",
+      "id": 350,
+      "p": 0.00276
+     },
+     {
+      "token": "\u2581There",
+      "id": 1670,
+      "p": 0.00241
+     },
+     {
+      "token": "\u2581The",
+      "id": 450,
+      "p": 0.0013
+     }
+    ]
+   }
+  ],
+  "WB": [
+   {
+    "statement": "The finding is present.",
+    "expected": 1,
+    "semantic_margin": -2.2921,
+    "candidate_mass": 0.85361,
+    "top_tokens": [
+     {
+      "token": "\u2581A",
+      "id": 319,
+      "p": 0.77528
+     },
+     {
+      "token": "\u2581No",
+      "id": 1939,
+      "p": 0.12078
+     },
+     {
+      "token": "\u2581B",
+      "id": 350,
+      "p": 0.07834
+     },
+     {
+      "token": "\u2581There",
+      "id": 1670,
+      "p": 0.00813
+     },
+     {
+      "token": "\u2581The",
+      "id": 450,
+      "p": 0.00578
+     }
+    ]
+   },
+   {
+    "statement": "The finding is absent.",
+    "expected": 0,
+    "semantic_margin": -2.9362,
+    "candidate_mass": 0.375905,
+    "top_tokens": [
+     {
+      "token": "\u2581No",
+      "id": 1939,
+      "p": 0.61712
+     },
+     {
+      "token": "\u2581A",
+      "id": 319,
+      "p": 0.35697
+     },
+     {
+      "token": "\u2581B",
+      "id": 350,
+      "p": 0.01894
+     },
+     {
+      "token": "\u2581There",
+      "id": 1670,
+      "p": 0.00162
+     },
+     {
+      "token": "\u2581no",
+      "id": 694,
+      "p": 0.00113
+     }
+    ]
+   },
+   {
+    "statement": "The finding is explicitly reported as present.",
+    "expected": 1,
+    "semantic_margin": -1.7683,
+    "candidate_mass": 0.930598,
+    "top_tokens": [
+     {
+      "token": "\u2581A",
+      "id": 319,
+      "p": 0.79497
+     },
+     {
+      "token": "\u2581B",
+      "id": 350,
+      "p": 0.13564
+     },
+     {
+      "token": "\u2581No",
+      "id": 1939,
+      "p": 0.05052
+     },
+     {
+      "token": "\u2581The",
+      "id": 450,
+      "p": 0.00501
+     },
+     {
+      "token": "\u2581There",
+      "id": 1670,
+      "p": 0.00365
+     }
+    ]
+   },
+   {
+    "statement": "The finding is explicitly reported as absent.",
+    "expected": 0,
+    "semantic_margin": -1.5091,
+    "candidate_mass": 0.568362,
+    "top_tokens": [
+     {
+      "token": "\u2581A",
+      "id": 319,
+      "p": 0.46545
+     },
+     {
+      "token": "\u2581No",
+      "id": 1939,
+      "p": 0.41567
+     },
+     {
+      "token": "\u2581B",
+      "id": 350,
+      "p": 0.10292
+     },
+     {
+      "token": "\u2581There",
+      "id": 1670,
+      "p": 0.00388
+     },
+     {
+      "token": "\u2581The",
+      "id": 450,
+      "p": 0.00322
+     }
+    ]
+   }
+  ]
+ }
+}

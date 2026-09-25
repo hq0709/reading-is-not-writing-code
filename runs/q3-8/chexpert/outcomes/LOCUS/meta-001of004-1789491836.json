@@ -1,0 +1,22 @@
+{
+ "model_key": "q3-8",
+ "dataset_id": "chexpert",
+ "module": "LOCUS",
+ "shard": 1,
+ "n_shards": 4,
+ "rows": 150,
+ "scored_rows": 150,
+ "outcomes": 114300,
+ "seconds": 4482.8,
+ "throughput_per_s": 25.5,
+ "batch": 32,
+ "primary_template": "IY",
+ "numerics": "bf16-batched",
+ "batch_policy": "fixed composition per question: clean replicated baseline batch + padded steered batches",
+ "peak_gpu_memory_bytes": 22079723008,
+ "gpu_count": 1,
+ "gpu_models": [
+  "NVIDIA A100-SXM4-80GB"
+ ],
+ "ended_utc": "2026-09-15T17:03:56Z"
+}

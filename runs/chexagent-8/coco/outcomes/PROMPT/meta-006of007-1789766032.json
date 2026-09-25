@@ -1,0 +1,26 @@
+{
+ "model_key": "chexagent-8",
+ "dataset_id": "coco",
+ "module": "PROMPT",
+ "shard": 6,
+ "n_shards": 7,
+ "rows": 85,
+ "scored_rows": 85,
+ "outcomes": 64770,
+ "seconds": 1227.8,
+ "throughput_per_s": 52.75,
+ "batch": 16,
+ "primary_template": "IY",
+ "numerics": "bf16-batched",
+ "fit_seed": null,
+ "batch_policy": "fixed composition per question: clean replicated baseline batch + padded steered batches",
+ "direction_block": "chexagent-8",
+ "tower_swap": null,
+ "replay": null,
+ "peak_gpu_memory_bytes": 18807197184,
+ "gpu_count": 1,
+ "gpu_models": [
+  "NVIDIA H100 80GB HBM3"
+ ],
+ "ended_utc": "2026-09-18T21:13:52Z"
+}

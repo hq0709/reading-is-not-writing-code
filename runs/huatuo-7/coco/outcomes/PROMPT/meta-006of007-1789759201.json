@@ -1,0 +1,26 @@
+{
+ "model_key": "huatuo-7",
+ "dataset_id": "coco",
+ "module": "PROMPT",
+ "shard": 6,
+ "n_shards": 7,
+ "rows": 85,
+ "scored_rows": 85,
+ "outcomes": 107950,
+ "seconds": 2136.6,
+ "throughput_per_s": 50.52,
+ "batch": 16,
+ "primary_template": "IY",
+ "numerics": "bf16-batched",
+ "fit_seed": null,
+ "batch_policy": "fixed composition per question: clean replicated baseline batch + padded steered batches",
+ "direction_block": "huatuo-7",
+ "tower_swap": null,
+ "replay": null,
+ "peak_gpu_memory_bytes": 19576979456,
+ "gpu_count": 1,
+ "gpu_models": [
+  "NVIDIA H100 80GB HBM3"
+ ],
+ "ended_utc": "2026-09-18T19:20:01Z"
+}

@@ -1,0 +1,20 @@
+{
+ "model_key": "llava15-13",
+ "dataset_id": "nih",
+ "module": "LOCUS_CALIBRATION",
+ "shard": 0,
+ "n_shards": 1,
+ "rows": 400,
+ "scored_rows": 400,
+ "outcomes": 2400,
+ "seconds": 121.6,
+ "throughput_per_s": 19.74,
+ "batch": 1,
+ "batch_policy": "fixed composition per question: clean replicated baseline batch + padded steered batches",
+ "peak_gpu_memory_bytes": 27476898816,
+ "gpu_count": 1,
+ "gpu_models": [
+  "NVIDIA H100 80GB HBM3"
+ ],
+ "ended_utc": "2026-09-13T06:09:21Z"
+}

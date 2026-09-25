@@ -1,0 +1,1394 @@
+{
+ "coco|person|IY": {
+  "dataset_id": "coco",
+  "concept": "person",
+  "template_id": "IY",
+  "is_primary": true,
+  "question": "Is there a person in this photograph? Answer yes or no.",
+  "rendered_prompt": "<|system|>\nYou are a helpful assistant.<|endoftext|>\n<|user|>\nPicture 1:<|img|>cf-transfer-image<|/img|>\nIs there a person in this photograph? Answer yes or no.<|endoftext|>\n<|assistant|>\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   8505,
+   5297,
+   3763,
+   3363
+  ],
+  "negative_token_ids": [
+   3919,
+   2949,
+   645,
+   1400
+  ],
+  "candidate_detail": {
+   "yes": {
+    "yes": 8505,
+    "Yes": 5297,
+    " yes": 3763,
+    " Yes": 3363
+   },
+   "no": {
+    "no": 3919,
+    "No": 2949,
+    " no": 645,
+    " No": 1400
+   }
+  },
+  "raw_ab": null,
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "coco|person|WY": {
+  "dataset_id": "coco",
+  "concept": "person",
+  "template_id": "WY",
+  "is_primary": false,
+  "question": "Does this photograph show a person? Answer yes or no.",
+  "rendered_prompt": "<|system|>\nYou are a helpful assistant.<|endoftext|>\n<|user|>\nPicture 1:<|img|>cf-transfer-image<|/img|>\nDoes this photograph show a person? Answer yes or no.<|endoftext|>\n<|assistant|>\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   8505,
+   5297,
+   3763,
+   3363
+  ],
+  "negative_token_ids": [
+   3919,
+   2949,
+   645,
+   1400
+  ],
+  "candidate_detail": {
+   "yes": {
+    "yes": 8505,
+    "Yes": 5297,
+    " yes": 3763,
+    " Yes": 3363
+   },
+   "no": {
+    "no": 3919,
+    "No": 2949,
+    " no": 645,
+    " No": 1400
+   }
+  },
+  "raw_ab": null,
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "coco|person|IA": {
+  "dataset_id": "coco",
+  "concept": "person",
+  "template_id": "IA",
+  "is_primary": false,
+  "question": "Is there a person in this photograph? Answer A if the finding is present and B if it is absent. Reply with A or B only.",
+  "rendered_prompt": "<|system|>\nYou are a helpful assistant.<|endoftext|>\n<|user|>\nPicture 1:<|img|>cf-transfer-image<|/img|>\nIs there a person in this photograph? Answer A if the finding is present and B if it is absent. Reply with A or B only.<|endoftext|>\n<|assistant|>\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   32,
+   317
+  ],
+  "negative_token_ids": [
+   33,
+   347
+  ],
+  "candidate_detail": {
+   "A": {
+    "A": 32,
+    " A": 317
+   },
+   "B": {
+    "B": 33,
+    " B": 347
+   }
+  },
+  "raw_ab": {
+   "A_ids": [
+    32,
+    317
+   ],
+   "B_ids": [
+    33,
+    347
+   ]
+  },
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "coco|person|IB": {
+  "dataset_id": "coco",
+  "concept": "person",
+  "template_id": "IB",
+  "is_primary": false,
+  "question": "Is there a person in this photograph? Answer B if the finding is present and A if it is absent. Reply with A or B only.",
+  "rendered_prompt": "<|system|>\nYou are a helpful assistant.<|endoftext|>\n<|user|>\nPicture 1:<|img|>cf-transfer-image<|/img|>\nIs there a person in this photograph? Answer B if the finding is present and A if it is absent. Reply with A or B only.<|endoftext|>\n<|assistant|>\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   33,
+   347
+  ],
+  "negative_token_ids": [
+   32,
+   317
+  ],
+  "candidate_detail": {
+   "A": {
+    "A": 32,
+    " A": 317
+   },
+   "B": {
+    "B": 33,
+    " B": 347
+   }
+  },
+  "raw_ab": {
+   "A_ids": [
+    32,
+    317
+   ],
+   "B_ids": [
+    33,
+    347
+   ]
+  },
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "coco|person|WA": {
+  "dataset_id": "coco",
+  "concept": "person",
+  "template_id": "WA",
+  "is_primary": false,
+  "question": "Does this photograph show a person? Answer A if the finding is present and B if it is absent. Reply with A or B only.",
+  "rendered_prompt": "<|system|>\nYou are a helpful assistant.<|endoftext|>\n<|user|>\nPicture 1:<|img|>cf-transfer-image<|/img|>\nDoes this photograph show a person? Answer A if the finding is present and B if it is absent. Reply with A or B only.<|endoftext|>\n<|assistant|>\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   32,
+   317
+  ],
+  "negative_token_ids": [
+   33,
+   347
+  ],
+  "candidate_detail": {
+   "A": {
+    "A": 32,
+    " A": 317
+   },
+   "B": {
+    "B": 33,
+    " B": 347
+   }
+  },
+  "raw_ab": {
+   "A_ids": [
+    32,
+    317
+   ],
+   "B_ids": [
+    33,
+    347
+   ]
+  },
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "coco|person|WB": {
+  "dataset_id": "coco",
+  "concept": "person",
+  "template_id": "WB",
+  "is_primary": false,
+  "question": "Does this photograph show a person? Answer B if the finding is present and A if it is absent. Reply with A or B only.",
+  "rendered_prompt": "<|system|>\nYou are a helpful assistant.<|endoftext|>\n<|user|>\nPicture 1:<|img|>cf-transfer-image<|/img|>\nDoes this photograph show a person? Answer B if the finding is present and A if it is absent. Reply with A or B only.<|endoftext|>\n<|assistant|>\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   33,
+   347
+  ],
+  "negative_token_ids": [
+   32,
+   317
+  ],
+  "candidate_detail": {
+   "A": {
+    "A": 32,
+    " A": 317
+   },
+   "B": {
+    "B": 33,
+    " B": 347
+   }
+  },
+  "raw_ab": {
+   "A_ids": [
+    32,
+    317
+   ],
+   "B_ids": [
+    33,
+    347
+   ]
+  },
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "coco|dog|IY": {
+  "dataset_id": "coco",
+  "concept": "dog",
+  "template_id": "IY",
+  "is_primary": true,
+  "question": "Is there a dog in this photograph? Answer yes or no.",
+  "rendered_prompt": "<|system|>\nYou are a helpful assistant.<|endoftext|>\n<|user|>\nPicture 1:<|img|>cf-transfer-image<|/img|>\nIs there a dog in this photograph? Answer yes or no.<|endoftext|>\n<|assistant|>\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   8505,
+   5297,
+   3763,
+   3363
+  ],
+  "negative_token_ids": [
+   3919,
+   2949,
+   645,
+   1400
+  ],
+  "candidate_detail": {
+   "yes": {
+    "yes": 8505,
+    "Yes": 5297,
+    " yes": 3763,
+    " Yes": 3363
+   },
+   "no": {
+    "no": 3919,
+    "No": 2949,
+    " no": 645,
+    " No": 1400
+   }
+  },
+  "raw_ab": null,
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "coco|dog|WY": {
+  "dataset_id": "coco",
+  "concept": "dog",
+  "template_id": "WY",
+  "is_primary": false,
+  "question": "Does this photograph show a dog? Answer yes or no.",
+  "rendered_prompt": "<|system|>\nYou are a helpful assistant.<|endoftext|>\n<|user|>\nPicture 1:<|img|>cf-transfer-image<|/img|>\nDoes this photograph show a dog? Answer yes or no.<|endoftext|>\n<|assistant|>\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   8505,
+   5297,
+   3763,
+   3363
+  ],
+  "negative_token_ids": [
+   3919,
+   2949,
+   645,
+   1400
+  ],
+  "candidate_detail": {
+   "yes": {
+    "yes": 8505,
+    "Yes": 5297,
+    " yes": 3763,
+    " Yes": 3363
+   },
+   "no": {
+    "no": 3919,
+    "No": 2949,
+    " no": 645,
+    " No": 1400
+   }
+  },
+  "raw_ab": null,
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "coco|dog|IA": {
+  "dataset_id": "coco",
+  "concept": "dog",
+  "template_id": "IA",
+  "is_primary": false,
+  "question": "Is there a dog in this photograph? Answer A if the finding is present and B if it is absent. Reply with A or B only.",
+  "rendered_prompt": "<|system|>\nYou are a helpful assistant.<|endoftext|>\n<|user|>\nPicture 1:<|img|>cf-transfer-image<|/img|>\nIs there a dog in this photograph? Answer A if the finding is present and B if it is absent. Reply with A or B only.<|endoftext|>\n<|assistant|>\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   32,
+   317
+  ],
+  "negative_token_ids": [
+   33,
+   347
+  ],
+  "candidate_detail": {
+   "A": {
+    "A": 32,
+    " A": 317
+   },
+   "B": {
+    "B": 33,
+    " B": 347
+   }
+  },
+  "raw_ab": {
+   "A_ids": [
+    32,
+    317
+   ],
+   "B_ids": [
+    33,
+    347
+   ]
+  },
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "coco|dog|IB": {
+  "dataset_id": "coco",
+  "concept": "dog",
+  "template_id": "IB",
+  "is_primary": false,
+  "question": "Is there a dog in this photograph? Answer B if the finding is present and A if it is absent. Reply with A or B only.",
+  "rendered_prompt": "<|system|>\nYou are a helpful assistant.<|endoftext|>\n<|user|>\nPicture 1:<|img|>cf-transfer-image<|/img|>\nIs there a dog in this photograph? Answer B if the finding is present and A if it is absent. Reply with A or B only.<|endoftext|>\n<|assistant|>\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   33,
+   347
+  ],
+  "negative_token_ids": [
+   32,
+   317
+  ],
+  "candidate_detail": {
+   "A": {
+    "A": 32,
+    " A": 317
+   },
+   "B": {
+    "B": 33,
+    " B": 347
+   }
+  },
+  "raw_ab": {
+   "A_ids": [
+    32,
+    317
+   ],
+   "B_ids": [
+    33,
+    347
+   ]
+  },
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "coco|dog|WA": {
+  "dataset_id": "coco",
+  "concept": "dog",
+  "template_id": "WA",
+  "is_primary": false,
+  "question": "Does this photograph show a dog? Answer A if the finding is present and B if it is absent. Reply with A or B only.",
+  "rendered_prompt": "<|system|>\nYou are a helpful assistant.<|endoftext|>\n<|user|>\nPicture 1:<|img|>cf-transfer-image<|/img|>\nDoes this photograph show a dog? Answer A if the finding is present and B if it is absent. Reply with A or B only.<|endoftext|>\n<|assistant|>\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   32,
+   317
+  ],
+  "negative_token_ids": [
+   33,
+   347
+  ],
+  "candidate_detail": {
+   "A": {
+    "A": 32,
+    " A": 317
+   },
+   "B": {
+    "B": 33,
+    " B": 347
+   }
+  },
+  "raw_ab": {
+   "A_ids": [
+    32,
+    317
+   ],
+   "B_ids": [
+    33,
+    347
+   ]
+  },
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "coco|dog|WB": {
+  "dataset_id": "coco",
+  "concept": "dog",
+  "template_id": "WB",
+  "is_primary": false,
+  "question": "Does this photograph show a dog? Answer B if the finding is present and A if it is absent. Reply with A or B only.",
+  "rendered_prompt": "<|system|>\nYou are a helpful assistant.<|endoftext|>\n<|user|>\nPicture 1:<|img|>cf-transfer-image<|/img|>\nDoes this photograph show a dog? Answer B if the finding is present and A if it is absent. Reply with A or B only.<|endoftext|>\n<|assistant|>\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   33,
+   347
+  ],
+  "negative_token_ids": [
+   32,
+   317
+  ],
+  "candidate_detail": {
+   "A": {
+    "A": 32,
+    " A": 317
+   },
+   "B": {
+    "B": 33,
+    " B": 347
+   }
+  },
+  "raw_ab": {
+   "A_ids": [
+    32,
+    317
+   ],
+   "B_ids": [
+    33,
+    347
+   ]
+  },
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "coco|car|IY": {
+  "dataset_id": "coco",
+  "concept": "car",
+  "template_id": "IY",
+  "is_primary": true,
+  "question": "Is there a car in this photograph? Answer yes or no.",
+  "rendered_prompt": "<|system|>\nYou are a helpful assistant.<|endoftext|>\n<|user|>\nPicture 1:<|img|>cf-transfer-image<|/img|>\nIs there a car in this photograph? Answer yes or no.<|endoftext|>\n<|assistant|>\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   8505,
+   5297,
+   3763,
+   3363
+  ],
+  "negative_token_ids": [
+   3919,
+   2949,
+   645,
+   1400
+  ],
+  "candidate_detail": {
+   "yes": {
+    "yes": 8505,
+    "Yes": 5297,
+    " yes": 3763,
+    " Yes": 3363
+   },
+   "no": {
+    "no": 3919,
+    "No": 2949,
+    " no": 645,
+    " No": 1400
+   }
+  },
+  "raw_ab": null,
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "coco|car|WY": {
+  "dataset_id": "coco",
+  "concept": "car",
+  "template_id": "WY",
+  "is_primary": false,
+  "question": "Does this photograph show a car? Answer yes or no.",
+  "rendered_prompt": "<|system|>\nYou are a helpful assistant.<|endoftext|>\n<|user|>\nPicture 1:<|img|>cf-transfer-image<|/img|>\nDoes this photograph show a car? Answer yes or no.<|endoftext|>\n<|assistant|>\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   8505,
+   5297,
+   3763,
+   3363
+  ],
+  "negative_token_ids": [
+   3919,
+   2949,
+   645,
+   1400
+  ],
+  "candidate_detail": {
+   "yes": {
+    "yes": 8505,
+    "Yes": 5297,
+    " yes": 3763,
+    " Yes": 3363
+   },
+   "no": {
+    "no": 3919,
+    "No": 2949,
+    " no": 645,
+    " No": 1400
+   }
+  },
+  "raw_ab": null,
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "coco|car|IA": {
+  "dataset_id": "coco",
+  "concept": "car",
+  "template_id": "IA",
+  "is_primary": false,
+  "question": "Is there a car in this photograph? Answer A if the finding is present and B if it is absent. Reply with A or B only.",
+  "rendered_prompt": "<|system|>\nYou are a helpful assistant.<|endoftext|>\n<|user|>\nPicture 1:<|img|>cf-transfer-image<|/img|>\nIs there a car in this photograph? Answer A if the finding is present and B if it is absent. Reply with A or B only.<|endoftext|>\n<|assistant|>\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   32,
+   317
+  ],
+  "negative_token_ids": [
+   33,
+   347
+  ],
+  "candidate_detail": {
+   "A": {
+    "A": 32,
+    " A": 317
+   },
+   "B": {
+    "B": 33,
+    " B": 347
+   }
+  },
+  "raw_ab": {
+   "A_ids": [
+    32,
+    317
+   ],
+   "B_ids": [
+    33,
+    347
+   ]
+  },
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "coco|car|IB": {
+  "dataset_id": "coco",
+  "concept": "car",
+  "template_id": "IB",
+  "is_primary": false,
+  "question": "Is there a car in this photograph? Answer B if the finding is present and A if it is absent. Reply with A or B only.",
+  "rendered_prompt": "<|system|>\nYou are a helpful assistant.<|endoftext|>\n<|user|>\nPicture 1:<|img|>cf-transfer-image<|/img|>\nIs there a car in this photograph? Answer B if the finding is present and A if it is absent. Reply with A or B only.<|endoftext|>\n<|assistant|>\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   33,
+   347
+  ],
+  "negative_token_ids": [
+   32,
+   317
+  ],
+  "candidate_detail": {
+   "A": {
+    "A": 32,
+    " A": 317
+   },
+   "B": {
+    "B": 33,
+    " B": 347
+   }
+  },
+  "raw_ab": {
+   "A_ids": [
+    32,
+    317
+   ],
+   "B_ids": [
+    33,
+    347
+   ]
+  },
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "coco|car|WA": {
+  "dataset_id": "coco",
+  "concept": "car",
+  "template_id": "WA",
+  "is_primary": false,
+  "question": "Does this photograph show a car? Answer A if the finding is present and B if it is absent. Reply with A or B only.",
+  "rendered_prompt": "<|system|>\nYou are a helpful assistant.<|endoftext|>\n<|user|>\nPicture 1:<|img|>cf-transfer-image<|/img|>\nDoes this photograph show a car? Answer A if the finding is present and B if it is absent. Reply with A or B only.<|endoftext|>\n<|assistant|>\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   32,
+   317
+  ],
+  "negative_token_ids": [
+   33,
+   347
+  ],
+  "candidate_detail": {
+   "A": {
+    "A": 32,
+    " A": 317
+   },
+   "B": {
+    "B": 33,
+    " B": 347
+   }
+  },
+  "raw_ab": {
+   "A_ids": [
+    32,
+    317
+   ],
+   "B_ids": [
+    33,
+    347
+   ]
+  },
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "coco|car|WB": {
+  "dataset_id": "coco",
+  "concept": "car",
+  "template_id": "WB",
+  "is_primary": false,
+  "question": "Does this photograph show a car? Answer B if the finding is present and A if it is absent. Reply with A or B only.",
+  "rendered_prompt": "<|system|>\nYou are a helpful assistant.<|endoftext|>\n<|user|>\nPicture 1:<|img|>cf-transfer-image<|/img|>\nDoes this photograph show a car? Answer B if the finding is present and A if it is absent. Reply with A or B only.<|endoftext|>\n<|assistant|>\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   33,
+   347
+  ],
+  "negative_token_ids": [
+   32,
+   317
+  ],
+  "candidate_detail": {
+   "A": {
+    "A": 32,
+    " A": 317
+   },
+   "B": {
+    "B": 33,
+    " B": 347
+   }
+  },
+  "raw_ab": {
+   "A_ids": [
+    32,
+    317
+   ],
+   "B_ids": [
+    33,
+    347
+   ]
+  },
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "coco|chair|IY": {
+  "dataset_id": "coco",
+  "concept": "chair",
+  "template_id": "IY",
+  "is_primary": true,
+  "question": "Is there a chair in this photograph? Answer yes or no.",
+  "rendered_prompt": "<|system|>\nYou are a helpful assistant.<|endoftext|>\n<|user|>\nPicture 1:<|img|>cf-transfer-image<|/img|>\nIs there a chair in this photograph? Answer yes or no.<|endoftext|>\n<|assistant|>\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   8505,
+   5297,
+   3763,
+   3363
+  ],
+  "negative_token_ids": [
+   3919,
+   2949,
+   645,
+   1400
+  ],
+  "candidate_detail": {
+   "yes": {
+    "yes": 8505,
+    "Yes": 5297,
+    " yes": 3763,
+    " Yes": 3363
+   },
+   "no": {
+    "no": 3919,
+    "No": 2949,
+    " no": 645,
+    " No": 1400
+   }
+  },
+  "raw_ab": null,
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "coco|chair|WY": {
+  "dataset_id": "coco",
+  "concept": "chair",
+  "template_id": "WY",
+  "is_primary": false,
+  "question": "Does this photograph show a chair? Answer yes or no.",
+  "rendered_prompt": "<|system|>\nYou are a helpful assistant.<|endoftext|>\n<|user|>\nPicture 1:<|img|>cf-transfer-image<|/img|>\nDoes this photograph show a chair? Answer yes or no.<|endoftext|>\n<|assistant|>\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   8505,
+   5297,
+   3763,
+   3363
+  ],
+  "negative_token_ids": [
+   3919,
+   2949,
+   645,
+   1400
+  ],
+  "candidate_detail": {
+   "yes": {
+    "yes": 8505,
+    "Yes": 5297,
+    " yes": 3763,
+    " Yes": 3363
+   },
+   "no": {
+    "no": 3919,
+    "No": 2949,
+    " no": 645,
+    " No": 1400
+   }
+  },
+  "raw_ab": null,
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "coco|chair|IA": {
+  "dataset_id": "coco",
+  "concept": "chair",
+  "template_id": "IA",
+  "is_primary": false,
+  "question": "Is there a chair in this photograph? Answer A if the finding is present and B if it is absent. Reply with A or B only.",
+  "rendered_prompt": "<|system|>\nYou are a helpful assistant.<|endoftext|>\n<|user|>\nPicture 1:<|img|>cf-transfer-image<|/img|>\nIs there a chair in this photograph? Answer A if the finding is present and B if it is absent. Reply with A or B only.<|endoftext|>\n<|assistant|>\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   32,
+   317
+  ],
+  "negative_token_ids": [
+   33,
+   347
+  ],
+  "candidate_detail": {
+   "A": {
+    "A": 32,
+    " A": 317
+   },
+   "B": {
+    "B": 33,
+    " B": 347
+   }
+  },
+  "raw_ab": {
+   "A_ids": [
+    32,
+    317
+   ],
+   "B_ids": [
+    33,
+    347
+   ]
+  },
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "coco|chair|IB": {
+  "dataset_id": "coco",
+  "concept": "chair",
+  "template_id": "IB",
+  "is_primary": false,
+  "question": "Is there a chair in this photograph? Answer B if the finding is present and A if it is absent. Reply with A or B only.",
+  "rendered_prompt": "<|system|>\nYou are a helpful assistant.<|endoftext|>\n<|user|>\nPicture 1:<|img|>cf-transfer-image<|/img|>\nIs there a chair in this photograph? Answer B if the finding is present and A if it is absent. Reply with A or B only.<|endoftext|>\n<|assistant|>\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   33,
+   347
+  ],
+  "negative_token_ids": [
+   32,
+   317
+  ],
+  "candidate_detail": {
+   "A": {
+    "A": 32,
+    " A": 317
+   },
+   "B": {
+    "B": 33,
+    " B": 347
+   }
+  },
+  "raw_ab": {
+   "A_ids": [
+    32,
+    317
+   ],
+   "B_ids": [
+    33,
+    347
+   ]
+  },
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "coco|chair|WA": {
+  "dataset_id": "coco",
+  "concept": "chair",
+  "template_id": "WA",
+  "is_primary": false,
+  "question": "Does this photograph show a chair? Answer A if the finding is present and B if it is absent. Reply with A or B only.",
+  "rendered_prompt": "<|system|>\nYou are a helpful assistant.<|endoftext|>\n<|user|>\nPicture 1:<|img|>cf-transfer-image<|/img|>\nDoes this photograph show a chair? Answer A if the finding is present and B if it is absent. Reply with A or B only.<|endoftext|>\n<|assistant|>\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   32,
+   317
+  ],
+  "negative_token_ids": [
+   33,
+   347
+  ],
+  "candidate_detail": {
+   "A": {
+    "A": 32,
+    " A": 317
+   },
+   "B": {
+    "B": 33,
+    " B": 347
+   }
+  },
+  "raw_ab": {
+   "A_ids": [
+    32,
+    317
+   ],
+   "B_ids": [
+    33,
+    347
+   ]
+  },
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "coco|chair|WB": {
+  "dataset_id": "coco",
+  "concept": "chair",
+  "template_id": "WB",
+  "is_primary": false,
+  "question": "Does this photograph show a chair? Answer B if the finding is present and A if it is absent. Reply with A or B only.",
+  "rendered_prompt": "<|system|>\nYou are a helpful assistant.<|endoftext|>\n<|user|>\nPicture 1:<|img|>cf-transfer-image<|/img|>\nDoes this photograph show a chair? Answer B if the finding is present and A if it is absent. Reply with A or B only.<|endoftext|>\n<|assistant|>\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   33,
+   347
+  ],
+  "negative_token_ids": [
+   32,
+   317
+  ],
+  "candidate_detail": {
+   "A": {
+    "A": 32,
+    " A": 317
+   },
+   "B": {
+    "B": 33,
+    " B": 347
+   }
+  },
+  "raw_ab": {
+   "A_ids": [
+    32,
+    317
+   ],
+   "B_ids": [
+    33,
+    347
+   ]
+  },
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "coco|bottle|IY": {
+  "dataset_id": "coco",
+  "concept": "bottle",
+  "template_id": "IY",
+  "is_primary": true,
+  "question": "Is there a bottle in this photograph? Answer yes or no.",
+  "rendered_prompt": "<|system|>\nYou are a helpful assistant.<|endoftext|>\n<|user|>\nPicture 1:<|img|>cf-transfer-image<|/img|>\nIs there a bottle in this photograph? Answer yes or no.<|endoftext|>\n<|assistant|>\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   8505,
+   5297,
+   3763,
+   3363
+  ],
+  "negative_token_ids": [
+   3919,
+   2949,
+   645,
+   1400
+  ],
+  "candidate_detail": {
+   "yes": {
+    "yes": 8505,
+    "Yes": 5297,
+    " yes": 3763,
+    " Yes": 3363
+   },
+   "no": {
+    "no": 3919,
+    "No": 2949,
+    " no": 645,
+    " No": 1400
+   }
+  },
+  "raw_ab": null,
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "coco|bottle|WY": {
+  "dataset_id": "coco",
+  "concept": "bottle",
+  "template_id": "WY",
+  "is_primary": false,
+  "question": "Does this photograph show a bottle? Answer yes or no.",
+  "rendered_prompt": "<|system|>\nYou are a helpful assistant.<|endoftext|>\n<|user|>\nPicture 1:<|img|>cf-transfer-image<|/img|>\nDoes this photograph show a bottle? Answer yes or no.<|endoftext|>\n<|assistant|>\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   8505,
+   5297,
+   3763,
+   3363
+  ],
+  "negative_token_ids": [
+   3919,
+   2949,
+   645,
+   1400
+  ],
+  "candidate_detail": {
+   "yes": {
+    "yes": 8505,
+    "Yes": 5297,
+    " yes": 3763,
+    " Yes": 3363
+   },
+   "no": {
+    "no": 3919,
+    "No": 2949,
+    " no": 645,
+    " No": 1400
+   }
+  },
+  "raw_ab": null,
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "coco|bottle|IA": {
+  "dataset_id": "coco",
+  "concept": "bottle",
+  "template_id": "IA",
+  "is_primary": false,
+  "question": "Is there a bottle in this photograph? Answer A if the finding is present and B if it is absent. Reply with A or B only.",
+  "rendered_prompt": "<|system|>\nYou are a helpful assistant.<|endoftext|>\n<|user|>\nPicture 1:<|img|>cf-transfer-image<|/img|>\nIs there a bottle in this photograph? Answer A if the finding is present and B if it is absent. Reply with A or B only.<|endoftext|>\n<|assistant|>\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   32,
+   317
+  ],
+  "negative_token_ids": [
+   33,
+   347
+  ],
+  "candidate_detail": {
+   "A": {
+    "A": 32,
+    " A": 317
+   },
+   "B": {
+    "B": 33,
+    " B": 347
+   }
+  },
+  "raw_ab": {
+   "A_ids": [
+    32,
+    317
+   ],
+   "B_ids": [
+    33,
+    347
+   ]
+  },
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "coco|bottle|IB": {
+  "dataset_id": "coco",
+  "concept": "bottle",
+  "template_id": "IB",
+  "is_primary": false,
+  "question": "Is there a bottle in this photograph? Answer B if the finding is present and A if it is absent. Reply with A or B only.",
+  "rendered_prompt": "<|system|>\nYou are a helpful assistant.<|endoftext|>\n<|user|>\nPicture 1:<|img|>cf-transfer-image<|/img|>\nIs there a bottle in this photograph? Answer B if the finding is present and A if it is absent. Reply with A or B only.<|endoftext|>\n<|assistant|>\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   33,
+   347
+  ],
+  "negative_token_ids": [
+   32,
+   317
+  ],
+  "candidate_detail": {
+   "A": {
+    "A": 32,
+    " A": 317
+   },
+   "B": {
+    "B": 33,
+    " B": 347
+   }
+  },
+  "raw_ab": {
+   "A_ids": [
+    32,
+    317
+   ],
+   "B_ids": [
+    33,
+    347
+   ]
+  },
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "coco|bottle|WA": {
+  "dataset_id": "coco",
+  "concept": "bottle",
+  "template_id": "WA",
+  "is_primary": false,
+  "question": "Does this photograph show a bottle? Answer A if the finding is present and B if it is absent. Reply with A or B only.",
+  "rendered_prompt": "<|system|>\nYou are a helpful assistant.<|endoftext|>\n<|user|>\nPicture 1:<|img|>cf-transfer-image<|/img|>\nDoes this photograph show a bottle? Answer A if the finding is present and B if it is absent. Reply with A or B only.<|endoftext|>\n<|assistant|>\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   32,
+   317
+  ],
+  "negative_token_ids": [
+   33,
+   347
+  ],
+  "candidate_detail": {
+   "A": {
+    "A": 32,
+    " A": 317
+   },
+   "B": {
+    "B": 33,
+    " B": 347
+   }
+  },
+  "raw_ab": {
+   "A_ids": [
+    32,
+    317
+   ],
+   "B_ids": [
+    33,
+    347
+   ]
+  },
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "coco|bottle|WB": {
+  "dataset_id": "coco",
+  "concept": "bottle",
+  "template_id": "WB",
+  "is_primary": false,
+  "question": "Does this photograph show a bottle? Answer B if the finding is present and A if it is absent. Reply with A or B only.",
+  "rendered_prompt": "<|system|>\nYou are a helpful assistant.<|endoftext|>\n<|user|>\nPicture 1:<|img|>cf-transfer-image<|/img|>\nDoes this photograph show a bottle? Answer B if the finding is present and A if it is absent. Reply with A or B only.<|endoftext|>\n<|assistant|>\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   33,
+   347
+  ],
+  "negative_token_ids": [
+   32,
+   317
+  ],
+  "candidate_detail": {
+   "A": {
+    "A": 32,
+    " A": 317
+   },
+   "B": {
+    "B": 33,
+    " B": 347
+   }
+  },
+  "raw_ab": {
+   "A_ids": [
+    32,
+    317
+   ],
+   "B_ids": [
+    33,
+    347
+   ]
+  },
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "coco|bicycle|IY": {
+  "dataset_id": "coco",
+  "concept": "bicycle",
+  "template_id": "IY",
+  "is_primary": true,
+  "question": "Is there a bicycle in this photograph? Answer yes or no.",
+  "rendered_prompt": "<|system|>\nYou are a helpful assistant.<|endoftext|>\n<|user|>\nPicture 1:<|img|>cf-transfer-image<|/img|>\nIs there a bicycle in this photograph? Answer yes or no.<|endoftext|>\n<|assistant|>\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   8505,
+   5297,
+   3763,
+   3363
+  ],
+  "negative_token_ids": [
+   3919,
+   2949,
+   645,
+   1400
+  ],
+  "candidate_detail": {
+   "yes": {
+    "yes": 8505,
+    "Yes": 5297,
+    " yes": 3763,
+    " Yes": 3363
+   },
+   "no": {
+    "no": 3919,
+    "No": 2949,
+    " no": 645,
+    " No": 1400
+   }
+  },
+  "raw_ab": null,
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "coco|bicycle|WY": {
+  "dataset_id": "coco",
+  "concept": "bicycle",
+  "template_id": "WY",
+  "is_primary": false,
+  "question": "Does this photograph show a bicycle? Answer yes or no.",
+  "rendered_prompt": "<|system|>\nYou are a helpful assistant.<|endoftext|>\n<|user|>\nPicture 1:<|img|>cf-transfer-image<|/img|>\nDoes this photograph show a bicycle? Answer yes or no.<|endoftext|>\n<|assistant|>\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   8505,
+   5297,
+   3763,
+   3363
+  ],
+  "negative_token_ids": [
+   3919,
+   2949,
+   645,
+   1400
+  ],
+  "candidate_detail": {
+   "yes": {
+    "yes": 8505,
+    "Yes": 5297,
+    " yes": 3763,
+    " Yes": 3363
+   },
+   "no": {
+    "no": 3919,
+    "No": 2949,
+    " no": 645,
+    " No": 1400
+   }
+  },
+  "raw_ab": null,
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "coco|bicycle|IA": {
+  "dataset_id": "coco",
+  "concept": "bicycle",
+  "template_id": "IA",
+  "is_primary": false,
+  "question": "Is there a bicycle in this photograph? Answer A if the finding is present and B if it is absent. Reply with A or B only.",
+  "rendered_prompt": "<|system|>\nYou are a helpful assistant.<|endoftext|>\n<|user|>\nPicture 1:<|img|>cf-transfer-image<|/img|>\nIs there a bicycle in this photograph? Answer A if the finding is present and B if it is absent. Reply with A or B only.<|endoftext|>\n<|assistant|>\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   32,
+   317
+  ],
+  "negative_token_ids": [
+   33,
+   347
+  ],
+  "candidate_detail": {
+   "A": {
+    "A": 32,
+    " A": 317
+   },
+   "B": {
+    "B": 33,
+    " B": 347
+   }
+  },
+  "raw_ab": {
+   "A_ids": [
+    32,
+    317
+   ],
+   "B_ids": [
+    33,
+    347
+   ]
+  },
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "coco|bicycle|IB": {
+  "dataset_id": "coco",
+  "concept": "bicycle",
+  "template_id": "IB",
+  "is_primary": false,
+  "question": "Is there a bicycle in this photograph? Answer B if the finding is present and A if it is absent. Reply with A or B only.",
+  "rendered_prompt": "<|system|>\nYou are a helpful assistant.<|endoftext|>\n<|user|>\nPicture 1:<|img|>cf-transfer-image<|/img|>\nIs there a bicycle in this photograph? Answer B if the finding is present and A if it is absent. Reply with A or B only.<|endoftext|>\n<|assistant|>\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   33,
+   347
+  ],
+  "negative_token_ids": [
+   32,
+   317
+  ],
+  "candidate_detail": {
+   "A": {
+    "A": 32,
+    " A": 317
+   },
+   "B": {
+    "B": 33,
+    " B": 347
+   }
+  },
+  "raw_ab": {
+   "A_ids": [
+    32,
+    317
+   ],
+   "B_ids": [
+    33,
+    347
+   ]
+  },
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "coco|bicycle|WA": {
+  "dataset_id": "coco",
+  "concept": "bicycle",
+  "template_id": "WA",
+  "is_primary": false,
+  "question": "Does this photograph show a bicycle? Answer A if the finding is present and B if it is absent. Reply with A or B only.",
+  "rendered_prompt": "<|system|>\nYou are a helpful assistant.<|endoftext|>\n<|user|>\nPicture 1:<|img|>cf-transfer-image<|/img|>\nDoes this photograph show a bicycle? Answer A if the finding is present and B if it is absent. Reply with A or B only.<|endoftext|>\n<|assistant|>\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   32,
+   317
+  ],
+  "negative_token_ids": [
+   33,
+   347
+  ],
+  "candidate_detail": {
+   "A": {
+    "A": 32,
+    " A": 317
+   },
+   "B": {
+    "B": 33,
+    " B": 347
+   }
+  },
+  "raw_ab": {
+   "A_ids": [
+    32,
+    317
+   ],
+   "B_ids": [
+    33,
+    347
+   ]
+  },
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "coco|bicycle|WB": {
+  "dataset_id": "coco",
+  "concept": "bicycle",
+  "template_id": "WB",
+  "is_primary": false,
+  "question": "Does this photograph show a bicycle? Answer B if the finding is present and A if it is absent. Reply with A or B only.",
+  "rendered_prompt": "<|system|>\nYou are a helpful assistant.<|endoftext|>\n<|user|>\nPicture 1:<|img|>cf-transfer-image<|/img|>\nDoes this photograph show a bicycle? Answer B if the finding is present and A if it is absent. Reply with A or B only.<|endoftext|>\n<|assistant|>\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   33,
+   347
+  ],
+  "negative_token_ids": [
+   32,
+   317
+  ],
+  "candidate_detail": {
+   "A": {
+    "A": 32,
+    " A": 317
+   },
+   "B": {
+    "B": 33,
+    " B": 347
+   }
+  },
+  "raw_ab": {
+   "A_ids": [
+    32,
+    317
+   ],
+   "B_ids": [
+    33,
+    347
+   ]
+  },
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ }
+}

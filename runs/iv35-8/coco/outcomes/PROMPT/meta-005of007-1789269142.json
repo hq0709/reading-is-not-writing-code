@@ -1,0 +1,20 @@
+{
+ "model_key": "iv35-8",
+ "dataset_id": "coco",
+ "module": "PROMPT",
+ "shard": 5,
+ "n_shards": 7,
+ "rows": 85,
+ "scored_rows": 85,
+ "outcomes": 107950,
+ "seconds": 3612.6,
+ "throughput_per_s": 29.88,
+ "batch": 32,
+ "batch_policy": "fixed composition per question: clean replicated baseline batch + padded steered batches",
+ "peak_gpu_memory_bytes": 20709137408,
+ "gpu_count": 1,
+ "gpu_models": [
+  "NVIDIA A100-SXM4-80GB"
+ ],
+ "ended_utc": "2026-09-13T03:12:22Z"
+}

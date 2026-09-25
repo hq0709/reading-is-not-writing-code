@@ -1,0 +1,21 @@
+{
+ "model_key": "iv35-38",
+ "dataset_id": "nih",
+ "module": "PROMPT",
+ "shard": 1,
+ "n_shards": 7,
+ "rows": 86,
+ "scored_rows": 26,
+ "outcomes": 33020,
+ "seconds": 5778.8,
+ "throughput_per_s": 5.71,
+ "batch": 16,
+ "primary_template": "IY",
+ "batch_policy": "fixed composition per question: clean replicated baseline batch + padded steered batches",
+ "peak_gpu_memory_bytes": 43352402432,
+ "gpu_count": 2,
+ "gpu_models": [
+  "NVIDIA A100-SXM4-80GB"
+ ],
+ "ended_utc": "2026-09-14T16:44:08Z"
+}

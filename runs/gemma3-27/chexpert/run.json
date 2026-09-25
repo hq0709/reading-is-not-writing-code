@@ -1,0 +1,549 @@
+{
+ "protocol_id": "cf-transfer-v1",
+ "run_id": "cf-transfer-v1:gemma3-27:chexpert:mayo",
+ "model_key": "gemma3-27",
+ "model_id": "google/gemma-3-27b-it",
+ "model_revision": "005ad3404e59d6023443cb575daa05336842228a",
+ "processor_revision": "005ad3404e59d6023443cb575daa05336842228a",
+ "dataset_id": "chexpert",
+ "dataset_release": "see manifests/release.json",
+ "source_commit": "4701456a3dadcc2af35247e0feb174c0fbf68ebb",
+ "adapter_path": "src/cftransfer/adapters/",
+ "python_version": "3.12.13",
+ "torch_version": "2.13.0+cu130",
+ "transformers_version": "5.15.0",
+ "numpy_version": "2.3.5",
+ "sklearn_version": "1.9.0",
+ "weight_dtype": "bfloat16",
+ "activation_dtype": "bfloat16 (hook delta computed in float32, cast back)",
+ "logit_dtype": "float32",
+ "attention_backend": "sdpa",
+ "device_map": [
+  "cuda:0"
+ ],
+ "gpu_models": [
+  "NVIDIA A100-SXM4-80GB",
+  "NVIDIA H100 80GB HBM3"
+ ],
+ "gpu_count": 2,
+ "batch_size": [
+  1,
+  16
+ ],
+ "started_utc": "2026-09-14T06:17:47Z",
+ "ended_utc": "2026-09-17T10:42:17Z",
+ "wall_seconds": 315023.5,
+ "gpu_hours": 175.013,
+ "peak_gpu_memory_bytes": 35223156224,
+ "processing_settings": {
+  "processor_kwargs": {},
+  "image_processor": {
+   "do_convert_rgb": null,
+   "do_normalize": true,
+   "do_rescale": true,
+   "do_resize": true,
+   "image_processor_type": "Gemma3ImageProcessor",
+   "image_seq_length": 256,
+   "resample": 2,
+   "rescale_factor": 0.00392156862745098,
+   "size": {
+    "height": 896,
+    "width": 896
+   }
+  },
+  "chat_template": "{{ bos_token }}\n{%- if messages[0]['role'] == 'system' -%}\n    {%- if messages[0]['content'] is string -%}\n        {%- set first_user_prefix = messages[0]['content'] + '\n\n' -%}\n    {%- else -%}\n        {%- set first_user_prefix = messages[0]['content'][0]['text'] + '\n\n' -%}\n    {%- endif -%}\n    {%- set loop_messages = messages[1:] -%}\n{%- else -%}\n    {%- set first_user_prefix = \"\" -%}\n    {%- set loop_messages = messages -%}\n{%- endif -%}\n{%- for message in loop_messages -%}\n    {%- if (message['role'] == 'user') != (loop.index0 % 2 == 0) -%}\n        {{ raise_exception(\"Conversation roles must alternate user/assistant/user/assistant/...\") }}\n    {%- endif -%}\n    {%- if (message['role'] == 'assistant') -%}\n        {%- set role = \"model\" -%}\n    {%- else -%}\n        {%- set role = message['role'] -%}\n    {%- endif -%}\n    {{ '<start_of_turn>' + role + '\n' + (first_user_prefix if loop.first else \"\") }}\n    {%- if message['content'] is string -%}\n        {{ message['content'] | trim }}\n    {%- elif message['content'] is iterable -%}\n        {%- for item in message['content'] -%}\n            {%- if item['type'] == 'image' -%}\n                {{ '<start_of_image>' }}\n            {%- elif item['type'] == 'text' -%}\n                {{ item['text'] | trim }}\n            {%- endif -%}\n        {%- endfor -%}\n    {%- else -%}\n        {{ raise_exception(\"Invalid content type\") }}\n    {%- endif -%}\n    {{ '<end_of_turn>\n' }}\n{%- endfor -%}\n{%- if add_generation_prompt -%}\n    {{'<start_of_turn>model\n'}}\n{%- endif -%}\n",
+  "example_prompt_IY": "<bos><start_of_turn>user\n<start_of_image>Is there X in this image? Answer yes or no.<end_of_turn>\n<start_of_turn>model\n",
+  "special_token_ids": {
+   "image_token_id": 262144,
+   "pad_token_id": 0,
+   "eos_token_id": 1
+  },
+  "attn_implementation": "sdpa",
+  "candidate_tokens": {
+   "IY": {
+    "positive_ids": [
+     4443,
+     10784,
+     11262,
+     8438
+    ],
+    "negative_ids": [
+     1904,
+     3771,
+     951,
+     2301
+    ],
+    "detail": {
+     "yes": {
+      "yes": 4443,
+      "Yes": 10784,
+      " yes": 11262,
+      " Yes": 8438
+     },
+     "no": {
+      "no": 1904,
+      "No": 3771,
+      " no": 951,
+      " No": 2301
+     }
+    }
+   },
+   "WY": {
+    "positive_ids": [
+     4443,
+     10784,
+     11262,
+     8438
+    ],
+    "negative_ids": [
+     1904,
+     3771,
+     951,
+     2301
+    ],
+    "detail": {
+     "yes": {
+      "yes": 4443,
+      "Yes": 10784,
+      " yes": 11262,
+      " Yes": 8438
+     },
+     "no": {
+      "no": 1904,
+      "No": 3771,
+      " no": 951,
+      " No": 2301
+     }
+    }
+   },
+   "IB": {
+    "positive_ids": [
+     236799,
+     603
+    ],
+    "negative_ids": [
+     236776,
+     562
+    ],
+    "detail": {
+     "A": {
+      "A": 236776,
+      " A": 562
+     },
+     "B": {
+      "B": 236799,
+      " B": 603
+     }
+    }
+   },
+   "WA": {
+    "positive_ids": [
+     236776,
+     562
+    ],
+    "negative_ids": [
+     236799,
+     603
+    ],
+    "detail": {
+     "A": {
+      "A": 236776,
+      " A": 562
+     },
+     "B": {
+      "B": 236799,
+      " B": 603
+     }
+    }
+   },
+   "IA": {
+    "positive_ids": [
+     236776,
+     562
+    ],
+    "negative_ids": [
+     236799,
+     603
+    ],
+    "detail": {
+     "A": {
+      "A": 236776,
+      " A": 562
+     },
+     "B": {
+      "B": 236799,
+      " B": 603
+     }
+    }
+   },
+   "WB": {
+    "positive_ids": [
+     236799,
+     603
+    ],
+    "negative_ids": [
+     236776,
+     562
+    ],
+    "detail": {
+     "A": {
+      "A": 236776,
+      " A": 562
+     },
+     "B": {
+      "B": 236799,
+      " B": 603
+     }
+    }
+   }
+  },
+  "model_config": {
+   "architectures": [
+    "Gemma3ForConditionalGeneration"
+   ],
+   "boi_token_index": 255999,
+   "dtype": "bfloat16",
+   "eoi_token_index": 256000,
+   "eos_token_id": [
+    1,
+    106
+   ],
+   "image_token_index": 262144,
+   "initializer_range": 0.02,
+   "mm_tokens_per_image": 256,
+   "model_type": "gemma3",
+   "text_config": {
+    "_sliding_window_pattern": 6,
+    "attention_bias": false,
+    "attention_dropout": 0.0,
+    "attn_logit_softcapping": null,
+    "bos_token_id": 2,
+    "dtype": "bfloat16",
+    "eos_token_id": 1,
+    "final_logit_softcapping": null,
+    "head_dim": 128,
+    "hidden_activation": "gelu_pytorch_tanh",
+    "hidden_size": 5376,
+    "initializer_range": 0.02,
+    "intermediate_size": 21504,
+    "layer_types": [
+     "sliding_attention",
+     "sliding_attention",
+     "sliding_attention",
+     "sliding_attention",
+     "sliding_attention",
+     "full_attention",
+     "sliding_attention",
+     "sliding_attention",
+     "sliding_attention",
+     "sliding_attention",
+     "sliding_attention",
+     "full_attention",
+     "sliding_attention",
+     "sliding_attention",
+     "sliding_attention",
+     "sliding_attention",
+     "sliding_attention",
+     "full_attention",
+     "sliding_attention",
+     "sliding_attention",
+     "sliding_attention",
+     "sliding_attention",
+     "sliding_attention",
+     "full_attention",
+     "sliding_attention",
+     "sliding_attention",
+     "sliding_attention",
+     "sliding_attention",
+     "sliding_attention",
+     "full_attention",
+     "sliding_attention",
+     "sliding_attention",
+     "sliding_attention",
+     "sliding_attention",
+     "sliding_attention",
+     "full_attention",
+     "sliding_attention",
+     "sliding_attention",
+     "sliding_attention",
+     "sliding_attention",
+     "sliding_attention",
+     "full_attention",
+     "sliding_attention",
+     "sliding_attention",
+     "sliding_attention",
+     "sliding_attention",
+     "sliding_attention",
+     "full_attention",
+     "sliding_attention",
+     "sliding_attention",
+     "sliding_attention",
+     "sliding_attention",
+     "sliding_attention",
+     "full_attention",
+     "sliding_attention",
+     "sliding_attention",
+     "sliding_attention",
+     "sliding_attention",
+     "sliding_attention",
+     "full_attention",
+     "sliding_attention",
+     "sliding_attention"
+    ],
+    "max_position_embeddings": 131072,
+    "model_type": "gemma3_text",
+    "num_attention_heads": 32,
+    "num_hidden_layers": 62,
+    "num_key_value_heads": 16,
+    "pad_token_id": 0,
+    "query_pre_attn_scalar": 168,
+    "rms_norm_eps": 1e-06,
+    "rope_parameters": {
+     "full_attention": {
+      "factor": 8.0,
+      "rope_theta": 1000000.0,
+      "rope_type": "linear"
+     },
+     "sliding_attention": {
+      "rope_theta": 10000.0,
+      "rope_type": "default"
+     }
+    },
+    "sliding_window": 1024,
+    "tie_word_embeddings": true,
+    "use_bidirectional_attention": false,
+    "use_cache": true,
+    "vocab_size": 262208
+   },
+   "tie_word_embeddings": true,
+   "transformers_version": "5.15.0",
+   "vision_config": {
+    "attention_dropout": 0.0,
+    "dtype": "bfloat16",
+    "hidden_act": "gelu_pytorch_tanh",
+    "hidden_size": 1152,
+    "image_size": 896,
+    "intermediate_size": 4304,
+    "layer_norm_eps": 1e-06,
+    "model_type": "siglip_vision_model",
+    "num_attention_heads": 16,
+    "num_channels": 3,
+    "num_hidden_layers": 27,
+    "patch_size": 14,
+    "vision_use_head": false
+   }
+  }
+ },
+ "loci": {
+  "vis.last": {
+   "locus_id": "vis.last",
+   "module_path": "model.vision_tower.encoder.layers.26",
+   "output_selection": "tensor output of the last SigLIP encoder layer",
+   "hidden_dim": 1152,
+   "token_rule": "all 4096 patch tokens (no CLS token)",
+   "affected_branch": "single visual stream",
+   "bypasses": "none (post_layernorm follows, then projector)",
+   "consumer": "model.multi_modal_projector",
+   "prompt_independent": true,
+   "notes": ""
+  },
+  "connector": {
+   "locus_id": "connector",
+   "module_path": "model.multi_modal_projector",
+   "output_selection": "tensor output of Gemma3MultiModalProjector",
+   "hidden_dim": 5376,
+   "token_rule": "all 256 pooled soft tokens",
+   "affected_branch": "image soft tokens scattered into <image_soft_token> positions",
+   "bypasses": "none",
+   "consumer": "language model input embeddings",
+   "prompt_independent": true,
+   "notes": ""
+  }
+ },
+ "fit_seeds": [
+  0,
+  1,
+  2
+ ],
+ "random_seed": 0,
+ "projection_seed": 0,
+ "cohort_file": "manifests/cohort.csv",
+ "primary_template": "IY",
+ "requested_modules": [
+  "CORE",
+  "CALIBRATION",
+  "PROMPT",
+  "DOSE",
+  "REFIT",
+  "LOCUS",
+  "LOCUS_CALIBRATION",
+  "ALTDIR",
+  "ALTDIRD",
+  "ATTR",
+  "VALID",
+  "ATTRRAND",
+  "ATTRQ"
+ ],
+ "completed_modules": [
+  "CORE",
+  "CALIBRATION",
+  "PROMPT",
+  "DOSE",
+  "REFIT",
+  "LOCUS",
+  "LOCUS_CALIBRATION",
+  "ALTDIR",
+  "ALTDIRD",
+  "ATTR",
+  "VALID",
+  "ATTRRAND",
+  "ATTRQ"
+ ],
+ "ineligible_modules": [],
+ "status": "COMPLETE",
+ "deviations": [
+  {
+   "kind": "batch_vs_single_tolerance",
+   "locus_id": "connector",
+   "check": "D_batch_vs_single",
+   "value": 0.8135108947753906,
+   "declared_tolerance": 0.25,
+   "affected_modules": "none (fixed batch composition per question); recorded for transparency"
+  },
+  {
+   "kind": "batch_vs_single_tolerance",
+   "locus_id": "connector",
+   "check": "D2_replicated_batch_vs_single",
+   "value": 0.2579460144042969,
+   "declared_tolerance": 0.25,
+   "affected_modules": "none (fixed batch composition per question); recorded for transparency"
+  },
+  {
+   "kind": "preflight_not_passed",
+   "locus_id": "connector",
+   "failed_checks": [
+    "D_batch_vs_single",
+    "D2_replicated_batch_vs_single"
+   ]
+  },
+  {
+   "kind": "batch_vs_single_tolerance",
+   "locus_id": "vis.last",
+   "check": "D_batch_vs_single",
+   "value": 0.8135108947753906,
+   "declared_tolerance": 0.25,
+   "affected_modules": "none (fixed batch composition per question); recorded for transparency"
+  },
+  {
+   "kind": "batch_vs_single_tolerance",
+   "locus_id": "vis.last",
+   "check": "D2_replicated_batch_vs_single",
+   "value": 0.2579460144042969,
+   "declared_tolerance": 0.25,
+   "affected_modules": "none (fixed batch composition per question); recorded for transparency"
+  },
+  {
+   "kind": "preflight_not_passed",
+   "locus_id": "vis.last",
+   "failed_checks": [
+    "D_batch_vs_single",
+    "D2_replicated_batch_vs_single"
+   ]
+  }
+ ],
+ "feature_extraction_seconds": 2445.8,
+ "notes": "gpu_hours sums wall time x GPUs over runner shards recorded in outcomes/*/meta-*.json; CPU fitting time is in fits/*/summary.json",
+ "merged_outcomes": {
+  "CORE": {
+   "parts": 60,
+   "rows_raw": 457200,
+   "rows_unique": 457200,
+   "failed": 0
+  },
+  "CALIBRATION": {
+   "parts": 40,
+   "rows_raw": 2400,
+   "rows_unique": 2400,
+   "failed": 0
+  },
+  "PROMPT": {
+   "parts": 63,
+   "rows_raw": 762000,
+   "rows_unique": 762000,
+   "failed": 0
+  },
+  "DOSE": {
+   "parts": 20,
+   "rows_raw": 162000,
+   "rows_unique": 162000,
+   "failed": 0
+  },
+  "REFIT": {
+   "parts": 60,
+   "rows_raw": 50400,
+   "rows_unique": 50400,
+   "failed": 0
+  },
+  "LOCUS": {
+   "parts": 60,
+   "rows_raw": 457200,
+   "rows_unique": 457200,
+   "failed": 0
+  },
+  "LOCUS_CALIBRATION": {
+   "parts": 40,
+   "rows_raw": 2400,
+   "rows_unique": 2400,
+   "failed": 0
+  },
+  "ALTDIR": {
+   "parts": 60,
+   "rows_raw": 86400,
+   "rows_unique": 86400,
+   "failed": 0
+  },
+  "EXTCOMP": {},
+  "TOKENW": {},
+  "PRECISION": {},
+  "ANSDIR": {},
+  "ALTDIRD": {
+   "parts": 60,
+   "rows_raw": 43200,
+   "rows_unique": 43200,
+   "failed": 0
+  },
+  "ATTR": {
+   "parts": 60,
+   "rows_raw": 55800,
+   "rows_unique": 55800,
+   "failed": 0
+  },
+  "ANSDIRT": {},
+  "VALID": {
+   "parts": 20,
+   "rows_raw": 152400,
+   "rows_unique": 152400,
+   "failed": 0
+  },
+  "ATTRRAND": {
+   "parts": 60,
+   "rows_raw": 214200,
+   "rows_unique": 214200,
+   "failed": 0
+  },
+  "ATTRQ": {
+   "parts": 40,
+   "rows_raw": 3600,
+   "rows_unique": 3600,
+   "failed": 0
+  },
+  "VALIDFIT": {},
+  "PROJSEED": {},
+  "TOWERSWAP": {},
+  "TOWERSWAPD": {},
+  "REPLAY": {},
+  "SEMEND": {},
+  "FGOBJ": {},
+  "FGOBJ_CALIBRATION": {}
+ }
+}

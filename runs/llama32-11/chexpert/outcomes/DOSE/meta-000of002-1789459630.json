@@ -1,0 +1,22 @@
+{
+ "model_key": "llama32-11",
+ "dataset_id": "chexpert",
+ "module": "DOSE",
+ "shard": 0,
+ "n_shards": 2,
+ "rows": 100,
+ "scored_rows": 40,
+ "outcomes": 32400,
+ "seconds": 2470.8,
+ "throughput_per_s": 13.11,
+ "batch": 16,
+ "primary_template": "IB",
+ "numerics": "bf16-batched",
+ "batch_policy": "fixed composition per question: clean replicated baseline batch + padded steered batches",
+ "peak_gpu_memory_bytes": 38744470528,
+ "gpu_count": 1,
+ "gpu_models": [
+  "NVIDIA H100 80GB HBM3"
+ ],
+ "ended_utc": "2026-09-15T08:07:10Z"
+}

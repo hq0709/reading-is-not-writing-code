@@ -1,0 +1,26 @@
+{
+ "model_key": "q3-32",
+ "dataset_id": "chexpert",
+ "module": "VALIDFIT",
+ "shard": 0,
+ "n_shards": 1,
+ "rows": 600,
+ "scored_rows": 600,
+ "outcomes": 21600,
+ "seconds": 5497.3,
+ "throughput_per_s": 3.93,
+ "batch": 16,
+ "primary_template": "IY",
+ "numerics": "bf16-batched",
+ "fit_seed": null,
+ "batch_policy": "fixed composition per question: clean replicated baseline batch + padded steered batches",
+ "direction_block": "q3-32",
+ "tower_swap": null,
+ "replay": null,
+ "peak_gpu_memory_bytes": 34268810752,
+ "gpu_count": 2,
+ "gpu_models": [
+  "NVIDIA A100-SXM4-80GB"
+ ],
+ "ended_utc": "2026-09-16T23:49:20Z"
+}

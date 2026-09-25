@@ -1,0 +1,422 @@
+{
+ "protocol_id": "cf-transfer-v1",
+ "run_id": "cf-transfer-v1:q3-32:coco:mayo",
+ "model_key": "q3-32",
+ "model_id": "Qwen/Qwen3-VL-32B-Instruct",
+ "model_revision": "0cfaf48183f594c314753d30a4c4974bc75f3ccb",
+ "processor_revision": "0cfaf48183f594c314753d30a4c4974bc75f3ccb",
+ "dataset_id": "coco",
+ "dataset_release": "COCO 2017 train2017/val2017 + instances annotations (2017-09-01)",
+ "source_commit": "4701456a3dadcc2af35247e0feb174c0fbf68ebb",
+ "adapter_path": "src/cftransfer/adapters/",
+ "python_version": "3.12.13",
+ "torch_version": "2.13.0+cu130",
+ "transformers_version": "5.15.0",
+ "numpy_version": "2.3.5",
+ "sklearn_version": "1.9.0",
+ "weight_dtype": "bfloat16",
+ "activation_dtype": "bfloat16 (hook delta computed in float32, cast back)",
+ "logit_dtype": "float32",
+ "attention_backend": "sdpa",
+ "device_map": [
+  "cuda:0"
+ ],
+ "gpu_models": [
+  "NVIDIA A100-SXM4-80GB",
+  "NVIDIA H100 80GB HBM3"
+ ],
+ "gpu_count": 2,
+ "batch_size": [
+  1,
+  16
+ ],
+ "started_utc": "2026-09-13T12:59:47Z",
+ "ended_utc": "2026-09-15T11:54:41Z",
+ "wall_seconds": 192269.4,
+ "gpu_hours": 106.816,
+ "peak_gpu_memory_bytes": 34329404928,
+ "processing_settings": {
+  "processor_kwargs": {
+   "max_pixels": 262144
+  },
+  "image_processor": {
+   "size": {
+    "longest_edge": 262144,
+    "shortest_edge": 65536
+   },
+   "patch_size": 16,
+   "temporal_patch_size": 2,
+   "merge_size": 2,
+   "image_processor_type": "Qwen2VLImageProcessor",
+   "do_convert_rgb": true,
+   "do_resize": true,
+   "resample": 3,
+   "do_rescale": true,
+   "rescale_factor": 0.00392156862745098,
+   "do_normalize": true
+  },
+  "chat_template": "{%- if tools %}\n    {{- '<|im_start|>system\\n' }}\n    {%- if messages[0].role == 'system' %}\n        {%- if messages[0].content is string %}\n            {{- messages[0].content }}\n        {%- else %}\n            {%- for content in messages[0].content %}\n                {%- if 'text' in content %}\n                    {{- content.text }}\n                {%- endif %}\n            {%- endfor %}\n        {%- endif %}\n        {{- '\\n\\n' }}\n    {%- endif %}\n    {{- \"# Tools\\n\\nYou may call one or more functions to assist with the user query.\\n\\nYou are provided with function signatures within <tools></tools> XML tags:\\n<tools>\" }}\n    {%- for tool in tools %}\n        {{- \"\\n\" }}\n        {{- tool | tojson }}\n    {%- endfor %}\n    {{- \"\\n</tools>\\n\\nFor each function call, return a json object with function name and arguments within <tool_call></tool_call> XML tags:\\n<tool_call>\\n{\\\"name\\\": <function-name>, \\\"arguments\\\": <args-json-object>}\\n</tool_call><|im_end|>\\n\" }}\n{%- else %}\n    {%- if messages[0].role == 'system' %}\n        {{- '<|im_start|>system\\n' }}\n        {%- if messages[0].content is string %}\n            {{- messages[0].content }}\n        {%- else %}\n            {%- for content in messages[0].content %}\n                {%- if 'text' in content %}\n                    {{- content.text }}\n                {%- endif %}\n            {%- endfor %}\n        {%- endif %}\n        {{- '<|im_end|>\\n' }}\n    {%- endif %}\n{%- endif %}\n{%- set image_count = namespace(value=0) %}\n{%- set video_count = namespace(value=0) %}\n{%- for message in messages %}\n    {%- if message.role == \"user\" %}\n        {{- '<|im_start|>' + message.role + '\\n' }}\n        {%- if message.content is string %}\n            {{- message.content }}\n        {%- else %}\n            {%- for content in message.content %}\n                {%- if content.type == 'image' or 'image' in content or 'image_url' in content %}\n                    {%- set image_count.value = image_count.value + 1 %}\n                    {%- if add_vision_id %}Picture {{ image_count.value }}: {% endif -%}\n                    <|vision_start|><|image_pad|><|vision_end|>\n                {%- elif content.type == 'video' or 'video' in content %}\n                    {%- set video_count.value = video_count.value + 1 %}\n                    {%- if add_vision_id %}Video {{ video_count.value }}: {% endif -%}\n                    <|vision_start|><|video_pad|><|vision_end|>\n                {%- elif 'text' in content %}\n                    {{- content.text }}\n                {%- endif %}\n            {%- endfor %}\n        {%- endif %}\n        {{- '<|im_end|>\\n' }}\n    {%- elif message.role == \"assistant\" %}\n        {{- '<|im_start|>' + message.role + '\\n' }}\n        {%- if message.content is string %}\n            {{- message.content }}\n        {%- else %}\n            {%- for content_item in message.content %}\n                {%- if 'text' in content_item %}\n                    {{- content_item.text }}\n                {%- endif %}\n            {%- endfor %}\n        {%- endif %}\n        {%- if message.tool_calls %}\n            {%- for tool_call in message.tool_calls %}\n                {%- if (loop.first and message.content) or (not loop.first) %}\n                    {{- '\\n' }}\n                {%- endif %}\n                {%- if tool_call.function %}\n                    {%- set tool_call = tool_call.function %}\n                {%- endif %}\n                {{- '<tool_call>\\n{\"name\": \"' }}\n                {{- tool_call.name }}\n                {{- '\", \"arguments\": ' }}\n                {%- if tool_call.arguments is string %}\n                    {{- tool_call.arguments }}\n                {%- else %}\n                    {{- tool_call.arguments | tojson }}\n                {%- endif %}\n                {{- '}\\n</tool_call>' }}\n            {%- endfor %}\n        {%- endif %}\n        {{- '<|im_end|>\\n' }}\n    {%- elif message.role == \"tool\" %}\n        {%- if loop.first or (messages[loop.index0 - 1].role != \"tool\") %}\n            {{- '<|im_start|>user' }}\n        {%- endif %}\n        {{- '\\n<tool_response>\\n' }}\n        {%- if message.content is string %}\n            {{- message.content }}\n        {%- else %}\n            {%- for content in message.content %}\n                {%- if content.type == 'image' or 'image' in content or 'image_url' in content %}\n                    {%- set image_count.value = image_count.value + 1 %}\n                    {%- if add_vision_id %}Picture {{ image_count.value }}: {% endif -%}\n                    <|vision_start|><|image_pad|><|vision_end|>\n                {%- elif content.type == 'video' or 'video' in content %}\n                    {%- set video_count.value = video_count.value + 1 %}\n                    {%- if add_vision_id %}Video {{ video_count.value }}: {% endif -%}\n                    <|vision_start|><|video_pad|><|vision_end|>\n                {%- elif 'text' in content %}\n                    {{- content.text }}\n                {%- endif %}\n            {%- endfor %}\n        {%- endif %}\n        {{- '\\n</tool_response>' }}\n        {%- if loop.last or (messages[loop.index0 + 1].role != \"tool\") %}\n            {{- '<|im_end|>\\n' }}\n        {%- endif %}\n    {%- endif %}\n{%- endfor %}\n{%- if add_generation_prompt %}\n    {{- '<|im_start|>assistant\\n' }}\n{%- endif %}\n",
+  "example_prompt_IY": "<|im_start|>user\n<|vision_start|><|image_pad|><|vision_end|>Is there X in this image? Answer yes or no.<|im_end|>\n<|im_start|>assistant\n",
+  "special_token_ids": {
+   "image_token_id": 151655,
+   "pad_token_id": 151643,
+   "eos_token_id": 151645
+  },
+  "attn_implementation": "sdpa",
+  "candidate_tokens": {
+   "IY": {
+    "positive_ids": [
+     9693,
+     9454,
+     9834,
+     7414
+    ],
+    "negative_ids": [
+     2152,
+     2753,
+     902,
+     2308
+    ],
+    "detail": {
+     "yes": {
+      "yes": 9693,
+      "Yes": 9454,
+      " yes": 9834,
+      " Yes": 7414
+     },
+     "no": {
+      "no": 2152,
+      "No": 2753,
+      " no": 902,
+      " No": 2308
+     }
+    }
+   },
+   "WY": {
+    "positive_ids": [
+     9693,
+     9454,
+     9834,
+     7414
+    ],
+    "negative_ids": [
+     2152,
+     2753,
+     902,
+     2308
+    ],
+    "detail": {
+     "yes": {
+      "yes": 9693,
+      "Yes": 9454,
+      " yes": 9834,
+      " Yes": 7414
+     },
+     "no": {
+      "no": 2152,
+      "No": 2753,
+      " no": 902,
+      " No": 2308
+     }
+    }
+   },
+   "IB": {
+    "positive_ids": [
+     33,
+     425
+    ],
+    "negative_ids": [
+     32,
+     362
+    ],
+    "detail": {
+     "A": {
+      "A": 32,
+      " A": 362
+     },
+     "B": {
+      "B": 33,
+      " B": 425
+     }
+    }
+   },
+   "IA": {
+    "positive_ids": [
+     32,
+     362
+    ],
+    "negative_ids": [
+     33,
+     425
+    ],
+    "detail": {
+     "A": {
+      "A": 32,
+      " A": 362
+     },
+     "B": {
+      "B": 33,
+      " B": 425
+     }
+    }
+   },
+   "WA": {
+    "positive_ids": [
+     32,
+     362
+    ],
+    "negative_ids": [
+     33,
+     425
+    ],
+    "detail": {
+     "A": {
+      "A": 32,
+      " A": 362
+     },
+     "B": {
+      "B": 33,
+      " B": 425
+     }
+    }
+   },
+   "WB": {
+    "positive_ids": [
+     33,
+     425
+    ],
+    "negative_ids": [
+     32,
+     362
+    ],
+    "detail": {
+     "A": {
+      "A": 32,
+      " A": 362
+     },
+     "B": {
+      "B": 33,
+      " B": 425
+     }
+    }
+   }
+  },
+  "model_config": {
+   "architectures": [
+    "Qwen3VLForConditionalGeneration"
+   ],
+   "dtype": "bfloat16",
+   "image_token_id": 151655,
+   "model_type": "qwen3_vl",
+   "text_config": {
+    "attention_bias": false,
+    "attention_dropout": 0.0,
+    "bos_token_id": 151643,
+    "dtype": "bfloat16",
+    "eos_token_id": 151645,
+    "head_dim": 128,
+    "hidden_act": "silu",
+    "hidden_size": 5120,
+    "initializer_range": 0.02,
+    "intermediate_size": 25600,
+    "max_position_embeddings": 262144,
+    "model_type": "qwen3_vl_text",
+    "num_attention_heads": 64,
+    "num_hidden_layers": 64,
+    "num_key_value_heads": 8,
+    "pad_token_id": null,
+    "rms_norm_eps": 1e-06,
+    "rope_parameters": {
+     "mrope_interleaved": true,
+     "mrope_section": [
+      24,
+      20,
+      20
+     ],
+     "rope_theta": 5000000,
+     "rope_type": "default"
+    },
+    "use_cache": true,
+    "vocab_size": 151936
+   },
+   "tie_word_embeddings": false,
+   "transformers_version": "5.15.0",
+   "video_token_id": 151656,
+   "vision_config": {
+    "deepstack_visual_indexes": [
+     8,
+     16,
+     24
+    ],
+    "depth": 27,
+    "dtype": "bfloat16",
+    "hidden_act": "gelu_pytorch_tanh",
+    "hidden_size": 1152,
+    "in_channels": 3,
+    "initializer_range": 0.02,
+    "intermediate_size": 4304,
+    "model_type": "qwen3_vl_vision",
+    "num_heads": 16,
+    "num_position_embeddings": 2304,
+    "out_hidden_size": 5120,
+    "patch_size": 16,
+    "spatial_merge_size": 2,
+    "temporal_patch_size": 2
+   },
+   "vision_end_token_id": 151653,
+   "vision_start_token_id": 151652
+  }
+ },
+ "loci": {
+  "vis.last": {
+   "locus_id": "vis.last",
+   "module_path": "model.visual.blocks.26",
+   "output_selection": "tensor output of the last vision block (window order)",
+   "hidden_dim": 1152,
+   "token_rule": "all patches of the image (flat contiguous slice); no CLS token exists",
+   "affected_branch": "main visual stream into merger",
+   "bypasses": "Qwen3-VL DeepStack mergers read earlier blocks and are not modified",
+   "consumer": "model.visual.merger",
+   "prompt_independent": true,
+   "notes": ""
+  },
+  "connector": {
+   "locus_id": "connector",
+   "module_path": "model.visual.merger",
+   "output_selection": "tensor output of the patch merger",
+   "hidden_dim": 5120,
+   "token_rule": "all merged tokens of the image (flat contiguous slice)",
+   "affected_branch": "merged image embeddings scattered into <|image_pad|> positions",
+   "bypasses": "none",
+   "consumer": "language model input embeddings",
+   "prompt_independent": true,
+   "notes": ""
+  }
+ },
+ "fit_seeds": [
+  0,
+  1,
+  2
+ ],
+ "random_seed": 0,
+ "projection_seed": 0,
+ "cohort_file": "manifests/cohort.csv",
+ "primary_template": "IY",
+ "requested_modules": [
+  "CORE",
+  "CALIBRATION",
+  "PROMPT",
+  "DOSE",
+  "REFIT",
+  "LOCUS",
+  "LOCUS_CALIBRATION",
+  "ALTDIR",
+  "ALTDIRD"
+ ],
+ "completed_modules": [
+  "CORE",
+  "CALIBRATION",
+  "PROMPT",
+  "DOSE",
+  "REFIT",
+  "LOCUS",
+  "LOCUS_CALIBRATION",
+  "ALTDIR",
+  "ALTDIRD"
+ ],
+ "ineligible_modules": [],
+ "status": "COMPLETE",
+ "deviations": [
+  {
+   "kind": "batch_vs_single_tolerance",
+   "locus_id": "connector",
+   "check": "D_batch_vs_single",
+   "value": 0.3637847900390625,
+   "declared_tolerance": 0.25,
+   "affected_modules": "none (fixed batch composition per question); recorded for transparency"
+  },
+  {
+   "kind": "batch_vs_single_tolerance",
+   "locus_id": "vis.last",
+   "check": "D_batch_vs_single",
+   "value": 0.3637847900390625,
+   "declared_tolerance": 0.25,
+   "affected_modules": "none (fixed batch composition per question); recorded for transparency"
+  }
+ ],
+ "feature_extraction_seconds": 373.9,
+ "notes": "gpu_hours sums wall time x GPUs over runner shards recorded in outcomes/*/meta-*.json; CPU fitting time is in fits/*/summary.json",
+ "merged_outcomes": {
+  "CORE": {
+   "parts": 60,
+   "rows_raw": 457200,
+   "rows_unique": 457200,
+   "failed": 0
+  },
+  "CALIBRATION": {
+   "parts": 40,
+   "rows_raw": 6400,
+   "rows_unique": 6400,
+   "failed": 0
+  },
+  "PROMPT": {
+   "parts": 63,
+   "rows_raw": 762000,
+   "rows_unique": 762000,
+   "failed": 0
+  },
+  "DOSE": {
+   "parts": 20,
+   "rows_raw": 162000,
+   "rows_unique": 162000,
+   "failed": 0
+  },
+  "REFIT": {
+   "parts": 60,
+   "rows_raw": 50400,
+   "rows_unique": 50400,
+   "failed": 0
+  },
+  "LOCUS": {
+   "parts": 60,
+   "rows_raw": 457200,
+   "rows_unique": 457200,
+   "failed": 0
+  },
+  "LOCUS_CALIBRATION": {
+   "parts": 40,
+   "rows_raw": 2400,
+   "rows_unique": 2400,
+   "failed": 0
+  },
+  "ALTDIR": {
+   "parts": 60,
+   "rows_raw": 86400,
+   "rows_unique": 86400,
+   "failed": 0
+  },
+  "EXTCOMP": {},
+  "TOKENW": {},
+  "PRECISION": {},
+  "ANSDIR": {},
+  "ALTDIRD": {
+   "parts": 60,
+   "rows_raw": 43200,
+   "rows_unique": 43200,
+   "failed": 0
+  },
+  "ATTR": {},
+  "ANSDIRT": {},
+  "VALID": {},
+  "ATTRRAND": {},
+  "ATTRQ": {},
+  "VALIDFIT": {},
+  "PROJSEED": {},
+  "TOWERSWAP": {},
+  "TOWERSWAPD": {},
+  "REPLAY": {},
+  "SEMEND": {},
+  "FGOBJ": {},
+  "FGOBJ_CALIBRATION": {}
+ }
+}

@@ -1,0 +1,26 @@
+{
+ "model_key": "lingshu-32",
+ "dataset_id": "chexpert",
+ "module": "SEMEND",
+ "shard": 0,
+ "n_shards": 4,
+ "rows": 150,
+ "scored_rows": 150,
+ "outcomes": 118800,
+ "seconds": 12208.8,
+ "throughput_per_s": 9.73,
+ "batch": 16,
+ "primary_template": "IY",
+ "numerics": "bf16-batched",
+ "fit_seed": null,
+ "batch_policy": "fixed composition per question: clean replicated baseline batch + padded steered batches",
+ "direction_block": "lingshu-32",
+ "tower_swap": null,
+ "replay": null,
+ "peak_gpu_memory_bytes": 32974469120,
+ "gpu_count": 2,
+ "gpu_models": [
+  "NVIDIA A100-SXM4-80GB"
+ ],
+ "ended_utc": "2026-09-17T03:41:49Z"
+}

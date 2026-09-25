@@ -1,0 +1,22 @@
+{
+ "model_key": "q25-3",
+ "dataset_id": "nih",
+ "module": "ATTR",
+ "shard": 0,
+ "n_shards": 1,
+ "rows": 600,
+ "scored_rows": 600,
+ "outcomes": 55800,
+ "seconds": 5344.9,
+ "throughput_per_s": 10.44,
+ "batch": 32,
+ "primary_template": "IY",
+ "numerics": "bf16-batched",
+ "batch_policy": "fixed composition per question: clean replicated baseline batch + padded steered batches",
+ "peak_gpu_memory_bytes": 9742623744,
+ "gpu_count": 1,
+ "gpu_models": [
+  "NVIDIA A100-SXM4-80GB"
+ ],
+ "ended_utc": "2026-09-16T03:52:23Z"
+}

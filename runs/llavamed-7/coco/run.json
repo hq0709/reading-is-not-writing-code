@@ -1,0 +1,398 @@
+{
+ "protocol_id": "cf-transfer-v1",
+ "run_id": "cf-transfer-v1:llavamed-7:coco:mayo",
+ "model_key": "llavamed-7",
+ "model_id": "microsoft/llava-med-v1.5-mistral-7b",
+ "model_revision": "91bb16c122001ddc9cf1fd36ce1dae09448943a2",
+ "processor_revision": "91bb16c122001ddc9cf1fd36ce1dae09448943a2",
+ "dataset_id": "coco",
+ "dataset_release": "COCO 2017 train2017/val2017 + instances annotations (2017-09-01)",
+ "source_commit": "4701456a3dadcc2af35247e0feb174c0fbf68ebb",
+ "adapter_path": "src/cftransfer/adapters/",
+ "python_version": "3.12.13",
+ "torch_version": "2.13.0+cu130",
+ "transformers_version": "5.15.0",
+ "numpy_version": "2.3.5",
+ "sklearn_version": "1.9.0",
+ "weight_dtype": "bfloat16",
+ "activation_dtype": "bfloat16 (hook delta computed in float32, cast back)",
+ "logit_dtype": "float32",
+ "attention_backend": "sdpa",
+ "device_map": [
+  "cuda:0"
+ ],
+ "gpu_models": [
+  "NVIDIA A100-SXM4-80GB"
+ ],
+ "gpu_count": 1,
+ "batch_size": [
+  1,
+  32
+ ],
+ "started_utc": "2026-09-12T21:05:23Z",
+ "ended_utc": "2026-09-15T12:57:05Z",
+ "wall_seconds": 88859.4,
+ "gpu_hours": 24.683,
+ "peak_gpu_memory_bytes": 18172158464,
+ "processing_settings": {
+  "processor_kwargs": {},
+  "image_processor": {
+   "crop_size": {
+    "height": 336,
+    "width": 336
+   },
+   "do_center_crop": true,
+   "do_convert_rgb": true,
+   "do_normalize": true,
+   "do_rescale": true,
+   "do_resize": true,
+   "image_processor_type": "CLIPImageProcessor",
+   "resample": 3,
+   "rescale_factor": 0.00392156862745098,
+   "size": {
+    "shortest_edge": 336
+   }
+  },
+  "chat_template": "{{ bos_token }}{% for message in messages %}{% if (message['role'] == 'user') != (loop.index0 % 2 == 0) %}{{ raise_exception('Conversation roles must alternate user/assistant/user/assistant/...') }}{% endif %}{% if message['role'] == 'user' %}{{ '[INST] ' + message['content'] + ' [/INST]' }}{% elif message['role'] == 'assistant' %}{{ message['content'] + eos_token}}{% else %}{{ raise_exception('Only user and assistant roles are supported!') }}{% endif %}{% endfor %}",
+  "example_prompt_IY": "[INST] <image>\nIs there X in this image? Answer yes or no. [/INST]",
+  "special_token_ids": {
+   "image_token_id": 32000,
+   "pad_token_id": 0,
+   "eos_token_id": 2
+  },
+  "attn_implementation": "sdpa",
+  "candidate_tokens": {
+   "IY": {
+    "positive_ids": [
+     5081,
+     5592
+    ],
+    "negative_ids": [
+     708,
+     1770
+    ],
+    "detail": {
+     "yes": {
+      "yes": 5081,
+      "Yes": 5592,
+      " yes": 5081,
+      " Yes": 5592
+     },
+     "no": {
+      "no": 708,
+      "No": 1770,
+      " no": 708,
+      " No": 1770
+     }
+    }
+   },
+   "WY": {
+    "positive_ids": [
+     5081,
+     5592
+    ],
+    "negative_ids": [
+     708,
+     1770
+    ],
+    "detail": {
+     "yes": {
+      "yes": 5081,
+      "Yes": 5592,
+      " yes": 5081,
+      " Yes": 5592
+     },
+     "no": {
+      "no": 708,
+      "No": 1770,
+      " no": 708,
+      " No": 1770
+     }
+    }
+   },
+   "IB": {
+    "positive_ids": [
+     365
+    ],
+    "negative_ids": [
+     330
+    ],
+    "detail": {
+     "A": {
+      "A": 330,
+      " A": 330
+     },
+     "B": {
+      "B": 365,
+      " B": 365
+     }
+    }
+   },
+   "WB": {
+    "positive_ids": [
+     365
+    ],
+    "negative_ids": [
+     330
+    ],
+    "detail": {
+     "A": {
+      "A": 330,
+      " A": 330
+     },
+     "B": {
+      "B": 365,
+      " B": 365
+     }
+    }
+   },
+   "IA": {
+    "positive_ids": [
+     330
+    ],
+    "negative_ids": [
+     365
+    ],
+    "detail": {
+     "A": {
+      "A": 330,
+      " A": 330
+     },
+     "B": {
+      "B": 365,
+      " B": 365
+     }
+    }
+   },
+   "WA": {
+    "positive_ids": [
+     330
+    ],
+    "negative_ids": [
+     365
+    ],
+    "detail": {
+     "A": {
+      "A": 330,
+      " A": 330
+     },
+     "B": {
+      "B": 365,
+      " B": 365
+     }
+    }
+   }
+  },
+  "model_config": {
+   "architectures": [
+    "LlavaForConditionalGeneration"
+   ],
+   "dtype": "bfloat16",
+   "image_seq_length": 576,
+   "image_token_index": 32000,
+   "model_type": "llava",
+   "multimodal_projector_bias": true,
+   "pad_token_id": 0,
+   "projector_hidden_act": "gelu",
+   "text_config": {
+    "attention_dropout": 0.0,
+    "bos_token_id": 1,
+    "dtype": "bfloat16",
+    "eos_token_id": 2,
+    "head_dim": 128,
+    "hidden_act": "silu",
+    "hidden_size": 4096,
+    "initializer_range": 0.02,
+    "intermediate_size": 14336,
+    "max_position_embeddings": 32768,
+    "model_type": "mistral",
+    "num_attention_heads": 32,
+    "num_hidden_layers": 32,
+    "num_key_value_heads": 8,
+    "pad_token_id": null,
+    "rms_norm_eps": 1e-05,
+    "rope_parameters": {
+     "rope_theta": 1000000.0,
+     "rope_type": "default"
+    },
+    "sliding_window": null,
+    "tie_word_embeddings": false,
+    "use_cache": true,
+    "vocab_size": 32001
+   },
+   "tie_word_embeddings": false,
+   "transformers_version": "5.15.0",
+   "vision_config": {
+    "attention_dropout": 0.0,
+    "dtype": "bfloat16",
+    "hidden_act": "quick_gelu",
+    "hidden_size": 1024,
+    "image_size": 336,
+    "initializer_factor": 1.0,
+    "initializer_range": 0.02,
+    "intermediate_size": 4096,
+    "layer_norm_eps": 1e-05,
+    "model_type": "clip_vision_model",
+    "num_attention_heads": 16,
+    "num_channels": 3,
+    "num_hidden_layers": 24,
+    "patch_size": 14,
+    "projection_dim": 768
+   },
+   "vision_feature_layer": -2,
+   "vision_feature_select_strategy": "default"
+  },
+  "prompt_construction": "official LLaVA-Med mistral_instruct conversation '[INST] <image>\\n{q} [/INST]'; chunked tokenizer_image_token with 576 x <image>(32000); expand2square padding with CLIP mean; answer logits over the original 32,000-token vocabulary",
+  "conversion_receipt": "/rodata/azradonc_dev/m253405/cache/converted/llava-med-v1.5-mistral-7b-hf/conversion.json"
+ },
+ "loci": {
+  "vis.last": {
+   "locus_id": "vis.last",
+   "module_path": "model.vision_tower.encoder.layers.22",
+   "output_selection": "tensor output of CLIP encoder layer 22 of 24 = hidden_states[-2] (the block the projector consumes; the final block 23 is computed and discarded)",
+   "hidden_dim": 1024,
+   "token_rule": "batched (B, 1+576, D); index 0 is the CLS token and is NOT consumed (strategy 'default'); tokens 1..576 pooled",
+   "affected_branch": "the single image-token stream selected by vision_feature_layer",
+   "bypasses": "none",
+   "consumer": "model.multi_modal_projector",
+   "prompt_independent": true,
+   "notes": "transformers 5.x records hidden_states via forward hooks on each encoder layer; the steering hook is prepended so the recorder and the projector observe the steered output"
+  },
+  "connector": {
+   "locus_id": "connector",
+   "module_path": "model.multi_modal_projector",
+   "output_selection": "tensor output of the two-layer MLP projector",
+   "hidden_dim": 4096,
+   "token_rule": "batched (B, 576, D_text); all tokens consumed",
+   "affected_branch": "projected image embeddings scattered into <image> placeholder positions",
+   "bypasses": "none",
+   "consumer": "language model input embeddings",
+   "prompt_independent": true,
+   "notes": ""
+  }
+ },
+ "fit_seeds": [
+  0,
+  1,
+  2
+ ],
+ "random_seed": 0,
+ "projection_seed": 0,
+ "cohort_file": "manifests/cohort.csv",
+ "primary_template": "IY",
+ "requested_modules": [
+  "CORE",
+  "CALIBRATION",
+  "PROMPT",
+  "DOSE",
+  "REFIT",
+  "LOCUS",
+  "LOCUS_CALIBRATION",
+  "ALTDIR",
+  "ALTDIRD"
+ ],
+ "completed_modules": [
+  "CORE",
+  "CALIBRATION",
+  "PROMPT",
+  "DOSE",
+  "REFIT",
+  "LOCUS",
+  "LOCUS_CALIBRATION",
+  "ALTDIR",
+  "ALTDIRD"
+ ],
+ "ineligible_modules": [],
+ "status": "COMPLETE",
+ "deviations": [
+  {
+   "kind": "preflight_not_passed",
+   "locus_id": "connector",
+   "failed_checks": [
+    "E_semantic_direction"
+   ]
+  },
+  {
+   "kind": "preflight_not_passed",
+   "locus_id": "vis.last",
+   "failed_checks": [
+    "E_semantic_direction"
+   ]
+  }
+ ],
+ "feature_extraction_seconds": 205.0,
+ "notes": "gpu_hours sums wall time x GPUs over runner shards recorded in outcomes/*/meta-*.json; CPU fitting time is in fits/*/summary.json",
+ "merged_outcomes": {
+  "CORE": {
+   "parts": 60,
+   "rows_raw": 457200,
+   "rows_unique": 457200,
+   "failed": 0
+  },
+  "CALIBRATION": {
+   "parts": 40,
+   "rows_raw": 3200,
+   "rows_unique": 3200,
+   "failed": 0
+  },
+  "PROMPT": {
+   "parts": 63,
+   "rows_raw": 152400,
+   "rows_unique": 152400,
+   "failed": 0
+  },
+  "DOSE": {
+   "parts": 20,
+   "rows_raw": 162000,
+   "rows_unique": 162000,
+   "failed": 0
+  },
+  "REFIT": {
+   "parts": 60,
+   "rows_raw": 50400,
+   "rows_unique": 50400,
+   "failed": 0
+  },
+  "LOCUS": {
+   "parts": 60,
+   "rows_raw": 457200,
+   "rows_unique": 457200,
+   "failed": 0
+  },
+  "LOCUS_CALIBRATION": {
+   "parts": 40,
+   "rows_raw": 2400,
+   "rows_unique": 2400,
+   "failed": 0
+  },
+  "ALTDIR": {
+   "parts": 60,
+   "rows_raw": 86400,
+   "rows_unique": 86400,
+   "failed": 0
+  },
+  "EXTCOMP": {},
+  "TOKENW": {},
+  "PRECISION": {},
+  "ANSDIR": {},
+  "ALTDIRD": {
+   "parts": 60,
+   "rows_raw": 43200,
+   "rows_unique": 43200,
+   "failed": 0
+  },
+  "ATTR": {},
+  "ANSDIRT": {},
+  "VALID": {},
+  "ATTRRAND": {},
+  "ATTRQ": {},
+  "VALIDFIT": {},
+  "PROJSEED": {},
+  "TOWERSWAP": {},
+  "TOWERSWAPD": {},
+  "REPLAY": {},
+  "SEMEND": {},
+  "FGOBJ": {},
+  "FGOBJ_CALIBRATION": {}
+ }
+}

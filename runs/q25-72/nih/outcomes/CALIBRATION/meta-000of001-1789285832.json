@@ -1,0 +1,20 @@
+{
+ "model_key": "q25-72",
+ "dataset_id": "nih",
+ "module": "CALIBRATION",
+ "shard": 0,
+ "n_shards": 1,
+ "rows": 400,
+ "scored_rows": 400,
+ "outcomes": 6400,
+ "seconds": 1597.2,
+ "throughput_per_s": 4.01,
+ "batch": 1,
+ "batch_policy": "fixed composition per question: clean replicated baseline batch + padded steered batches",
+ "peak_gpu_memory_bytes": 47849143808,
+ "gpu_count": 3,
+ "gpu_models": [
+  "NVIDIA A100-SXM4-80GB"
+ ],
+ "ended_utc": "2026-09-13T07:50:32Z"
+}

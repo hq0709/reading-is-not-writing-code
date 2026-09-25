@@ -1,0 +1,21 @@
+{
+ "model_key": "llama32-11",
+ "dataset_id": "nih",
+ "module": "LOCUS",
+ "shard": 1,
+ "n_shards": 4,
+ "rows": 150,
+ "scored_rows": 150,
+ "outcomes": 114300,
+ "seconds": 29736.6,
+ "throughput_per_s": 3.84,
+ "batch": 16,
+ "primary_template": "IB",
+ "batch_policy": "fixed composition per question: clean replicated baseline batch + padded steered batches",
+ "peak_gpu_memory_bytes": 38717862912,
+ "gpu_count": 1,
+ "gpu_models": [
+  "NVIDIA A100-SXM4-80GB"
+ ],
+ "ended_utc": "2026-09-14T23:29:37Z"
+}

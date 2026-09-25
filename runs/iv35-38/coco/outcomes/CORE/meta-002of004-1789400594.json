@@ -1,0 +1,21 @@
+{
+ "model_key": "iv35-38",
+ "dataset_id": "coco",
+ "module": "CORE",
+ "shard": 2,
+ "n_shards": 4,
+ "rows": 150,
+ "scored_rows": 10,
+ "outcomes": 7620,
+ "seconds": 1292.8,
+ "throughput_per_s": 5.89,
+ "batch": 16,
+ "primary_template": "IY",
+ "batch_policy": "fixed composition per question: clean replicated baseline batch + padded steered batches",
+ "peak_gpu_memory_bytes": 43349217792,
+ "gpu_count": 2,
+ "gpu_models": [
+  "NVIDIA A100-SXM4-80GB"
+ ],
+ "ended_utc": "2026-09-14T15:43:14Z"
+}

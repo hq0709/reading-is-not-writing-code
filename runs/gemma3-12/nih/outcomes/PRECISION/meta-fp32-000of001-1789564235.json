@@ -1,0 +1,22 @@
+{
+ "model_key": "gemma3-12",
+ "dataset_id": "nih",
+ "module": "PRECISION",
+ "shard": 0,
+ "n_shards": 1,
+ "rows": 200,
+ "scored_rows": 10,
+ "outcomes": 7620,
+ "seconds": 6293.5,
+ "throughput_per_s": 1.21,
+ "batch": 32,
+ "primary_template": "IY",
+ "numerics": "fp32",
+ "batch_policy": "fixed composition per question: clean replicated baseline batch + padded steered batches",
+ "peak_gpu_memory_bytes": 56135926272,
+ "gpu_count": 1,
+ "gpu_models": [
+  "NVIDIA A100-SXM4-80GB"
+ ],
+ "ended_utc": "2026-09-16T13:10:35Z"
+}

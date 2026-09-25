@@ -1,0 +1,20 @@
+{
+ "model_key": "q25-72",
+ "dataset_id": "nih",
+ "module": "LOCUS",
+ "shard": 1,
+ "n_shards": 4,
+ "rows": 150,
+ "scored_rows": 60,
+ "outcomes": 45720,
+ "seconds": 6417.1,
+ "throughput_per_s": 7.12,
+ "batch": 8,
+ "batch_policy": "fixed composition per question: clean replicated baseline batch + padded steered batches",
+ "peak_gpu_memory_bytes": 48191991808,
+ "gpu_count": 3,
+ "gpu_models": [
+  "NVIDIA A100-SXM4-80GB"
+ ],
+ "ended_utc": "2026-09-13T21:20:22Z"
+}

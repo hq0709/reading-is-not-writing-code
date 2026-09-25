@@ -1,0 +1,20 @@
+{
+ "model_key": "q3-8",
+ "dataset_id": "nih",
+ "module": "REFIT",
+ "shard": 0,
+ "n_shards": 1,
+ "rows": 600,
+ "scored_rows": 600,
+ "outcomes": 50400,
+ "seconds": 3865.6,
+ "throughput_per_s": 13.04,
+ "batch": 32,
+ "batch_policy": "fixed composition per question: clean replicated baseline batch + padded steered batches",
+ "peak_gpu_memory_bytes": 22080771584,
+ "gpu_count": 1,
+ "gpu_models": [
+  "NVIDIA A100-SXM4-80GB"
+ ],
+ "ended_utc": "2026-09-12T07:42:09Z"
+}

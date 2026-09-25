@@ -1,0 +1,21 @@
+{
+ "model_key": "llama32-11",
+ "dataset_id": "coco",
+ "module": "REFIT",
+ "shard": 0,
+ "n_shards": 1,
+ "rows": 600,
+ "scored_rows": 600,
+ "outcomes": 50400,
+ "seconds": 13310.6,
+ "throughput_per_s": 3.79,
+ "batch": 16,
+ "primary_template": "IB",
+ "batch_policy": "fixed composition per question: clean replicated baseline batch + padded steered batches",
+ "peak_gpu_memory_bytes": 38717858304,
+ "gpu_count": 1,
+ "gpu_models": [
+  "NVIDIA A100-SXM4-80GB"
+ ],
+ "ended_utc": "2026-09-15T01:03:30Z"
+}

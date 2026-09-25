@@ -1,0 +1,22 @@
+{
+ "model_key": "lingshu-7",
+ "dataset_id": "chexpert",
+ "module": "DOSE",
+ "shard": 0,
+ "n_shards": 2,
+ "rows": 100,
+ "scored_rows": 100,
+ "outcomes": 81000,
+ "seconds": 1469.8,
+ "throughput_per_s": 55.11,
+ "batch": 32,
+ "primary_template": "IY",
+ "numerics": "bf16-batched",
+ "batch_policy": "fixed composition per question: clean replicated baseline batch + padded steered batches",
+ "peak_gpu_memory_bytes": 19794913792,
+ "gpu_count": 1,
+ "gpu_models": [
+  "NVIDIA H100 80GB HBM3"
+ ],
+ "ended_utc": "2026-09-15T09:50:29Z"
+}

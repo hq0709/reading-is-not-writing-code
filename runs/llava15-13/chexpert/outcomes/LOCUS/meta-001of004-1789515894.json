@@ -1,0 +1,22 @@
+{
+ "model_key": "llava15-13",
+ "dataset_id": "chexpert",
+ "module": "LOCUS",
+ "shard": 1,
+ "n_shards": 4,
+ "rows": 150,
+ "scored_rows": 40,
+ "outcomes": 30480,
+ "seconds": 1224.7,
+ "throughput_per_s": 24.89,
+ "batch": 32,
+ "primary_template": "IY",
+ "numerics": "bf16-batched",
+ "batch_policy": "fixed composition per question: clean replicated baseline batch + padded steered batches",
+ "peak_gpu_memory_bytes": 30281721344,
+ "gpu_count": 1,
+ "gpu_models": [
+  "NVIDIA H100 80GB HBM3"
+ ],
+ "ended_utc": "2026-09-15T23:44:54Z"
+}

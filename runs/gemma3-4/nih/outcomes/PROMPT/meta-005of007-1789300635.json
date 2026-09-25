@@ -1,0 +1,20 @@
+{
+ "model_key": "gemma3-4",
+ "dataset_id": "nih",
+ "module": "PROMPT",
+ "shard": 5,
+ "n_shards": 7,
+ "rows": 85,
+ "scored_rows": 85,
+ "outcomes": 107950,
+ "seconds": 3305.5,
+ "throughput_per_s": 32.66,
+ "batch": 32,
+ "batch_policy": "fixed composition per question: clean replicated baseline batch + padded steered batches",
+ "peak_gpu_memory_bytes": 15141148672,
+ "gpu_count": 1,
+ "gpu_models": [
+  "NVIDIA H100 80GB HBM3"
+ ],
+ "ended_utc": "2026-09-13T11:57:15Z"
+}

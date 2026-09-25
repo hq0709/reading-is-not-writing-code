@@ -1,0 +1,26 @@
+{
+ "model_key": "q25-7",
+ "dataset_id": "nih",
+ "module": "SEMEND",
+ "shard": 1,
+ "n_shards": 4,
+ "rows": 150,
+ "scored_rows": 150,
+ "outcomes": 118800,
+ "seconds": 6897.3,
+ "throughput_per_s": 17.22,
+ "batch": 32,
+ "primary_template": "IY",
+ "numerics": "bf16-batched",
+ "fit_seed": null,
+ "batch_policy": "fixed composition per question: clean replicated baseline batch + padded steered batches",
+ "direction_block": "q25-7",
+ "tower_swap": null,
+ "replay": null,
+ "peak_gpu_memory_bytes": 19881488896,
+ "gpu_count": 1,
+ "gpu_models": [
+  "NVIDIA A100-SXM4-80GB"
+ ],
+ "ended_utc": "2026-09-17T01:28:15Z"
+}

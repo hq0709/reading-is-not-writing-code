@@ -1,0 +1,1394 @@
+{
+ "nih|Effusion|IY": {
+  "dataset_id": "nih",
+  "concept": "Effusion",
+  "template_id": "IY",
+  "is_primary": true,
+  "question": "Is there a pleural effusion in this chest radiograph? Answer yes or no.",
+  "rendered_prompt": "<|system|>\nYou are a helpful assistant.<|endoftext|>\n<|user|>\nPicture 1:<|img|>cf-transfer-image<|/img|>\nIs there a pleural effusion in this chest radiograph? Answer yes or no.<|endoftext|>\n<|assistant|>\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   8505,
+   5297,
+   3763,
+   3363
+  ],
+  "negative_token_ids": [
+   3919,
+   2949,
+   645,
+   1400
+  ],
+  "candidate_detail": {
+   "yes": {
+    "yes": 8505,
+    "Yes": 5297,
+    " yes": 3763,
+    " Yes": 3363
+   },
+   "no": {
+    "no": 3919,
+    "No": 2949,
+    " no": 645,
+    " No": 1400
+   }
+  },
+  "raw_ab": null,
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "nih|Effusion|WY": {
+  "dataset_id": "nih",
+  "concept": "Effusion",
+  "template_id": "WY",
+  "is_primary": false,
+  "question": "Does this chest radiograph show a pleural effusion? Answer yes or no.",
+  "rendered_prompt": "<|system|>\nYou are a helpful assistant.<|endoftext|>\n<|user|>\nPicture 1:<|img|>cf-transfer-image<|/img|>\nDoes this chest radiograph show a pleural effusion? Answer yes or no.<|endoftext|>\n<|assistant|>\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   8505,
+   5297,
+   3763,
+   3363
+  ],
+  "negative_token_ids": [
+   3919,
+   2949,
+   645,
+   1400
+  ],
+  "candidate_detail": {
+   "yes": {
+    "yes": 8505,
+    "Yes": 5297,
+    " yes": 3763,
+    " Yes": 3363
+   },
+   "no": {
+    "no": 3919,
+    "No": 2949,
+    " no": 645,
+    " No": 1400
+   }
+  },
+  "raw_ab": null,
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "nih|Effusion|IA": {
+  "dataset_id": "nih",
+  "concept": "Effusion",
+  "template_id": "IA",
+  "is_primary": false,
+  "question": "Is there a pleural effusion in this chest radiograph? Answer A if the finding is present and B if it is absent. Reply with A or B only.",
+  "rendered_prompt": "<|system|>\nYou are a helpful assistant.<|endoftext|>\n<|user|>\nPicture 1:<|img|>cf-transfer-image<|/img|>\nIs there a pleural effusion in this chest radiograph? Answer A if the finding is present and B if it is absent. Reply with A or B only.<|endoftext|>\n<|assistant|>\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   32,
+   317
+  ],
+  "negative_token_ids": [
+   33,
+   347
+  ],
+  "candidate_detail": {
+   "A": {
+    "A": 32,
+    " A": 317
+   },
+   "B": {
+    "B": 33,
+    " B": 347
+   }
+  },
+  "raw_ab": {
+   "A_ids": [
+    32,
+    317
+   ],
+   "B_ids": [
+    33,
+    347
+   ]
+  },
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "nih|Effusion|IB": {
+  "dataset_id": "nih",
+  "concept": "Effusion",
+  "template_id": "IB",
+  "is_primary": false,
+  "question": "Is there a pleural effusion in this chest radiograph? Answer B if the finding is present and A if it is absent. Reply with A or B only.",
+  "rendered_prompt": "<|system|>\nYou are a helpful assistant.<|endoftext|>\n<|user|>\nPicture 1:<|img|>cf-transfer-image<|/img|>\nIs there a pleural effusion in this chest radiograph? Answer B if the finding is present and A if it is absent. Reply with A or B only.<|endoftext|>\n<|assistant|>\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   33,
+   347
+  ],
+  "negative_token_ids": [
+   32,
+   317
+  ],
+  "candidate_detail": {
+   "A": {
+    "A": 32,
+    " A": 317
+   },
+   "B": {
+    "B": 33,
+    " B": 347
+   }
+  },
+  "raw_ab": {
+   "A_ids": [
+    32,
+    317
+   ],
+   "B_ids": [
+    33,
+    347
+   ]
+  },
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "nih|Effusion|WA": {
+  "dataset_id": "nih",
+  "concept": "Effusion",
+  "template_id": "WA",
+  "is_primary": false,
+  "question": "Does this chest radiograph show a pleural effusion? Answer A if the finding is present and B if it is absent. Reply with A or B only.",
+  "rendered_prompt": "<|system|>\nYou are a helpful assistant.<|endoftext|>\n<|user|>\nPicture 1:<|img|>cf-transfer-image<|/img|>\nDoes this chest radiograph show a pleural effusion? Answer A if the finding is present and B if it is absent. Reply with A or B only.<|endoftext|>\n<|assistant|>\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   32,
+   317
+  ],
+  "negative_token_ids": [
+   33,
+   347
+  ],
+  "candidate_detail": {
+   "A": {
+    "A": 32,
+    " A": 317
+   },
+   "B": {
+    "B": 33,
+    " B": 347
+   }
+  },
+  "raw_ab": {
+   "A_ids": [
+    32,
+    317
+   ],
+   "B_ids": [
+    33,
+    347
+   ]
+  },
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "nih|Effusion|WB": {
+  "dataset_id": "nih",
+  "concept": "Effusion",
+  "template_id": "WB",
+  "is_primary": false,
+  "question": "Does this chest radiograph show a pleural effusion? Answer B if the finding is present and A if it is absent. Reply with A or B only.",
+  "rendered_prompt": "<|system|>\nYou are a helpful assistant.<|endoftext|>\n<|user|>\nPicture 1:<|img|>cf-transfer-image<|/img|>\nDoes this chest radiograph show a pleural effusion? Answer B if the finding is present and A if it is absent. Reply with A or B only.<|endoftext|>\n<|assistant|>\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   33,
+   347
+  ],
+  "negative_token_ids": [
+   32,
+   317
+  ],
+  "candidate_detail": {
+   "A": {
+    "A": 32,
+    " A": 317
+   },
+   "B": {
+    "B": 33,
+    " B": 347
+   }
+  },
+  "raw_ab": {
+   "A_ids": [
+    32,
+    317
+   ],
+   "B_ids": [
+    33,
+    347
+   ]
+  },
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "nih|Atelectasis|IY": {
+  "dataset_id": "nih",
+  "concept": "Atelectasis",
+  "template_id": "IY",
+  "is_primary": true,
+  "question": "Is there atelectasis in this chest radiograph? Answer yes or no.",
+  "rendered_prompt": "<|system|>\nYou are a helpful assistant.<|endoftext|>\n<|user|>\nPicture 1:<|img|>cf-transfer-image<|/img|>\nIs there atelectasis in this chest radiograph? Answer yes or no.<|endoftext|>\n<|assistant|>\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   8505,
+   5297,
+   3763,
+   3363
+  ],
+  "negative_token_ids": [
+   3919,
+   2949,
+   645,
+   1400
+  ],
+  "candidate_detail": {
+   "yes": {
+    "yes": 8505,
+    "Yes": 5297,
+    " yes": 3763,
+    " Yes": 3363
+   },
+   "no": {
+    "no": 3919,
+    "No": 2949,
+    " no": 645,
+    " No": 1400
+   }
+  },
+  "raw_ab": null,
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "nih|Atelectasis|WY": {
+  "dataset_id": "nih",
+  "concept": "Atelectasis",
+  "template_id": "WY",
+  "is_primary": false,
+  "question": "Does this chest radiograph show atelectasis? Answer yes or no.",
+  "rendered_prompt": "<|system|>\nYou are a helpful assistant.<|endoftext|>\n<|user|>\nPicture 1:<|img|>cf-transfer-image<|/img|>\nDoes this chest radiograph show atelectasis? Answer yes or no.<|endoftext|>\n<|assistant|>\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   8505,
+   5297,
+   3763,
+   3363
+  ],
+  "negative_token_ids": [
+   3919,
+   2949,
+   645,
+   1400
+  ],
+  "candidate_detail": {
+   "yes": {
+    "yes": 8505,
+    "Yes": 5297,
+    " yes": 3763,
+    " Yes": 3363
+   },
+   "no": {
+    "no": 3919,
+    "No": 2949,
+    " no": 645,
+    " No": 1400
+   }
+  },
+  "raw_ab": null,
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "nih|Atelectasis|IA": {
+  "dataset_id": "nih",
+  "concept": "Atelectasis",
+  "template_id": "IA",
+  "is_primary": false,
+  "question": "Is there atelectasis in this chest radiograph? Answer A if the finding is present and B if it is absent. Reply with A or B only.",
+  "rendered_prompt": "<|system|>\nYou are a helpful assistant.<|endoftext|>\n<|user|>\nPicture 1:<|img|>cf-transfer-image<|/img|>\nIs there atelectasis in this chest radiograph? Answer A if the finding is present and B if it is absent. Reply with A or B only.<|endoftext|>\n<|assistant|>\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   32,
+   317
+  ],
+  "negative_token_ids": [
+   33,
+   347
+  ],
+  "candidate_detail": {
+   "A": {
+    "A": 32,
+    " A": 317
+   },
+   "B": {
+    "B": 33,
+    " B": 347
+   }
+  },
+  "raw_ab": {
+   "A_ids": [
+    32,
+    317
+   ],
+   "B_ids": [
+    33,
+    347
+   ]
+  },
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "nih|Atelectasis|IB": {
+  "dataset_id": "nih",
+  "concept": "Atelectasis",
+  "template_id": "IB",
+  "is_primary": false,
+  "question": "Is there atelectasis in this chest radiograph? Answer B if the finding is present and A if it is absent. Reply with A or B only.",
+  "rendered_prompt": "<|system|>\nYou are a helpful assistant.<|endoftext|>\n<|user|>\nPicture 1:<|img|>cf-transfer-image<|/img|>\nIs there atelectasis in this chest radiograph? Answer B if the finding is present and A if it is absent. Reply with A or B only.<|endoftext|>\n<|assistant|>\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   33,
+   347
+  ],
+  "negative_token_ids": [
+   32,
+   317
+  ],
+  "candidate_detail": {
+   "A": {
+    "A": 32,
+    " A": 317
+   },
+   "B": {
+    "B": 33,
+    " B": 347
+   }
+  },
+  "raw_ab": {
+   "A_ids": [
+    32,
+    317
+   ],
+   "B_ids": [
+    33,
+    347
+   ]
+  },
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "nih|Atelectasis|WA": {
+  "dataset_id": "nih",
+  "concept": "Atelectasis",
+  "template_id": "WA",
+  "is_primary": false,
+  "question": "Does this chest radiograph show atelectasis? Answer A if the finding is present and B if it is absent. Reply with A or B only.",
+  "rendered_prompt": "<|system|>\nYou are a helpful assistant.<|endoftext|>\n<|user|>\nPicture 1:<|img|>cf-transfer-image<|/img|>\nDoes this chest radiograph show atelectasis? Answer A if the finding is present and B if it is absent. Reply with A or B only.<|endoftext|>\n<|assistant|>\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   32,
+   317
+  ],
+  "negative_token_ids": [
+   33,
+   347
+  ],
+  "candidate_detail": {
+   "A": {
+    "A": 32,
+    " A": 317
+   },
+   "B": {
+    "B": 33,
+    " B": 347
+   }
+  },
+  "raw_ab": {
+   "A_ids": [
+    32,
+    317
+   ],
+   "B_ids": [
+    33,
+    347
+   ]
+  },
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "nih|Atelectasis|WB": {
+  "dataset_id": "nih",
+  "concept": "Atelectasis",
+  "template_id": "WB",
+  "is_primary": false,
+  "question": "Does this chest radiograph show atelectasis? Answer B if the finding is present and A if it is absent. Reply with A or B only.",
+  "rendered_prompt": "<|system|>\nYou are a helpful assistant.<|endoftext|>\n<|user|>\nPicture 1:<|img|>cf-transfer-image<|/img|>\nDoes this chest radiograph show atelectasis? Answer B if the finding is present and A if it is absent. Reply with A or B only.<|endoftext|>\n<|assistant|>\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   33,
+   347
+  ],
+  "negative_token_ids": [
+   32,
+   317
+  ],
+  "candidate_detail": {
+   "A": {
+    "A": 32,
+    " A": 317
+   },
+   "B": {
+    "B": 33,
+    " B": 347
+   }
+  },
+  "raw_ab": {
+   "A_ids": [
+    32,
+    317
+   ],
+   "B_ids": [
+    33,
+    347
+   ]
+  },
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "nih|Pneumothorax|IY": {
+  "dataset_id": "nih",
+  "concept": "Pneumothorax",
+  "template_id": "IY",
+  "is_primary": true,
+  "question": "Is there a pneumothorax in this chest radiograph? Answer yes or no.",
+  "rendered_prompt": "<|system|>\nYou are a helpful assistant.<|endoftext|>\n<|user|>\nPicture 1:<|img|>cf-transfer-image<|/img|>\nIs there a pneumothorax in this chest radiograph? Answer yes or no.<|endoftext|>\n<|assistant|>\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   8505,
+   5297,
+   3763,
+   3363
+  ],
+  "negative_token_ids": [
+   3919,
+   2949,
+   645,
+   1400
+  ],
+  "candidate_detail": {
+   "yes": {
+    "yes": 8505,
+    "Yes": 5297,
+    " yes": 3763,
+    " Yes": 3363
+   },
+   "no": {
+    "no": 3919,
+    "No": 2949,
+    " no": 645,
+    " No": 1400
+   }
+  },
+  "raw_ab": null,
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "nih|Pneumothorax|WY": {
+  "dataset_id": "nih",
+  "concept": "Pneumothorax",
+  "template_id": "WY",
+  "is_primary": false,
+  "question": "Does this chest radiograph show a pneumothorax? Answer yes or no.",
+  "rendered_prompt": "<|system|>\nYou are a helpful assistant.<|endoftext|>\n<|user|>\nPicture 1:<|img|>cf-transfer-image<|/img|>\nDoes this chest radiograph show a pneumothorax? Answer yes or no.<|endoftext|>\n<|assistant|>\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   8505,
+   5297,
+   3763,
+   3363
+  ],
+  "negative_token_ids": [
+   3919,
+   2949,
+   645,
+   1400
+  ],
+  "candidate_detail": {
+   "yes": {
+    "yes": 8505,
+    "Yes": 5297,
+    " yes": 3763,
+    " Yes": 3363
+   },
+   "no": {
+    "no": 3919,
+    "No": 2949,
+    " no": 645,
+    " No": 1400
+   }
+  },
+  "raw_ab": null,
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "nih|Pneumothorax|IA": {
+  "dataset_id": "nih",
+  "concept": "Pneumothorax",
+  "template_id": "IA",
+  "is_primary": false,
+  "question": "Is there a pneumothorax in this chest radiograph? Answer A if the finding is present and B if it is absent. Reply with A or B only.",
+  "rendered_prompt": "<|system|>\nYou are a helpful assistant.<|endoftext|>\n<|user|>\nPicture 1:<|img|>cf-transfer-image<|/img|>\nIs there a pneumothorax in this chest radiograph? Answer A if the finding is present and B if it is absent. Reply with A or B only.<|endoftext|>\n<|assistant|>\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   32,
+   317
+  ],
+  "negative_token_ids": [
+   33,
+   347
+  ],
+  "candidate_detail": {
+   "A": {
+    "A": 32,
+    " A": 317
+   },
+   "B": {
+    "B": 33,
+    " B": 347
+   }
+  },
+  "raw_ab": {
+   "A_ids": [
+    32,
+    317
+   ],
+   "B_ids": [
+    33,
+    347
+   ]
+  },
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "nih|Pneumothorax|IB": {
+  "dataset_id": "nih",
+  "concept": "Pneumothorax",
+  "template_id": "IB",
+  "is_primary": false,
+  "question": "Is there a pneumothorax in this chest radiograph? Answer B if the finding is present and A if it is absent. Reply with A or B only.",
+  "rendered_prompt": "<|system|>\nYou are a helpful assistant.<|endoftext|>\n<|user|>\nPicture 1:<|img|>cf-transfer-image<|/img|>\nIs there a pneumothorax in this chest radiograph? Answer B if the finding is present and A if it is absent. Reply with A or B only.<|endoftext|>\n<|assistant|>\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   33,
+   347
+  ],
+  "negative_token_ids": [
+   32,
+   317
+  ],
+  "candidate_detail": {
+   "A": {
+    "A": 32,
+    " A": 317
+   },
+   "B": {
+    "B": 33,
+    " B": 347
+   }
+  },
+  "raw_ab": {
+   "A_ids": [
+    32,
+    317
+   ],
+   "B_ids": [
+    33,
+    347
+   ]
+  },
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "nih|Pneumothorax|WA": {
+  "dataset_id": "nih",
+  "concept": "Pneumothorax",
+  "template_id": "WA",
+  "is_primary": false,
+  "question": "Does this chest radiograph show a pneumothorax? Answer A if the finding is present and B if it is absent. Reply with A or B only.",
+  "rendered_prompt": "<|system|>\nYou are a helpful assistant.<|endoftext|>\n<|user|>\nPicture 1:<|img|>cf-transfer-image<|/img|>\nDoes this chest radiograph show a pneumothorax? Answer A if the finding is present and B if it is absent. Reply with A or B only.<|endoftext|>\n<|assistant|>\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   32,
+   317
+  ],
+  "negative_token_ids": [
+   33,
+   347
+  ],
+  "candidate_detail": {
+   "A": {
+    "A": 32,
+    " A": 317
+   },
+   "B": {
+    "B": 33,
+    " B": 347
+   }
+  },
+  "raw_ab": {
+   "A_ids": [
+    32,
+    317
+   ],
+   "B_ids": [
+    33,
+    347
+   ]
+  },
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "nih|Pneumothorax|WB": {
+  "dataset_id": "nih",
+  "concept": "Pneumothorax",
+  "template_id": "WB",
+  "is_primary": false,
+  "question": "Does this chest radiograph show a pneumothorax? Answer B if the finding is present and A if it is absent. Reply with A or B only.",
+  "rendered_prompt": "<|system|>\nYou are a helpful assistant.<|endoftext|>\n<|user|>\nPicture 1:<|img|>cf-transfer-image<|/img|>\nDoes this chest radiograph show a pneumothorax? Answer B if the finding is present and A if it is absent. Reply with A or B only.<|endoftext|>\n<|assistant|>\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   33,
+   347
+  ],
+  "negative_token_ids": [
+   32,
+   317
+  ],
+  "candidate_detail": {
+   "A": {
+    "A": 32,
+    " A": 317
+   },
+   "B": {
+    "B": 33,
+    " B": 347
+   }
+  },
+  "raw_ab": {
+   "A_ids": [
+    32,
+    317
+   ],
+   "B_ids": [
+    33,
+    347
+   ]
+  },
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "nih|Cardiomegaly|IY": {
+  "dataset_id": "nih",
+  "concept": "Cardiomegaly",
+  "template_id": "IY",
+  "is_primary": true,
+  "question": "Is there cardiomegaly in this chest radiograph? Answer yes or no.",
+  "rendered_prompt": "<|system|>\nYou are a helpful assistant.<|endoftext|>\n<|user|>\nPicture 1:<|img|>cf-transfer-image<|/img|>\nIs there cardiomegaly in this chest radiograph? Answer yes or no.<|endoftext|>\n<|assistant|>\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   8505,
+   5297,
+   3763,
+   3363
+  ],
+  "negative_token_ids": [
+   3919,
+   2949,
+   645,
+   1400
+  ],
+  "candidate_detail": {
+   "yes": {
+    "yes": 8505,
+    "Yes": 5297,
+    " yes": 3763,
+    " Yes": 3363
+   },
+   "no": {
+    "no": 3919,
+    "No": 2949,
+    " no": 645,
+    " No": 1400
+   }
+  },
+  "raw_ab": null,
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "nih|Cardiomegaly|WY": {
+  "dataset_id": "nih",
+  "concept": "Cardiomegaly",
+  "template_id": "WY",
+  "is_primary": false,
+  "question": "Does this chest radiograph show cardiomegaly? Answer yes or no.",
+  "rendered_prompt": "<|system|>\nYou are a helpful assistant.<|endoftext|>\n<|user|>\nPicture 1:<|img|>cf-transfer-image<|/img|>\nDoes this chest radiograph show cardiomegaly? Answer yes or no.<|endoftext|>\n<|assistant|>\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   8505,
+   5297,
+   3763,
+   3363
+  ],
+  "negative_token_ids": [
+   3919,
+   2949,
+   645,
+   1400
+  ],
+  "candidate_detail": {
+   "yes": {
+    "yes": 8505,
+    "Yes": 5297,
+    " yes": 3763,
+    " Yes": 3363
+   },
+   "no": {
+    "no": 3919,
+    "No": 2949,
+    " no": 645,
+    " No": 1400
+   }
+  },
+  "raw_ab": null,
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "nih|Cardiomegaly|IA": {
+  "dataset_id": "nih",
+  "concept": "Cardiomegaly",
+  "template_id": "IA",
+  "is_primary": false,
+  "question": "Is there cardiomegaly in this chest radiograph? Answer A if the finding is present and B if it is absent. Reply with A or B only.",
+  "rendered_prompt": "<|system|>\nYou are a helpful assistant.<|endoftext|>\n<|user|>\nPicture 1:<|img|>cf-transfer-image<|/img|>\nIs there cardiomegaly in this chest radiograph? Answer A if the finding is present and B if it is absent. Reply with A or B only.<|endoftext|>\n<|assistant|>\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   32,
+   317
+  ],
+  "negative_token_ids": [
+   33,
+   347
+  ],
+  "candidate_detail": {
+   "A": {
+    "A": 32,
+    " A": 317
+   },
+   "B": {
+    "B": 33,
+    " B": 347
+   }
+  },
+  "raw_ab": {
+   "A_ids": [
+    32,
+    317
+   ],
+   "B_ids": [
+    33,
+    347
+   ]
+  },
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "nih|Cardiomegaly|IB": {
+  "dataset_id": "nih",
+  "concept": "Cardiomegaly",
+  "template_id": "IB",
+  "is_primary": false,
+  "question": "Is there cardiomegaly in this chest radiograph? Answer B if the finding is present and A if it is absent. Reply with A or B only.",
+  "rendered_prompt": "<|system|>\nYou are a helpful assistant.<|endoftext|>\n<|user|>\nPicture 1:<|img|>cf-transfer-image<|/img|>\nIs there cardiomegaly in this chest radiograph? Answer B if the finding is present and A if it is absent. Reply with A or B only.<|endoftext|>\n<|assistant|>\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   33,
+   347
+  ],
+  "negative_token_ids": [
+   32,
+   317
+  ],
+  "candidate_detail": {
+   "A": {
+    "A": 32,
+    " A": 317
+   },
+   "B": {
+    "B": 33,
+    " B": 347
+   }
+  },
+  "raw_ab": {
+   "A_ids": [
+    32,
+    317
+   ],
+   "B_ids": [
+    33,
+    347
+   ]
+  },
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "nih|Cardiomegaly|WA": {
+  "dataset_id": "nih",
+  "concept": "Cardiomegaly",
+  "template_id": "WA",
+  "is_primary": false,
+  "question": "Does this chest radiograph show cardiomegaly? Answer A if the finding is present and B if it is absent. Reply with A or B only.",
+  "rendered_prompt": "<|system|>\nYou are a helpful assistant.<|endoftext|>\n<|user|>\nPicture 1:<|img|>cf-transfer-image<|/img|>\nDoes this chest radiograph show cardiomegaly? Answer A if the finding is present and B if it is absent. Reply with A or B only.<|endoftext|>\n<|assistant|>\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   32,
+   317
+  ],
+  "negative_token_ids": [
+   33,
+   347
+  ],
+  "candidate_detail": {
+   "A": {
+    "A": 32,
+    " A": 317
+   },
+   "B": {
+    "B": 33,
+    " B": 347
+   }
+  },
+  "raw_ab": {
+   "A_ids": [
+    32,
+    317
+   ],
+   "B_ids": [
+    33,
+    347
+   ]
+  },
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "nih|Cardiomegaly|WB": {
+  "dataset_id": "nih",
+  "concept": "Cardiomegaly",
+  "template_id": "WB",
+  "is_primary": false,
+  "question": "Does this chest radiograph show cardiomegaly? Answer B if the finding is present and A if it is absent. Reply with A or B only.",
+  "rendered_prompt": "<|system|>\nYou are a helpful assistant.<|endoftext|>\n<|user|>\nPicture 1:<|img|>cf-transfer-image<|/img|>\nDoes this chest radiograph show cardiomegaly? Answer B if the finding is present and A if it is absent. Reply with A or B only.<|endoftext|>\n<|assistant|>\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   33,
+   347
+  ],
+  "negative_token_ids": [
+   32,
+   317
+  ],
+  "candidate_detail": {
+   "A": {
+    "A": 32,
+    " A": 317
+   },
+   "B": {
+    "B": 33,
+    " B": 347
+   }
+  },
+  "raw_ab": {
+   "A_ids": [
+    32,
+    317
+   ],
+   "B_ids": [
+    33,
+    347
+   ]
+  },
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "nih|Mass|IY": {
+  "dataset_id": "nih",
+  "concept": "Mass",
+  "template_id": "IY",
+  "is_primary": true,
+  "question": "Is there a lung mass in this chest radiograph? Answer yes or no.",
+  "rendered_prompt": "<|system|>\nYou are a helpful assistant.<|endoftext|>\n<|user|>\nPicture 1:<|img|>cf-transfer-image<|/img|>\nIs there a lung mass in this chest radiograph? Answer yes or no.<|endoftext|>\n<|assistant|>\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   8505,
+   5297,
+   3763,
+   3363
+  ],
+  "negative_token_ids": [
+   3919,
+   2949,
+   645,
+   1400
+  ],
+  "candidate_detail": {
+   "yes": {
+    "yes": 8505,
+    "Yes": 5297,
+    " yes": 3763,
+    " Yes": 3363
+   },
+   "no": {
+    "no": 3919,
+    "No": 2949,
+    " no": 645,
+    " No": 1400
+   }
+  },
+  "raw_ab": null,
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "nih|Mass|WY": {
+  "dataset_id": "nih",
+  "concept": "Mass",
+  "template_id": "WY",
+  "is_primary": false,
+  "question": "Does this chest radiograph show a lung mass? Answer yes or no.",
+  "rendered_prompt": "<|system|>\nYou are a helpful assistant.<|endoftext|>\n<|user|>\nPicture 1:<|img|>cf-transfer-image<|/img|>\nDoes this chest radiograph show a lung mass? Answer yes or no.<|endoftext|>\n<|assistant|>\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   8505,
+   5297,
+   3763,
+   3363
+  ],
+  "negative_token_ids": [
+   3919,
+   2949,
+   645,
+   1400
+  ],
+  "candidate_detail": {
+   "yes": {
+    "yes": 8505,
+    "Yes": 5297,
+    " yes": 3763,
+    " Yes": 3363
+   },
+   "no": {
+    "no": 3919,
+    "No": 2949,
+    " no": 645,
+    " No": 1400
+   }
+  },
+  "raw_ab": null,
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "nih|Mass|IA": {
+  "dataset_id": "nih",
+  "concept": "Mass",
+  "template_id": "IA",
+  "is_primary": false,
+  "question": "Is there a lung mass in this chest radiograph? Answer A if the finding is present and B if it is absent. Reply with A or B only.",
+  "rendered_prompt": "<|system|>\nYou are a helpful assistant.<|endoftext|>\n<|user|>\nPicture 1:<|img|>cf-transfer-image<|/img|>\nIs there a lung mass in this chest radiograph? Answer A if the finding is present and B if it is absent. Reply with A or B only.<|endoftext|>\n<|assistant|>\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   32,
+   317
+  ],
+  "negative_token_ids": [
+   33,
+   347
+  ],
+  "candidate_detail": {
+   "A": {
+    "A": 32,
+    " A": 317
+   },
+   "B": {
+    "B": 33,
+    " B": 347
+   }
+  },
+  "raw_ab": {
+   "A_ids": [
+    32,
+    317
+   ],
+   "B_ids": [
+    33,
+    347
+   ]
+  },
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "nih|Mass|IB": {
+  "dataset_id": "nih",
+  "concept": "Mass",
+  "template_id": "IB",
+  "is_primary": false,
+  "question": "Is there a lung mass in this chest radiograph? Answer B if the finding is present and A if it is absent. Reply with A or B only.",
+  "rendered_prompt": "<|system|>\nYou are a helpful assistant.<|endoftext|>\n<|user|>\nPicture 1:<|img|>cf-transfer-image<|/img|>\nIs there a lung mass in this chest radiograph? Answer B if the finding is present and A if it is absent. Reply with A or B only.<|endoftext|>\n<|assistant|>\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   33,
+   347
+  ],
+  "negative_token_ids": [
+   32,
+   317
+  ],
+  "candidate_detail": {
+   "A": {
+    "A": 32,
+    " A": 317
+   },
+   "B": {
+    "B": 33,
+    " B": 347
+   }
+  },
+  "raw_ab": {
+   "A_ids": [
+    32,
+    317
+   ],
+   "B_ids": [
+    33,
+    347
+   ]
+  },
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "nih|Mass|WA": {
+  "dataset_id": "nih",
+  "concept": "Mass",
+  "template_id": "WA",
+  "is_primary": false,
+  "question": "Does this chest radiograph show a lung mass? Answer A if the finding is present and B if it is absent. Reply with A or B only.",
+  "rendered_prompt": "<|system|>\nYou are a helpful assistant.<|endoftext|>\n<|user|>\nPicture 1:<|img|>cf-transfer-image<|/img|>\nDoes this chest radiograph show a lung mass? Answer A if the finding is present and B if it is absent. Reply with A or B only.<|endoftext|>\n<|assistant|>\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   32,
+   317
+  ],
+  "negative_token_ids": [
+   33,
+   347
+  ],
+  "candidate_detail": {
+   "A": {
+    "A": 32,
+    " A": 317
+   },
+   "B": {
+    "B": 33,
+    " B": 347
+   }
+  },
+  "raw_ab": {
+   "A_ids": [
+    32,
+    317
+   ],
+   "B_ids": [
+    33,
+    347
+   ]
+  },
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "nih|Mass|WB": {
+  "dataset_id": "nih",
+  "concept": "Mass",
+  "template_id": "WB",
+  "is_primary": false,
+  "question": "Does this chest radiograph show a lung mass? Answer B if the finding is present and A if it is absent. Reply with A or B only.",
+  "rendered_prompt": "<|system|>\nYou are a helpful assistant.<|endoftext|>\n<|user|>\nPicture 1:<|img|>cf-transfer-image<|/img|>\nDoes this chest radiograph show a lung mass? Answer B if the finding is present and A if it is absent. Reply with A or B only.<|endoftext|>\n<|assistant|>\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   33,
+   347
+  ],
+  "negative_token_ids": [
+   32,
+   317
+  ],
+  "candidate_detail": {
+   "A": {
+    "A": 32,
+    " A": 317
+   },
+   "B": {
+    "B": 33,
+    " B": 347
+   }
+  },
+  "raw_ab": {
+   "A_ids": [
+    32,
+    317
+   ],
+   "B_ids": [
+    33,
+    347
+   ]
+  },
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "nih|Nodule|IY": {
+  "dataset_id": "nih",
+  "concept": "Nodule",
+  "template_id": "IY",
+  "is_primary": true,
+  "question": "Is there a lung nodule in this chest radiograph? Answer yes or no.",
+  "rendered_prompt": "<|system|>\nYou are a helpful assistant.<|endoftext|>\n<|user|>\nPicture 1:<|img|>cf-transfer-image<|/img|>\nIs there a lung nodule in this chest radiograph? Answer yes or no.<|endoftext|>\n<|assistant|>\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   8505,
+   5297,
+   3763,
+   3363
+  ],
+  "negative_token_ids": [
+   3919,
+   2949,
+   645,
+   1400
+  ],
+  "candidate_detail": {
+   "yes": {
+    "yes": 8505,
+    "Yes": 5297,
+    " yes": 3763,
+    " Yes": 3363
+   },
+   "no": {
+    "no": 3919,
+    "No": 2949,
+    " no": 645,
+    " No": 1400
+   }
+  },
+  "raw_ab": null,
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "nih|Nodule|WY": {
+  "dataset_id": "nih",
+  "concept": "Nodule",
+  "template_id": "WY",
+  "is_primary": false,
+  "question": "Does this chest radiograph show a lung nodule? Answer yes or no.",
+  "rendered_prompt": "<|system|>\nYou are a helpful assistant.<|endoftext|>\n<|user|>\nPicture 1:<|img|>cf-transfer-image<|/img|>\nDoes this chest radiograph show a lung nodule? Answer yes or no.<|endoftext|>\n<|assistant|>\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   8505,
+   5297,
+   3763,
+   3363
+  ],
+  "negative_token_ids": [
+   3919,
+   2949,
+   645,
+   1400
+  ],
+  "candidate_detail": {
+   "yes": {
+    "yes": 8505,
+    "Yes": 5297,
+    " yes": 3763,
+    " Yes": 3363
+   },
+   "no": {
+    "no": 3919,
+    "No": 2949,
+    " no": 645,
+    " No": 1400
+   }
+  },
+  "raw_ab": null,
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "nih|Nodule|IA": {
+  "dataset_id": "nih",
+  "concept": "Nodule",
+  "template_id": "IA",
+  "is_primary": false,
+  "question": "Is there a lung nodule in this chest radiograph? Answer A if the finding is present and B if it is absent. Reply with A or B only.",
+  "rendered_prompt": "<|system|>\nYou are a helpful assistant.<|endoftext|>\n<|user|>\nPicture 1:<|img|>cf-transfer-image<|/img|>\nIs there a lung nodule in this chest radiograph? Answer A if the finding is present and B if it is absent. Reply with A or B only.<|endoftext|>\n<|assistant|>\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   32,
+   317
+  ],
+  "negative_token_ids": [
+   33,
+   347
+  ],
+  "candidate_detail": {
+   "A": {
+    "A": 32,
+    " A": 317
+   },
+   "B": {
+    "B": 33,
+    " B": 347
+   }
+  },
+  "raw_ab": {
+   "A_ids": [
+    32,
+    317
+   ],
+   "B_ids": [
+    33,
+    347
+   ]
+  },
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "nih|Nodule|IB": {
+  "dataset_id": "nih",
+  "concept": "Nodule",
+  "template_id": "IB",
+  "is_primary": false,
+  "question": "Is there a lung nodule in this chest radiograph? Answer B if the finding is present and A if it is absent. Reply with A or B only.",
+  "rendered_prompt": "<|system|>\nYou are a helpful assistant.<|endoftext|>\n<|user|>\nPicture 1:<|img|>cf-transfer-image<|/img|>\nIs there a lung nodule in this chest radiograph? Answer B if the finding is present and A if it is absent. Reply with A or B only.<|endoftext|>\n<|assistant|>\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   33,
+   347
+  ],
+  "negative_token_ids": [
+   32,
+   317
+  ],
+  "candidate_detail": {
+   "A": {
+    "A": 32,
+    " A": 317
+   },
+   "B": {
+    "B": 33,
+    " B": 347
+   }
+  },
+  "raw_ab": {
+   "A_ids": [
+    32,
+    317
+   ],
+   "B_ids": [
+    33,
+    347
+   ]
+  },
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "nih|Nodule|WA": {
+  "dataset_id": "nih",
+  "concept": "Nodule",
+  "template_id": "WA",
+  "is_primary": false,
+  "question": "Does this chest radiograph show a lung nodule? Answer A if the finding is present and B if it is absent. Reply with A or B only.",
+  "rendered_prompt": "<|system|>\nYou are a helpful assistant.<|endoftext|>\n<|user|>\nPicture 1:<|img|>cf-transfer-image<|/img|>\nDoes this chest radiograph show a lung nodule? Answer A if the finding is present and B if it is absent. Reply with A or B only.<|endoftext|>\n<|assistant|>\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   32,
+   317
+  ],
+  "negative_token_ids": [
+   33,
+   347
+  ],
+  "candidate_detail": {
+   "A": {
+    "A": 32,
+    " A": 317
+   },
+   "B": {
+    "B": 33,
+    " B": 347
+   }
+  },
+  "raw_ab": {
+   "A_ids": [
+    32,
+    317
+   ],
+   "B_ids": [
+    33,
+    347
+   ]
+  },
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ },
+ "nih|Nodule|WB": {
+  "dataset_id": "nih",
+  "concept": "Nodule",
+  "template_id": "WB",
+  "is_primary": false,
+  "question": "Does this chest radiograph show a lung nodule? Answer B if the finding is present and A if it is absent. Reply with A or B only.",
+  "rendered_prompt": "<|system|>\nYou are a helpful assistant.<|endoftext|>\n<|user|>\nPicture 1:<|img|>cf-transfer-image<|/img|>\nDoes this chest radiograph show a lung nodule? Answer B if the finding is present and A if it is absent. Reply with A or B only.<|endoftext|>\n<|assistant|>\n",
+  "generation_prompt": "chat template with add_generation_prompt=True; answer read at the final input position",
+  "sequence_index_rule": "logits[:, -1] with left padding; no generated tokens",
+  "positive_token_ids": [
+   33,
+   347
+  ],
+  "negative_token_ids": [
+   32,
+   317
+  ],
+  "candidate_detail": {
+   "A": {
+    "A": 32,
+    " A": 317
+   },
+   "B": {
+    "B": 33,
+    " B": 347
+   }
+  },
+  "raw_ab": {
+   "A_ids": [
+    32,
+    317
+   ],
+   "B_ids": [
+    33,
+    347
+   ]
+  },
+  "score_aggregation": "semantic_margin = max(positive) - max(negative); p_present = sigmoid(margin); lse_margin = logsumexp(positive) - logsumexp(negative); raw_ab_margin = max(A) - max(B)"
+ }
+}

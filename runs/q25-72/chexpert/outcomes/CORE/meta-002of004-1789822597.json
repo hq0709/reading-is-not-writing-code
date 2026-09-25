@@ -1,0 +1,26 @@
+{
+ "model_key": "q25-72",
+ "dataset_id": "chexpert",
+ "module": "CORE",
+ "shard": 2,
+ "n_shards": 4,
+ "rows": 150,
+ "scored_rows": 40,
+ "outcomes": 30480,
+ "seconds": 4099.4,
+ "throughput_per_s": 7.44,
+ "batch": 8,
+ "primary_template": "IY",
+ "numerics": "bf16-batched",
+ "fit_seed": null,
+ "batch_policy": "fixed composition per question: clean replicated baseline batch + padded steered batches",
+ "direction_block": "q25-72",
+ "tower_swap": null,
+ "replay": null,
+ "peak_gpu_memory_bytes": 35904627712,
+ "gpu_count": 4,
+ "gpu_models": [
+  "NVIDIA A100-SXM4-80GB"
+ ],
+ "ended_utc": "2026-09-19T12:56:37Z"
+}

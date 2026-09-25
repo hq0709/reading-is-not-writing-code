@@ -1,0 +1,26 @@
+{
+ "model_key": "iv35-14",
+ "dataset_id": "nih",
+ "module": "ATTRQ",
+ "shard": 0,
+ "n_shards": 1,
+ "rows": 400,
+ "scored_rows": 400,
+ "outcomes": 3600,
+ "seconds": 292.2,
+ "throughput_per_s": 12.32,
+ "batch": 1,
+ "primary_template": "IY",
+ "numerics": "bf16-batched",
+ "fit_seed": null,
+ "batch_policy": "fixed composition per question: clean replicated baseline batch + padded steered batches",
+ "direction_block": "iv35-14",
+ "tower_swap": null,
+ "replay": null,
+ "peak_gpu_memory_bytes": 33409252352,
+ "gpu_count": 1,
+ "gpu_models": [
+  "NVIDIA A100-SXM4-80GB"
+ ],
+ "ended_utc": "2026-09-17T06:36:03Z"
+}

@@ -1,0 +1,20 @@
+{
+ "model_key": "medgemma-27",
+ "dataset_id": "coco",
+ "module": "LOCUS",
+ "shard": 2,
+ "n_shards": 4,
+ "rows": 150,
+ "scored_rows": 40,
+ "outcomes": 30480,
+ "seconds": 3928.0,
+ "throughput_per_s": 7.76,
+ "batch": 16,
+ "batch_policy": "fixed composition per question: clean replicated baseline batch + padded steered batches",
+ "peak_gpu_memory_bytes": 35197431808,
+ "gpu_count": 2,
+ "gpu_models": [
+  "NVIDIA A100-SXM4-80GB"
+ ],
+ "ended_utc": "2026-09-14T02:15:28Z"
+}

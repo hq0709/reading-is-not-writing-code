@@ -1,0 +1,22 @@
+{
+ "model_key": "gemma3-4",
+ "dataset_id": "chexpert",
+ "module": "REFIT",
+ "shard": 0,
+ "n_shards": 1,
+ "rows": 600,
+ "scored_rows": 600,
+ "outcomes": 50400,
+ "seconds": 2888.2,
+ "throughput_per_s": 17.45,
+ "batch": 32,
+ "primary_template": "IY",
+ "numerics": "bf16-batched",
+ "batch_policy": "fixed composition per question: clean replicated baseline batch + padded steered batches",
+ "peak_gpu_memory_bytes": 15138678784,
+ "gpu_count": 1,
+ "gpu_models": [
+  "NVIDIA H100 80GB HBM3"
+ ],
+ "ended_utc": "2026-09-15T21:06:40Z"
+}

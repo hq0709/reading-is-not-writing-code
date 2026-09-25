@@ -1,0 +1,20 @@
+{
+ "model_key": "llama32-11",
+ "dataset_id": "nih",
+ "module": "CALIBRATION",
+ "shard": 0,
+ "n_shards": 1,
+ "rows": 400,
+ "scored_rows": 400,
+ "outcomes": 1600,
+ "seconds": 442.8,
+ "throughput_per_s": 3.61,
+ "batch": 1,
+ "batch_policy": "fixed composition per question: clean replicated baseline batch + padded steered batches",
+ "peak_gpu_memory_bytes": 24405240832,
+ "gpu_count": 1,
+ "gpu_models": [
+  "NVIDIA A100-SXM4-80GB"
+ ],
+ "ended_utc": "2026-09-13T17:58:26Z"
+}
