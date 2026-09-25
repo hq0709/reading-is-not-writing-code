@@ -1,0 +1,21 @@
+{
+ "acts": "runs/act_llava15_7b",
+ "manifest": "data/manifest.csv",
+ "C": 1.0,
+ "proj_dim": 512,
+ "seed": 0,
+ "concepts": [
+  "Effusion",
+  "Atelectasis",
+  "Pneumothorax",
+  "Consolidation",
+  "Cardiomegaly",
+  "Infiltration",
+  "Mass",
+  "Nodule",
+  "Edema"
+ ],
+ "n_train": 18212,
+ "n_test": 5343,
+ "elapsed_s": 2543.1
+}
