@@ -9,8 +9,7 @@ turn results into numbers.
 | code | `hq0709/reading-is-not-writing-code` | `main` |
 | paper | `hq0709/reading-is-not-writing` | `main` |
 
-Both are public. The queue also has `hold` and `cancelled` beside the four named below.
-`REPRODUCING.md` covers what `runs/` contains and what it deliberately does not.
+Both are public. `REPRODUCING.md` covers what `runs/` contains and what it deliberately does not.
 
 ---
 
@@ -94,7 +93,8 @@ bash scripts/mayo/sbatch_py.sh -J worker -g 1 -t 14:00:00 -- \
      python -m cftransfer.worker --lane gpu1 --max-hours 13 --exit-when-empty
 ```
 
-Tasks are files in `queue/{pending,running,done,failed}`. Workers claim them in **filename order**, and
+Tasks are files in `queue/{pending,running,done,failed}`, with `hold` and `cancelled` beside them.
+Workers claim them in **filename order**, and
 `--prefix` is how priority is expressed: `--prefix 2` sorts after everything already queued. Dependencies
 are recorded as **file paths**, not task names, so renaming a pending task to reprioritise it is safe —
 which is the trick for pulling a CORE shard ahead of a PROMPT sweep.
