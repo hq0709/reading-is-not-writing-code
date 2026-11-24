@@ -1,0 +1,36 @@
+{
+ "auroc_ge_0.80": {
+  "chest_cells": 85,
+  "chest_owned": 23,
+  "chest_nih": 20,
+  "chest_nih_owned": 4,
+  "natural_cells": 167,
+  "natural_owned": 147,
+  "median_auroc_chest": 0.8941991341991342,
+  "median_auroc_natural": 0.980245890316342,
+  "adjusted_difference": -0.22627068077818333,
+  "bootstrap_sd": 0.11401705713033415,
+  "n_boot": 2000
+ },
+ "auroc_ge_0.85": {
+  "chest_cells": 65,
+  "chest_owned": 17,
+  "chest_nih": 11,
+  "chest_nih_owned": 2,
+  "natural_cells": 165,
+  "natural_owned": 147,
+  "median_auroc_chest": 0.917910447761194,
+  "median_auroc_natural": 0.9809135642924598,
+  "adjusted_difference": -0.2402919991351618,
+  "bootstrap_sd": 0.12558337197000824,
+  "n_boot": 2000
+ },
+ "top_bin_ge_0.90": {
+  "chest_cells": 37,
+  "chest_owned": 12,
+  "natural_cells": 162,
+  "natural_owned": 145,
+  "difference": -0.5707374040707374,
+  "bootstrap_sd": 0.0937485171541681
+ }
+}

@@ -33,6 +33,18 @@ python scripts/plot_paper_figures.py            # the figures
 python scripts/check_numbers.py                 # must print ALL CONSISTENT
 ```
 
+## Journal analyses (Meta-Radiology version)
+
+Two analyses added for the journal version read only the released `runs/` and need no GPU:
+
+```bash
+python -I scripts/journal/two_way.py runs runs/journal/two_way.json        # row/column specificity, competitor subsets
+python -I scripts/journal/common_support.py runs runs/journal/two_way.csv runs/journal/common_support.json  # difficulty control (bootstrap SD over checkpoints)
+```
+
+Their outputs are committed in `runs/journal/`; the paper repo copies them to `data/journal/` and
+`scripts/build_journal_numbers.py` turns them into the `\jn...` macros.
+
 ## What is not here, and why
 
 **The 75 GB.** Per-sample outcome shards and activations belong in an archive, not a repository. They are
